@@ -1,0 +1,170 @@
+{
+  "schema": "pose-lab-sf2-reduction-v1",
+  "actorKey": "ares",
+  "clipName": "SpinningHighKick",
+  "goal": "Street Fighter 2 style discrete read poses with procedural 3D easing between anchors.",
+  "timingPolicy": "preserve source keyframe burst around snap, then hold contact before recovery",
+  "combatWindowSeconds": 0.8000000000000003,
+  "combatWindowFrames60fps": 48,
+  "discardedTailSeconds": 0.06667,
+  "spriteFrames": [
+    {
+      "tag": "start",
+      "spriteFrame": 0,
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.03333,
+      "description": "guard extended leg, low foot, held pose",
+      "attackStyle": "kick",
+      "reach": -0.28518,
+      "effectorHeight": -0.83695,
+      "effectorExtension": 0.96782,
+      "motionTotal": 0.43752,
+      "easingOptions": [
+        "holdThenSnap",
+        "hold",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "tag": "anticipation",
+      "spriteFrame": 10,
+      "sourceFrameIndex": 6,
+      "sourceTime": 0.23333,
+      "description": "guard extended leg, low foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": -0.59085,
+      "effectorHeight": -0.79325,
+      "effectorExtension": 0.98922,
+      "motionTotal": 6.14554,
+      "easingOptions": [
+        "holdThenSnap",
+        "snapLunge",
+        "easeOutExpo"
+      ]
+    },
+    {
+      "tag": "contact",
+      "spriteFrame": 18,
+      "sourceFrameIndex": 11,
+      "sourceTime": 0.4,
+      "description": "strike full leg extension, high foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": 1.07704,
+      "effectorHeight": 0.53622,
+      "effectorExtension": 1.26262,
+      "motionTotal": 3.26191,
+      "easingOptions": [
+        "stepHold",
+        "ballisticRecoil",
+        "criticalDampReturn"
+      ]
+    },
+    {
+      "tag": "contactHold",
+      "spriteFrame": 23,
+      "sourceFrameIndex": 11,
+      "sourceTime": 0.4,
+      "description": "strike full leg extension, high foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": 1.07704,
+      "effectorHeight": 0.53622,
+      "effectorExtension": 1.26262,
+      "motionTotal": 3.26191,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    },
+    {
+      "tag": "recoil",
+      "spriteFrame": 26,
+      "sourceFrameIndex": 16,
+      "sourceTime": 0.56667,
+      "description": "strike loaded leg, low foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": 0.04475,
+      "effectorHeight": -0.54453,
+      "effectorExtension": 0.72374,
+      "motionTotal": 3.02616,
+      "easingOptions": [
+        "dampedRecover",
+        "microOvershoot",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "tag": "settle",
+      "spriteFrame": 48,
+      "sourceFrameIndex": 25,
+      "sourceTime": 0.86667,
+      "description": "recovery extended leg, low foot, held pose",
+      "attackStyle": "kick",
+      "reach": -0.28518,
+      "effectorHeight": -0.83695,
+      "effectorExtension": 0.96782,
+      "motionTotal": 0.38034,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": "start",
+      "to": "anticipation",
+      "holdFrames": 10,
+      "easingOptions": [
+        "holdThenSnap",
+        "hold",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "from": "anticipation",
+      "to": "contact",
+      "holdFrames": 8,
+      "easingOptions": [
+        "holdThenSnap",
+        "snapLunge",
+        "easeOutExpo"
+      ]
+    },
+    {
+      "from": "contact",
+      "to": "contactHold",
+      "holdFrames": 5,
+      "easingOptions": [
+        "stepHold",
+        "ballisticRecoil",
+        "criticalDampReturn"
+      ]
+    },
+    {
+      "from": "contactHold",
+      "to": "recoil",
+      "holdFrames": 3,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    },
+    {
+      "from": "recoil",
+      "to": "settle",
+      "holdFrames": 22,
+      "easingOptions": [
+        "dampedRecover",
+        "microOvershoot",
+        "easeOutCubic"
+      ]
+    }
+  ],
+  "attackName": "SpinningHighKick",
+  "sourceClipName": "SpinningHighKick",
+  "attackStyle": "kick",
+  "appealScoring": "source-burst-clean"
+}

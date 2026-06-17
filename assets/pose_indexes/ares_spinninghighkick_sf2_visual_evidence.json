@@ -1,0 +1,267 @@
+{
+  "schema": "pose-lab-visual-evidence-v1",
+  "actorKey": "ares",
+  "actorLabel": "Ares",
+  "attackName": "SpinningHighKick",
+  "sourceClipName": "SpinningHighKick",
+  "poseclip": "assets/pose_indexes/ares_spinninghighkick_sf2.poseclip.json",
+  "index": "assets/pose_indexes/ares_spinninghighkick_index.json",
+  "reduction": "assets/pose_indexes/ares_spinninghighkick_sf2_reduction.json",
+  "critique": "assets/pose_indexes/ares_spinninghighkick_sf2_critique.md",
+  "goal": "Link screenshots or video captures to exact generated pose data for visual critique and regression review.",
+  "capturePolicy": "Attach screenshots to captureSlots by evidenceKey; do not edit generated poseclip tracks to store screenshot data.",
+  "sourceOverlays": [],
+  "contactExaggeration": null,
+  "headDiscipline": null,
+  "headGazeStabilization": null,
+  "contactGuardStabilization": null,
+  "kickPrecontactUpperBodyCarry": {
+    "kind": "sf2-kick-precontact-upper-body-carry",
+    "enabled": true,
+    "sourceTime": 0.36667,
+    "targetBones": [
+      "mixamorig:Spine",
+      "mixamorig:Spine1",
+      "mixamorig:Spine2",
+      "mixamorig:Neck",
+      "mixamorig:Head"
+    ],
+    "timeline": [
+      {
+        "spriteFrame": 18,
+        "strength": 1.0,
+        "tag": "contactCarry"
+      },
+      {
+        "spriteFrame": 23,
+        "strength": 1.0,
+        "tag": "heldContactCarry"
+      },
+      {
+        "spriteFrame": 26,
+        "strength": 0.22,
+        "tag": "recoilRelease"
+      },
+      {
+        "spriteFrame": 48,
+        "strength": 0.0,
+        "tag": "settled"
+      }
+    ]
+  },
+  "guardRuleException": null,
+  "captureSlots": [
+    {
+      "evidenceKey": "ares:spinninghighkick:sf2:f000:start",
+      "tag": "start",
+      "spriteFrame": 0,
+      "poseclipTime": 0.0,
+      "sourceClipName": "SpinningHighKick",
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.03333,
+      "description": "guard extended leg, low foot, held pose",
+      "attackStyle": "kick",
+      "reach": -0.28518,
+      "effectorHeight": -0.83695,
+      "effectorExtension": 0.96782,
+      "motionTotal": 0.43752,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/spinninghighkick/sf2/f000_start.png"
+      },
+      "notes": []
+    },
+    {
+      "evidenceKey": "ares:spinninghighkick:sf2:f010:anticipation",
+      "tag": "anticipation",
+      "spriteFrame": 10,
+      "poseclipTime": 0.16667,
+      "sourceClipName": "SpinningHighKick",
+      "sourceFrameIndex": 6,
+      "sourceTime": 0.23333,
+      "description": "guard extended leg, low foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": -0.59085,
+      "effectorHeight": -0.79325,
+      "effectorExtension": 0.98922,
+      "motionTotal": 6.14554,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/spinninghighkick/sf2/f010_anticipation.png"
+      },
+      "notes": []
+    },
+    {
+      "evidenceKey": "ares:spinninghighkick:sf2:f018:contact",
+      "tag": "contact",
+      "spriteFrame": 18,
+      "poseclipTime": 0.3,
+      "sourceClipName": "SpinningHighKick",
+      "sourceFrameIndex": 11,
+      "sourceTime": 0.4,
+      "description": "strike full leg extension, high foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": 1.07704,
+      "effectorHeight": 0.53622,
+      "effectorExtension": 1.26262,
+      "motionTotal": 3.26191,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [
+        {
+          "kind": "sf2-kick-precontact-upper-body-carry",
+          "tag": "contactCarry",
+          "strength": 1.0,
+          "sourceTime": 0.36667,
+          "targetBones": [
+            "mixamorig:Spine",
+            "mixamorig:Spine1",
+            "mixamorig:Spine2",
+            "mixamorig:Neck",
+            "mixamorig:Head"
+          ]
+        }
+      ],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/spinninghighkick/sf2/f018_contact.png"
+      },
+      "notes": []
+    },
+    {
+      "evidenceKey": "ares:spinninghighkick:sf2:f023:contactHold",
+      "tag": "contactHold",
+      "spriteFrame": 23,
+      "poseclipTime": 0.38333,
+      "sourceClipName": "SpinningHighKick",
+      "sourceFrameIndex": 11,
+      "sourceTime": 0.4,
+      "description": "strike full leg extension, high foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": 1.07704,
+      "effectorHeight": 0.53622,
+      "effectorExtension": 1.26262,
+      "motionTotal": 3.26191,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [
+        {
+          "kind": "sf2-kick-precontact-upper-body-carry",
+          "tag": "heldContactCarry",
+          "strength": 1.0,
+          "sourceTime": 0.36667,
+          "targetBones": [
+            "mixamorig:Spine",
+            "mixamorig:Spine1",
+            "mixamorig:Spine2",
+            "mixamorig:Neck",
+            "mixamorig:Head"
+          ]
+        }
+      ],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/spinninghighkick/sf2/f023_contactHold.png"
+      },
+      "notes": []
+    },
+    {
+      "evidenceKey": "ares:spinninghighkick:sf2:f026:recoil",
+      "tag": "recoil",
+      "spriteFrame": 26,
+      "poseclipTime": 0.43333,
+      "sourceClipName": "SpinningHighKick",
+      "sourceFrameIndex": 16,
+      "sourceTime": 0.56667,
+      "description": "strike loaded leg, low foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": 0.04475,
+      "effectorHeight": -0.54453,
+      "effectorExtension": 0.72374,
+      "motionTotal": 3.02616,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [
+        {
+          "kind": "sf2-kick-precontact-upper-body-carry",
+          "tag": "recoilRelease",
+          "strength": 0.22,
+          "sourceTime": 0.36667,
+          "targetBones": [
+            "mixamorig:Spine",
+            "mixamorig:Spine1",
+            "mixamorig:Spine2",
+            "mixamorig:Neck",
+            "mixamorig:Head"
+          ]
+        }
+      ],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/spinninghighkick/sf2/f026_recoil.png"
+      },
+      "notes": []
+    },
+    {
+      "evidenceKey": "ares:spinninghighkick:sf2:f048:settle",
+      "tag": "settle",
+      "spriteFrame": 48,
+      "poseclipTime": 0.8,
+      "sourceClipName": "SpinningHighKick",
+      "sourceFrameIndex": 25,
+      "sourceTime": 0.86667,
+      "description": "recovery extended leg, low foot, held pose",
+      "attackStyle": "kick",
+      "reach": -0.28518,
+      "effectorHeight": -0.83695,
+      "effectorExtension": 0.96782,
+      "motionTotal": 0.38034,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [
+        {
+          "kind": "sf2-kick-precontact-upper-body-carry",
+          "tag": "settled",
+          "strength": 0.0,
+          "sourceTime": 0.36667,
+          "targetBones": [
+            "mixamorig:Spine",
+            "mixamorig:Spine1",
+            "mixamorig:Spine2",
+            "mixamorig:Neck",
+            "mixamorig:Head"
+          ]
+        }
+      ],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/spinninghighkick/sf2/f048_settle.png"
+      },
+      "notes": []
+    }
+  ]
+}

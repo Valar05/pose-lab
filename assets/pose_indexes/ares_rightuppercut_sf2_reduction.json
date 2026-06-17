@@ -1,0 +1,143 @@
+{
+  "schema": "pose-lab-sf2-reduction-v1",
+  "actorKey": "ares",
+  "clipName": "RightUppercut",
+  "goal": "Street Fighter 2 style discrete read poses with procedural 3D easing between anchors.",
+  "timingPolicy": "preserve source keyframe burst around snap, then hold contact before recovery",
+  "combatWindowSeconds": 0.55,
+  "combatWindowFrames60fps": 33,
+  "discardedTailSeconds": 0.11667,
+  "spriteFrames": [
+    {
+      "tag": "start",
+      "spriteFrame": 0,
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.0,
+      "description": "start half extension, mid guard, snappy transition",
+      "attackStyle": "punch",
+      "reach": 0.26648,
+      "effectorHeight": 0.48658,
+      "effectorExtension": 0.56088,
+      "motionTotal": 2.04065,
+      "easingOptions": [
+        "holdThenSnap",
+        "hold",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "tag": "anticipation",
+      "spriteFrame": 6,
+      "sourceFrameIndex": 1,
+      "sourceTime": 0.03333,
+      "description": "guard guarded, high hands, snappy transition",
+      "attackStyle": "punch",
+      "reach": -0.28977,
+      "effectorHeight": 0.22707,
+      "effectorExtension": 0.65649,
+      "motionTotal": 2.21181,
+      "easingOptions": [
+        "holdThenSnap",
+        "snapLunge",
+        "easeOutExpo"
+      ]
+    },
+    {
+      "tag": "contact",
+      "spriteFrame": 10,
+      "sourceFrameIndex": 8,
+      "sourceTime": 0.26667,
+      "description": "strike extended, high hands, snappy transition",
+      "attackStyle": "punch",
+      "reach": 0.34064,
+      "effectorHeight": 0.62187,
+      "effectorExtension": 0.92596,
+      "motionTotal": 3.79499,
+      "easingOptions": [
+        "stepHold",
+        "ballisticRecoil",
+        "criticalDampReturn"
+      ]
+    },
+    {
+      "tag": "recoil",
+      "spriteFrame": 13,
+      "sourceFrameIndex": 10,
+      "sourceTime": 0.33333,
+      "description": "strike half extension, high hands, readable shift",
+      "attackStyle": "punch",
+      "reach": 0.22649,
+      "effectorHeight": 0.69459,
+      "effectorExtension": 0.95885,
+      "motionTotal": 0.64682,
+      "easingOptions": [
+        "dampedRecover",
+        "microOvershoot",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "tag": "settle",
+      "spriteFrame": 33,
+      "sourceFrameIndex": 20,
+      "sourceTime": 0.66667,
+      "description": "recovery half extension, mid guard, held pose",
+      "attackStyle": "punch",
+      "reach": 0.26648,
+      "effectorHeight": 0.48658,
+      "effectorExtension": 0.56088,
+      "motionTotal": 0.32416,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": "start",
+      "to": "anticipation",
+      "holdFrames": 6,
+      "easingOptions": [
+        "holdThenSnap",
+        "hold",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "from": "anticipation",
+      "to": "contact",
+      "holdFrames": 4,
+      "easingOptions": [
+        "holdThenSnap",
+        "snapLunge",
+        "easeOutExpo"
+      ]
+    },
+    {
+      "from": "contact",
+      "to": "recoil",
+      "holdFrames": 3,
+      "easingOptions": [
+        "stepHold",
+        "ballisticRecoil",
+        "criticalDampReturn"
+      ]
+    },
+    {
+      "from": "recoil",
+      "to": "settle",
+      "holdFrames": 20,
+      "easingOptions": [
+        "dampedRecover",
+        "microOvershoot",
+        "easeOutCubic"
+      ]
+    }
+  ],
+  "attackName": "RightUppercut",
+  "sourceClipName": "RightUppercut",
+  "attackStyle": "punch",
+  "appealScoring": "source-burst-clean"
+}

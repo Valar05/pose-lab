@@ -1,0 +1,143 @@
+{
+  "schema": "pose-lab-sf2-reduction-v1",
+  "actorKey": "ares",
+  "clipName": "Backfist",
+  "goal": "Street Fighter 2 style discrete read poses with procedural 3D easing between anchors.",
+  "timingPolicy": "preserve source keyframe burst around snap, then hold contact before recovery",
+  "combatWindowSeconds": 0.66,
+  "combatWindowFrames60fps": 40,
+  "discardedTailSeconds": 0.10667,
+  "spriteFrames": [
+    {
+      "tag": "start",
+      "spriteFrame": 0,
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.0,
+      "description": "start half extension, low hands, snappy transition",
+      "attackStyle": "punch",
+      "reach": 0.25391,
+      "effectorHeight": 0.11968,
+      "effectorExtension": 0.47209,
+      "motionTotal": 1.41123,
+      "easingOptions": [
+        "holdThenSnap",
+        "hold",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "tag": "anticipation",
+      "spriteFrame": 7,
+      "sourceFrameIndex": 7,
+      "sourceTime": 0.23333,
+      "description": "anticipation guarded, high hands, snappy transition",
+      "attackStyle": "punch",
+      "reach": -0.47674,
+      "effectorHeight": 0.85431,
+      "effectorExtension": 0.98488,
+      "motionTotal": 4.8697,
+      "easingOptions": [
+        "holdThenSnap",
+        "snapLunge",
+        "easeOutExpo"
+      ]
+    },
+    {
+      "tag": "contact",
+      "spriteFrame": 11,
+      "sourceFrameIndex": 9,
+      "sourceTime": 0.3,
+      "description": "strike full extension, high hands, snappy transition",
+      "attackStyle": "punch",
+      "reach": 0.78609,
+      "effectorHeight": 0.5846,
+      "effectorExtension": 0.98665,
+      "motionTotal": 6.18627,
+      "easingOptions": [
+        "stepHold",
+        "ballisticRecoil",
+        "criticalDampReturn"
+      ]
+    },
+    {
+      "tag": "recoil",
+      "spriteFrame": 14,
+      "sourceFrameIndex": 10,
+      "sourceTime": 0.33333,
+      "description": "strike guarded, mid guard, snappy transition",
+      "attackStyle": "punch",
+      "reach": -0.1711,
+      "effectorHeight": 0.28618,
+      "effectorExtension": 0.67367,
+      "motionTotal": 3.63439,
+      "easingOptions": [
+        "dampedRecover",
+        "microOvershoot",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "tag": "settle",
+      "spriteFrame": 40,
+      "sourceFrameIndex": 20,
+      "sourceTime": 0.66667,
+      "description": "recovery half extension, high hands, readable shift",
+      "attackStyle": "punch",
+      "reach": 0.29265,
+      "effectorHeight": 0.5353,
+      "effectorExtension": 0.67102,
+      "motionTotal": 0.82002,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": "start",
+      "to": "anticipation",
+      "holdFrames": 7,
+      "easingOptions": [
+        "holdThenSnap",
+        "hold",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "from": "anticipation",
+      "to": "contact",
+      "holdFrames": 4,
+      "easingOptions": [
+        "holdThenSnap",
+        "snapLunge",
+        "easeOutExpo"
+      ]
+    },
+    {
+      "from": "contact",
+      "to": "recoil",
+      "holdFrames": 3,
+      "easingOptions": [
+        "stepHold",
+        "ballisticRecoil",
+        "criticalDampReturn"
+      ]
+    },
+    {
+      "from": "recoil",
+      "to": "settle",
+      "holdFrames": 26,
+      "easingOptions": [
+        "dampedRecover",
+        "microOvershoot",
+        "easeOutCubic"
+      ]
+    }
+  ],
+  "attackName": "Backfist",
+  "sourceClipName": "Backfist",
+  "attackStyle": "punch",
+  "appealScoring": "source-burst-clean"
+}

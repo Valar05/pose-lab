@@ -1,0 +1,172 @@
+{
+  "assets": [
+    {
+      "id": "fpsplayer_blend_source",
+      "path": "assets/source/FPSPlayer.blend",
+      "source": "C:/Users/dclar/Downloads/FPSPlayer.blend on THECAULDRON; copied via /storage/emulated/0/Download/models/FPSPlayer.blend",
+      "type": "source_blend",
+      "notes": "Source-authored FPS arms/weapon animation blend. Contains 55 actions and meshes Arms, placeholderWeapon, Plane."
+    },
+    {
+      "id": "fpsplayer_glb_runtime",
+      "path": "assets/models/FPSPlayer.glb",
+      "source": "Exported from FPSPlayer.blend with Blender 4.4.3 on THECAULDRON, export_animation_mode=ACTIONS, GLB format, Draco disabled.",
+      "type": "runtime_glb",
+      "notes": "Validated with Three GLTFLoader: 55 animations, Arms SkinnedMesh, placeholderWeapon mesh, WeaponR/WeaponL/Camera bones."
+    },
+    {
+      "id": "fpsplayer_meshy_source_archive",
+      "path": "assets/source/fpsplayer_meshy/Meshy_AI__0615041256_texture_fbx.zip",
+      "source": "/storage/emulated/0/Download/Meshy_AI__0615041256_texture_fbx.zip",
+      "type": "source_archive",
+      "notes": "Meshy texture FBX package containing an updated two-leg FPSPlayer body and companion PBR textures."
+    },
+    {
+      "id": "fpsplayer_meshy_runtime_texture_set",
+      "path": "assets/models/fpsplayer_meshy/*",
+      "source": "Extracted from assets/source/fpsplayer_meshy/Meshy_AI__0615041256_texture_fbx.zip with original filenames preserved.",
+      "type": "runtime_texture_set",
+      "notes": "Meshy PBR texture set for Pose Lab FPS Arms. The FBX body is no longer used; the original FPSPlayer mesh stays authoritative and receives the newer texture maps directly."
+    },
+    {
+      "id": "arcane_forgeborn_runtime_glb",
+      "path": "assets/models/arcane/Forgeborn.glb",
+      "source": "C:/Users/dclar/workspace/arcane-manifold/models/Forgeborn.glb on THECAULDRON; copied into standalone pose lab after confirming arcane-manifold was clean and up to date.",
+      "type": "runtime_glb",
+      "notes": "Arcane Manifold player scene instantiates this as res://models/Forgeborn.glb under $Model. Used as the full-body target rig for FPSPlayer arm retarget tests."
+    },
+    {
+      "id": "arcane_leg_animation_fbx_set",
+      "path": "assets/models/arcane/Animation_*.fbx",
+      "source": "C:/Users/dclar/workspace/arcane-manifold/models/Animations on THECAULDRON.",
+      "type": "runtime_fbx_animation_set",
+      "notes": "Copied Animation_Idle_Step_Turn_Left_withSkin, Animation_Idle_Turn_Right_withSkin, Animation_Walking_withSkin, and Animation_Walk_Backward_withSkin. Loaded as extra native leg/turn clips on the Arcane Full Rig actor."
+    },
+    {
+      "id": "arcane_player_scene_reference",
+      "path": "assets/source/arcane/Player.tscn",
+      "source": "C:/Users/dclar/workspace/arcane-manifold/scenes/Player.tscn on THECAULDRON.",
+      "type": "source_scene_reference",
+      "notes": "Scene reference proves the active player model path, AnimationPlayer path, and FootIKRoot setup used by Arcane Manifold."
+    },
+    {
+      "id": "ib_orc_berserker_standing_idle_source",
+      "path": "assets/source/orc_berserker/standing_idle_source.fbx",
+      "source": "../infinite-brutality/assets/source/orc_berserker/standing_idle_source.fbx; originally /storage/emulated/0/Download/Standing Idle (4).fbx",
+      "type": "source_fbx",
+      "notes": "Source copy for the active Infinite Brutality orc berserker idle/model FBX. Copied into Pose Lab so mocap cleanup can inspect the actual enemy rig."
+    },
+    {
+      "id": "ib_orc_berserker_runtime_idle",
+      "path": "assets/models/orc_berserker/standing_idle.fbx",
+      "source": "../infinite-brutality/assets/models/orc_berserker/standing_idle.fbx",
+      "type": "runtime_fbx_skinned_model",
+      "notes": "Active visible enemy model used by Infinite Brutality. Pose Lab loads this as the Orc Cleanup actor base rig and scales it to 2.35m."
+    },
+    {
+      "id": "ib_pro_melee_axe_source_archive",
+      "path": "assets/source/pro_melee_axe/pro_melee_axe_pack_source.zip",
+      "source": "../infinite-brutality/assets/source/pro_melee_axe/pro_melee_axe_pack_source.zip; originally /storage/emulated/0/Download/Pro Melee Axe Pack (3).zip",
+      "type": "source_archive",
+      "notes": "Source archive for the Pro Melee Axe motion FBX set used by the pressure-ring orc enemy. License/provenance beyond local download name is not yet documented."
+    },
+    {
+      "id": "ib_pro_melee_axe_horizontal_smooth_poseclip",
+      "path": "assets/models/pro_melee_axe/standing_melee_attack_horizontal_smooth.poseclip.json",
+      "source": "../infinite-brutality/assets/models/pro_melee_axe/standing_melee_attack_horizontal_smooth.poseclip.json",
+      "type": "runtime_poseclip_json",
+      "notes": "Pose Lab cleanup export of the smoothed horizontal swing. Startup and AttackHorizontal should use this edited version instead of the raw horizontal swing."
+    },
+    {
+      "id": "ib_pro_melee_axe_pose_lab_clip_set",
+      "path": "assets/models/pro_melee_axe/*.fbx",
+      "source": "../infinite-brutality/assets/models/pro_melee_axe/*.fbx",
+      "type": "runtime_fbx_animation_set",
+      "notes": "Runtime subset copied for mocap cleanup: idle, walk forward, walk left/right, run, jump, three melee attacks, and large gut reaction. Orc profile strips hips/root XZ from traversal while preserving hip Y motion."
+    },
+    {
+      "id": "ib_orc_import_pack_kidney_hit_source_archive",
+      "path": "assets/source/orc_berserker/import_packs/Kidney Hit (1).zip",
+      "source": "/storage/emulated/0/Download/Kidney Hit (1).zip",
+      "type": "source_archive",
+      "notes": "Downloaded FBX hit-reaction pack staged for Orc Cleanup import. Contains Kidney Hit, Big Hit To Head, Hit To Body, and two Head Hit variants."
+    },
+    {
+      "id": "ib_orc_import_pack_mutant_dying_source_archive",
+      "path": "assets/source/orc_berserker/import_packs/Mutant Dying.zip",
+      "source": "/storage/emulated/0/Download/Mutant Dying.zip",
+      "type": "source_archive",
+      "notes": "Downloaded FBX pack staged for Orc Cleanup import. Contains Mutant Dying plus idle, walking, run, jump, and punch candidates."
+    },
+    {
+      "id": "ib_orc_imported_candidate_clip_set",
+      "path": "assets/models/orc_berserker/imported/*.fbx",
+      "source": "Extracted from assets/source/orc_berserker/import_packs/Kidney Hit (1).zip and Mutant Dying.zip with sanitized lowercase filenames for direct Pose Lab loading.",
+      "type": "runtime_fbx_animation_set",
+      "notes": "Pose Lab-only Orc candidate clip set: big_hit_to_head_3, head_hit_4, head_hit_5, hit_to_body_2, kidney_hit_1, mutant_dying, mutant_idle, mutant_jumping, mutant_punch, mutant_run, mutant_walking. Use Cleanup/Merge before any Infinite Brutality runtime adoption."
+    },
+    {
+      "id": "gf_ares_runtime_glb",
+      "path": "assets/models/gravity_fist/Ares.glb",
+      "source": "../gravity-fist-threejs/assets/models/Ares.glb; originally gravity-fist/models/Ares.glb",
+      "type": "runtime_glb",
+      "notes": "Copied Gravity Fist player rig for standalone pose indexing and clip inspection. The standalone lab owns this mirror so Ares import behavior stays stable."
+    },
+    {
+      "id": "gf_ares_runtime_texture",
+      "path": "assets/models/gravity_fist/Ares_texture_0.png",
+      "source": "../gravity-fist-threejs/assets/models/Ares_texture_0.png; originally gravity-fist/models/Ares_texture_0.png",
+      "type": "runtime_texture",
+      "notes": "External texture companion for Ares.glb copied with original filename preserved."
+    },
+    {
+      "id": "gf_security_titan_runtime_glb",
+      "path": "assets/models/gravity_fist/SecurityTitan.glb",
+      "source": "../gravity-fist-threejs/assets/models/SecurityTitan.glb; originally gravity-fist/models/SecurityTitan.glb",
+      "type": "runtime_glb",
+      "notes": "Copied Gravity Fist enemy rig for standalone pose indexing and clip inspection. The standalone lab owns this mirror so Titan import behavior stays stable."
+    },
+    {
+      "id": "gf_security_titan_runtime_texture",
+      "path": "assets/models/gravity_fist/SecurityTitan_texture_0.png",
+      "source": "../gravity-fist-threejs/assets/models/SecurityTitan_texture_0.png; originally gravity-fist/models/SecurityTitan_texture_0.png",
+      "type": "runtime_texture",
+      "notes": "External texture companion for SecurityTitan.glb copied with original filename preserved."
+    },
+    {
+      "id": "gf_security_titan_godot_animation_bundle",
+      "path": "assets/anims/security_titan_godot_anims.json",
+      "source": "../gravity-fist-threejs/assets/anims/security_titan_godot_anims.json; exported from gravity-fist/models/anims/*.res",
+      "type": "runtime_animation_json",
+      "notes": "Copied Godot-linked hurt, prone, knockback, and stand-up animation tracks for Security Titan. Preserved as related metadata for future pose indexing and runtime inspection."
+    },
+    {
+      "id": "gf_player_attack_metadata",
+      "path": "assets/data/gravity_fist_player_attacks.json",
+      "source": "../gravity-fist-threejs/data/player_attacks.json; originally gravity-fist/player_attacks.json",
+      "type": "runtime_metadata_json",
+      "notes": "Copied Gravity Fist player attack timing metadata. Standalone pose index automation uses this as semantic anchors for startup, active, and recovery pose discovery."
+    },
+    {
+      "id": "gf_security_titan_attack_metadata",
+      "path": "assets/data/gravity_fist_security_titan.json",
+      "source": "../gravity-fist-threejs/data/security_titan.json; originally gravity-fist/security_titan.json",
+      "type": "runtime_metadata_json",
+      "notes": "Copied Gravity Fist Security Titan attack timing metadata. Standalone pose index automation uses this as semantic anchors for startup, active, and recovery pose discovery."
+    },
+    {
+      "id": "gf_ares_pose_index_target",
+      "path": "assets/pose_indexes/ares_pose_index.json",
+      "source": "Standalone pose-lab generated pose index target for Gravity Fist Ares.",
+      "type": "generated_pose_index_json",
+      "notes": "Repo-owned destination for automated keyed-frame pose descriptions and anchor frame summaries exported from the standalone pose lab."
+    },
+    {
+      "id": "gf_security_titan_pose_index_target",
+      "path": "assets/pose_indexes/security_titan_pose_index.json",
+      "source": "Standalone pose-lab generated pose index target for Gravity Fist Security Titan.",
+      "type": "generated_pose_index_json",
+      "notes": "Repo-owned destination for automated keyed-frame pose descriptions and anchor frame summaries exported from the standalone pose lab."
+    }
+  ]
+}

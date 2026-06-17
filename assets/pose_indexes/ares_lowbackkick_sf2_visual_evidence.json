@@ -1,0 +1,319 @@
+{
+  "schema": "pose-lab-visual-evidence-v1",
+  "actorKey": "ares",
+  "actorLabel": "Ares",
+  "attackName": "LowBackKick",
+  "sourceClipName": "LowBackKick",
+  "poseclip": "assets/pose_indexes/ares_lowbackkick_sf2.poseclip.json",
+  "index": "assets/pose_indexes/ares_lowbackkick_index.json",
+  "reduction": "assets/pose_indexes/ares_lowbackkick_sf2_reduction.json",
+  "critique": "assets/pose_indexes/ares_lowbackkick_sf2_critique.md",
+  "goal": "Link screenshots or video captures to exact generated pose data for visual critique and regression review.",
+  "capturePolicy": "Attach screenshots to captureSlots by evidenceKey; do not edit generated poseclip tracks to store screenshot data.",
+  "sourceOverlays": [],
+  "contactExaggeration": null,
+  "headDiscipline": null,
+  "headGazeStabilization": null,
+  "contactGuardStabilization": null,
+  "kickPrecontactUpperBodyCarry": {
+    "kind": "sf2-kick-precontact-upper-body-carry",
+    "enabled": true,
+    "sourceTime": 0.3,
+    "targetBones": [
+      "mixamorig:Spine",
+      "mixamorig:Spine1",
+      "mixamorig:Spine2",
+      "mixamorig:Neck",
+      "mixamorig:Head"
+    ],
+    "timeline": [
+      {
+        "spriteFrame": 18,
+        "strength": 1.0,
+        "tag": "contactCarry"
+      },
+      {
+        "spriteFrame": 23,
+        "strength": 1.0,
+        "tag": "heldContactCarry"
+      },
+      {
+        "spriteFrame": 27,
+        "strength": 0.22,
+        "tag": "recoilRelease"
+      },
+      {
+        "spriteFrame": 40,
+        "strength": 0.0,
+        "tag": "settled"
+      }
+    ]
+  },
+  "guardRuleException": null,
+  "captureSlots": [
+    {
+      "evidenceKey": "ares:lowbackkick:sf2:f000:start",
+      "tag": "start",
+      "spriteFrame": 0,
+      "poseclipTime": 0.0,
+      "sourceClipName": "LowBackKick",
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.0,
+      "description": "start extended leg, low foot, readable shift",
+      "attackStyle": "kick",
+      "reach": -0.28517,
+      "effectorHeight": -0.83695,
+      "effectorExtension": 0.96782,
+      "motionTotal": 0.6377,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/lowbackkick/sf2/f000_start.png"
+      },
+      "notes": []
+    },
+    {
+      "evidenceKey": "ares:lowbackkick:sf2:f005:windup",
+      "tag": "windup",
+      "spriteFrame": 5,
+      "poseclipTime": 0.08333,
+      "sourceClipName": "LowBackKick",
+      "sourceFrameIndex": 5,
+      "sourceTime": 0.16667,
+      "description": "guard extended leg, low foot, readable shift",
+      "attackStyle": "kick",
+      "reach": -0.30469,
+      "effectorHeight": -0.80273,
+      "effectorExtension": 1.01083,
+      "motionTotal": 0.62735,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/lowbackkick/sf2/f005_windup.png"
+      },
+      "notes": []
+    },
+    {
+      "evidenceKey": "ares:lowbackkick:sf2:f010:anticipation",
+      "tag": "anticipation",
+      "spriteFrame": 10,
+      "poseclipTime": 0.16667,
+      "sourceClipName": "LowBackKick",
+      "sourceFrameIndex": 7,
+      "sourceTime": 0.23333,
+      "description": "anticipation extended leg, low foot, held pose",
+      "attackStyle": "kick",
+      "reach": -0.25947,
+      "effectorHeight": -0.75753,
+      "effectorExtension": 0.98461,
+      "motionTotal": 0.35623,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/lowbackkick/sf2/f010_anticipation.png"
+      },
+      "notes": []
+    },
+    {
+      "evidenceKey": "ares:lowbackkick:sf2:f013:anticipationHold",
+      "tag": "anticipationHold",
+      "spriteFrame": 13,
+      "poseclipTime": 0.21667,
+      "sourceClipName": "LowBackKick",
+      "sourceFrameIndex": 8,
+      "sourceTime": 0.26667,
+      "description": "anticipation extended leg, low foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": -0.23359,
+      "effectorHeight": -0.73194,
+      "effectorExtension": 0.96742,
+      "motionTotal": 2.7748,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/lowbackkick/sf2/f013_anticipationHold.png"
+      },
+      "notes": []
+    },
+    {
+      "evidenceKey": "ares:lowbackkick:sf2:f018:contact",
+      "tag": "contact",
+      "spriteFrame": 18,
+      "poseclipTime": 0.3,
+      "sourceClipName": "LowBackKick",
+      "sourceFrameIndex": 10,
+      "sourceTime": 0.33333,
+      "description": "strike full leg extension, low foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": 0.93575,
+      "effectorHeight": -0.24972,
+      "effectorExtension": 1.05164,
+      "motionTotal": 2.26161,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [
+        {
+          "kind": "sf2-kick-precontact-upper-body-carry",
+          "tag": "contactCarry",
+          "strength": 1.0,
+          "sourceTime": 0.3,
+          "targetBones": [
+            "mixamorig:Spine",
+            "mixamorig:Spine1",
+            "mixamorig:Spine2",
+            "mixamorig:Neck",
+            "mixamorig:Head"
+          ]
+        }
+      ],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/lowbackkick/sf2/f018_contact.png"
+      },
+      "notes": []
+    },
+    {
+      "evidenceKey": "ares:lowbackkick:sf2:f023:contactHold",
+      "tag": "contactHold",
+      "spriteFrame": 23,
+      "poseclipTime": 0.38333,
+      "sourceClipName": "LowBackKick",
+      "sourceFrameIndex": 10,
+      "sourceTime": 0.33333,
+      "description": "strike full leg extension, low foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": 0.93575,
+      "effectorHeight": -0.24972,
+      "effectorExtension": 1.05164,
+      "motionTotal": 2.26161,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [
+        {
+          "kind": "sf2-kick-precontact-upper-body-carry",
+          "tag": "heldContactCarry",
+          "strength": 1.0,
+          "sourceTime": 0.3,
+          "targetBones": [
+            "mixamorig:Spine",
+            "mixamorig:Spine1",
+            "mixamorig:Spine2",
+            "mixamorig:Neck",
+            "mixamorig:Head"
+          ]
+        }
+      ],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/lowbackkick/sf2/f023_contactHold.png"
+      },
+      "notes": []
+    },
+    {
+      "evidenceKey": "ares:lowbackkick:sf2:f027:recoil",
+      "tag": "recoil",
+      "spriteFrame": 27,
+      "poseclipTime": 0.45,
+      "sourceClipName": "LowBackKick",
+      "sourceFrameIndex": 24,
+      "sourceTime": 0.8,
+      "description": "recovery loaded leg, low foot, readable shift",
+      "attackStyle": "kick",
+      "reach": -0.19368,
+      "effectorHeight": -0.60344,
+      "effectorExtension": 0.8507,
+      "motionTotal": 0.78519,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [
+        {
+          "kind": "sf2-kick-precontact-upper-body-carry",
+          "tag": "recoilRelease",
+          "strength": 0.22,
+          "sourceTime": 0.3,
+          "targetBones": [
+            "mixamorig:Spine",
+            "mixamorig:Spine1",
+            "mixamorig:Spine2",
+            "mixamorig:Neck",
+            "mixamorig:Head"
+          ]
+        }
+      ],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/lowbackkick/sf2/f027_recoil.png"
+      },
+      "notes": []
+    },
+    {
+      "evidenceKey": "ares:lowbackkick:sf2:f040:settle",
+      "tag": "settle",
+      "spriteFrame": 40,
+      "poseclipTime": 0.66667,
+      "sourceClipName": "LowBackKick",
+      "sourceFrameIndex": 29,
+      "sourceTime": 0.96667,
+      "description": "settle extended leg, low foot, held pose",
+      "attackStyle": "kick",
+      "reach": -0.28517,
+      "effectorHeight": -0.83695,
+      "effectorExtension": 0.96782,
+      "motionTotal": 0.36072,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [
+        {
+          "kind": "sf2-kick-precontact-upper-body-carry",
+          "tag": "settled",
+          "strength": 0.0,
+          "sourceTime": 0.3,
+          "targetBones": [
+            "mixamorig:Spine",
+            "mixamorig:Spine1",
+            "mixamorig:Spine2",
+            "mixamorig:Neck",
+            "mixamorig:Head"
+          ]
+        }
+      ],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/lowbackkick/sf2/f040_settle.png"
+      },
+      "notes": []
+    }
+  ]
+}

@@ -1,0 +1,4733 @@
+{
+  "schema": "pose-lab-attack-index-v1",
+  "actorKey": "ares",
+  "actorLabel": "Ares",
+  "attackName": "FrontKick",
+  "clipName": "FrontKick",
+  "metadata": {
+    "name": "FrontKick",
+    "damage_modifier": 2.0,
+    "dash_start": 0.33,
+    "dash": 0.4,
+    "range": 1.45,
+    "attack_end": 0.66,
+    "hit_reaction": "HitHeadRight",
+    "guard_break": true,
+    "knockback_multi": 1.5,
+    "combo": 1.0,
+    "family": "special"
+  },
+  "analysis": {
+    "clipName": "FrontKick",
+    "duration": 0.86667,
+    "keyTimes": [
+      0.03333,
+      0.06667,
+      0.1,
+      0.13333,
+      0.16667,
+      0.2,
+      0.23333,
+      0.26667,
+      0.3,
+      0.33333,
+      0.36667,
+      0.4,
+      0.43333,
+      0.46667,
+      0.5,
+      0.53333,
+      0.56667,
+      0.6,
+      0.63333,
+      0.66667,
+      0.7,
+      0.73333,
+      0.76667,
+      0.8,
+      0.83333,
+      0.86667
+    ],
+    "forwardAxis": [
+      0.48636,
+      0.05302,
+      -0.87215
+    ],
+    "upAxis": [
+      -0.06168,
+      0.99775,
+      0.02626
+    ],
+    "strikeSide": "left",
+    "frames": [
+      {
+        "frameIndex": 0,
+        "time": 0.03333,
+        "normalizedTime": 0.03846,
+        "leftReach": -0.31036,
+        "rightReach": -0.26648,
+        "leftGuard": 0.48266,
+        "rightGuard": 0.48658,
+        "handSpan": 0.38791,
+        "footSpan": 0.89253,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.00125,
+              0.01262
+            ],
+            "rotation": [
+              0.06857,
+              -0.30413,
+              -0.00391,
+              0.95015
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.04568,
+              1.57195,
+              0.02764
+            ],
+            "rotation": [
+              0.13834,
+              -0.04343,
+              0.03753,
+              0.98872
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.07284,
+              1.47879,
+              0.44392
+            ],
+            "rotation": [
+              0.36299,
+              -0.4149,
+              0.14552,
+              0.82153
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.24197,
+              1.46922,
+              0.21748
+            ],
+            "rotation": [
+              0.25202,
+              0.4846,
+              -0.03628,
+              0.83686
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.18018,
+              0.12847,
+              0.37275
+            ],
+            "rotation": [
+              0.17503,
+              -0.44612,
+              -0.87693,
+              -0.0366
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.16307,
+              0.16516,
+              -0.45032
+            ],
+            "rotation": [
+              -0.48878,
+              0.24873,
+              0.79532,
+              0.25826
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              0.03262,
+              1.52655,
+              0.05386
+            ],
+            "rotation": [
+              0.7465,
+              0.35472,
+              -0.29378,
+              0.48022
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.10171,
+              1.51381,
+              -0.02182
+            ],
+            "rotation": [
+              0.52587,
+              -0.47842,
+              0.64732,
+              0.27485
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.0,
+        "motionOut": 0.27866,
+        "motionTotal": 0.27866,
+        "strikeSide": "left",
+        "strikeReach": 0.26767,
+        "semanticTag": "guard",
+        "description": "guard extended leg, low foot, held pose",
+        "leftFootReach": -0.26767,
+        "rightFootReach": 0.28517,
+        "leftFootHeight": -0.87311,
+        "rightFootHeight": -0.83695,
+        "leftFootExtension": 0.9632,
+        "rightFootExtension": 0.96782,
+        "headReach": 0.0,
+        "headDrop": 0.0,
+        "leftHandExtension": 0.64884,
+        "rightHandExtension": 0.56088,
+        "effectorHeight": -0.87311,
+        "effectorExtension": 0.9632,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 1,
+        "time": 0.06667,
+        "normalizedTime": 0.07692,
+        "leftReach": -0.35224,
+        "rightReach": -0.23297,
+        "leftGuard": 0.41263,
+        "rightGuard": 0.48657,
+        "handSpan": 0.46356,
+        "footSpan": 0.93235,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.011,
+              0.02282
+            ],
+            "rotation": [
+              0.0631,
+              -0.35622,
+              -0.00073,
+              0.93227
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.03865,
+              1.58244,
+              0.02938
+            ],
+            "rotation": [
+              0.12873,
+              -0.06068,
+              0.03243,
+              0.98929
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.0652,
+              1.41685,
+              0.49353
+            ],
+            "rotation": [
+              0.43101,
+              -0.414,
+              0.16462,
+              0.78469
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.26642,
+              1.47882,
+              0.17561
+            ],
+            "rotation": [
+              0.20784,
+              0.35565,
+              -0.14665,
+              0.89934
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.19376,
+              0.1343,
+              0.38738
+            ],
+            "rotation": [
+              0.17378,
+              -0.44904,
+              -0.8755,
+              -0.04074
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.1838,
+              0.17401,
+              -0.46418
+            ],
+            "rotation": [
+              -0.50534,
+              0.24486,
+              0.77929,
+              0.27818
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              0.0346,
+              1.5356,
+              0.06606
+            ],
+            "rotation": [
+              0.78616,
+              0.29976,
+              -0.26846,
+              0.46907
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.08864,
+              1.52521,
+              -0.02686
+            ],
+            "rotation": [
+              0.47805,
+              -0.46606,
+              0.70828,
+              0.22934
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.27866,
+        "motionOut": 0.27977,
+        "motionTotal": 0.55842,
+        "strikeSide": "left",
+        "strikeReach": 0.26514,
+        "semanticTag": "guard",
+        "description": "guard extended leg, low foot, readable shift",
+        "leftFootReach": -0.26514,
+        "rightFootReach": 0.29603,
+        "leftFootHeight": -0.87775,
+        "rightFootHeight": -0.8372,
+        "leftFootExtension": 0.97118,
+        "rightFootExtension": 0.98376,
+        "headReach": 0.01084,
+        "headDrop": -8e-05,
+        "leftHandExtension": 0.6261,
+        "rightHandExtension": 0.55475,
+        "effectorHeight": -0.87775,
+        "effectorExtension": 0.97118,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 2,
+        "time": 0.1,
+        "normalizedTime": 0.11538,
+        "leftReach": -0.38099,
+        "rightReach": -0.19223,
+        "leftGuard": 0.33537,
+        "rightGuard": 0.48145,
+        "handSpan": 0.54117,
+        "footSpan": 0.98514,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.02076,
+              0.03302
+            ],
+            "rotation": [
+              0.05744,
+              -0.40721,
+              0.00245,
+              0.91152
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.03092,
+              1.59273,
+              0.03262
+            ],
+            "rotation": [
+              0.11999,
+              -0.07809,
+              0.02636,
+              0.98935
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.06151,
+              1.34826,
+              0.52987
+            ],
+            "rotation": [
+              0.50213,
+              -0.41199,
+              0.18973,
+              0.7363
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.27902,
+              1.48409,
+              0.1318
+            ],
+            "rotation": [
+              0.18833,
+              0.22898,
+              -0.2679,
+              0.91669
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.20929,
+              0.14444,
+              0.41051
+            ],
+            "rotation": [
+              0.17393,
+              -0.4576,
+              -0.8709,
+              -0.04335
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.20039,
+              0.18804,
+              -0.48434
+            ],
+            "rotation": [
+              -0.52106,
+              0.23738,
+              0.76336,
+              0.29903
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              0.03593,
+              1.54461,
+              0.07895
+            ],
+            "rotation": [
+              0.82331,
+              0.24734,
+              -0.23766,
+              0.45221
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.07394,
+              1.53628,
+              -0.02963
+            ],
+            "rotation": [
+              0.42419,
+              -0.44788,
+              0.76461,
+              0.18662
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.27977,
+        "motionOut": 0.47551,
+        "motionTotal": 0.75528,
+        "strikeSide": "left",
+        "strikeReach": 0.26884,
+        "semanticTag": "guard",
+        "description": "guard extended leg, low foot, readable shift",
+        "leftFootReach": -0.26884,
+        "rightFootReach": 0.31466,
+        "leftFootHeight": -0.87799,
+        "rightFootHeight": -0.83271,
+        "leftFootExtension": 0.97913,
+        "rightFootExtension": 0.99859,
+        "headReach": 0.02069,
+        "headDrop": 5e-05,
+        "leftHandExtension": 0.59941,
+        "rightHandExtension": 0.5446,
+        "effectorHeight": -0.87799,
+        "effectorExtension": 0.97913,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 3,
+        "time": 0.13333,
+        "normalizedTime": 0.15385,
+        "leftReach": -0.45465,
+        "rightReach": -0.17594,
+        "leftGuard": 0.1932,
+        "rightGuard": 0.38365,
+        "handSpan": 0.58272,
+        "footSpan": 0.88932,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.03911,
+              0.04051
+            ],
+            "rotation": [
+              0.04738,
+              -0.50263,
+              0.01654,
+              0.86304
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.02281,
+              1.61142,
+              0.0363
+            ],
+            "rotation": [
+              0.12341,
+              -0.11449,
+              0.01566,
+              0.98561
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              -0.00529,
+              1.21898,
+              0.57559
+            ],
+            "rotation": [
+              0.68559,
+              -0.34676,
+              0.22594,
+              0.5989
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.29547,
+              1.40429,
+              0.10547
+            ],
+            "rotation": [
+              0.28294,
+              0.11513,
+              -0.15254,
+              0.9399
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.1918,
+              0.14284,
+              0.39376
+            ],
+            "rotation": [
+              0.16992,
+              -0.4576,
+              -0.87163,
+              -0.04469
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.1847,
+              0.21684,
+              -0.40852
+            ],
+            "rotation": [
+              -0.66624,
+              0.09618,
+              0.69127,
+              0.26273
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              0.02964,
+              1.56129,
+              0.09722
+            ],
+            "rotation": [
+              0.85089,
+              0.18501,
+              -0.1353,
+              0.47271
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.04935,
+              1.55687,
+              -0.03572
+            ],
+            "rotation": [
+              0.31912,
+              -0.47681,
+              0.80885,
+              0.12877
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.47551,
+        "motionOut": 0.57989,
+        "motionTotal": 1.0554,
+        "strikeSide": "left",
+        "strikeReach": 0.25727,
+        "semanticTag": "guard",
+        "description": "guard extended leg, low foot, readable shift",
+        "leftFootReach": -0.25727,
+        "rightFootReach": 0.26325,
+        "leftFootHeight": -0.89745,
+        "rightFootHeight": -0.82146,
+        "leftFootExtension": 0.98436,
+        "rightFootExtension": 0.95296,
+        "headReach": 0.02798,
+        "headDrop": 0.00031,
+        "leftHandExtension": 0.56453,
+        "rightHandExtension": 0.4678,
+        "effectorHeight": -0.89745,
+        "effectorExtension": 0.98436,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 4,
+        "time": 0.16667,
+        "normalizedTime": 0.19231,
+        "leftReach": -0.41364,
+        "rightReach": -0.11003,
+        "leftGuard": 0.07989,
+        "rightGuard": 0.29394,
+        "handSpan": 0.6639,
+        "footSpan": 0.67371,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.06165,
+              0.05074
+            ],
+            "rotation": [
+              0.02926,
+              -0.60053,
+              0.03636,
+              0.79824
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.02407,
+              1.63334,
+              0.03335
+            ],
+            "rotation": [
+              0.12695,
+              -0.15603,
+              0.02123,
+              0.97933
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.04412,
+              1.1317,
+              0.55968
+            ],
+            "rotation": [
+              0.78144,
+              -0.20382,
+              0.36764,
+              0.46115
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.301,
+              1.33879,
+              0.03169
+            ],
+            "rotation": [
+              0.34342,
+              -0.02319,
+              -0.06382,
+              0.93672
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.16615,
+              0.14919,
+              0.37477
+            ],
+            "rotation": [
+              0.17998,
+              -0.4343,
+              -0.88194,
+              -0.03422
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.09601,
+              0.24226,
+              -0.23882
+            ],
+            "rotation": [
+              -0.76041,
+              0.08109,
+              0.63436,
+              0.11307
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              0.01308,
+              1.58439,
+              0.1056
+            ],
+            "rotation": [
+              0.85665,
+              0.14006,
+              -0.03692,
+              0.49515
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.03124,
+              1.5782,
+              -0.04248
+            ],
+            "rotation": [
+              0.22286,
+              -0.48094,
+              0.84545,
+              0.06518
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.57989,
+        "motionOut": 2.92783,
+        "motionTotal": 3.50771,
+        "strikeSide": "left",
+        "strikeReach": 0.24511,
+        "semanticTag": "guard",
+        "description": "guard extended leg, low foot, snappy transition",
+        "leftFootReach": -0.24511,
+        "rightFootReach": 0.16746,
+        "leftFootHeight": -0.91279,
+        "rightFootHeight": -0.81987,
+        "leftFootExtension": 0.98425,
+        "rightFootExtension": 0.87325,
+        "headReach": 0.03883,
+        "headDrop": 0.0012,
+        "leftHandExtension": 0.51662,
+        "rightHandExtension": 0.40202,
+        "effectorHeight": -0.91279,
+        "effectorExtension": 0.98425,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 5,
+        "time": 0.2,
+        "normalizedTime": 0.23077,
+        "leftReach": 0.01549,
+        "rightReach": 0.12047,
+        "leftGuard": 0.21954,
+        "rightGuard": 0.14543,
+        "handSpan": 0.98976,
+        "footSpan": 0.63023,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.09915,
+              -0.06772
+            ],
+            "rotation": [
+              -0.09373,
+              -0.68558,
+              0.24787,
+              0.67805
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.13546,
+              1.58381,
+              -0.33602
+            ],
+            "rotation": [
+              -0.02717,
+              -0.12938,
+              0.08262,
+              0.98777
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.29016,
+              1.33345,
+              0.09637
+            ],
+            "rotation": [
+              0.76925,
+              -0.04166,
+              0.39161,
+              0.50316
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.50956,
+              1.22481,
+              -0.47657
+            ],
+            "rotation": [
+              0.24896,
+              -0.44539,
+              0.16729,
+              0.8436
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              -0.01838,
+              0.51973,
+              0.43048
+            ],
+            "rotation": [
+              0.62556,
+              -0.17865,
+              -0.74666,
+              0.13877
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              0.01586,
+              0.15189,
+              -0.08012
+            ],
+            "rotation": [
+              -0.72132,
+              0.18468,
+              0.59732,
+              0.29799
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.09208,
+              1.58492,
+              -0.25312
+            ],
+            "rotation": [
+              0.7028,
+              0.26341,
+              -0.02834,
+              0.66021
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.12101,
+              1.5001,
+              -0.37922
+            ],
+            "rotation": [
+              0.27852,
+              -0.24492,
+              0.92864,
+              0.00851
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 2.92783,
+        "motionOut": 0.31214,
+        "motionTotal": 3.23996,
+        "strikeSide": "left",
+        "strikeReach": 0.46911,
+        "semanticTag": "guard",
+        "description": "guard extended leg, low foot, snappy transition",
+        "leftFootReach": -0.46911,
+        "rightFootReach": -0.02664,
+        "leftFootHeight": -0.56454,
+        "rightFootHeight": -0.94707,
+        "leftFootExtension": 0.7642,
+        "rightFootExtension": 0.94771,
+        "headReach": 0.19887,
+        "headDrop": 0.08775,
+        "leftHandExtension": 0.41492,
+        "rightHandExtension": 0.65735,
+        "effectorHeight": -0.56454,
+        "effectorExtension": 0.7642,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 6,
+        "time": 0.23333,
+        "normalizedTime": 0.26923,
+        "leftReach": 1e-05,
+        "rightReach": 0.13545,
+        "leftGuard": 0.22618,
+        "rightGuard": 0.1224,
+        "handSpan": 0.99522,
+        "footSpan": 0.72541,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.09837,
+              -0.02687
+            ],
+            "rotation": [
+              -0.08719,
+              -0.68039,
+              0.27347,
+              0.67431
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.16072,
+              1.57381,
+              -0.29857
+            ],
+            "rotation": [
+              -0.01735,
+              -0.11462,
+              0.09064,
+              0.98911
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.27288,
+              1.33803,
+              0.14566
+            ],
+            "rotation": [
+              0.75869,
+              -0.0305,
+              0.38499,
+              0.52463
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.50941,
+              1.20144,
+              -0.45419
+            ],
+            "rotation": [
+              0.27315,
+              -0.45471,
+              0.17424,
+              0.82962
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              -0.03006,
+              0.60173,
+              0.48136
+            ],
+            "rotation": [
+              0.62602,
+              -0.21971,
+              -0.72794,
+              0.173
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              0.00516,
+              0.14546,
+              -0.08149
+            ],
+            "rotation": [
+              -0.73392,
+              0.17994,
+              0.5691,
+              0.3242
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.11707,
+              1.57611,
+              -0.21604
+            ],
+            "rotation": [
+              0.70491,
+              0.2813,
+              -0.00944,
+              0.65107
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.14259,
+              1.49115,
+              -0.34277
+            ],
+            "rotation": [
+              0.28754,
+              -0.24753,
+              0.92507,
+              -0.01713
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.31214,
+        "motionOut": 0.3018,
+        "motionTotal": 0.61394,
+        "strikeSide": "left",
+        "strikeReach": 0.47915,
+        "semanticTag": "anticipation",
+        "description": "anticipation extended leg, low foot, readable shift",
+        "leftFootReach": -0.47915,
+        "rightFootReach": 0.00468,
+        "leftFootHeight": -0.48096,
+        "rightFootHeight": -0.95316,
+        "leftFootExtension": 0.71087,
+        "rightFootExtension": 0.9546,
+        "headReach": 0.18906,
+        "headDrop": 0.09548,
+        "leftHandExtension": 0.40921,
+        "rightHandExtension": 0.66501,
+        "effectorHeight": -0.48096,
+        "effectorExtension": 0.71087,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 7,
+        "time": 0.26667,
+        "normalizedTime": 0.30769,
+        "leftReach": -0.01473,
+        "rightReach": 0.14939,
+        "leftGuard": 0.23135,
+        "rightGuard": 0.10058,
+        "handSpan": 1.00044,
+        "footSpan": 0.81208,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.0976,
+              0.01398
+            ],
+            "rotation": [
+              -0.08057,
+              -0.67468,
+              0.2989,
+              0.67006
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.18576,
+              1.56249,
+              -0.26055
+            ],
+            "rotation": [
+              -0.00793,
+              -0.09852,
+              0.09868,
+              0.9902
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.25581,
+              1.34119,
+              0.19413
+            ],
+            "rotation": [
+              0.74762,
+              -0.02043,
+              0.37774,
+              0.54586
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.50887,
+              1.17928,
+              -0.43032
+            ],
+            "rotation": [
+              0.2982,
+              -0.4621,
+              0.17955,
+              0.81566
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              -0.0407,
+              0.68455,
+              0.51714
+            ],
+            "rotation": [
+              0.62489,
+              -0.26008,
+              -0.70669,
+              0.20606
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.00363,
+              0.14192,
+              -0.08589
+            ],
+            "rotation": [
+              -0.74314,
+              0.17582,
+              0.54134,
+              0.35183
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.14174,
+              1.56598,
+              -0.17848
+            ],
+            "rotation": [
+              0.70663,
+              0.29976,
+              0.00833,
+              0.6409
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.16413,
+              1.48105,
+              -0.30582
+            ],
+            "rotation": [
+              0.29749,
+              -0.25009,
+              0.92042,
+              -0.04228
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.3018,
+        "motionOut": 0.29128,
+        "motionTotal": 0.59308,
+        "strikeSide": "left",
+        "strikeReach": 0.47547,
+        "semanticTag": "anticipation",
+        "description": "anticipation extended leg, low foot, readable shift",
+        "leftFootReach": -0.47547,
+        "rightFootReach": 0.03972,
+        "leftFootHeight": -0.39704,
+        "rightFootHeight": -0.95657,
+        "leftFootExtension": 0.65169,
+        "rightFootExtension": 0.96091,
+        "headReach": 0.17879,
+        "headDrop": 0.10454,
+        "leftHandExtension": 0.40331,
+        "rightHandExtension": 0.67272,
+        "effectorHeight": -0.39704,
+        "effectorExtension": 0.65169,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 8,
+        "time": 0.3,
+        "normalizedTime": 0.34615,
+        "leftReach": -0.02866,
+        "rightReach": 0.16214,
+        "leftGuard": 0.23507,
+        "rightGuard": 0.08003,
+        "handSpan": 1.00541,
+        "footSpan": 0.88745,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.09682,
+              0.05483
+            ],
+            "rotation": [
+              -0.0739,
+              -0.66847,
+              0.32411,
+              0.66531
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.21047,
+              1.54988,
+              -0.22193
+            ],
+            "rotation": [
+              0.00102,
+              -0.0811,
+              0.10666,
+              0.99098
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.23917,
+              1.34293,
+              0.24183
+            ],
+            "rotation": [
+              0.7361,
+              -0.01134,
+              0.36985,
+              0.56677
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.50816,
+              1.15836,
+              -0.40492
+            ],
+            "rotation": [
+              0.32393,
+              -0.46754,
+              0.18315,
+              0.80183
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              -0.04897,
+              0.76464,
+              0.53829
+            ],
+            "rotation": [
+              0.62239,
+              -0.2993,
+              -0.68319,
+              0.23728
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.01039,
+              0.14162,
+              -0.09253
+            ],
+            "rotation": [
+              -0.74895,
+              0.1725,
+              0.51438,
+              0.38044
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.16597,
+              1.55457,
+              -0.14038
+            ],
+            "rotation": [
+              0.70799,
+              0.3187,
+              0.02492,
+              0.62973
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.18553,
+              1.46984,
+              -0.26833
+            ],
+            "rotation": [
+              0.30833,
+              -0.25262,
+              0.91469,
+              -0.06684
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.29128,
+        "motionOut": 0.28113,
+        "motionTotal": 0.57241,
+        "strikeSide": "left",
+        "strikeReach": 0.45802,
+        "semanticTag": "anticipation",
+        "description": "anticipation extended leg, low foot, readable shift",
+        "leftFootReach": -0.45802,
+        "rightFootReach": 0.07788,
+        "leftFootHeight": -0.31636,
+        "rightFootHeight": -0.95692,
+        "leftFootExtension": 0.58785,
+        "rightFootExtension": 0.9665,
+        "headReach": 0.16809,
+        "headDrop": 0.11487,
+        "leftHandExtension": 0.39727,
+        "rightHandExtension": 0.68038,
+        "effectorHeight": -0.31636,
+        "effectorExtension": 0.58785,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 9,
+        "time": 0.33333,
+        "normalizedTime": 0.38462,
+        "leftReach": -0.04171,
+        "rightReach": 0.17356,
+        "leftGuard": 0.23733,
+        "rightGuard": 0.06076,
+        "handSpan": 1.01007,
+        "footSpan": 0.94965,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.09605,
+              0.09568
+            ],
+            "rotation": [
+              -0.06718,
+              -0.66178,
+              0.34905,
+              0.66008
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.23473,
+              1.53605,
+              -0.18264
+            ],
+            "rotation": [
+              0.00944,
+              -0.0624,
+              0.1145,
+              0.99142
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.22316,
+              1.34327,
+              0.28878
+            ],
+            "rotation": [
+              0.72421,
+              -0.00313,
+              0.36134,
+              0.58732
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.5075,
+              1.13868,
+              -0.37794
+            ],
+            "rotation": [
+              0.35016,
+              -0.47101,
+              0.18496,
+              0.78824
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              -0.05381,
+              0.83882,
+              0.54653
+            ],
+            "rotation": [
+              0.61889,
+              -0.33692,
+              -0.65775,
+              0.26612
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.01516,
+              0.14477,
+              -0.10049
+            ],
+            "rotation": [
+              -0.7514,
+              0.17017,
+              0.48856,
+              0.40957
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.18965,
+              1.54193,
+              -0.1017
+            ],
+            "rotation": [
+              0.70901,
+              0.33803,
+              0.04026,
+              0.6176
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.2067,
+              1.45756,
+              -0.23025
+            ],
+            "rotation": [
+              0.32002,
+              -0.25512,
+              0.9079,
+              -0.09073
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.28113,
+        "motionOut": 2.11148,
+        "motionTotal": 2.39261,
+        "strikeSide": "left",
+        "strikeReach": 0.42796,
+        "semanticTag": "strike",
+        "description": "strike extended leg, low foot, snappy transition",
+        "leftFootReach": -0.42796,
+        "rightFootReach": 0.11834,
+        "leftFootHeight": -0.24213,
+        "rightFootHeight": -0.954,
+        "leftFootExtension": 0.52088,
+        "rightFootExtension": 0.97131,
+        "headReach": 0.15696,
+        "headDrop": 0.12645,
+        "leftHandExtension": 0.3911,
+        "rightHandExtension": 0.68793,
+        "effectorHeight": -0.24213,
+        "effectorExtension": 0.52088,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 10,
+        "time": 0.36667,
+        "normalizedTime": 0.42308,
+        "leftReach": -0.10132,
+        "rightReach": 0.29801,
+        "leftGuard": 0.29733,
+        "rightGuard": -0.09982,
+        "handSpan": 0.72901,
+        "footSpan": 2.04095,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.09952,
+              0.10414
+            ],
+            "rotation": [
+              -0.09185,
+              -0.66831,
+              0.52571,
+              0.51823
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.25912,
+              1.36147,
+              -0.33554
+            ],
+            "rotation": [
+              0.00303,
+              -0.19352,
+              0.34224,
+              0.91946
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.05836,
+              1.39723,
+              0.27676
+            ],
+            "rotation": [
+              0.74036,
+              0.13911,
+              0.53367,
+              0.38433
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.12635,
+              1.00315,
+              -0.30808
+            ],
+            "rotation": [
+              0.25654,
+              -0.37072,
+              0.38505,
+              0.80529
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              -0.02146,
+              1.65688,
+              1.25038
+            ],
+            "rotation": [
+              0.7474,
+              -0.61414,
+              -0.16929,
+              0.18861
+            ],
+            "scale": [
+              0.0112,
+              0.01174,
+              0.01106
+            ]
+          },
+          "right_foot": {
+            "position": [
+              0.00108,
+              0.13533,
+              -0.10971
+            ],
+            "rotation": [
+              -0.78233,
+              0.18546,
+              0.42199,
+              0.41892
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.26771,
+              1.38353,
+              -0.24589
+            ],
+            "rotation": [
+              0.56386,
+              0.35863,
+              0.36292,
+              0.64941
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.17907,
+              1.31025,
+              -0.34936
+            ],
+            "rotation": [
+              0.13108,
+              -0.09902,
+              0.89493,
+              -0.41486
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 2.11148,
+        "motionOut": 0.21887,
+        "motionTotal": 2.33035,
+        "strikeSide": "left",
+        "strikeReach": 0.97552,
+        "semanticTag": "strike",
+        "description": "strike full leg extension, high foot, snappy transition",
+        "leftFootReach": -0.97552,
+        "rightFootReach": 0.14097,
+        "leftFootHeight": 0.58689,
+        "rightFootHeight": -0.96834,
+        "leftFootExtension": 1.27461,
+        "rightFootExtension": 0.98769,
+        "headReach": 0.27639,
+        "headDrop": 0.30683,
+        "leftHandExtension": 0.35094,
+        "rightHandExtension": 0.43893,
+        "effectorHeight": 0.58689,
+        "effectorExtension": 1.27461,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 11,
+        "time": 0.4,
+        "normalizedTime": 0.46154,
+        "leftReach": -0.1125,
+        "rightReach": 0.27482,
+        "leftGuard": 0.27578,
+        "rightGuard": -0.11479,
+        "handSpan": 0.72894,
+        "footSpan": 1.95526,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.10162,
+              0.10646
+            ],
+            "rotation": [
+              -0.09924,
+              -0.65367,
+              0.52821,
+              0.53279
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.2663,
+              1.3529,
+              -0.33476
+            ],
+            "rotation": [
+              0.00953,
+              -0.18315,
+              0.34636,
+              0.92
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.04889,
+              1.37698,
+              0.28525
+            ],
+            "rotation": [
+              0.74507,
+              0.09394,
+              0.49678,
+              0.43504
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.15555,
+              0.9882,
+              -0.29648
+            ],
+            "rotation": [
+              0.22784,
+              -0.38504,
+              0.37526,
+              0.8118
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.01773,
+              1.58872,
+              1.19054
+            ],
+            "rotation": [
+              0.68485,
+              -0.6658,
+              -0.22192,
+              0.19609
+            ],
+            "scale": [
+              0.0108,
+              0.01116,
+              0.0107
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.0087,
+              0.13585,
+              -0.11771
+            ],
+            "rotation": [
+              -0.78225,
+              0.1858,
+              0.42162,
+              0.41928
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.27117,
+              1.37959,
+              -0.24626
+            ],
+            "rotation": [
+              0.55616,
+              0.37198,
+              0.33511,
+              0.66334
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.1879,
+              1.299,
+              -0.34875
+            ],
+            "rotation": [
+              0.15263,
+              -0.07685,
+              0.90155,
+              -0.3975
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.21887,
+        "motionOut": 0.24052,
+        "motionTotal": 0.45938,
+        "strikeSide": "left",
+        "strikeReach": 0.90597,
+        "semanticTag": "strike",
+        "description": "strike full leg extension, high foot, readable shift",
+        "leftFootReach": -0.90597,
+        "rightFootReach": 0.14513,
+        "leftFootHeight": 0.51274,
+        "rightFootHeight": -0.96959,
+        "leftFootExtension": 1.18882,
+        "rightFootExtension": 0.99145,
+        "headReach": 0.27367,
+        "headDrop": 0.31707,
+        "leftHandExtension": 0.33362,
+        "rightHandExtension": 0.44305,
+        "effectorHeight": 0.51274,
+        "effectorExtension": 1.18882,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 12,
+        "time": 0.43333,
+        "normalizedTime": 0.5,
+        "leftReach": -0.12855,
+        "rightReach": 0.25054,
+        "leftGuard": 0.26119,
+        "rightGuard": -0.12762,
+        "handSpan": 0.73148,
+        "footSpan": 1.85396,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.10372,
+              0.10878
+            ],
+            "rotation": [
+              -0.10659,
+              -0.6387,
+              0.53045,
+              0.5471
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.274,
+              1.34445,
+              -0.33317
+            ],
+            "rotation": [
+              0.01671,
+              -0.17256,
+              0.34971,
+              0.92068
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.03376,
+              1.36329,
+              0.29658
+            ],
+            "rotation": [
+              0.74239,
+              0.04743,
+              0.46207,
+              0.48281
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.18502,
+              0.97534,
+              -0.28367
+            ],
+            "rotation": [
+              0.19787,
+              -0.39869,
+              0.36789,
+              0.81643
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.05056,
+              1.52292,
+              1.10338
+            ],
+            "rotation": [
+              0.61626,
+              -0.70925,
+              -0.2645,
+              0.21733
+            ],
+            "scale": [
+              0.0104,
+              0.01058,
+              0.01035
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.01946,
+              0.13683,
+              -0.12585
+            ],
+            "rotation": [
+              -0.78201,
+              0.18651,
+              0.42092,
+              0.42013
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.27505,
+              1.37557,
+              -0.24615
+            ],
+            "rotation": [
+              0.54784,
+              0.38531,
+              0.30695,
+              0.67616
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.19731,
+              1.28794,
+              -0.3472
+            ],
+            "rotation": [
+              0.17451,
+              -0.05458,
+              0.90662,
+              -0.38028
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.24052,
+        "motionOut": 0.2552,
+        "motionTotal": 0.49572,
+        "strikeSide": "left",
+        "strikeReach": 0.81557,
+        "semanticTag": "strike",
+        "description": "strike full leg extension, high foot, readable shift",
+        "leftFootReach": -0.81557,
+        "rightFootReach": 0.14896,
+        "leftFootHeight": 0.44061,
+        "rightFootHeight": -0.97032,
+        "leftFootExtension": 1.08105,
+        "rightFootExtension": 0.99499,
+        "headReach": 0.27001,
+        "headDrop": 0.32714,
+        "leftHandExtension": 0.32341,
+        "rightHandExtension": 0.44832,
+        "effectorHeight": 0.44061,
+        "effectorExtension": 1.08105,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 13,
+        "time": 0.46667,
+        "normalizedTime": 0.53846,
+        "leftReach": -0.14776,
+        "rightReach": 0.22544,
+        "leftGuard": 0.25463,
+        "rightGuard": -0.13841,
+        "handSpan": 0.73663,
+        "footSpan": 1.7459,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.10583,
+              0.11111
+            ],
+            "rotation": [
+              -0.11388,
+              -0.62344,
+              0.53243,
+              0.56114
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.2822,
+              1.33618,
+              -0.33073
+            ],
+            "rotation": [
+              0.02451,
+              -0.1618,
+              0.35223,
+              0.92149
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.01456,
+              1.35735,
+              0.30974
+            ],
+            "rotation": [
+              0.73279,
+              0.00076,
+              0.43029,
+              0.52713
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.21448,
+              0.96451,
+              -0.26978
+            ],
+            "rotation": [
+              0.16691,
+              -0.41145,
+              0.36302,
+              0.81919
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.07114,
+              1.46416,
+              0.99718
+            ],
+            "rotation": [
+              0.54747,
+              -0.74411,
+              -0.2916,
+              0.24807
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.03117,
+              0.1383,
+              -0.1341
+            ],
+            "rotation": [
+              -0.78162,
+              0.18762,
+              0.41986,
+              0.42142
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.27934,
+              1.37153,
+              -0.24556
+            ],
+            "rotation": [
+              0.5389,
+              0.39861,
+              0.2785,
+              0.68785
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.20726,
+              1.27714,
+              -0.34469
+            ],
+            "rotation": [
+              0.19665,
+              -0.03228,
+              0.91012,
+              -0.36327
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.2552,
+        "motionOut": 0.93137,
+        "motionTotal": 1.18657,
+        "strikeSide": "left",
+        "strikeReach": 0.71413,
+        "semanticTag": "strike",
+        "description": "strike full leg extension, high foot, readable shift",
+        "leftFootReach": -0.71413,
+        "rightFootReach": 0.15246,
+        "leftFootHeight": 0.37576,
+        "rightFootHeight": -0.97051,
+        "leftFootExtension": 0.95925,
+        "rightFootExtension": 0.99834,
+        "headReach": 0.26537,
+        "headDrop": 0.33699,
+        "leftHandExtension": 0.32146,
+        "rightHandExtension": 0.45464,
+        "effectorHeight": 0.37576,
+        "effectorExtension": 0.95925,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 14,
+        "time": 0.5,
+        "normalizedTime": 0.57692,
+        "leftReach": -0.21586,
+        "rightReach": 0.17443,
+        "leftGuard": 0.19193,
+        "rightGuard": -0.08786,
+        "handSpan": 0.66697,
+        "footSpan": 1.40294,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.09634,
+              0.10679
+            ],
+            "rotation": [
+              -0.08485,
+              -0.60883,
+              0.48397,
+              0.62282
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.30007,
+              1.37978,
+              -0.29103
+            ],
+            "rotation": [
+              0.06742,
+              -0.14064,
+              0.30086,
+              0.94083
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              -0.09687,
+              1.27782,
+              0.3171
+            ],
+            "rotation": [
+              0.76927,
+              -0.24889,
+              0.39503,
+              0.43616
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.29322,
+              1.00036,
+              -0.25676
+            ],
+            "rotation": [
+              0.1531,
+              -0.38563,
+              0.3138,
+              0.85404
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.20359,
+              1.00638,
+              0.95473
+            ],
+            "rotation": [
+              0.46719,
+              -0.65543,
+              -0.55159,
+              0.21887
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.05819,
+              0.13076,
+              -0.10969
+            ],
+            "rotation": [
+              -0.78561,
+              0.19715,
+              0.41197,
+              0.4174
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.28479,
+              1.41249,
+              -0.20622
+            ],
+            "rotation": [
+              0.57162,
+              0.39499,
+              0.21295,
+              0.68694
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.23413,
+              1.31289,
+              -0.3132
+            ],
+            "rotation": [
+              0.23398,
+              -0.06464,
+              0.92176,
+              -0.30239
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.93137,
+        "motionOut": 0.86967,
+        "motionTotal": 1.80104,
+        "strikeSide": "left",
+        "strikeReach": 0.64022,
+        "semanticTag": "strike",
+        "description": "strike extended leg, mid foot, snappy transition",
+        "leftFootReach": -0.64022,
+        "rightFootReach": 0.11436,
+        "leftFootHeight": -0.08069,
+        "rightFootHeight": -0.96614,
+        "leftFootExtension": 0.87914,
+        "rightFootExtension": 0.9907,
+        "headReach": 0.2211,
+        "headDrop": 0.28176,
+        "leftHandExtension": 0.29093,
+        "rightHandExtension": 0.4705,
+        "effectorHeight": -0.08069,
+        "effectorExtension": 0.87914,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 15,
+        "time": 0.53333,
+        "normalizedTime": 0.61538,
+        "leftReach": -0.25845,
+        "rightReach": 0.11601,
+        "leftGuard": 0.23132,
+        "rightGuard": -0.02882,
+        "handSpan": 0.60112,
+        "footSpan": 0.96399,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.08685,
+              0.10247
+            ],
+            "rotation": [
+              -0.05498,
+              -0.58968,
+              0.43162,
+              0.68041
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.31073,
+              1.42035,
+              -0.24546
+            ],
+            "rotation": [
+              0.10896,
+              -0.11637,
+              0.24788,
+              0.95558
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              -0.22099,
+              1.30062,
+              0.29436
+            ],
+            "rotation": [
+              0.69017,
+              -0.46738,
+              0.43491,
+              0.34069
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.36425,
+              1.04485,
+              -0.23043
+            ],
+            "rotation": [
+              0.13865,
+              -0.35027,
+              0.2675,
+              0.88687
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.18771,
+              0.63124,
+              0.68641
+            ],
+            "rotation": [
+              0.40163,
+              -0.47283,
+              -0.7704,
+              0.147
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.06986,
+              0.12914,
+              -0.09514
+            ],
+            "rotation": [
+              -0.78777,
+              0.19534,
+              0.40965,
+              0.41648
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.28289,
+              1.44943,
+              -0.16264
+            ],
+            "rotation": [
+              0.59906,
+              0.39699,
+              0.14474,
+              0.68013
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.25517,
+              1.34725,
+              -0.27542
+            ],
+            "rotation": [
+              0.27649,
+              -0.09496,
+              0.92507,
+              -0.24247
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.86967,
+        "motionOut": 0.75449,
+        "motionTotal": 1.62416,
+        "strikeSide": "left",
+        "strikeReach": 0.43709,
+        "semanticTag": "strike",
+        "description": "strike extended leg, low foot, snappy transition",
+        "leftFootReach": -0.43709,
+        "rightFootReach": 0.09265,
+        "leftFootHeight": -0.45147,
+        "rightFootHeight": -0.95708,
+        "leftFootExtension": 0.76669,
+        "rightFootExtension": 0.97969,
+        "headReach": 0.17506,
+        "headDrop": 0.22985,
+        "leftHandExtension": 0.35618,
+        "rightHandExtension": 0.48764,
+        "effectorHeight": -0.45147,
+        "effectorExtension": 0.76669,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 16,
+        "time": 0.56667,
+        "normalizedTime": 0.65385,
+        "leftReach": -0.25077,
+        "rightReach": 0.05231,
+        "leftGuard": 0.33841,
+        "rightGuard": 0.03467,
+        "handSpan": 0.55503,
+        "footSpan": 0.57267,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.07736,
+              0.09815
+            ],
+            "rotation": [
+              -0.02494,
+              -0.5664,
+              0.37652,
+              0.73267
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.31388,
+              1.45623,
+              -0.19583
+            ],
+            "rotation": [
+              0.14843,
+              -0.08966,
+              0.19453,
+              0.96545
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              -0.28342,
+              1.39559,
+              0.25277
+            ],
+            "rotation": [
+              0.53231,
+              -0.591,
+              0.53663,
+              0.28175
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.42412,
+              1.09415,
+              -0.19152
+            ],
+            "rotation": [
+              0.12406,
+              -0.30605,
+              0.22565,
+              0.91653
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.06264,
+              0.49088,
+              0.33468
+            ],
+            "rotation": [
+              -0.36736,
+              0.24138,
+              0.89734,
+              -0.03951
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.06818,
+              0.13284,
+              -0.09269
+            ],
+            "rotation": [
+              -0.78755,
+              0.18254,
+              0.41117,
+              0.42117
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.27385,
+              1.48093,
+              -0.11676
+            ],
+            "rotation": [
+              0.6203,
+              0.40453,
+              0.07596,
+              0.66769
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.26963,
+              1.3786,
+              -0.2327
+            ],
+            "rotation": [
+              0.32294,
+              -0.12223,
+              0.92005,
+              -0.18517
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.75449,
+        "motionOut": 0.42063,
+        "motionTotal": 1.17511,
+        "strikeSide": "left",
+        "strikeReach": 0.20186,
+        "semanticTag": "strike",
+        "description": "strike chambered leg, low foot, readable shift",
+        "leftFootReach": -0.20186,
+        "rightFootReach": 0.08826,
+        "leftFootHeight": -0.58345,
+        "rightFootHeight": -0.94384,
+        "leftFootExtension": 0.63658,
+        "rightFootExtension": 0.96534,
+        "headReach": 0.12888,
+        "headDrop": 0.18297,
+        "leftHandExtension": 0.4469,
+        "rightHandExtension": 0.50533,
+        "effectorHeight": -0.58345,
+        "effectorExtension": 0.63658,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 17,
+        "time": 0.6,
+        "normalizedTime": 0.69231,
+        "leftReach": -0.26601,
+        "rightReach": 0.02064,
+        "leftGuard": 0.34463,
+        "rightGuard": 0.12881,
+        "handSpan": 0.49289,
+        "footSpan": 0.48697,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.07659,
+              0.09228
+            ],
+            "rotation": [
+              -0.00429,
+              -0.56192,
+              0.30207,
+              0.77006
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.27924,
+              1.52003,
+              -0.13908
+            ],
+            "rotation": [
+              0.19239,
+              -0.10983,
+              0.16617,
+              0.96089
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              -0.27655,
+              1.4009,
+              0.26858
+            ],
+            "rotation": [
+              0.45374,
+              -0.71411,
+              0.4324,
+              0.31177
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.41835,
+              1.1869,
+              -0.15218
+            ],
+            "rotation": [
+              0.11624,
+              -0.25871,
+              0.16115,
+              0.9453
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.07264,
+              0.35614,
+              0.33559
+            ],
+            "rotation": [
+              -0.30577,
+              0.30693,
+              0.90117,
+              -0.01348
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.0709,
+              0.13055,
+              -0.0714
+            ],
+            "rotation": [
+              -0.77693,
+              0.18256,
+              0.43873,
+              0.413
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.23338,
+              1.53053,
+              -0.0596
+            ],
+            "rotation": [
+              0.6859,
+              0.37132,
+              0.05672,
+              0.62325
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.2458,
+              1.4432,
+              -0.18669
+            ],
+            "rotation": [
+              0.32303,
+              -0.20316,
+              0.91267,
+              -0.14633
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.42063,
+        "motionOut": 0.403,
+        "motionTotal": 0.82362,
+        "strikeSide": "left",
+        "strikeReach": 0.21001,
+        "semanticTag": "strike",
+        "description": "strike loaded leg, low foot, readable shift",
+        "leftFootReach": -0.21001,
+        "rightFootReach": 0.06317,
+        "leftFootHeight": -0.71756,
+        "rightFootHeight": -0.94448,
+        "leftFootExtension": 0.76495,
+        "rightFootExtension": 0.962,
+        "headReach": 0.09454,
+        "headDrop": 0.11904,
+        "leftHandExtension": 0.45508,
+        "rightHandExtension": 0.48821,
+        "effectorHeight": -0.71756,
+        "effectorExtension": 0.76495,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 18,
+        "time": 0.63333,
+        "normalizedTime": 0.73077,
+        "leftReach": -0.27535,
+        "rightReach": -0.0111,
+        "leftGuard": 0.35976,
+        "rightGuard": 0.21358,
+        "handSpan": 0.43419,
+        "footSpan": 0.41633,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.07582,
+              0.08641
+            ],
+            "rotation": [
+              0.01655,
+              -0.55321,
+              0.2248,
+              0.80197
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.23342,
+              1.57197,
+              -0.07758
+            ],
+            "rotation": [
+              0.23253,
+              -0.13248,
+              0.13356,
+              0.95422
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              -0.2616,
+              1.4157,
+              0.2827
+            ],
+            "rotation": [
+              0.36552,
+              -0.81349,
+              0.3009,
+              0.33776
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.39598,
+              1.27106,
+              -0.10401
+            ],
+            "rotation": [
+              0.11263,
+              -0.20197,
+              0.1007,
+              0.96767
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.07988,
+              0.23705,
+              0.3181
+            ],
+            "rotation": [
+              -0.24508,
+              0.36571,
+              0.8978,
+              0.01245
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.05628,
+              0.1338,
+              -0.06154
+            ],
+            "rotation": [
+              -0.76392,
+              0.17401,
+              0.46934,
+              0.40728
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.18339,
+              1.56764,
+              0.00037
+            ],
+            "rotation": [
+              0.74609,
+              0.33285,
+              0.03497,
+              0.57562
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.21124,
+              1.49827,
+              -0.13507
+            ],
+            "rotation": [
+              0.32029,
+              -0.28229,
+              0.89822,
+              -0.10449
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.403,
+        "motionOut": 0.39824,
+        "motionTotal": 0.80123,
+        "strikeSide": "left",
+        "strikeReach": 0.20263,
+        "semanticTag": "strike",
+        "description": "strike loaded leg, low foot, readable shift",
+        "leftFootReach": -0.20263,
+        "rightFootReach": 0.05677,
+        "leftFootHeight": -0.83637,
+        "rightFootHeight": -0.94096,
+        "leftFootExtension": 0.87485,
+        "rightFootExtension": 0.95467,
+        "headReach": 0.06086,
+        "headDrop": 0.0675,
+        "leftHandExtension": 0.46599,
+        "rightHandExtension": 0.47228,
+        "effectorHeight": -0.83637,
+        "effectorExtension": 0.87485,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 19,
+        "time": 0.66667,
+        "normalizedTime": 0.76923,
+        "leftReach": -0.27986,
+        "rightReach": -0.04074,
+        "leftGuard": 0.38101,
+        "rightGuard": 0.28501,
+        "handSpan": 0.38107,
+        "footSpan": 0.36089,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.07505,
+              0.08053
+            ],
+            "rotation": [
+              0.03711,
+              -0.54046,
+              0.14643,
+              0.8277
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.17837,
+              1.6097,
+              -0.01448
+            ],
+            "rotation": [
+              0.26757,
+              -0.15692,
+              0.09776,
+              0.94563
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              -0.23574,
+              1.43727,
+              0.29777
+            ],
+            "rotation": [
+              0.27044,
+              -0.88278,
+              0.15021,
+              0.35355
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.35822,
+              1.34265,
+              -0.05045
+            ],
+            "rotation": [
+              0.11323,
+              -0.13742,
+              0.04666,
+              0.98291
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.08208,
+              0.14305,
+              0.27771
+            ],
+            "rotation": [
+              -0.18702,
+              0.41202,
+              0.89094,
+              0.03855
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.02797,
+              0.14278,
+              -0.06599
+            ],
+            "rotation": [
+              -0.74853,
+              0.15698,
+              0.50041,
+              0.40578
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.12606,
+              1.59058,
+              0.06008
+            ],
+            "rotation": [
+              0.79946,
+              0.29003,
+              0.01122,
+              0.52595
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.16742,
+              1.54133,
+              -0.08061
+            ],
+            "rotation": [
+              0.31476,
+              -0.35783,
+              0.87705,
+              -0.06061
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.39824,
+        "motionOut": 0.3065,
+        "motionTotal": 0.70474,
+        "strikeSide": "left",
+        "strikeReach": 0.17641,
+        "semanticTag": "recovery",
+        "description": "recovery extended leg, low foot, readable shift",
+        "leftFootReach": -0.17641,
+        "rightFootReach": 0.06981,
+        "leftFootHeight": -0.93043,
+        "rightFootHeight": -0.93294,
+        "leftFootExtension": 0.95711,
+        "rightFootExtension": 0.94388,
+        "headReach": 0.02952,
+        "headDrop": 0.03067,
+        "leftHandExtension": 0.47872,
+        "rightHandExtension": 0.45798,
+        "effectorHeight": -0.93043,
+        "effectorExtension": 0.95711,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 20,
+        "time": 0.7,
+        "normalizedTime": 0.80769,
+        "leftReach": -0.30591,
+        "rightReach": -0.09313,
+        "leftGuard": 0.4004,
+        "rightGuard": 0.32251,
+        "handSpan": 0.38632,
+        "footSpan": 0.44194,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.06275,
+              0.06921
+            ],
+            "rotation": [
+              0.04263,
+              -0.50439,
+              0.12218,
+              0.85372
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.16081,
+              1.60711,
+              -0.00185
+            ],
+            "rotation": [
+              0.24816,
+              -0.1448,
+              0.08076,
+              0.95442
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              -0.20506,
+              1.44503,
+              0.33465
+            ],
+            "rotation": [
+              0.2774,
+              -0.83275,
+              0.17052,
+              0.44777
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.36947,
+              1.36576,
+              -0.00583
+            ],
+            "rotation": [
+              0.12271,
+              -0.04045,
+              0.04034,
+              0.9908
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.07199,
+              0.13607,
+              0.304
+            ],
+            "rotation": [
+              -0.18567,
+              0.42226,
+              0.88595,
+              0.0482
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.03109,
+              0.13418,
+              -0.12575
+            ],
+            "rotation": [
+              -0.71239,
+              0.18597,
+              0.55548,
+              0.38647
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.1016,
+              1.58377,
+              0.06632
+            ],
+            "rotation": [
+              0.79864,
+              0.29534,
+              -0.04119,
+              0.52273
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.16197,
+              1.53899,
+              -0.06889
+            ],
+            "rotation": [
+              0.35685,
+              -0.3873,
+              0.85007,
+              -0.00542
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.3065,
+        "motionOut": 0.30489,
+        "motionTotal": 0.61139,
+        "strikeSide": "left",
+        "strikeReach": 0.21383,
+        "semanticTag": "recovery",
+        "description": "recovery extended leg, low foot, readable shift",
+        "leftFootReach": -0.21383,
+        "rightFootReach": 0.11074,
+        "leftFootHeight": -0.92351,
+        "rightFootHeight": -0.93032,
+        "leftFootExtension": 0.95951,
+        "rightFootExtension": 0.94904,
+        "headReach": 0.01768,
+        "headDrop": 0.02144,
+        "leftHandExtension": 0.50447,
+        "rightHandExtension": 0.47579,
+        "effectorHeight": -0.92351,
+        "effectorExtension": 0.95951,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 21,
+        "time": 0.73333,
+        "normalizedTime": 0.84615,
+        "leftReach": -0.32504,
+        "rightReach": -0.14243,
+        "leftGuard": 0.41965,
+        "rightGuard": 0.36016,
+        "handSpan": 0.39003,
+        "footSpan": 0.53086,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.05045,
+              0.05789
+            ],
+            "rotation": [
+              0.0481,
+              -0.46661,
+              0.09734,
+              0.87778
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.14084,
+              1.60309,
+              0.00896
+            ],
+            "rotation": [
+              0.2273,
+              -0.12977,
+              0.06609,
+              0.96288
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              -0.16516,
+              1.4533,
+              0.36877
+            ],
+            "rotation": [
+              0.28859,
+              -0.76993,
+              0.18222,
+              0.53919
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.36855,
+              1.3897,
+              0.0421
+            ],
+            "rotation": [
+              0.13818,
+              0.06288,
+              0.03179,
+              0.9879
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.07306,
+              0.13181,
+              0.32894
+            ],
+            "rotation": [
+              0.18407,
+              -0.43162,
+              -0.88147,
+              -0.0533
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.0418,
+              0.12985,
+              -0.18934
+            ],
+            "rotation": [
+              -0.67248,
+              0.21011,
+              0.60896,
+              0.36441
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.07562,
+              1.57534,
+              0.06988
+            ],
+            "rotation": [
+              0.79454,
+              0.30293,
+              -0.09373,
+              0.51784
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.15409,
+              1.53591,
+              -0.05747
+            ],
+            "rotation": [
+              0.39665,
+              -0.41345,
+              0.81802,
+              0.05077
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.30489,
+        "motionOut": 0.30245,
+        "motionTotal": 0.60734,
+        "strikeSide": "left",
+        "strikeReach": 0.24451,
+        "semanticTag": "recovery",
+        "description": "recovery extended leg, low foot, readable shift",
+        "leftFootReach": -0.24451,
+        "rightFootReach": 0.15154,
+        "leftFootHeight": -0.9146,
+        "rightFootHeight": -0.92308,
+        "leftFootExtension": 0.96142,
+        "rightFootExtension": 0.95374,
+        "headReach": 0.00853,
+        "headDrop": 0.01383,
+        "leftHandExtension": 0.53187,
+        "rightHandExtension": 0.49357,
+        "effectorHeight": -0.9146,
+        "effectorExtension": 0.96142,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 22,
+        "time": 0.76667,
+        "normalizedTime": 0.88462,
+        "leftReach": -0.33588,
+        "rightReach": -0.18631,
+        "leftGuard": 0.43803,
+        "rightGuard": 0.39659,
+        "handSpan": 0.39207,
+        "footSpan": 0.62291,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.03815,
+              0.04657
+            ],
+            "rotation": [
+              0.05348,
+              -0.42737,
+              0.07212,
+              0.89961
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.11886,
+              1.59756,
+              0.01757
+            ],
+            "rotation": [
+              0.2054,
+              -0.11191,
+              0.05414,
+              0.97075
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              -0.11636,
+              1.46136,
+              0.39833
+            ],
+            "rotation": [
+              0.3035,
+              -0.69515,
+              0.18518,
+              0.62479
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.35486,
+              1.41317,
+              0.0909
+            ],
+            "rotation": [
+              0.15962,
+              0.17014,
+              0.02027,
+              0.97219
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.08531,
+              0.12955,
+              0.35034
+            ],
+            "rotation": [
+              0.18223,
+              -0.43933,
+              -0.87798,
+              -0.05413
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.06052,
+              0.13037,
+              -0.25526
+            ],
+            "rotation": [
+              -0.62941,
+              0.22881,
+              0.66021,
+              0.34002
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.04865,
+              1.56532,
+              0.07051
+            ],
+            "rotation": [
+              0.78716,
+              0.31276,
+              -0.14582,
+              0.51118
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.14389,
+              1.53194,
+              -0.04673
+            ],
+            "rotation": [
+              0.43377,
+              -0.4359,
+              0.78121,
+              0.10744
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.30245,
+        "motionOut": 0.29964,
+        "motionTotal": 0.60209,
+        "strikeSide": "left",
+        "strikeReach": 0.26656,
+        "semanticTag": "recovery",
+        "description": "recovery extended leg, low foot, readable shift",
+        "leftFootReach": -0.26656,
+        "rightFootReach": 0.19073,
+        "leftFootHeight": -0.90448,
+        "rightFootHeight": -0.91057,
+        "leftFootExtension": 0.9628,
+        "rightFootExtension": 0.95796,
+        "headReach": 0.0022,
+        "headDrop": 0.00791,
+        "leftHandExtension": 0.56042,
+        "rightHandExtension": 0.51113,
+        "effectorHeight": -0.90448,
+        "effectorExtension": 0.9628,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 23,
+        "time": 0.8,
+        "normalizedTime": 0.92308,
+        "leftReach": -0.33738,
+        "rightReach": -0.22265,
+        "leftGuard": 0.45493,
+        "rightGuard": 0.43048,
+        "handSpan": 0.39239,
+        "footSpan": 0.71513,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.02585,
+              0.03526
+            ],
+            "rotation": [
+              0.0587,
+              -0.38699,
+              0.0467,
+              0.91903
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.09533,
+              1.5905,
+              0.02367
+            ],
+            "rotation": [
+              0.18294,
+              -0.09138,
+              0.04525,
+              0.97782
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              -0.05949,
+              1.4686,
+              0.42164
+            ],
+            "rotation": [
+              0.32145,
+              -0.60979,
+              0.17962,
+              0.70183
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.32854,
+              1.43493,
+              0.138
+            ],
+            "rotation": [
+              0.18647,
+              0.27836,
+              0.00521,
+              0.94219
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.10815,
+              0.12861,
+              0.36602
+            ],
+            "rotation": [
+              0.18015,
+              -0.4447,
+              -0.87588,
+              -0.05117
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.08726,
+              0.13622,
+              -0.32185
+            ],
+            "rotation": [
+              -0.58388,
+              0.24161,
+              0.70868,
+              0.31382
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              -0.02124,
+              1.55376,
+              0.06806
+            ],
+            "rotation": [
+              0.77658,
+              0.32475,
+              -0.19689,
+              0.50269
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.13158,
+              1.52697,
+              -0.03701
+            ],
+            "rotation": [
+              0.46786,
+              -0.45434,
+              0.74012,
+              0.16403
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.29964,
+        "motionOut": 0.31287,
+        "motionTotal": 0.61251,
+        "strikeSide": "left",
+        "strikeReach": 0.27839,
+        "semanticTag": "recovery",
+        "description": "recovery extended leg, low foot, readable shift",
+        "leftFootReach": -0.27839,
+        "rightFootReach": 0.2269,
+        "leftFootHeight": -0.89385,
+        "rightFootHeight": -0.89227,
+        "leftFootExtension": 0.96358,
+        "rightFootExtension": 0.96171,
+        "headReach": -0.00126,
+        "headDrop": 0.00367,
+        "leftHandExtension": 0.58968,
+        "rightHandExtension": 0.52831,
+        "effectorHeight": -0.89385,
+        "effectorExtension": 0.96358,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 24,
+        "time": 0.83333,
+        "normalizedTime": 0.96154,
+        "leftReach": -0.32893,
+        "rightReach": -0.24977,
+        "leftGuard": 0.46989,
+        "rightGuard": 0.46075,
+        "handSpan": 0.39099,
+        "footSpan": 0.80549,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.01355,
+              0.02394
+            ],
+            "rotation": [
+              0.06375,
+              -0.34579,
+              0.02129,
+              0.9359
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.07076,
+              1.58194,
+              0.02707
+            ],
+            "rotation": [
+              0.16043,
+              -0.06845,
+              0.03965,
+              0.98387
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.00413,
+              1.47452,
+              0.43721
+            ],
+            "rotation": [
+              0.34159,
+              -0.51566,
+              0.1661,
+              0.768
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.29043,
+              1.4539,
+              0.18093
+            ],
+            "rotation": [
+              0.21773,
+              0.38427,
+              -0.01365,
+              0.89707
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.14035,
+              0.12839,
+              0.37402
+            ],
+            "rotation": [
+              0.17778,
+              -0.44712,
+              -0.87547,
+              -0.04507
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.12169,
+              0.14775,
+              -0.38741
+            ],
+            "rotation": [
+              -0.53673,
+              0.24827,
+              0.75384,
+              0.28636
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              0.00603,
+              1.54079,
+              0.06248
+            ],
+            "rotation": [
+              0.76296,
+              0.33879,
+              -0.24638,
+              0.49236
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.11741,
+              1.52094,
+              -0.02862
+            ],
+            "rotation": [
+              0.49863,
+              -0.46856,
+              0.69528,
+              0.22001
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.31287,
+        "motionOut": 0.32791,
+        "motionTotal": 0.64078,
+        "strikeSide": "left",
+        "strikeReach": 0.27893,
+        "semanticTag": "settle",
+        "description": "settle extended leg, low foot, readable shift",
+        "leftFootReach": -0.27893,
+        "rightFootReach": 0.25873,
+        "leftFootHeight": -0.88327,
+        "rightFootHeight": -0.86779,
+        "leftFootExtension": 0.96374,
+        "rightFootExtension": 0.96499,
+        "headReach": -0.00195,
+        "headDrop": 0.00107,
+        "leftHandExtension": 0.61927,
+        "rightHandExtension": 0.54495,
+        "effectorHeight": -0.88327,
+        "effectorExtension": 0.96374,
+        "attackStyle": "kick"
+      },
+      {
+        "frameIndex": 25,
+        "time": 0.86667,
+        "normalizedTime": 1.0,
+        "leftReach": -0.31036,
+        "rightReach": -0.26648,
+        "leftGuard": 0.48266,
+        "rightGuard": 0.48658,
+        "handSpan": 0.38791,
+        "footSpan": 0.89253,
+        "points": {
+          "hips": {
+            "position": [
+              -0.0104,
+              1.00125,
+              0.01262
+            ],
+            "rotation": [
+              0.06857,
+              -0.30413,
+              -0.00391,
+              0.95015
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "head": {
+            "position": [
+              -0.04568,
+              1.57195,
+              0.02764
+            ],
+            "rotation": [
+              0.13834,
+              -0.04343,
+              0.03753,
+              0.98872
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_hand": {
+            "position": [
+              0.07284,
+              1.47879,
+              0.44392
+            ],
+            "rotation": [
+              0.36299,
+              -0.4149,
+              0.14552,
+              0.82153
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_hand": {
+            "position": [
+              -0.24197,
+              1.46922,
+              0.21748
+            ],
+            "rotation": [
+              0.25202,
+              0.4846,
+              -0.03628,
+              0.83686
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_foot": {
+            "position": [
+              0.18018,
+              0.12847,
+              0.37275
+            ],
+            "rotation": [
+              0.17503,
+              -0.44612,
+              -0.87693,
+              -0.0366
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_foot": {
+            "position": [
+              -0.16307,
+              0.16516,
+              -0.45032
+            ],
+            "rotation": [
+              -0.48878,
+              0.24873,
+              0.79532,
+              0.25826
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "left_shoulder": {
+            "position": [
+              0.03262,
+              1.52655,
+              0.05386
+            ],
+            "rotation": [
+              0.7465,
+              0.35472,
+              -0.29378,
+              0.48022
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          },
+          "right_shoulder": {
+            "position": [
+              -0.10171,
+              1.51381,
+              -0.02182
+            ],
+            "rotation": [
+              0.52587,
+              -0.47842,
+              0.64732,
+              0.27485
+            ],
+            "scale": [
+              0.01,
+              0.01,
+              0.01
+            ]
+          }
+        },
+        "motionIn": 0.32791,
+        "motionOut": 0.0,
+        "motionTotal": 0.32791,
+        "strikeSide": "left",
+        "strikeReach": 0.26767,
+        "semanticTag": "settle",
+        "description": "settle extended leg, low foot, held pose",
+        "leftFootReach": -0.26767,
+        "rightFootReach": 0.28517,
+        "leftFootHeight": -0.87311,
+        "rightFootHeight": -0.83695,
+        "leftFootExtension": 0.9632,
+        "rightFootExtension": 0.96782,
+        "headReach": 0.0,
+        "headDrop": 0.0,
+        "leftHandExtension": 0.64884,
+        "rightHandExtension": 0.56088,
+        "effectorHeight": -0.87311,
+        "effectorExtension": 0.9632,
+        "attackStyle": "kick"
+      }
+    ],
+    "attackName": "FrontKick",
+    "sourceClipName": "FrontKick",
+    "attackStyle": "kick",
+    "appealScoring": "source-burst-clean"
+  },
+  "anchors": [
+    {
+      "tag": "start",
+      "frameIndex": 0,
+      "time": 0.03333,
+      "description": "guard extended leg, low foot, held pose",
+      "strikeSide": "left",
+      "attackStyle": "kick",
+      "reach": 0.26767,
+      "effectorHeight": -0.87311,
+      "effectorExtension": 0.9632,
+      "motionTotal": 0.27866
+    },
+    {
+      "tag": "anticipation",
+      "frameIndex": 5,
+      "time": 0.2,
+      "description": "guard extended leg, low foot, snappy transition",
+      "strikeSide": "left",
+      "attackStyle": "kick",
+      "reach": 0.46911,
+      "effectorHeight": -0.56454,
+      "effectorExtension": 0.7642,
+      "motionTotal": 3.23996
+    },
+    {
+      "tag": "contact",
+      "frameIndex": 10,
+      "time": 0.36667,
+      "description": "strike full leg extension, high foot, snappy transition",
+      "strikeSide": "left",
+      "attackStyle": "kick",
+      "reach": 0.97552,
+      "effectorHeight": 0.58689,
+      "effectorExtension": 1.27461,
+      "motionTotal": 2.33035
+    },
+    {
+      "tag": "recoil",
+      "frameIndex": 16,
+      "time": 0.56667,
+      "description": "strike chambered leg, low foot, readable shift",
+      "strikeSide": "left",
+      "attackStyle": "kick",
+      "reach": 0.20186,
+      "effectorHeight": -0.58345,
+      "effectorExtension": 0.63658,
+      "motionTotal": 1.17511
+    },
+    {
+      "tag": "settle",
+      "frameIndex": 25,
+      "time": 0.86667,
+      "description": "settle extended leg, low foot, held pose",
+      "strikeSide": "left",
+      "attackStyle": "kick",
+      "reach": 0.26767,
+      "effectorHeight": -0.87311,
+      "effectorExtension": 0.9632,
+      "motionTotal": 0.32791
+    }
+  ]
+}

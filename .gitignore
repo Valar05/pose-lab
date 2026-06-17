@@ -1,0 +1,19 @@
+__pycache__/
+*.pyc
+*.pyo
+
+.git/
+
+# transient render and metric scratch outputs
+/generated/manual_renders/
+/generated/*.json
+/generated/*.mp4
+/generated/*.webm
+/generated/*.png
+/generated/*.jpg
+/generated/*.jpeg
+/generated/*.gif
+/generated/*.txt
+
+# local server / editor noise
+.DS_Store

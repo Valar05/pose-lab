@@ -1,0 +1,9 @@
+{
+  "schema": "pose-lab-pose-index-v2",
+  "generatedAt": "",
+  "actorKey": "titan",
+  "actorLabel": "Security Titan",
+  "outputPath": "assets/pose_indexes/security_titan_pose_index.json",
+  "clipCount": 0,
+  "clips": []
+}

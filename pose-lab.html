@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#0b1014">
+  <title>Standalone Pose Lab</title>
+  <link rel="stylesheet" href="src/pose-lab.css?v=visual-qa-read-frames">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three/build/three.module.js",
+        "three/addons/": "./vendor/three/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body class="pose-lab-page">
+  <main id="labApp">
+    <canvas id="labCanvas"></canvas>
+    <header id="labHeader">
+      <a href="./">Lab</a>
+      <strong>Standalone Pose Lab</strong>
+      <span id="loadState">booting</span>
+    </header>
+    <section id="actorTabs" aria-label="Recent tracks">
+      <button id="tab-orc" type="button" data-actor="orc">Orc Cleanup</button>
+      <button id="tab-player" type="button" data-actor="player">FPS Arms</button>
+      <button id="tab-arcane" type="button" data-actor="arcane">Arcane Rig</button>
+    </section>
+    <section id="viewTabs" aria-label="View mode">
+      <button type="button" data-view-mode="orbit">Orbit</button>
+      <button type="button" data-view-mode="firstPerson">FPV</button>
+    </section>
+    <section id="panelTabs" aria-label="Panels">
+      <button type="button" data-panel="clips">Clips</button>
+      <button type="button" data-panel="cleanup">Cleanup</button>
+      <button type="button" data-panel="bones">Bones</button>
+      <button type="button" data-panel="retarget">Retarget</button>
+      <button type="button" data-panel="transform">Xform</button>
+      <button type="button" data-panel="info">Info</button>
+      <button type="button" data-panel="none">Hide</button>
+    </section>
+    <section id="clipPanel" class="lab-panel" aria-label="Animation clips">
+      <div class="panel-title">Clips</div>
+      <input id="clipSearch" type="search" placeholder="Search clips" autocomplete="off" spellcheck="false">
+      <div id="clipHint">Recent clips</div>
+      <div id="clipButtons"></div>
+    </section>
+    <section id="cleanupPanel" class="lab-panel" aria-label="Mocap cleanup controls">
+      <div class="panel-title">Cleanup</div>
+      <div id="cleanupClipName" class="cleanup-readout">No active clip</div>
+      <div class="button-row">
+        <button id="openAssetFilesButton" type="button">Open Files</button>
+        <button id="clearOpenedAssets" type="button">Clear Opened</button>
+      </div>
+      <input id="openAssetFiles" type="file" accept=".fbx,.glb,.gltf,model/gltf-binary,model/gltf+json" multiple hidden>
+      <div class="cleanup-editor">
+        <canvas id="cleanupTimelineCanvas" width="900" height="110" aria-label="Cleanup timeline"></canvas>
+        <input id="cleanupScrub" class="cleanup-scrub" type="range" min="0" max="0" step="0.001" value="0">
+      </div>
+      <div class="cleanup-transport">
+        <button id="cleanupPlayPause" type="button">Pause</button>
+        <span id="cleanupTime">0.000 / 0.000</span>
+      </div>
+      <div class="cleanup-range-grid compact">
+        <label>In <input id="cleanupStart" type="number" min="0" step="0.001" value="0"></label>
+        <label>Out <input id="cleanupEnd" type="number" min="0" step="0.001" value="0"></label>
+      </div>
+      <div class="cleanup-edit-row">
+        <label>Mode <select id="cleanupEditMode">
+          <option value="delete">Delete gap</option>
+          <option value="trim">Crop to range</option>
+          <option value="smooth">Smooth range</option>
+          <option value="resample">Resample clip</option>
+          <option value="stabilize">Fix rot flips</option>
+        </select></label>
+        <button id="cleanupApplyEdit" type="button">Apply Edit</button>
+      </div>
+      <div class="cleanup-blend-row">
+        <label>Blend L <input id="cleanupBlendStart" type="number" min="0" step="0.001" value="0"></label>
+        <label>Blend R <input id="cleanupBlendEnd" type="number" min="0" step="0.001" value="0"></label>
+        <span id="cleanupBlendHint">blend 0.000 / 0.000</span>
+      </div>
+
+      <section class="cleanup-merge-section" aria-label="Clip merge controls">
+        <div class="panel-title cleanup-merge-title">Merge</div>
+        <div class="cleanup-merge-grid">
+          <label>Clip A <select id="cleanupMergeSource"></select></label>
+          <label>Clip B <select id="cleanupMergeTarget"></select></label>
+        </div>
+        <div class="cleanup-merge-editor">
+          <canvas id="cleanupMergeTimelineCanvas" width="900" height="86" aria-label="Clip merge timeline"></canvas>
+        </div>
+        <div class="cleanup-range-grid compact cleanup-merge-range">
+          <label>Blend In <input id="cleanupMergeStart" type="number" min="0" step="0.001" value="0"></label>
+          <label>Blend Out <input id="cleanupMergeEnd" type="number" min="0" step="0.001" value="0"></label>
+        </div>
+        <label class="cleanup-merge-name">Name <input id="cleanupMergeName" type="text" value="" autocomplete="off" spellcheck="false" placeholder="clip name"></label>
+        <label class="cleanup-merge-toggle"><input id="cleanupMergeTrimAfterBlend" type="checkbox"> Trim after blend</label>
+        <div class="cleanup-merge-actions">
+          <button id="cleanupUseActiveAsMergeSource" type="button">Use Active A</button>
+          <button id="cleanupBuildMerge" type="button">Build Merge</button>
+          <span id="cleanupMergeHint">pick clip B to merge</span>
+        </div>
+      </section>
+      <section class="cleanup-pose-index-section" aria-label="Automated pose index controls">
+        <div class="panel-title cleanup-merge-title">Pose Index</div>
+        <p class="cleanup-pose-index-hint">Attack-metadata-first indexing discovers startup, impact, and recovery poses from keyed clip times automatically.</p>
+        <div class="button-row cleanup-pose-index-actions cleanup-pose-index-actions-three">
+          <button id="poseIndexClip" type="button">Index Clip</button>
+          <button id="poseIndexActor" type="button">Index Actor</button>
+          <button id="poseExportIndex" type="button">Export Index</button>
+        </div>
+        <pre id="poseIndexStatus" class="cleanup-pose-index-status">waiting</pre>
+        <div id="poseIndexList" class="cleanup-pose-index-list"></div>
+      </section>
+      <div class="cleanup-save-row">
+        <button id="cleanupSaveDraft" type="button">Save Draft</button>
+        <button id="cleanupExportClip" type="button">Export JSON</button>
+        <button id="cleanupClearDrafts" type="button">Clear Drafts</button>
+        <span id="cleanupSaveStatus">autosave ready</span>
+      </div>
+      <details class="cleanup-advanced">
+        <summary>Advanced</summary>
+        <fieldset id="cleanupChannelToggles">
+          <legend>Channels</legend>
+          <label><input id="cleanupUseTranslate" type="checkbox" checked> Translate</label>
+          <label><input id="cleanupUseRotate" type="checkbox" checked> Rotate</label>
+          <label><input id="cleanupUseScale" type="checkbox"> Scale</label>
+        </fieldset>
+        <div class="cleanup-range-grid">
+          <label>Strength <input id="cleanupSmoothStrength" type="range" min="0" max="100" step="1" value="45"><span id="cleanupSmoothStrengthValue">45%</span></label>
+          <label>Passes <input id="cleanupSmoothPasses" type="number" min="1" max="8" step="1" value="2"></label>
+          <label>FPS <input id="cleanupFps" type="number" min="8" max="120" step="1" value="30"></label>
+        </div>
+        <div class="button-row three-buttons cleanup-actions">
+          <button id="cleanupDeleteRange" type="button">Delete Range</button>
+          <button id="cleanupTrimRange" type="button">Trim</button>
+          <button id="cleanupSmoothRange" type="button">Smooth Range</button>
+          <button id="cleanupSmoothAll" type="button">Smooth All</button>
+          <button id="cleanupStabilize" type="button">Fix Rot Flips</button>
+          <button id="cleanupResample" type="button">Resample FPS</button>
+        </div>
+      </details>
+      <div class="button-row">
+        <button id="cleanupReset" type="button">Original</button>
+        <button id="cleanupStop" type="button">Stop</button>
+      </div>
+      <pre id="cleanupStatus">waiting</pre>
+    </section>
+    <section id="bonePanel" class="lab-panel" aria-label="Bone controls">
+      <div class="panel-title">Bones</div>
+      <label>Bone <select id="boneSelect"></select></label>
+      <label class="check-line"><input id="showBoneOverlay" type="checkbox"> Show Handles</label>
+      <fieldset id="boneChannelToggles">
+        <legend>Edit Channels</legend>
+        <label><input id="boneUseTranslate" type="checkbox" checked> Translate</label>
+        <label><input id="boneUseRotate" type="checkbox" checked> Rotate</label>
+        <label><input id="boneUseScale" type="checkbox"> Scale</label>
+      </fieldset>
+      <div class="bone-xform-grid">
+        <label>Move X <input id="bonePosX" type="range" min="-100" max="100" step="1" value="0"><span id="bonePosXValue">0</span></label>
+        <label>Move Y <input id="bonePosY" type="range" min="-100" max="100" step="1" value="0"><span id="bonePosYValue">0</span></label>
+        <label>Move Z <input id="bonePosZ" type="range" min="-100" max="100" step="1" value="0"><span id="bonePosZValue">0</span></label>
+        <label>Rotate X <input id="boneRotX" type="range" min="-180" max="180" step="1" value="0"><span id="boneRotXValue">0</span></label>
+        <label>Rotate Y <input id="boneRotY" type="range" min="-180" max="180" step="1" value="0"><span id="boneRotYValue">0</span></label>
+        <label>Rotate Z <input id="boneRotZ" type="range" min="-180" max="180" step="1" value="0"><span id="boneRotZValue">0</span></label>
+        <label>Scale <input id="boneScale" type="range" min="20" max="220" step="1" value="100"><span id="boneScaleValue">100%</span></label>
+      </div>
+      <div class="button-row">
+        <button id="resetBoneEdit" type="button">Reset Bone</button>
+        <button id="resetAllBoneEdits" type="button">Reset All</button>
+      </div>
+      <pre id="boneStatus">select a bone</pre>
+    </section>
+    <section id="retargetPanel" class="lab-panel" aria-label="Retarget controls">
+      <div class="panel-title">Retarget</div>
+      <label>Source <select id="sourceActor"></select></label>
+      <label>Target <select id="targetActor"></select></label>
+      <fieldset id="channelToggles">
+        <legend>Channels</legend>
+        <label><input id="useTranslate" type="checkbox" checked> Translate</label>
+        <label><input id="useRotate" type="checkbox" checked> Rotate</label>
+        <label><input id="useScale" type="checkbox"> Scale</label>
+      </fieldset>
+      <label class="check-line"><input id="torsoToHips" type="checkbox"> Torso to hips</label>
+      <label>Position <select id="positionPolicy">
+        <option value="hips">Hips only</option>
+        <option value="all">All keyed</option>
+        <option value="none">None</option>
+      </select></label>
+      <div class="button-row">
+        <button id="buildRetarget" type="button">Build</button>
+        <button id="swapRetarget" type="button">Swap</button>
+      </div>
+      <p id="retargetStatus">waiting</p>
+    </section>
+    <section id="transformPanel" class="lab-panel" aria-label="Transform controls">
+      <div class="panel-title">Transform</div>
+      <label>Move X <input id="posX" type="range" min="-200" max="200" step="1" value="0"><span id="posXValue">0</span></label>
+      <label>Move Y <input id="posY" type="range" min="-50" max="200" step="1" value="0"><span id="posYValue">0</span></label>
+      <label>Move Z <input id="posZ" type="range" min="-200" max="200" step="1" value="0"><span id="posZValue">0</span></label>
+      <label>Rotate X <input id="rotX" type="range" min="-180" max="180" step="1" value="0"><span id="rotXValue">0</span></label>
+      <label>Rotate Y <input id="rotY" type="range" min="-180" max="180" step="1" value="0"><span id="rotYValue">0</span></label>
+      <label>Rotate Z <input id="rotZ" type="range" min="-180" max="180" step="1" value="0"><span id="rotZValue">0</span></label>
+      <label>Scale <input id="scale" type="range" min="25" max="220" step="1" value="100"><span id="scaleValue">100%</span></label>
+      <label>Basis X <input id="basisX" type="range" min="-180" max="180" step="1" value="0"><span id="basisXValue">0</span></label>
+      <label>Basis Y <input id="basisY" type="range" min="-180" max="180" step="1" value="0"><span id="basisYValue">0</span></label>
+      <label>Basis Z <input id="basisZ" type="range" min="-180" max="180" step="1" value="0"><span id="basisZValue">0</span></label>
+      <div class="button-row three-buttons">
+        <button id="resetTransform" type="button">Reset</button>
+        <button id="modelRest" type="button">Model Rest</button>
+        <button id="godotRest" type="button">Godot Rest</button>
+        <button id="titanZero" type="button">Titan 0 X</button>
+        <button id="godotTitan" type="button">Titan -90 X</button>
+        <button id="titanPlus" type="button">Titan +90 X</button>
+        <button id="basisXNeg" type="button">Basis -90 X</button>
+        <button id="basisXPos" type="button">Basis +90 X</button>
+        <button id="basisReset" type="button">Basis 0</button>
+      </div>
+    </section>
+    <section id="labStatus" aria-live="polite">Starting...</section>
+    <section id="diagnosticOverlay" aria-live="polite"><pre id="diagnosticText">diagnostics waiting</pre></section>
+    <section id="labReadout" class="lab-panel" aria-label="Readout"><pre id="readoutText">waiting</pre></section>
+  </main>
+  <script>
+    (() => {
+      const status = document.getElementById('labStatus');
+      const loadState = document.getElementById('loadState');
+      const readout = document.getElementById('readoutText');
+      const show = (text) => {
+        if (status) status.textContent = text;
+        if (loadState) loadState.textContent = text;
+      };
+      show('Booting module...');
+      window.addEventListener('error', (event) => {
+        const text = 'boot error: ' + (event.message || event.error || 'unknown error');
+        show(text);
+        if (readout) readout.textContent = event.error?.stack || text;
+      });
+      window.addEventListener('unhandledrejection', (event) => {
+        const reason = event.reason || 'unknown rejection';
+        const text = 'boot rejection: ' + (reason.message || reason);
+        show(text);
+        if (readout) readout.textContent = reason.stack || String(reason);
+      });
+      import('./src/pose-lab.js?v=visual-qa-read-frames').catch((err) => {
+        const text = 'module failed: ' + (err.message || err);
+        show(text);
+        if (readout) readout.textContent = err.stack || String(err);
+      });
+    })();
+  </script>
+</body>
+</html>

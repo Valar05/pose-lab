@@ -1,0 +1,143 @@
+{
+  "schema": "pose-lab-sf2-reduction-v1",
+  "actorKey": "ares",
+  "clipName": "Cross",
+  "goal": "Street Fighter 2 style discrete read poses with procedural 3D easing between anchors.",
+  "timingPolicy": "preserve source keyframe burst around snap, then hold contact before recovery",
+  "combatWindowSeconds": 0.55,
+  "combatWindowFrames60fps": 33,
+  "discardedTailSeconds": 0.31667,
+  "spriteFrames": [
+    {
+      "tag": "start",
+      "spriteFrame": 0,
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.0,
+      "description": "start half extension, mid guard, readable shift",
+      "attackStyle": "punch",
+      "reach": 0.26648,
+      "effectorHeight": 0.48658,
+      "effectorExtension": 0.56088,
+      "motionTotal": 0.50483,
+      "easingOptions": [
+        "holdThenSnap",
+        "hold",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "tag": "anticipation",
+      "spriteFrame": 6,
+      "sourceFrameIndex": 7,
+      "sourceTime": 0.23333,
+      "description": "anticipation guarded, mid guard, snappy transition",
+      "attackStyle": "punch",
+      "reach": -0.33044,
+      "effectorHeight": 0.43232,
+      "effectorExtension": 0.57152,
+      "motionTotal": 4.5807,
+      "easingOptions": [
+        "holdThenSnap",
+        "snapLunge",
+        "easeOutExpo"
+      ]
+    },
+    {
+      "tag": "contact",
+      "spriteFrame": 10,
+      "sourceFrameIndex": 8,
+      "sourceTime": 0.26667,
+      "description": "strike full extension, high hands, snappy transition",
+      "attackStyle": "punch",
+      "reach": 0.88869,
+      "effectorHeight": 0.64059,
+      "effectorExtension": 1.1235,
+      "motionTotal": 4.14045,
+      "easingOptions": [
+        "stepHold",
+        "ballisticRecoil",
+        "criticalDampReturn"
+      ]
+    },
+    {
+      "tag": "recoil",
+      "spriteFrame": 13,
+      "sourceFrameIndex": 20,
+      "sourceTime": 0.66667,
+      "description": "recovery extended, mid guard, held pose",
+      "attackStyle": "punch",
+      "reach": 0.33441,
+      "effectorHeight": 0.47551,
+      "effectorExtension": 0.58487,
+      "motionTotal": 0.36213,
+      "easingOptions": [
+        "dampedRecover",
+        "microOvershoot",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "tag": "settle",
+      "spriteFrame": 33,
+      "sourceFrameIndex": 23,
+      "sourceTime": 0.76667,
+      "description": "settle half extension, mid guard, held pose",
+      "attackStyle": "punch",
+      "reach": 0.26648,
+      "effectorHeight": 0.48658,
+      "effectorExtension": 0.56088,
+      "motionTotal": 0.0,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": "start",
+      "to": "anticipation",
+      "holdFrames": 6,
+      "easingOptions": [
+        "holdThenSnap",
+        "hold",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "from": "anticipation",
+      "to": "contact",
+      "holdFrames": 4,
+      "easingOptions": [
+        "holdThenSnap",
+        "snapLunge",
+        "easeOutExpo"
+      ]
+    },
+    {
+      "from": "contact",
+      "to": "recoil",
+      "holdFrames": 3,
+      "easingOptions": [
+        "stepHold",
+        "ballisticRecoil",
+        "criticalDampReturn"
+      ]
+    },
+    {
+      "from": "recoil",
+      "to": "settle",
+      "holdFrames": 20,
+      "easingOptions": [
+        "dampedRecover",
+        "microOvershoot",
+        "easeOutCubic"
+      ]
+    }
+  ],
+  "attackName": "Cross",
+  "sourceClipName": "Cross",
+  "attackStyle": "punch",
+  "appealScoring": "source-burst-clean"
+}

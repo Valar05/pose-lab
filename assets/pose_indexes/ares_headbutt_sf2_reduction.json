@@ -1,0 +1,143 @@
+{
+  "schema": "pose-lab-sf2-reduction-v1",
+  "actorKey": "ares",
+  "clipName": "Headbutt",
+  "goal": "Street Fighter 2 style discrete read poses with procedural 3D easing between anchors.",
+  "timingPolicy": "preserve source keyframe burst around snap, then hold contact before recovery",
+  "combatWindowSeconds": 0.66,
+  "combatWindowFrames60fps": 40,
+  "discardedTailSeconds": 0.10667,
+  "spriteFrames": [
+    {
+      "tag": "start",
+      "spriteFrame": 0,
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.03333,
+      "description": "guard coiled head guard, level head, readable shift",
+      "attackStyle": "headbutt",
+      "reach": 0.0,
+      "effectorHeight": -0.0,
+      "effectorExtension": 0.0,
+      "motionTotal": 1.01171,
+      "easingOptions": [
+        "holdThenSnap",
+        "hold",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "tag": "anticipation",
+      "spriteFrame": 7,
+      "sourceFrameIndex": 1,
+      "sourceTime": 0.06667,
+      "description": "guard coiled head guard, level head, snappy transition",
+      "attackStyle": "headbutt",
+      "reach": 0.12916,
+      "effectorHeight": -0.01699,
+      "effectorExtension": 0.14615,
+      "motionTotal": 2.24421,
+      "easingOptions": [
+        "holdThenSnap",
+        "snapLunge",
+        "easeOutExpo"
+      ]
+    },
+    {
+      "tag": "contact",
+      "spriteFrame": 11,
+      "sourceFrameIndex": 8,
+      "sourceTime": 0.3,
+      "description": "strike forward head drive, level head, snappy transition",
+      "attackStyle": "headbutt",
+      "reach": 0.31608,
+      "effectorHeight": -0.10698,
+      "effectorExtension": 0.42306,
+      "motionTotal": 3.72084,
+      "easingOptions": [
+        "stepHold",
+        "ballisticRecoil",
+        "criticalDampReturn"
+      ]
+    },
+    {
+      "tag": "recoil",
+      "spriteFrame": 14,
+      "sourceFrameIndex": 9,
+      "sourceTime": 0.33333,
+      "description": "strike coiled head guard, level head, snappy transition",
+      "attackStyle": "headbutt",
+      "reach": -0.21077,
+      "effectorHeight": -0.10201,
+      "effectorExtension": 0.31278,
+      "motionTotal": 3.66681,
+      "easingOptions": [
+        "dampedRecover",
+        "microOvershoot",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "tag": "settle",
+      "spriteFrame": 40,
+      "sourceFrameIndex": 22,
+      "sourceTime": 0.76667,
+      "description": "recovery coiled head guard, level head, held pose",
+      "attackStyle": "headbutt",
+      "reach": 0.0,
+      "effectorHeight": -0.0,
+      "effectorExtension": 0.0,
+      "motionTotal": 0.38946,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": "start",
+      "to": "anticipation",
+      "holdFrames": 7,
+      "easingOptions": [
+        "holdThenSnap",
+        "hold",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "from": "anticipation",
+      "to": "contact",
+      "holdFrames": 4,
+      "easingOptions": [
+        "holdThenSnap",
+        "snapLunge",
+        "easeOutExpo"
+      ]
+    },
+    {
+      "from": "contact",
+      "to": "recoil",
+      "holdFrames": 3,
+      "easingOptions": [
+        "stepHold",
+        "ballisticRecoil",
+        "criticalDampReturn"
+      ]
+    },
+    {
+      "from": "recoil",
+      "to": "settle",
+      "holdFrames": 26,
+      "easingOptions": [
+        "dampedRecover",
+        "microOvershoot",
+        "easeOutCubic"
+      ]
+    }
+  ],
+  "attackName": "Headbutt",
+  "sourceClipName": "Headbutt",
+  "attackStyle": "headbutt",
+  "appealScoring": "source-burst-clean"
+}

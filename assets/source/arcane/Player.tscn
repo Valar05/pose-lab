@@ -1,0 +1,395 @@
+[gd_scene load_steps=54 format=3 uid="uid://jc5hsjs4bvhq"]
+
+[ext_resource type="Script" uid="uid://dwsn7hqunw51o" path="res://scripts/player.gd" id="1_v6fml"]
+[ext_resource type="PackedScene" uid="uid://bi08ntda2fqs4" path="res://scenes/blast.tscn" id="2_khinc"]
+[ext_resource type="Script" uid="uid://d2qtugs1n770b" path="res://scenes/foot_ik_root.gd" id="2_mdl7e"]
+[ext_resource type="Script" uid="uid://c0846o1c3vn1q" path="res://models/PlayerBoneHandler.gd" id="3_3li8b"]
+[ext_resource type="PackedScene" uid="uid://dnt8i8bdts1ov" path="res://scenes/nova.tscn" id="3_axnmu"]
+[ext_resource type="AudioStream" uid="uid://l4nxl01ydbu" path="res://audio/blast_shot.ogg" id="3_p7iby"]
+[ext_resource type="Texture2D" uid="uid://4n4j3s68kgw6" path="res://icons/aim_area.png" id="5_cw2d6"]
+[ext_resource type="Texture2D" uid="uid://ojili8pcn43m" path="res://icons/JumpIcon.png" id="5_qu4a1"]
+[ext_resource type="FontFile" uid="uid://bh2v1fec27dtx" path="res://fonts/Cinzel_Decorative/CinzelDecorative-Regular.ttf" id="6_b1r6t"]
+[ext_resource type="Script" uid="uid://85h62hpb6ndu" path="res://scripts/aim_area.gd" id="6_khinc"]
+[ext_resource type="Shader" uid="uid://b561tm3ng0amr" path="res://scripts/Distortion.gdshader" id="7_o4126"]
+[ext_resource type="Texture2D" uid="uid://bkkg4pw6o3ik5" path="res://icons/crosshair.png" id="8_0rnld"]
+[ext_resource type="Texture2D" uid="uid://deqc236lopdmg" path="res://Recoil_Sprite_normal.png" id="8_lkdrv"]
+[ext_resource type="ArrayMesh" uid="uid://d2dmh7h6pwd7m" path="res://models/Muzzle_Flash.obj" id="9_bruh7"]
+[ext_resource type="Script" uid="uid://dg1epvcqv0tsn" path="res://scripts/radar.gd" id="9_jfpux"]
+[ext_resource type="Texture2D" uid="uid://c8h3xhxyx8cpg" path="res://models/textures/Recoil_Sprite.png" id="9_p7iby"]
+[ext_resource type="PackedScene" uid="uid://c0ocn8x5c4177" path="res://models/Forgeborn.glb" id="10_6eyey"]
+[ext_resource type="PackedScene" uid="uid://calskbaqst87s" path="res://scenes/enemy_radar_icon.tscn" id="10_gv3ic"]
+[ext_resource type="Texture2D" uid="uid://dbavj7r56j2nt" path="res://sprites/Radar_back.png" id="10_sfy4j"]
+[ext_resource type="Texture2D" uid="uid://bfdwr0dwn752k" path="res://sprites/radar_player.png" id="11_gv3ic"]
+[ext_resource type="Texture2D" uid="uid://cub4pxnl6wruk" path="res://sprites/Radar_front.png" id="12_b8lor"]
+[ext_resource type="AudioStream" uid="uid://bvl8kowsxwpm7" path="res://audio/footstep.ogg" id="14_p7iby"]
+[ext_resource type="Texture2D" uid="uid://mjfn15bspeyj" path="res://sprites/shield_icon.png" id="14_xsi7p"]
+[ext_resource type="Script" uid="uid://cjw6n826sro1u" path="res://scenes/block_button.gd" id="15_1jpwa"]
+[ext_resource type="AudioStream" uid="uid://blf46jqxhyade" path="res://audio/jump.ogg" id="16_srp4u"]
+[ext_resource type="Shader" uid="uid://bf6sa0jmuvdk7" path="res://Distortion.gdshader" id="20_viqgg"]
+[ext_resource type="Texture2D" uid="uid://dqek7sxrrdt7k" path="res://models/textures/Shield_normal (2).png" id="21_fgkxt"]
+[ext_resource type="Texture2D" uid="uid://bu3tnp17rmjht" path="res://models/textures/Shield_height.png" id="22_xsi7p"]
+[ext_resource type="ArrayMesh" uid="uid://cv20c4c4uf6ma" path="res://models/Shieldt.obj" id="23_1jpwa"]
+[ext_resource type="Animation" uid="uid://ciooludvvin2m" path="res://models/Animations/0T-Pose_001.res" id="27_m4as6"]
+[ext_resource type="Animation" uid="uid://c1rl64id1cqbo" path="res://models/Animations/Blocking.res" id="28_b1r6t"]
+[ext_resource type="Texture2D" uid="uid://ccqdkng30itpj" path="res://models/textures/voranoi_noise_normal (2).png" id="28_pfeki"]
+[ext_resource type="Texture2D" uid="uid://oges7ph2pppp" path="res://models/textures/voranoi_noise.png" id="29_axnmu"]
+[ext_resource type="Animation" uid="uid://b2qdq2pjg2i5j" path="res://models/Animations/EndBlock.res" id="29_c0asu"]
+[ext_resource type="Animation" uid="uid://icaa2uyagrq5" path="res://models/Animations/ForgebornFire.res" id="30_fq1a3"]
+[ext_resource type="Animation" uid="uid://cais2dd7nvmcd" path="res://models/Animations/Forgeborn_idle.res" id="31_gu4mg"]
+[ext_resource type="Animation" uid="uid://dbpvmbhi1l1my" path="res://models/Animations/Init_block.res" id="32_tk6la"]
+[ext_resource type="Script" uid="uid://dtsbkywsftktd" path="res://scenes/orbit.gd" id="38_c0asu"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_kpjcp"]
+radius = 0.25
+height = 1.6
+
+[sub_resource type="Theme" id="Theme_v6fml"]
+default_font_size = 30
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_6eyey"]
+radius = 118.2
+
+[sub_resource type="Animation" id="Animation_jfpux"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(0.5, 0.5)]
+}
+
+[sub_resource type="Animation" id="Animation_srp4u"]
+resource_name = "fire"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.0666667, 0.133333),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Vector2(0.5, 0.5), Vector2(0.795, 0.795), Vector2(0.5, 0.5)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_61ith"]
+_data = {
+&"RESET": SubResource("Animation_jfpux"),
+&"fire": SubResource("Animation_srp4u")
+}
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_v6fml"]
+animation = &"Idle"
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_3li8b"]
+states/Internal_Idle/node = SubResource("AnimationNodeAnimation_v6fml")
+states/Internal_Idle/position = Vector2(346, 100)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_0rnld"]
+render_priority = 0
+shader = ExtResource("7_o4126")
+shader_parameter/slash_tex = ExtResource("9_p7iby")
+shader_parameter/normal_map = ExtResource("8_lkdrv")
+shader_parameter/phase = 0.0
+shader_parameter/motion_span = 1.0
+shader_parameter/direction = 1.0
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0)
+shader_parameter/tint = Vector3(1, 1, 1)
+shader_parameter/strength = 5.365
+shader_parameter/fade = 0.0
+shader_parameter/refract_strength = 0.63
+shader_parameter/normal_tiling = 1.0
+shader_parameter/refract_mix = 3.4
+shader_parameter/tint_mul = 1.0
+shader_parameter/tint_fill = 0.135
+shader_parameter/show_uv = false
+shader_parameter/show_mask = false
+shader_parameter/alpha = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_pfeki"]
+render_priority = 0
+shader = ExtResource("20_viqgg")
+shader_parameter/slash_tex = ExtResource("22_xsi7p")
+shader_parameter/normal_map = ExtResource("21_fgkxt")
+shader_parameter/phase = 0.0
+shader_parameter/motion_span = 1.0
+shader_parameter/direction = 1.0
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 1)
+shader_parameter/tint = Vector3(0.5, 0.5, 1)
+shader_parameter/strength = 1.795
+shader_parameter/fade = 0.0
+shader_parameter/refract_strength = 6.31
+shader_parameter/normal_tiling = 6.0
+shader_parameter/refract_mix = 5.495
+shader_parameter/tint_mul = 1.0
+shader_parameter/tint_fill = 2.185
+shader_parameter/show_uv = false
+shader_parameter/show_mask = false
+shader_parameter/alpha = 1.0
+
+[sub_resource type="Animation" id="Animation_yrxk4"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Armature/Skeleton3D/Spine2/MuzzleFlash:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Armature/Skeleton3D/Spine2/MuzzleFlash:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_glliq"]
+_data = {
+&"0T-Pose_001": ExtResource("27_m4as6"),
+&"Blocking": ExtResource("28_b1r6t"),
+&"EndBlock": ExtResource("29_c0asu"),
+&"Fire": ExtResource("30_fq1a3"),
+&"Idle": ExtResource("31_gu4mg"),
+&"Init_block": ExtResource("32_tk6la"),
+&"RESET": SubResource("Animation_yrxk4")
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_eg1p0"]
+_data = {
+&"ForgebornFire": ExtResource("30_fq1a3")
+}
+
+[sub_resource type="SphereMesh" id="SphereMesh_fvsjc"]
+radius = 2.0
+height = 3.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hxdpb"]
+resource_local_to_scene = true
+render_priority = 0
+shader = ExtResource("7_o4126")
+shader_parameter/slash_tex = ExtResource("29_axnmu")
+shader_parameter/normal_map = ExtResource("28_pfeki")
+shader_parameter/phase = 0.0
+shader_parameter/motion_span = 1.0
+shader_parameter/direction = 1.0
+shader_parameter/uv_scale = Vector2(1, 1)
+shader_parameter/uv_offset = Vector2(0, 0.5)
+shader_parameter/tint = Vector3(1, 1, 1)
+shader_parameter/strength = 1.0
+shader_parameter/fade = 0.0
+shader_parameter/refract_strength = 5.735
+shader_parameter/normal_tiling = 6.0
+shader_parameter/refract_mix = 5.625
+shader_parameter/tint_mul = 1.0
+shader_parameter/tint_fill = 0.0
+shader_parameter/show_uv = false
+shader_parameter/show_mask = false
+shader_parameter/alpha = 0.0
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_v6fml")
+idle_turn_interval = 0.5
+projectile = ExtResource("2_khinc")
+nova = ExtResource("3_axnmu")
+blast_shot = ExtResource("3_p7iby")
+
+[node name="FootIKRoot" type="Node3D" parent="."]
+script = ExtResource("2_mdl7e")
+
+[node name="RightFootIK" type="Node3D" parent="FootIKRoot"]
+transform = Transform3D(0.974989, -0.20666, 0.0817866, -0.0817873, -0.675774, -0.732558, 0.206659, 0.707546, -0.675774, -0.154045, 0.16052, -0.0392991)
+
+[node name="LeftFootIK" type="Node3D" parent="FootIKRoot"]
+transform = Transform3D(0.985209, 0.159428, -0.0628255, 0.0628251, -0.677151, -0.733157, -0.159428, 0.718365, -0.677152, 0.168693, 0.156849, -0.0370551)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0.0971177)
+shape = SubResource("CapsuleShape3D_kpjcp")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="UpgradesText" type="RichTextLabel" parent="CanvasLayer"]
+offset_left = 947.0
+offset_top = 75.0
+offset_right = 2198.0
+offset_bottom = 397.0
+theme = SubResource("Theme_v6fml")
+theme_override_fonts/normal_font = ExtResource("6_b1r6t")
+theme_override_font_sizes/normal_font_size = 70
+horizontal_alignment = 1
+
+[node name="JumpButton" type="TouchScreenButton" parent="CanvasLayer"]
+position = Vector2(2782, 1136)
+texture_normal = ExtResource("5_qu4a1")
+texture_pressed = ExtResource("5_qu4a1")
+shape = SubResource("CircleShape2D_6eyey")
+
+[node name="AimArea" type="Sprite2D" parent="CanvasLayer"]
+position = Vector2(2560, 963)
+scale = Vector2(0.584047, 0.584047)
+texture = ExtResource("5_cw2d6")
+script = ExtResource("6_khinc")
+touch_radius = 200
+
+[node name="Crosshair" type="Sprite2D" parent="CanvasLayer"]
+position = Vector2(1556, 721)
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("8_0rnld")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="CanvasLayer/Crosshair"]
+libraries = {
+&"": SubResource("AnimationLibrary_61ith")
+}
+
+[node name="Radar" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 1579.0
+offset_top = 1184.0
+offset_right = 1579.0
+offset_bottom = 1184.0
+script = ExtResource("9_jfpux")
+player_path = NodePath("../..")
+front_icon_scene = ExtResource("10_gv3ic")
+back_icon_scene = ExtResource("10_gv3ic")
+
+[node name="BackSphere" type="Sprite2D" parent="CanvasLayer/Radar"]
+texture = ExtResource("10_sfy4j")
+
+[node name="BackIcons" type="Control" parent="CanvasLayer/Radar"]
+anchors_preset = 0
+offset_left = -1573.0
+offset_top = -1134.0
+offset_right = -1573.0
+offset_bottom = -1134.0
+
+[node name="RadarPlayer" type="Sprite2D" parent="CanvasLayer/Radar"]
+position = Vector2(1575, 1135)
+scale = Vector2(0.605, 0.605)
+texture = ExtResource("11_gv3ic")
+
+[node name="FrontSphere" type="Sprite2D" parent="CanvasLayer/Radar"]
+texture = ExtResource("12_b8lor")
+
+[node name="FrontIcons" type="Control" parent="CanvasLayer/Radar"]
+anchors_preset = 0
+
+[node name="ShieldIcon" type="Sprite2D" parent="CanvasLayer"]
+position = Vector2(547, 918)
+texture = ExtResource("14_xsi7p")
+script = ExtResource("15_1jpwa")
+
+[node name="AnimationTree" type="AnimationTree" parent="."]
+root_node = NodePath("../Model")
+tree_root = SubResource("AnimationNodeStateMachine_3li8b")
+anim_player = NodePath("../Model/AnimationPlayer")
+
+[node name="Model" parent="." instance=ExtResource("10_6eyey")]
+transform = Transform3D(1.125, 0, 0, 0, 1.125, 0, 0, 0, 1.125, 0, 0, 0)
+script = ExtResource("3_3li8b")
+sensitivity = 0.35
+aim_sensitivity = 0.2
+idle_turn_interval = 0.5
+base_step_length = 0.25
+MIN_CADENCE = 0.6
+MAX_CADENCE = 1.2
+
+[node name="Head" type="BoneAttachment3D" parent="Model/Armature/Skeleton3D" index="1"]
+transform = Transform3D(0.997747, 0.0548948, 0.0385555, -0.0385555, 0.939612, -0.340062, -0.0548948, 0.337809, 0.939612, 0.0183326, 1.31431, 0.0171139)
+bone_name = "Head"
+bone_idx = 21
+
+[node name="Camera3D" type="Camera3D" parent="Model/Armature/Skeleton3D/Head"]
+transform = Transform3D(-0.888423, -0.023742, -0.0162853, -0.016542, 0.832465, -0.31121, 0.0235639, -0.310744, -0.83247, -0.0286048, 0.0880932, 0.076746)
+fov = 85.0
+
+[node name="RightLegIkRoot" type="SkeletonIK3D" parent="Model/Armature/Skeleton3D" index="2"]
+transform = Transform3D(1, 0, 0, 0, 0.894444, 0, 0, 0, 0.894444, 0, 0, 0)
+root_bone = &"RightUpLeg"
+tip_bone = &"RightFoot"
+use_magnet = true
+magnet = Vector3(0, 0, 3)
+target_node = NodePath("../../../../FootIKRoot/RightFootIK")
+
+[node name="LeftLegIKRoot" type="SkeletonIK3D" parent="Model/Armature/Skeleton3D" index="3"]
+transform = Transform3D(1, 0, 0, 0, 0.894444, 0, 0, 0, 0.894444, 0, 0, 0)
+root_bone = &"LeftUpLeg"
+tip_bone = &"LeftFoot"
+use_magnet = true
+magnet = Vector3(0, 0, 3)
+target_node = NodePath("../../../../FootIKRoot/LeftFootIK")
+
+[node name="Spine2" type="BoneAttachment3D" parent="Model/Armature/Skeleton3D" index="4"]
+transform = Transform3D(0.999192, 0.026164, 0.0305111, -0.0305113, 0.987902, 0.152046, -0.0261638, -0.152854, 0.987902, 0.00609429, 1.01064, 0.0640986)
+bone_name = "Spine02"
+bone_idx = 9
+
+[node name="MuzzleFlash" type="MeshInstance3D" parent="Model/Armature/Skeleton3D/Spine2"]
+transform = Transform3D(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+material_override = SubResource("ShaderMaterial_0rnld")
+mesh = ExtResource("9_bruh7")
+skeleton = NodePath("../../../../..")
+
+[node name="LeftHand" type="BoneAttachment3D" parent="Model/Armature/Skeleton3D" index="5"]
+transform = Transform3D(0.52743, 0.848642, -0.0403045, 0.0403092, -0.072382, -0.996562, -0.848642, 0.523992, -0.0723843, 0.623471, 1.06274, 0.0863797)
+bone_name = "LeftHand"
+bone_idx = 15
+
+[node name="Shield" type="Node3D" parent="Model/Armature/Skeleton3D/LeftHand"]
+transform = Transform3D(1, 2.98023e-08, 0, 0, 1, -7.45058e-09, 1.49012e-08, 0, 1, 0.0216113, 0.0322293, -0.0200633)
+
+[node name="Shieldt" type="MeshInstance3D" parent="Model/Armature/Skeleton3D/LeftHand/Shield"]
+transform = Transform3D(-0.0519555, 0.602521, -0.0171359, -0.602763, -0.0519689, 0.000289757, -0.00118363, 0.0170978, 0.604758, 0.0246678, -0.0254101, 0.116502)
+material_override = SubResource("ShaderMaterial_pfeki")
+mesh = ExtResource("23_1jpwa")
+skeleton = NodePath("../..")
+
+[node name="AnimationPlayer" parent="Model" index="1"]
+libraries = {
+&"": SubResource("AnimationLibrary_glliq"),
+&"imported": SubResource("AnimationLibrary_eg1p0")
+}
+blend_times = [&"Blocking", &"Blocking", 0.25]
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="Model"]
+stream = ExtResource("14_p7iby")
+volume_db = -27.143
+
+[node name="JumpSound" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("16_srp4u")
+bus = &"Sfx"
+
+[node name="ShieldAura" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.112792, 0.834999, -0.0024122)
+mesh = SubResource("SphereMesh_fvsjc")
+surface_material_override/0 = SubResource("ShaderMaterial_hxdpb")
+
+[node name="Orbit" type="Node3D" parent="."]
+script = ExtResource("38_c0asu")
+
+[connection signal="pressed" from="CanvasLayer/JumpButton" to="." method="_on_jump_button_pressed"]
+[connection signal="released" from="CanvasLayer/JumpButton" to="." method="_on_jump_button_released"]
+[connection signal="animation_finished" from="Model/AnimationPlayer" to="." method="_on_animation_player_animation_finished"]
+[connection signal="current_animation_changed" from="Model/AnimationPlayer" to="." method="_on_animation_player_current_animation_changed"]
+
+[editable path="Model"]

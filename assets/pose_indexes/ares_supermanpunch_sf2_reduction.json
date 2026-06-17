@@ -1,0 +1,143 @@
+{
+  "schema": "pose-lab-sf2-reduction-v1",
+  "actorKey": "ares",
+  "clipName": "SupermanPunch",
+  "goal": "Street Fighter 2 style discrete read poses with procedural 3D easing between anchors.",
+  "timingPolicy": "preserve source keyframe burst around snap, then hold contact before recovery",
+  "combatWindowSeconds": 0.6000000000000003,
+  "combatWindowFrames60fps": 36,
+  "discardedTailSeconds": 0.1,
+  "spriteFrames": [
+    {
+      "tag": "start",
+      "spriteFrame": 0,
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.03333,
+      "description": "guard half extension, mid guard, snappy transition",
+      "attackStyle": "punch",
+      "reach": 0.26648,
+      "effectorHeight": 0.48658,
+      "effectorExtension": 0.56088,
+      "motionTotal": 1.83838,
+      "easingOptions": [
+        "holdThenSnap",
+        "hold",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "tag": "anticipation",
+      "spriteFrame": 6,
+      "sourceFrameIndex": 5,
+      "sourceTime": 0.2,
+      "description": "anticipation guarded, high hands, snappy transition",
+      "attackStyle": "punch",
+      "reach": -0.40524,
+      "effectorHeight": 0.37364,
+      "effectorExtension": 0.68503,
+      "motionTotal": 4.32047,
+      "easingOptions": [
+        "holdThenSnap",
+        "snapLunge",
+        "easeOutExpo"
+      ]
+    },
+    {
+      "tag": "contact",
+      "spriteFrame": 10,
+      "sourceFrameIndex": 8,
+      "sourceTime": 0.3,
+      "description": "strike full extension, mid guard, snappy transition",
+      "attackStyle": "punch",
+      "reach": 0.98449,
+      "effectorHeight": 0.40404,
+      "effectorExtension": 1.42462,
+      "motionTotal": 6.01646,
+      "easingOptions": [
+        "stepHold",
+        "ballisticRecoil",
+        "criticalDampReturn"
+      ]
+    },
+    {
+      "tag": "recoil",
+      "spriteFrame": 13,
+      "sourceFrameIndex": 19,
+      "sourceTime": 0.66667,
+      "description": "recovery extended, mid guard, readable shift",
+      "attackStyle": "punch",
+      "reach": 0.34156,
+      "effectorHeight": 0.46982,
+      "effectorExtension": 0.58304,
+      "motionTotal": 1.0809,
+      "easingOptions": [
+        "dampedRecover",
+        "microOvershoot",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "tag": "settle",
+      "spriteFrame": 36,
+      "sourceFrameIndex": 20,
+      "sourceTime": 0.7,
+      "description": "recovery half extension, mid guard, readable shift",
+      "attackStyle": "punch",
+      "reach": 0.26648,
+      "effectorHeight": 0.48658,
+      "effectorExtension": 0.56088,
+      "motionTotal": 0.5381,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": "start",
+      "to": "anticipation",
+      "holdFrames": 6,
+      "easingOptions": [
+        "holdThenSnap",
+        "hold",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "from": "anticipation",
+      "to": "contact",
+      "holdFrames": 4,
+      "easingOptions": [
+        "holdThenSnap",
+        "snapLunge",
+        "easeOutExpo"
+      ]
+    },
+    {
+      "from": "contact",
+      "to": "recoil",
+      "holdFrames": 3,
+      "easingOptions": [
+        "stepHold",
+        "ballisticRecoil",
+        "criticalDampReturn"
+      ]
+    },
+    {
+      "from": "recoil",
+      "to": "settle",
+      "holdFrames": 23,
+      "easingOptions": [
+        "dampedRecover",
+        "microOvershoot",
+        "easeOutCubic"
+      ]
+    }
+  ],
+  "attackName": "SupermanPunch",
+  "sourceClipName": "SupermanPunch",
+  "attackStyle": "punch",
+  "appealScoring": "source-burst-clean"
+}

@@ -1,0 +1,151 @@
+:root { color-scheme: dark; }
+.pose-lab-page { position: fixed; inset: 0; margin: 0; overflow: hidden; background: #05080a; color: #f6f1e5; font-family: Inter, Roboto, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; touch-action: none; }
+#labApp { position: fixed; inset: 0; overflow: hidden; background: #05080a; }
+#labCanvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; background: #0b1014; }
+#labHeader { position: absolute; left: 0; right: 0; top: 0; z-index: 5; min-height: 44px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; padding: max(7px, env(safe-area-inset-top)) 8px 7px; background: linear-gradient(180deg, rgba(2,5,7,0.9), rgba(2,5,7,0.12)); pointer-events: none; }
+#labHeader a, #labHeader strong, #loadState { pointer-events: auto; }
+#labHeader a { min-width: 48px; min-height: 32px; display: inline-grid; place-items: center; color: #17140d; background: #d6a642; text-decoration: none; font-weight: 900; }
+#labHeader strong { font-size: clamp(14px, 3.8vw, 24px); text-align: center; }
+#loadState { justify-self: end; max-width: 34vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #d7f6ff; font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+#actorTabs { position: absolute; left: 50%; top: calc(max(52px, env(safe-area-inset-top) + 52px)); transform: translateX(-50%); z-index: 6; display: flex; gap: 6px; padding: 3px; background: rgba(3,7,10,0.7); border: 1px solid rgba(255,255,255,0.14); }
+#viewTabs { position: absolute; right: 8px; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 118px); z-index: 8; display: flex; gap: 4px; padding: 3px; background: rgba(3,7,10,0.82); border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+#actorTabs button, #viewTabs button, #panelTabs button, #clipButtons button, #transformPanel button, #retargetPanel button, #bonePanel button, #cleanupPanel button { min-height: 36px; border: 1px solid rgba(255,255,255,0.22); color: #f8f1dd; background: rgba(16,22,28,0.9); font: inherit; font-weight: 850; }
+#actorTabs button { min-width: 72px; }
+#viewTabs button { min-width: 42px; min-height: 32px; font-size: 11px; }
+#actorTabs button.active, #viewTabs button.active, #panelTabs button.active, #clipButtons button.active { color: #17140d; background: #d6a642; }
+#actorTabs button.unloaded { color: #9fb3bb; border-color: rgba(255,255,255,0.12); }
+#actorTabs button.loading { color: #d7f6ff; }
+#actorTabs button.failed { color: #ffb2a3; border-color: rgba(255,120,90,0.5); }
+#panelTabs { position: absolute; left: 50%; bottom: max(10px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 7; display: grid; grid-template-columns: repeat(7, minmax(44px, 1fr)); gap: 5px; width: min(96vw, 600px); padding: 6px; background: rgba(4,8,11,0.78); border: 1px solid rgba(255,255,255,0.16); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+.lab-panel { position: absolute; left: 10px; right: 10px; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 58px); z-index: 6; display: none; padding: 9px; background: rgba(4,8,11,0.86); border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 8px 24px rgba(0,0,0,0.38); }
+.lab-panel.open { display: block; }
+.panel-title { margin-bottom: 6px; color: #f4ddac; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0; }
+#clipPanel { max-height: min(34vh, 300px); overflow: auto; }
+#clipSearch { width: 100%; min-height: 36px; margin: 0 0 6px; padding: 6px 8px; border: 1px solid rgba(255,255,255,0.22); color: #f8f1dd; background: rgba(16,22,28,0.96); font: inherit; font-weight: 850; }
+#clipHint { min-height: 18px; margin: 0 0 6px; color: #d7f6ff; font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+#clipButtons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+#clipButtons button { padding: 6px 7px; font-size: 11px; overflow-wrap: anywhere; text-align: left; }
+#clipButtons button.stop-clip { grid-column: 1 / -1; text-align: center; }
+#clipButtons button.empty-clip { grid-column: 1 / -1; color: #9fb3bb; background: rgba(16,22,28,0.55); }
+#clipButtons button.sf2-clip-label { color: #17140d; background: linear-gradient(90deg, #d6a642, #ffd978); border-color: rgba(255,255,255,0.42); text-align: center; text-transform: uppercase; letter-spacing: 0.04em; }
+#transformPanel { max-height: min(42vh, 390px); overflow: auto; }
+#transformPanel label { display: grid; grid-template-columns: 64px 1fr 46px; gap: 6px; align-items: center; font-size: 12px; margin-bottom: 7px; }
+#transformPanel input { width: 100%; accent-color: #d6a642; }
+#retargetPanel { max-height: min(44vh, 390px); overflow: auto; }
+#cleanupPanel { max-height: min(54vh, 500px); overflow: auto; }
+#retargetPanel label { display: grid; grid-template-columns: 66px 1fr; gap: 7px; align-items: center; font-size: 12px; margin-bottom: 8px; }
+#retargetPanel select, #bonePanel select { min-height: 34px; border: 1px solid rgba(255,255,255,0.22); color: #f8f1dd; background: rgba(16,22,28,0.96); font: inherit; font-weight: 800; }
+#channelToggles, #boneChannelToggles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 0 0 9px; padding: 7px; border: 1px solid rgba(255,255,255,0.16); }
+#channelToggles legend, #boneChannelToggles legend { padding: 0 4px; color: #f4ddac; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0; }
+#channelToggles label, #boneChannelToggles label { display: flex; grid-template-columns: none; gap: 5px; margin: 0; align-items: center; justify-content: center; min-height: 30px; background: rgba(255,255,255,0.06); font-weight: 850; }
+#channelToggles input, #boneChannelToggles input { accent-color: #d6a642; }
+#retargetStatus { min-height: 34px; margin: 8px 0 0; color: #d7f6ff; font: 11px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+
+.cleanup-readout { min-height: 22px; margin-bottom: 7px; color: #d7f6ff; font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+.cleanup-editor { margin: 8px 0 6px; }
+#cleanupTimelineCanvas { width: 100%; height: 92px; display: block; border: 1px solid rgba(255,255,255,0.18); background: rgba(1,5,8,0.82); touch-action: none; }
+.cleanup-scrub { width: 100%; margin: 5px 0 0; accent-color: #d6a642; }
+.cleanup-transport { display: grid; grid-template-columns: 92px 1fr; gap: 7px; align-items: center; margin-bottom: 7px; }
+#cleanupTime { color: #f4ddac; font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-align: right; }
+.cleanup-range-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; margin: 8px 0; }
+.cleanup-range-grid.compact { margin: 5px 0; }
+.cleanup-range-grid label { display: grid; grid-template-columns: 62px 1fr; gap: 6px; align-items: center; min-height: 32px; font-size: 12px; }
+.cleanup-range-grid input { min-width: 0; width: 100%; accent-color: #d6a642; }
+.cleanup-range-grid span { color: #f4ddac; font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-align: right; }
+.cleanup-edit-row { display: grid; grid-template-columns: 1fr 104px; gap: 7px; align-items: end; margin: 7px 0; }
+.cleanup-edit-row label { display: grid; grid-template-columns: 54px 1fr; gap: 6px; align-items: center; font-size: 12px; }
+.cleanup-edit-row select { min-height: 34px; border: 1px solid rgba(255,255,255,0.22); color: #f8f1dd; background: rgba(16,22,28,0.96); font: inherit; font-weight: 800; }
+.cleanup-blend-row { display: grid; grid-template-columns: 1fr 1fr 92px; gap: 7px; align-items: center; margin: 6px 0; }
+.cleanup-blend-row label { display: grid; grid-template-columns: 60px 1fr; gap: 6px; align-items: center; font-size: 12px; }
+.cleanup-blend-row input { min-width: 0; width: 100%; accent-color: #d6a642; }
+#cleanupBlendHint { color: #d7f6ff; font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-align: right; }
+
+.cleanup-merge-section { margin: 8px 0; padding: 8px; border: 1px solid rgba(255,255,255,0.14); background: rgba(10,16,22,0.52); }
+.cleanup-merge-title { margin-bottom: 5px; }
+.cleanup-merge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 0 0 7px; }
+.cleanup-merge-grid label { display: grid; grid-template-columns: 44px 1fr; gap: 6px; align-items: center; font-size: 12px; }
+.cleanup-merge-grid select { min-height: 34px; border: 1px solid rgba(255,255,255,0.22); color: #f8f1dd; background: rgba(16,22,28,0.96); font: inherit; font-weight: 800; }
+.cleanup-merge-editor { margin: 0 0 6px; }
+#cleanupMergeTimelineCanvas { width: 100%; height: 72px; display: block; border: 1px solid rgba(255,255,255,0.18); background: rgba(1,5,8,0.82); touch-action: none; }
+.cleanup-merge-range { margin-top: 6px; }
+.cleanup-merge-name { display: grid; grid-template-columns: 44px 1fr; gap: 6px; align-items: center; min-height: 32px; margin: 4px 0 6px; font-size: 12px; }
+.cleanup-merge-name input { min-width: 0; width: 100%; min-height: 34px; border: 1px solid rgba(255,255,255,0.22); color: #f8f1dd; background: rgba(16,22,28,0.96); font: inherit; font-weight: 800; }
+.cleanup-merge-toggle { display: flex; gap: 7px; align-items: center; min-height: 30px; margin: 4px 0 7px; color: #f4ddac; font-size: 11px; font-weight: 850; }
+.cleanup-merge-toggle input { accent-color: #d6a642; }
+.cleanup-merge-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; align-items: center; }
+.cleanup-merge-actions span { grid-column: 1 / -1; min-height: 16px; color: #d7f6ff; font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+.cleanup-pose-index-section { margin: 8px 0; padding: 8px; border: 1px solid rgba(255,255,255,0.14); background: rgba(10,16,22,0.52); }
+.cleanup-pose-index-hint { margin: 0 0 7px; color: #b8d5df; font-size: 11px; line-height: 1.35; }
+.cleanup-pose-index-actions { margin-bottom: 7px; }
+.cleanup-pose-index-actions-three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.cleanup-pose-index-status { min-height: 42px; margin: 0 0 7px; color: #d7f6ff; font: 11px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.cleanup-pose-index-list { display: grid; gap: 6px; }
+.cleanup-pose-index-empty { padding: 8px; border: 1px dashed rgba(255,255,255,0.16); color: #9fb3bb; font-size: 11px; }
+.cleanup-pose-index-item { display: grid; grid-template-columns: 1fr; gap: 3px; padding: 7px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.04); }
+.cleanup-pose-index-item strong { color: #f4ddac; font-size: 11px; }
+.cleanup-pose-index-item span { color: #d7f6ff; font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+.cleanup-save-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; align-items: center; margin: 7px 0; }
+.cleanup-save-row span { grid-column: 1 / -1; min-height: 16px; color: #d7f6ff; font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+
+.cleanup-advanced { margin: 7px 0; border-top: 1px solid rgba(255,255,255,0.12); padding-top: 6px; }
+.cleanup-advanced summary { min-height: 28px; color: #f4ddac; font-size: 11px; font-weight: 900; cursor: pointer; }
+#cleanupChannelToggles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 0 0 9px; padding: 7px; border: 1px solid rgba(255,255,255,0.16); }
+#cleanupChannelToggles legend { padding: 0 4px; color: #f4ddac; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0; }
+#cleanupChannelToggles label { display: flex; gap: 5px; margin: 0; align-items: center; justify-content: center; min-height: 30px; background: rgba(255,255,255,0.06); font-weight: 850; font-size: 11px; }
+#cleanupChannelToggles input { accent-color: #d6a642; }
+.cleanup-actions { margin-bottom: 7px; }
+#openAssetFiles { display: none; }
+#cleanupStatus { min-height: 48px; margin: 8px 0 0; color: #d7f6ff; font: 11px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+#bonePanel { max-height: min(50vh, 460px); overflow: auto; }
+#bonePanel label { display: grid; grid-template-columns: 66px 1fr; gap: 7px; align-items: center; font-size: 12px; margin-bottom: 8px; }
+#bonePanel .check-line { display: flex; grid-template-columns: none; gap: 7px; align-items: center; justify-content: flex-start; min-height: 30px; font-weight: 850; }
+#bonePanel input { accent-color: #d6a642; }
+.bone-xform-grid label { grid-template-columns: 66px 1fr 46px; }
+#boneStatus { min-height: 46px; margin: 8px 0 0; color: #d7f6ff; font: 11px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.button-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+.three-buttons { grid-template-columns: repeat(2, 1fr); }
+#labStatus { position: absolute; left: 50%; top: calc(max(92px, env(safe-area-inset-top) + 92px)); transform: translateX(-50%); z-index: 5; width: min(78vw, 520px); min-height: 26px; padding: 5px 8px; color: #f4ddac; background: rgba(4,8,11,0.55); border: 1px solid rgba(255,255,255,0.13); font-size: 11px; font-weight: 850; text-align: center; pointer-events: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#diagnosticOverlay { position: absolute; left: 8px; top: calc(max(126px, env(safe-area-inset-top) + 126px)); z-index: 5; width: min(68vw, 430px); padding: 6px 7px; color: #d7f6ff; background: rgba(1,5,8,0.7); border: 1px solid rgba(141,218,255,0.28); font: 10px/1.22 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; pointer-events: none; }
+#diagnosticOverlay pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+#labReadout { max-height: min(32vh, 280px); overflow: auto; color: #d7f6ff; font: 11px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; pointer-events: none; }
+#labReadout pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (orientation: landscape) {
+  .lab-panel { left: auto; right: 10px; width: min(42vw, 430px); }
+  #clipPanel { max-height: 58vh; }
+  #bonePanel { max-height: 64vh; }
+  #retargetPanel { max-height: 62vh; }
+  #transformPanel { max-height: 64vh; }
+  #diagnosticOverlay { width: min(34vw, 420px); }
+  #labReadout { max-height: 46vh; }
+}
+
+/* Mobile FPV usability pass: keep the model view dominant and make panels opt-in. */
+#diagnosticOverlay { display: none; }
+body.panel-open-info #diagnosticOverlay { display: block; }
+body.is-fpv:not(.panel-open-info) #labReadout { display: none; }
+#clipSearch { font-size: 15px; }
+#clipButtons { grid-template-columns: 1fr; }
+#clipButtons button { min-height: 34px; padding: 6px 8px; font-size: 10px; line-height: 1.15; }
+#clipButtons button.stop-clip { min-height: 30px; }
+@media (orientation: landscape) {
+  #labHeader { min-height: 34px; grid-template-columns: auto 1fr auto; padding: max(4px, env(safe-area-inset-top)) 8px 4px; }
+  #labHeader a { min-width: 40px; min-height: 28px; font-size: 12px; }
+  #labHeader strong { justify-self: start; font-size: 15px; }
+  #loadState { max-width: 48vw; font-size: 9px; }
+  #actorTabs { left: 8px; top: calc(max(38px, env(safe-area-inset-top) + 38px)); transform: none; gap: 4px; }
+  #actorTabs button { min-width: 74px; min-height: 30px; padding: 3px 8px; font-size: 12px; }
+  #viewTabs { right: 8px; top: calc(max(38px, env(safe-area-inset-top) + 38px)); bottom: auto; }
+  #viewTabs button { min-width: 44px; min-height: 30px; font-size: 11px; }
+  #labStatus { top: calc(max(72px, env(safe-area-inset-top) + 72px)); width: min(46vw, 430px); min-height: 20px; padding: 3px 6px; font-size: 9px; opacity: 0.72; }
+  body.is-fpv:not(.has-open-panel) #labStatus { opacity: 0.36; }
+  #panelTabs { left: 8px; bottom: max(6px, env(safe-area-inset-bottom)); transform: none; width: min(58vw, 470px); grid-template-columns: repeat(7, minmax(42px, 1fr)); gap: 3px; padding: 4px; }
+  #panelTabs button { min-height: 30px; font-size: 11px; padding: 3px 5px; }
+  .lab-panel { right: 8px; left: auto; bottom: calc(max(6px, env(safe-area-inset-bottom)) + 42px); width: min(34vw, 340px); padding: 7px; }
+  #clipPanel { top: calc(max(74px, env(safe-area-inset-top) + 74px)); bottom: calc(max(6px, env(safe-area-inset-bottom)) + 42px); max-height: none; }
+  #clipHint { font-size: 9px; margin-bottom: 5px; }
+  #clipSearch { min-height: 32px; margin-bottom: 5px; font-size: 13px; }
+  #clipButtons button { font-size: 10px; }
+  #bonePanel, #cleanupPanel, #retargetPanel, #transformPanel, #labReadout { max-height: calc(100vh - 132px); }
+}
+
+/* mocap-cleanup-0.8.0 */

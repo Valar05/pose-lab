@@ -1,0 +1,34 @@
+{
+	"standard": [
+		{
+			"name": "Jab",
+			"damage": 8.0,
+			"dash_start": 0.5,
+			"dash": 0.75,
+			"dash_duration": 0.075,
+			"attack_end": 1.00,
+			"active_time": 0.55,
+			"active_duration": 0.05,
+			"cooldown": 0.9,
+			"range_x": 2.6,
+			"range_z": 0.9,
+			"knockback_distance": 0.6,
+			"hit_reaction": ""
+		},
+		{
+			"name": "Cross",
+			"damage": 10.0,
+			"dash_start": 0.33,
+			"dash": 0.75,
+			"dash_duration": 0.075,
+			"attack_end": 1.00,
+			"active_time": 0.35,
+			"active_duration": 0.05,
+			"cooldown": 1.05,
+			"range_x": 2.9,
+			"range_z": 1.0,
+			"knockback_distance": 0.8,
+			"hit_reaction": ""
+		}
+	]
+}

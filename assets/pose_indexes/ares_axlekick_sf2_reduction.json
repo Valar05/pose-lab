@@ -1,0 +1,224 @@
+{
+  "schema": "pose-lab-sf2-reduction-v1",
+  "actorKey": "ares",
+  "clipName": "AxleKick",
+  "goal": "Street Fighter 2 style discrete read poses with procedural 3D easing between anchors.",
+  "timingPolicy": "preserve source keyframe burst around snap, then hold contact before recovery",
+  "combatWindowSeconds": 0.66,
+  "combatWindowFrames60fps": 40,
+  "discardedTailSeconds": 0.27333,
+  "spriteFrames": [
+    {
+      "tag": "start",
+      "spriteFrame": 0,
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.03333,
+      "description": "guard extended leg, low foot, readable shift",
+      "attackStyle": "kick",
+      "reach": 0.28518,
+      "effectorHeight": -0.83695,
+      "effectorExtension": 0.96782,
+      "motionTotal": 0.84482,
+      "easingOptions": [
+        "holdThenSnap",
+        "hold",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "tag": "windup",
+      "spriteFrame": 6,
+      "sourceFrameIndex": 6,
+      "sourceTime": 0.23333,
+      "description": "anticipation extended leg, low foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": 0.41792,
+      "effectorHeight": -0.4784,
+      "effectorExtension": 0.77896,
+      "motionTotal": 3.835,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    },
+    {
+      "tag": "anticipation",
+      "spriteFrame": 11,
+      "sourceFrameIndex": 8,
+      "sourceTime": 0.3,
+      "description": "anticipation loaded leg, mid foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": 0.27712,
+      "effectorHeight": 0.04248,
+      "effectorExtension": 0.84331,
+      "motionTotal": 7.29639,
+      "easingOptions": [
+        "holdThenSnap",
+        "snapLunge",
+        "easeOutExpo"
+      ]
+    },
+    {
+      "tag": "snap",
+      "spriteFrame": 14,
+      "sourceFrameIndex": 11,
+      "sourceTime": 0.4,
+      "description": "strike extended leg, mid foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": 0.22729,
+      "effectorHeight": 0.03465,
+      "effectorExtension": 1.01437,
+      "motionTotal": 6.5248,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    },
+    {
+      "tag": "contact",
+      "spriteFrame": 18,
+      "sourceFrameIndex": 13,
+      "sourceTime": 0.46667,
+      "description": "strike full leg extension, mid foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": 0.99816,
+      "effectorHeight": 0.11815,
+      "effectorExtension": 1.01214,
+      "motionTotal": 2.68964,
+      "easingOptions": [
+        "stepHold",
+        "ballisticRecoil",
+        "criticalDampReturn"
+      ]
+    },
+    {
+      "tag": "contactHold",
+      "spriteFrame": 23,
+      "sourceFrameIndex": 13,
+      "sourceTime": 0.46667,
+      "description": "strike full leg extension, mid foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": 0.99816,
+      "effectorHeight": 0.11815,
+      "effectorExtension": 1.01214,
+      "motionTotal": 2.68964,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    },
+    {
+      "tag": "recoil",
+      "spriteFrame": 27,
+      "sourceFrameIndex": 19,
+      "sourceTime": 0.66667,
+      "description": "recovery loaded leg, low foot, snappy transition",
+      "attackStyle": "kick",
+      "reach": 0.14463,
+      "effectorHeight": -0.73401,
+      "effectorExtension": 0.94707,
+      "motionTotal": 1.35108,
+      "easingOptions": [
+        "dampedRecover",
+        "microOvershoot",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "tag": "settle",
+      "spriteFrame": 40,
+      "sourceFrameIndex": 27,
+      "sourceTime": 0.93333,
+      "description": "settle extended leg, low foot, held pose",
+      "attackStyle": "kick",
+      "reach": 0.28518,
+      "effectorHeight": -0.83695,
+      "effectorExtension": 0.96782,
+      "motionTotal": 0.146,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    }
+  ],
+  "segments": [
+    {
+      "from": "start",
+      "to": "windup",
+      "holdFrames": 6,
+      "easingOptions": [
+        "holdThenSnap",
+        "hold",
+        "easeOutCubic"
+      ]
+    },
+    {
+      "from": "windup",
+      "to": "anticipation",
+      "holdFrames": 5,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    },
+    {
+      "from": "anticipation",
+      "to": "snap",
+      "holdFrames": 3,
+      "easingOptions": [
+        "holdThenSnap",
+        "snapLunge",
+        "easeOutExpo"
+      ]
+    },
+    {
+      "from": "snap",
+      "to": "contact",
+      "holdFrames": 4,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    },
+    {
+      "from": "contact",
+      "to": "contactHold",
+      "holdFrames": 5,
+      "easingOptions": [
+        "stepHold",
+        "ballisticRecoil",
+        "criticalDampReturn"
+      ]
+    },
+    {
+      "from": "contactHold",
+      "to": "recoil",
+      "holdFrames": 4,
+      "easingOptions": [
+        "hold",
+        "springLow",
+        "easeOutSine"
+      ]
+    },
+    {
+      "from": "recoil",
+      "to": "settle",
+      "holdFrames": 13,
+      "easingOptions": [
+        "dampedRecover",
+        "microOvershoot",
+        "easeOutCubic"
+      ]
+    }
+  ],
+  "attackName": "AxleKick",
+  "sourceClipName": "AxleKick",
+  "attackStyle": "kick",
+  "appealScoring": "source-burst-clean"
+}
