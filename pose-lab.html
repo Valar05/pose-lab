@@ -4,8 +4,11 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#0b1014">
-  <title>Standalone Pose Lab</title>
-  <link rel="stylesheet" href="src/pose-lab.css?v=visual-qa-read-frames">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Pose Critique</title>
+  <link rel="stylesheet" href="src/pose-lab.css?v=pose-editor-22">
   <script type="importmap">
     {
       "imports": {
@@ -20,9 +23,82 @@
     <canvas id="labCanvas"></canvas>
     <header id="labHeader">
       <a href="./">Lab</a>
-      <strong>Standalone Pose Lab</strong>
+      <strong>Pose Critique</strong>
       <span id="loadState">booting</span>
     </header>
+    <section id="playerTransport" class="player-transport" aria-label="Player transport">
+      <div class="player-transport-head">
+        <div id="playerTransportLabel" class="player-transport-label">No active clip</div>
+        <div id="cleanupTime" class="player-transport-time">0.000 / 0.000</div>
+      </div>
+      <canvas id="cleanupTimelineCanvas" width="900" height="110" aria-label="Critique timeline"></canvas>
+      <input id="cleanupScrub" class="cleanup-scrub" type="range" min="0" max="0" step="0.001" value="0">
+      <div class="player-transport-row">
+        <button id="playerPrevFrame" type="button">Prev</button>
+        <button id="playerPlayPause" type="button">Play</button>
+        <button id="playerNextFrame" type="button">Next</button>
+        <button id="playerPoseControls" type="button">Pose</button>
+        <button id="playerClipPanel" type="button">Clips</button>
+        <button id="playerStop" type="button">Stop</button>
+      </div>
+      <div class="critique-transport-row critique-transport-jump-row">
+        <button id="critiqueJumpStart" type="button">Start</button>
+        <button id="critiqueJumpAnticipation" type="button">Ant</button>
+        <button id="critiqueJumpContact" type="button">Hit</button>
+        <button id="critiqueJumpRecovery" type="button">Rec</button>
+        <button id="critiqueJumpEnd" type="button">End</button>
+      </div>
+      <details id="critiqueDock" class="critique-dock exclusive-accordion" aria-label="Critique notes">
+        <summary>Critique</summary>
+        <div class="critique-summary">
+          <strong id="critiqueFrameSummary">Critique note pending</strong>
+          <span id="critiqueFrameLabel">No active frame</span>
+          <span id="critiqueFrameStatus">Pick a frame, then note the pose</span>
+        </div>
+        <div class="critique-note-line">
+          <label for="critiqueComment">Comment</label>
+          <textarea id="critiqueComment" rows="3" placeholder="Short, frame-local critique."></textarea>
+        </div>
+        <div class="critique-meta-grid">
+          <label>Marks<input id="critiqueMarks" type="text" placeholder="circle-heel, arrow-up"></label>
+          <label>Bones<input id="critiqueBones" type="text" placeholder="mixamorig:LeftFoot"></label>
+        </div>
+        <div class="button-row critique-actions">
+          <button id="critiqueResetPose" type="button">Correct Pose</button>
+          <button id="critiqueNewKey" type="button">New Key</button>
+          <button id="critiqueCompare" type="button">Compare</button>
+          <button id="critiqueSaveNote" type="button">Critique</button>
+        </div>
+        <div class="button-row critique-actions critique-note-actions">
+          <button id="critiqueClearNote" type="button">Clear Note</button>
+          <button id="critiqueCopyNote" type="button">Copy JSON</button>
+        </div>
+        <pre id="critiqueLog">notes idle</pre>
+      </details>
+      <div id="touchPoseHud" class="touch-pose-hud pose-floating-dock" aria-label="Touch pose controls">
+        <span id="touchPoseDockHandle" class="touch-pose-dock-handle" role="button" tabindex="0" aria-label="Drag pose dock">Move</span>
+        <span id="touchPoseLabel">No control</span>
+        <span id="touchPoseMode">FK</span>
+        <button id="touchPoseUndo" type="button" title="Undo pose edit">Undo</button>
+        <button id="touchPoseRedo" type="button" title="Redo pose edit">Redo</button>
+        <button id="touchPoseSave" type="button" title="Save key">Save</button>
+        <button id="touchPoseReset" type="button" title="Reset pose">Reset</button>
+        <button id="touchPoseCancel" type="button" title="Deselect">Cancel</button>
+        <button id="touchPoseModeToggle" type="button" title="Toggle hinge/twist">Mode</button>
+        <button id="touchPosePose" type="button" title="Pose controls">Pose</button>
+        <button id="touchPoseClips" type="button" title="Clip list">Clips</button>
+      </div>
+      <details id="poseEditDock" class="pose-edit-dock exclusive-accordion" aria-label="Pose correction advanced">
+        <summary>Advanced Pose</summary>
+        <div class="button-row critique-actions">
+          <button id="poseSaveKey" type="button">Save Key</button>
+          <button id="poseResetKey" type="button">Reset Pose</button>
+          <button id="poseResetClip" type="button">Reset Clip</button>
+          <button id="poseCompareOverlay" type="button">Compare</button>
+        </div>
+        <pre id="poseEditStatus">pose idle</pre>
+      </details>
+    </section>
     <section id="actorTabs" aria-label="Recent tracks">
       <button id="tab-orc" type="button" data-actor="orc">Orc Cleanup</button>
       <button id="tab-player" type="button" data-actor="player">FPS Arms</button>
@@ -32,13 +108,13 @@
       <button type="button" data-view-mode="orbit">Orbit</button>
       <button type="button" data-view-mode="firstPerson">FPV</button>
     </section>
-    <section id="panelTabs" aria-label="Panels">
+    <section id="panelTabs" class="tool-dock" aria-label="Phone tools">
       <button type="button" data-panel="clips">Clips</button>
-      <button type="button" data-panel="cleanup">Cleanup</button>
+      <button type="button" data-panel="pose">Pose</button>
+      <button type="button" data-panel="edit">Edit</button>
       <button type="button" data-panel="bones">Bones</button>
-      <button type="button" data-panel="retarget">Retarget</button>
-      <button type="button" data-panel="transform">Xform</button>
-      <button type="button" data-panel="info">Info</button>
+      <button type="button" data-panel="advanced">More</button>
+      <button type="button" data-panel="view">View</button>
       <button type="button" data-panel="none">Hide</button>
     </section>
     <section id="clipPanel" class="lab-panel" aria-label="Animation clips">
@@ -50,19 +126,11 @@
     <section id="cleanupPanel" class="lab-panel" aria-label="Mocap cleanup controls">
       <div class="panel-title">Cleanup</div>
       <div id="cleanupClipName" class="cleanup-readout">No active clip</div>
-      <div class="button-row">
+      <div class="button-row asset-file-row">
         <button id="openAssetFilesButton" type="button">Open Files</button>
         <button id="clearOpenedAssets" type="button">Clear Opened</button>
       </div>
       <input id="openAssetFiles" type="file" accept=".fbx,.glb,.gltf,model/gltf-binary,model/gltf+json" multiple hidden>
-      <div class="cleanup-editor">
-        <canvas id="cleanupTimelineCanvas" width="900" height="110" aria-label="Cleanup timeline"></canvas>
-        <input id="cleanupScrub" class="cleanup-scrub" type="range" min="0" max="0" step="0.001" value="0">
-      </div>
-      <div class="cleanup-transport">
-        <button id="cleanupPlayPause" type="button">Pause</button>
-        <span id="cleanupTime">0.000 / 0.000</span>
-      </div>
       <div class="cleanup-range-grid compact">
         <label>In <input id="cleanupStart" type="number" min="0" step="0.001" value="0"></label>
         <label>Out <input id="cleanupEnd" type="number" min="0" step="0.001" value="0"></label>
@@ -82,9 +150,8 @@
         <label>Blend R <input id="cleanupBlendEnd" type="number" min="0" step="0.001" value="0"></label>
         <span id="cleanupBlendHint">blend 0.000 / 0.000</span>
       </div>
-
-      <section class="cleanup-merge-section" aria-label="Clip merge controls">
-        <div class="panel-title cleanup-merge-title">Merge</div>
+      <details class="cleanup-merge-section exclusive-accordion" aria-label="Clip merge controls">
+        <summary>Merge</summary>
         <div class="cleanup-merge-grid">
           <label>Clip A <select id="cleanupMergeSource"></select></label>
           <label>Clip B <select id="cleanupMergeTarget"></select></label>
@@ -103,9 +170,9 @@
           <button id="cleanupBuildMerge" type="button">Build Merge</button>
           <span id="cleanupMergeHint">pick clip B to merge</span>
         </div>
-      </section>
-      <section class="cleanup-pose-index-section" aria-label="Automated pose index controls">
-        <div class="panel-title cleanup-merge-title">Pose Index</div>
+      </details>
+      <details class="cleanup-pose-index-section exclusive-accordion" aria-label="Automated pose index controls">
+        <summary>Pose Index</summary>
         <p class="cleanup-pose-index-hint">Attack-metadata-first indexing discovers startup, impact, and recovery poses from keyed clip times automatically.</p>
         <div class="button-row cleanup-pose-index-actions cleanup-pose-index-actions-three">
           <button id="poseIndexClip" type="button">Index Clip</button>
@@ -114,9 +181,9 @@
         </div>
         <pre id="poseIndexStatus" class="cleanup-pose-index-status">waiting</pre>
         <div id="poseIndexList" class="cleanup-pose-index-list"></div>
-      </section>
+      </details>
       <div class="cleanup-save-row">
-        <button id="cleanupSaveDraft" type="button">Save Draft</button>
+        <button id="cleanupSaveDraft" type="button">Save Critique</button>
         <button id="cleanupExportClip" type="button">Export JSON</button>
         <button id="cleanupClearDrafts" type="button">Clear Drafts</button>
         <span id="cleanupSaveStatus">autosave ready</span>
@@ -143,7 +210,7 @@
           <button id="cleanupResample" type="button">Resample FPS</button>
         </div>
       </details>
-      <div class="button-row">
+      <div class="button-row cleanup-original-row">
         <button id="cleanupReset" type="button">Original</button>
         <button id="cleanupStop" type="button">Stop</button>
       </div>
@@ -233,6 +300,19 @@
         if (status) status.textContent = text;
         if (loadState) loadState.textContent = text;
       };
+      const bootstrapImports = [
+        './vendor/three/build/three.module.js',
+        './vendor/three/examples/jsm/loaders/GLTFLoader.js',
+        './vendor/three/examples/jsm/loaders/FBXLoader.js',
+        './vendor/three/examples/jsm/controls/OrbitControls.js',
+        './vendor/three/examples/jsm/utils/SkeletonUtils.js',
+        './src/godot-rest-poses.js?v=pose-editor-22',
+        './src/rig-profiles.js?v=pose-editor-22',
+        './src/startup-policy.mjs?v=pose-editor-22',
+        './src/clip-search.js?v=pose-editor-22',
+        './src/lab-mode.mjs?v=pose-editor-22',
+        './src/pose-lab.js?v=pose-editor-22',
+      ];
       show('Booting module...');
       window.addEventListener('error', (event) => {
         const text = 'boot error: ' + (event.message || event.error || 'unknown error');
@@ -245,7 +325,19 @@
         show(text);
         if (readout) readout.textContent = reason.stack || String(reason);
       });
-      import('./src/pose-lab.js?v=visual-qa-read-frames').catch((err) => {
+      const reportModuleFailure = (spec, err) => {
+        fetch('/__visual_qa_smoke?stage=module-failed&spec=' + encodeURIComponent(spec) + '&message=' + encodeURIComponent(err.message || err)).catch(() => {});
+      };
+      (async () => {
+        for (const spec of bootstrapImports) {
+          try {
+            await import(spec);
+          } catch (err) {
+            reportModuleFailure(spec, err);
+            throw err;
+          }
+        }
+      })().catch((err) => {
         const text = 'module failed: ' + (err.message || err);
         show(text);
         if (readout) readout.textContent = err.stack || String(err);

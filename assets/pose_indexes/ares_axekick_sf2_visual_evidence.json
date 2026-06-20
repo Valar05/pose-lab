@@ -299,6 +299,31 @@
   },
   "kickPrecontactUpperBodyCarry": null,
   "guardRuleException": null,
+  "smashRealisticSteering": {
+    "family": "heavy-kick",
+    "observationCharacter": "Ganondorf",
+    "observationGame": "Super Smash Bros. Ultimate",
+    "reason": "Use Ganondorf as the realistic-body-cheat benchmark for heavy kicks: big silhouette change, hips-first commitment, and chest/shoulder compression before release without turning the body into rubber.",
+    "do": [
+      "compress before release",
+      "lead power from hips through torso into the limb",
+      "hold a screenshot-worthy contact or apex read when the move identity needs it",
+      "favor silhouette expansion over obvious bone scaling"
+    ],
+    "avoid": [
+      "floating leg-only motion",
+      "cartoon stretch",
+      "face-first commitment"
+    ],
+    "referenceMoves": [
+      "Forward smash",
+      "Up tilt",
+      "Down smash"
+    ],
+    "attackName": "AxeKick",
+    "appliedLayerKind": "smash-realistic-axekick-settle-cheat",
+    "timingBias": "heavy-commitment"
+  },
   "captureSlots": [
     {
       "evidenceKey": "ares:axekick:sf2:f000:start",
@@ -775,10 +800,10 @@
       "notes": []
     },
     {
-      "evidenceKey": "ares:axekick:sf2:f033:contactHold",
+      "evidenceKey": "ares:axekick:sf2:f028:contactHold",
       "tag": "contactHold",
-      "spriteFrame": 33,
-      "poseclipTime": 0.55,
+      "spriteFrame": 28,
+      "poseclipTime": 0.46667,
       "sourceClipName": "AxeKick",
       "sourceFrameIndex": 13,
       "sourceTime": 0.43333,
@@ -788,238 +813,67 @@
       "effectorHeight": 0.06989,
       "effectorExtension": 1.04454,
       "motionTotal": 4.56357,
-      "overlayPhases": [
-        {
-          "kind": "upper-limb-rotation-overlay",
-          "sourceClipName": "Headbutt",
-          "mode": "phase-blend-local-arm-rotations",
-          "tag": "heldBracedPull",
-          "sourceTime": 0.3,
-          "strength": 0.86,
-          "easing": "stepHold",
-          "targetPath": "rotation",
-          "trackCount": 8
-        }
-      ],
-      "contactModifiers": [
-        {
-          "kind": "axe-kick-authored-impact-overcommit",
-          "tag": "heldOvercommit",
-          "strength": 1.0,
-          "reason": "Make the AxeKick contact frame read as a crushing downward impact: hips drop, body drives through, torso compresses, and recovery rises out of a committed overextension.",
-          "hipOffset": [
-            0.0,
-            -10.0,
-            4.5
-          ],
-          "torsoCompressionRadians": 0.18,
-          "legCrashRadians": -0.08
-        }
-      ],
+      "overlayPhases": [],
+      "contactModifiers": [],
       "headDiscipline": [],
-      "headGazeStabilization": [
-        {
-          "kind": "sf2-head-gaze-stabilization",
-          "mode": "local-neck-head-gaze-lift",
-          "tag": "heldContactLookUp",
-          "strength": 1.0,
-          "reason": "Prevent AxeKick contact from reading as a fighter looking down at the floor. Preserve hips/spine/source torso pose and correct only local Neck/Head gaze.",
-          "faceAxis": "mixamorig:Head local +Z",
-          "targetBones": [
-            "mixamorig:Neck",
-            "mixamorig:Head"
-          ],
-          "bonePitchRadians": {
-            "mixamorig:Neck": -0.09,
-            "mixamorig:Head": -0.34
-          },
-          "minContactHeadForwardY": -0.42
-        }
-      ],
-      "contactGuardStabilization": [
-        {
-          "kind": "sf2-contact-guard-stabilization",
-          "mode": "local-upperarm-contact-guard-lift",
-          "tag": "heldContactGuard",
-          "strength": 0.24,
-          "reason": "Counter the lifted-head/low-fist read at AxeKick contact by keeping fists near torso guard height. Preserve hips, spine, legs, neck, and head.",
-          "targetBones": [
-            "mixamorig:LeftArm",
-            "mixamorig:RightArm"
-          ],
-          "boneYawRadians": {
-            "mixamorig:LeftArm": 0.22,
-            "mixamorig:RightArm": -0.22
-          },
-          "maxHandBelowSpine2Y": 0.12
-        }
-      ],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
       "kickPrecontactUpperBodyCarry": [],
       "screenshot": {
         "linked": false,
-        "expectedPath": "assets/pose_evidence/ares/axekick/sf2/f033_contactHold.png"
+        "expectedPath": "assets/pose_evidence/ares/axekick/sf2/f028_contactHold.png"
       },
       "notes": []
     },
     {
-      "evidenceKey": "ares:axekick:sf2:f036:recoil",
+      "evidenceKey": "ares:axekick:sf2:f031:recoil",
       "tag": "recoil",
-      "spriteFrame": 36,
-      "poseclipTime": 0.6,
+      "spriteFrame": 31,
+      "poseclipTime": 0.51667,
       "sourceClipName": "AxeKick",
-      "sourceFrameIndex": 21,
-      "sourceTime": 0.7,
+      "sourceFrameIndex": 16,
+      "sourceTime": 0.53333,
+      "description": "strike extended leg, low foot, held pose",
+      "attackStyle": "kick",
+      "reach": 0.52055,
+      "effectorHeight": -0.79467,
+      "effectorExtension": 1.04093,
+      "motionTotal": 0.41464,
+      "overlayPhases": [],
+      "contactModifiers": [],
+      "headDiscipline": [],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
+      "kickPrecontactUpperBodyCarry": [],
+      "screenshot": {
+        "linked": false,
+        "expectedPath": "assets/pose_evidence/ares/axekick/sf2/f031_recoil.png"
+      },
+      "notes": []
+    },
+    {
+      "evidenceKey": "ares:axekick:sf2:f035:recoverySettle",
+      "tag": "recoverySettle",
+      "spriteFrame": 35,
+      "poseclipTime": 0.58333,
+      "sourceClipName": "AxeKick",
+      "sourceFrameIndex": 20,
+      "sourceTime": 0.66667,
       "description": "recovery extended leg, low foot, readable shift",
       "attackStyle": "kick",
-      "reach": 0.35298,
-      "effectorHeight": -0.86682,
-      "effectorExtension": 1.00213,
-      "motionTotal": 0.56644,
-      "overlayPhases": [
-        {
-          "kind": "upper-limb-rotation-overlay",
-          "sourceClipName": "Headbutt",
-          "mode": "phase-blend-local-arm-rotations",
-          "tag": "recoil",
-          "sourceTime": 0.33333,
-          "strength": 0.34,
-          "easing": "dampedRecover",
-          "targetPath": "rotation",
-          "trackCount": 8
-        }
-      ],
-      "contactModifiers": [
-        {
-          "kind": "axe-kick-authored-impact-overcommit",
-          "tag": "draggedRecoil",
-          "strength": 0.25,
-          "reason": "Make the AxeKick contact frame read as a crushing downward impact: hips drop, body drives through, torso compresses, and recovery rises out of a committed overextension.",
-          "hipOffset": [
-            0.0,
-            -10.0,
-            4.5
-          ],
-          "torsoCompressionRadians": 0.18,
-          "legCrashRadians": -0.08
-        }
-      ],
-      "headDiscipline": [],
-      "headGazeStabilization": [
-        {
-          "kind": "sf2-head-gaze-stabilization",
-          "mode": "local-neck-head-gaze-lift",
-          "tag": "recoilLookSettle",
-          "strength": 0.35,
-          "reason": "Prevent AxeKick contact from reading as a fighter looking down at the floor. Preserve hips/spine/source torso pose and correct only local Neck/Head gaze.",
-          "faceAxis": "mixamorig:Head local +Z",
-          "targetBones": [
-            "mixamorig:Neck",
-            "mixamorig:Head"
-          ],
-          "bonePitchRadians": {
-            "mixamorig:Neck": -0.09,
-            "mixamorig:Head": -0.34
-          },
-          "minContactHeadForwardY": -0.42
-        }
-      ],
-      "contactGuardStabilization": [
-        {
-          "kind": "sf2-contact-guard-stabilization",
-          "mode": "local-upperarm-contact-guard-lift",
-          "tag": "recoilGuardCarry",
-          "strength": 0.32,
-          "reason": "Counter the lifted-head/low-fist read at AxeKick contact by keeping fists near torso guard height. Preserve hips, spine, legs, neck, and head.",
-          "targetBones": [
-            "mixamorig:LeftArm",
-            "mixamorig:RightArm"
-          ],
-          "boneYawRadians": {
-            "mixamorig:LeftArm": 0.22,
-            "mixamorig:RightArm": -0.22
-          },
-          "maxHandBelowSpine2Y": 0.12
-        }
-      ],
-      "kickPrecontactUpperBodyCarry": [],
-      "screenshot": {
-        "linked": false,
-        "expectedPath": "assets/pose_evidence/ares/axekick/sf2/f036_recoil.png"
-      },
-      "notes": []
-    },
-    {
-      "evidenceKey": "ares:axekick:sf2:f038:recoverySettle",
-      "tag": "recoverySettle",
-      "spriteFrame": 38,
-      "poseclipTime": 0.63333,
-      "sourceClipName": "AxeKick",
-      "sourceFrameIndex": 23,
-      "sourceTime": 0.76667,
-      "description": "recovery extended leg, low foot, held pose",
-      "attackStyle": "kick",
-      "reach": 0.27924,
-      "effectorHeight": -0.87349,
-      "effectorExtension": 0.9691,
-      "motionTotal": 0.26574,
+      "reach": 0.40149,
+      "effectorHeight": -0.85372,
+      "effectorExtension": 1.01955,
+      "motionTotal": 0.59704,
       "overlayPhases": [],
-      "contactModifiers": [
-        {
-          "kind": "axe-kick-authored-impact-overcommit",
-          "tag": "recoveryRise",
-          "strength": 0.05,
-          "reason": "Make the AxeKick contact frame read as a crushing downward impact: hips drop, body drives through, torso compresses, and recovery rises out of a committed overextension.",
-          "hipOffset": [
-            0.0,
-            -10.0,
-            4.5
-          ],
-          "torsoCompressionRadians": 0.18,
-          "legCrashRadians": -0.08
-        }
-      ],
+      "contactModifiers": [],
       "headDiscipline": [],
-      "headGazeStabilization": [
-        {
-          "kind": "sf2-head-gaze-stabilization",
-          "mode": "local-neck-head-gaze-lift",
-          "tag": "guardLookSettle",
-          "strength": 0.1,
-          "reason": "Prevent AxeKick contact from reading as a fighter looking down at the floor. Preserve hips/spine/source torso pose and correct only local Neck/Head gaze.",
-          "faceAxis": "mixamorig:Head local +Z",
-          "targetBones": [
-            "mixamorig:Neck",
-            "mixamorig:Head"
-          ],
-          "bonePitchRadians": {
-            "mixamorig:Neck": -0.09,
-            "mixamorig:Head": -0.34
-          },
-          "minContactHeadForwardY": -0.42
-        }
-      ],
-      "contactGuardStabilization": [
-        {
-          "kind": "sf2-contact-guard-stabilization",
-          "mode": "local-upperarm-contact-guard-lift",
-          "tag": "recoverGuard",
-          "strength": 0.18,
-          "reason": "Counter the lifted-head/low-fist read at AxeKick contact by keeping fists near torso guard height. Preserve hips, spine, legs, neck, and head.",
-          "targetBones": [
-            "mixamorig:LeftArm",
-            "mixamorig:RightArm"
-          ],
-          "boneYawRadians": {
-            "mixamorig:LeftArm": 0.22,
-            "mixamorig:RightArm": -0.22
-          },
-          "maxHandBelowSpine2Y": 0.12
-        }
-      ],
+      "headGazeStabilization": [],
+      "contactGuardStabilization": [],
       "kickPrecontactUpperBodyCarry": [],
       "screenshot": {
         "linked": false,
-        "expectedPath": "assets/pose_evidence/ares/axekick/sf2/f038_recoverySettle.png"
+        "expectedPath": "assets/pose_evidence/ares/axekick/sf2/f035_recoverySettle.png"
       },
       "notes": []
     },
@@ -1029,14 +883,14 @@
       "spriteFrame": 40,
       "poseclipTime": 0.66667,
       "sourceClipName": "AxeKick",
-      "sourceFrameIndex": 24,
-      "sourceTime": 0.8,
-      "description": "recovery extended leg, low foot, held pose",
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.0,
+      "description": "start extended leg, low foot, readable shift",
       "attackStyle": "kick",
       "reach": 0.26767,
       "effectorHeight": -0.87311,
       "effectorExtension": 0.9632,
-      "motionTotal": 0.07406,
+      "motionTotal": 0.91016,
       "overlayPhases": [
         {
           "kind": "upper-limb-rotation-overlay",

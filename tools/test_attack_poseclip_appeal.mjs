@@ -163,17 +163,23 @@ for (const attack of manifest.attacks || []) {
     if (holds[0] && Number(holds[0].sourceTime.toFixed(5)) !== 0.43333) {
       failures.push(`${attack.attackName}: contactHold should freeze the authored upper-body strike frame at 0.43333s, got ${holds[0].sourceTime}`);
     }
-    if (recoil && Number(recoil.sourceTime.toFixed(5)) !== 0.7) {
-      failures.push(`${attack.attackName}: recoil should move onto the late recovery source frame at 0.70000s, got ${recoil.sourceTime}`);
+    if (recoil && Number(recoil.sourceTime.toFixed(5)) !== 0.53333) {
+      failures.push(`${attack.attackName}: recoil should enter the dragged-back recovery window at 0.53333s, got ${recoil.sourceTime}`);
     }
-    if (recoil && contact && recoil.spriteFrame - contact.spriteFrame < 14) failures.push(`${attack.attackName}: recovery is too polite; expected delayed overcommit recovery >= 14 frames after contact, got ${recoil.spriteFrame - contact.spriteFrame}`);
+    if (recoverySettle && Number(recoverySettle.sourceTime.toFixed(5)) !== 0.66667) {
+      failures.push(`${attack.attackName}: recoverySettle should preserve the later dragged-back recovery frame at 0.66667s, got ${recoverySettle.sourceTime}`);
+    }
+    if (recoil && contact && recoil.spriteFrame - contact.spriteFrame < 8) failures.push(`${attack.attackName}: recovery still starts too late; expected recoil within 8+ frames after contact, got ${recoil.spriteFrame - contact.spriteFrame}`);
     if (!recoverySettle) failures.push(`${attack.attackName}: recovery is still collapsed; expected recoverySettle between recoil and settle`);
-    if (recoverySettle && recoil && recoverySettle.spriteFrame <= recoil.spriteFrame) failures.push(`${attack.attackName}: recoverySettle should happen after recoil`);
+    if (recoverySettle && recoil && recoverySettle.spriteFrame - recoil.spriteFrame < 3) failures.push(`${attack.attackName}: recoverySettle should leave room for a dragged-back moving hold after recoil`);
     if (anticipationHold && lift) assertBakedPoseDistance(attack.attackName, clip, anticipationHold.spriteFrame, lift.spriteFrame, 3.0, 'anticipationHold->lift');
     if (lift && apex) assertBakedPoseDistance(attack.attackName, clip, lift.spriteFrame, apex.spriteFrame, 2.2, 'lift->apex');
     if (!holds.length) failures.push(`${attack.attackName}: missing explicit contactHold frame`);
-    if (holds[0] && holds[0].spriteFrame - contact.spriteFrame < 11) {
-      failures.push(`${attack.attackName}: contact is held ${holds[0].spriteFrame - contact.spriteFrame} frames; expected >= 11 for arrogant heavy impact read`);
+    if (holds[0] && holds[0].spriteFrame - contact.spriteFrame > 7) {
+      failures.push(`${attack.attackName}: contact is held ${holds[0].spriteFrame - contact.spriteFrame} frames; expected <= 7 so recovery can actually read`);
+    }
+    if (holds[0] && holds[0].spriteFrame - contact.spriteFrame < 4) {
+      failures.push(`${attack.attackName}: contact is held only ${holds[0].spriteFrame - contact.spriteFrame} frames; expected >= 4 to keep the hit readable`);
     }
     if (!times.includes(0.16667) || !times.includes(0.2) || !times.includes(0.26667) || !times.includes(0.36667) || !times.includes(0.43333)) {
       failures.push(`${attack.attackName}: reduction does not preserve moving-preload/lift/apex/chop source cluster`);
@@ -189,7 +195,13 @@ for (const attack of manifest.attacks || []) {
   if (attack.attackName === 'FrontKick') {
     const holds = framesByTag(reduction, 'contactHold');
     const recoilSettle = frames.get('recoilSettle');
-    if (holds[0] && holds[0].spriteFrame - contact.spriteFrame > 2) failures.push(`${attack.attackName}: contact hold is too long for a ballistic front kick (${holds[0].spriteFrame - contact.spriteFrame} frames); expected <= 2`);
+    const extensionFrames = contact.spriteFrame - anticipation.spriteFrame;
+    const contactFreezeFrames = holds[0] ? holds[0].spriteFrame - contact.spriteFrame : 0;
+    const retractFrames = recoilSettle && holds[0] ? recoilSettle.spriteFrame - holds[0].spriteFrame : 0;
+    if (contact.spriteFrame > 14) failures.push(`${attack.attackName}: contact lands too late for a ballistic front kick (${contact.spriteFrame}); expected <= 14`);
+    if (holds[0] && contactFreezeFrames > 1) failures.push(`${attack.attackName}: contact hold is too long for a ballistic front kick (${contactFreezeFrames} frames); expected <= 1`);
+    if (extensionFrames > 5) failures.push(`${attack.attackName}: extension path is still too visible (${extensionFrames} frames); expected <= 5`);
+    if (retractFrames && retractFrames <= extensionFrames) failures.push(`${attack.attackName}: retraction should get more timing budget than extension (${retractFrames} vs ${extensionFrames})`);
     if (Number(contact.sourceTime.toFixed(5)) !== 0.36667) failures.push(`${attack.attackName}: contact should preserve the explosive extension frame at 0.36667, got ${contact.sourceTime}`);
     if (recoil && Number(recoil.sourceTime.toFixed(5)) !== 0.5) failures.push(`${attack.attackName}: recoil should preserve the retraction start frame at 0.50000, got ${recoil.sourceTime}`);
     if (!recoilSettle) failures.push(`${attack.attackName}: missing recoilSettle for visible snap-back`);
@@ -228,7 +240,7 @@ for (const attack of manifest.attacks || []) {
     if (easing === 'holdThenCut') failures.push(`${attack.attackName}: still hard-cuts through the source burst instead of preserving it`);
   }
 
-  if (attack.attackStyle === 'kick') {
+  if (attack.attackStyle === 'kick' && attack.attackName !== 'FrontKick') {
     const kickHolds = framesByTag(reduction, 'contactHold');
     if (!kickHolds.length) {
       failures.push(`${attack.attackName}: kick reduction is missing explicit contactHold frame`);

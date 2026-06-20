@@ -79,14 +79,11 @@ if (contact?.headDiscipline?.length) {
 }
 
 const contactHold = byTag.get('contactHold');
-if (!contactHold?.contactModifiers?.some((modifier) => modifier.tag === 'heldOvercommit')) {
-  failures.push('contactHold frame missing heldOvercommit modifier annotation');
-}
 if (contactHold?.headDiscipline?.length) {
   failures.push('contactHold frame should not include active head-discipline annotation while head discipline is disabled');
 }
 if (Math.abs((contactHold?.durationToNext || 0) - 0.05) > 0.0001) {
-  failures.push(`contactHold duration should preserve f33->f36 timing, got ${contactHold?.durationToNext}`);
+  failures.push(`contactHold duration should preserve f28->f31 timing, got ${contactHold?.durationToNext}`);
 }
 
 if (failures.length) throw new Error(failures.join('\n'));

@@ -1,0 +1,21 @@
+<!doctype html>
+<meta charset='utf-8'>
+<title>method probe</title>
+<script type='module'>
+  const blocks = await fetch('/generated/pose_lab_methods.json?probe=1').then((r) => r.json());
+  let badIndex = -1;
+  let badName = '';
+  let badMessage = '';
+  for (let i = 0; i < blocks.length; i += 1) {
+    const src = 'class X {\n' + blocks[i].source + '\n}';
+    try {
+      new Function(src);
+    } catch (err) {
+      badIndex = i;
+      badName = blocks[i].name;
+      badMessage = String(err && err.message || err);
+      break;
+    }
+  }
+  fetch('/__visual_qa_smoke?stage=method-probe&badIndex=' + badIndex + '&badName=' + encodeURIComponent(badName) + '&message=' + encodeURIComponent(badMessage)).catch(() => {});
+</script>

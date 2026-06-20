@@ -79,14 +79,14 @@
     {
       "tag": "settle",
       "spriteFrame": 21,
-      "sourceFrameIndex": 20,
-      "sourceTime": 0.66667,
-      "description": "settle half extension, mid guard, held pose",
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.0,
+      "description": "start half extension, mid guard, readable shift",
       "attackStyle": "punch",
       "reach": 0.31036,
       "effectorHeight": 0.48266,
       "effectorExtension": 0.64884,
-      "motionTotal": 0.14159,
+      "motionTotal": 0.73655,
       "easingOptions": [
         "hold",
         "springLow",

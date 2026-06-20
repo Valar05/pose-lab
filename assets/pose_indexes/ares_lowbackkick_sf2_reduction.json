@@ -130,14 +130,14 @@
     {
       "tag": "settle",
       "spriteFrame": 40,
-      "sourceFrameIndex": 29,
-      "sourceTime": 0.96667,
-      "description": "settle extended leg, low foot, held pose",
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.0,
+      "description": "start extended leg, low foot, readable shift",
       "attackStyle": "kick",
       "reach": -0.28517,
       "effectorHeight": -0.83695,
       "effectorExtension": 0.96782,
-      "motionTotal": 0.36072,
+      "motionTotal": 0.6377,
       "easingOptions": [
         "hold",
         "springLow",

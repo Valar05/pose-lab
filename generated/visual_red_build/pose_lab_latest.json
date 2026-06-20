@@ -1,0 +1,21 @@
+{
+  "schema": "pose-lab-visual-evidence-v1",
+  "captureKind": "visual-qa-blocked",
+  "cacheToken": "pose-editor-22",
+  "runtimeBuild": "clean-sf2",
+  "visualRead": "Current source and smoke validation are green for pose-editor-22, but fresh Android visual QA is blocked: the launcher reports success and the browser makes no HTTP request to the local page.",
+  "liveVisualQa": {
+    "status": "blocked",
+    "reason": "Android launcher returned success but the browser never requested the local visual QA URL; harness reported no-browser-requests.",
+    "reportPath": "/data/data/com.termux/files/usr/tmp/visual-qa/pose-lab/2026-06-19T15-22-38-427Z/visual_qa_report.json"
+  },
+  "lastSuccessfulVisual": {
+    "cacheToken": "pose-editor-15",
+    "capturePath": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260619-100518.png",
+    "reportPath": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/latest/visual_qa_report.json",
+    "visualRead": "Prior capture showed Ares rendered and controls visible, but it is stale after the pose-editor-22 cache bump."
+  },
+  "motionEvidencePending": true,
+  "notes": "Do not treat the pose-editor-15 screenshot as current proof. Refresh this artifact with a green visual-qa-capture once Android browser launching is restored.",
+  "testEvidence": {}
+}

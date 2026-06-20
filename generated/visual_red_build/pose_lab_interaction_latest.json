@@ -1,0 +1,81 @@
+{
+  "schema": "pose-lab-interaction-evidence-v1",
+  "cacheToken": "pose-editor-22",
+  "runtimeBuild": "clean-sf2",
+  "visualRead": "Runtime source and tests now prove clip selection remains live, worldQuat corrections replay, selected-bone hinge drags use pinned-parent motion, and first drag resolves the intended screen-nearest bone instead of a farther/opposite IK control. Floating dock, persistent undo/redo, layout persistence, and drag reselect contracts added for pose-editor-22. Two-finger bone editing is disabled so camera gestures are preserved; the floating dock is transparent and draggable. Arbitrary bone tweak sequence now explicitly checks twist angles, hinge translations, undo, redo, and full reset.",
+  "behaviorAssertions": {
+    "clipSelectionChangesActiveClip": true,
+    "selectedClipKeepsPlaying": true,
+    "modelContinuesAnimatingAfterClipSelect": true,
+    "boneSelectionAvailable": true,
+    "boneEditMovesRigState": true
+  },
+  "testEvidence": {
+    "startupRenderBeacon": {
+      "passed": true,
+      "path": "tools/test_pose_lab_startup_render_beacon.mjs"
+    },
+    "clipPlaybackSourceContract": {
+      "passed": true,
+      "path": "tools/test_critique_clip_playback_contract.mjs"
+    },
+    "debugBridgeBoneIntegration": {
+      "passed": true,
+      "path": "tools/test_pose_lab_debug_bone_integration.mjs"
+    },
+    "debugBridgeRouting": {
+      "passed": true,
+      "path": "tools/test_pose_lab_debug_bridge.mjs"
+    },
+    "worldQuatCorrectionPlayback": {
+      "passed": true,
+      "path": "tools/test_pose_correction_worldquat_not_empty.mjs"
+    },
+    "hingeTwistBoneDrag": {
+      "passed": true,
+      "path": "tools/test_touch_pose_two_finger_fk_rotation.mjs"
+    },
+    "pinnedHingeBoneDrag": {
+      "passed": true,
+      "path": "tools/test_touch_pose_pinned_hinge_drag.mjs"
+    },
+    "firstDragTargeting": {
+      "passed": true,
+      "path": "tools/test_touch_pose_first_drag_targeting.mjs"
+    },
+    "floatingPoseDock": {
+      "passed": true,
+      "path": "tools/test_touch_pose_floating_dock.mjs"
+    },
+    "persistentPoseHistory": {
+      "passed": true,
+      "path": "tools/test_pose_history_undo_redo.mjs"
+    },
+    "layoutViewPersistence": {
+      "passed": true,
+      "path": "tools/test_pose_layout_persistence.mjs"
+    },
+    "dragReselectFlow": {
+      "passed": true,
+      "path": "tools/test_touch_pose_pointer_lifetime.mjs"
+    },
+    "twoFingerCameraPreserved": {
+      "passed": true,
+      "path": "tools/test_touch_pose_two_finger_fk_rotation.mjs"
+    },
+    "draggableTransparentDock": {
+      "passed": true,
+      "path": "tools/test_touch_pose_floating_dock.mjs"
+    },
+    "arbitraryBoneUndoRedoReset": {
+      "passed": true,
+      "path": "tools/test_pose_history_arbitrary_bone_tweak_sequence.mjs"
+    }
+  },
+  "liveVisualQa": {
+    "status": "blocked",
+    "reason": "Android launcher returned success but the browser never requested the local visual QA URL; harness reported no-browser-requests.",
+    "reportPath": "/data/data/com.termux/files/usr/tmp/visual-qa/pose-lab/2026-06-19T15-22-38-427Z/visual_qa_report.json"
+  },
+  "notes": "Default HINGE drag pins the selected bone parent joint. First touch drag now uses a shared screen-distance resolver so a projected opposite foot control cannot steal the initial selection; selection happens before correction overlay replay."
+}

@@ -167,6 +167,153 @@ AXE_KICK_GROUNDED_FINISH_LOWER_BODY_CARRY = {
 }
 
 
+
+AXE_KICK_FINISH_GROUNDING = {
+    'kind': 'sf2-axekick-finish-grounding',
+    'enabled': True,
+    'sourceTime': 0.43333,
+    'hipOffset': [0.0, -5.5, 0.0],
+    'translationBones': ['mixamorig:Hips'],
+    'rotationBones': [
+        'mixamorig:LeftUpLeg',
+        'mixamorig:LeftLeg',
+        'mixamorig:LeftFoot',
+    ],
+    'timeline': [
+        {'spriteFrame': 36, 'strength': 1.0, 'tag': 'recoilGrounded'},
+        {'spriteFrame': 38, 'strength': 1.0, 'tag': 'recoverySettleGrounded'},
+        {'spriteFrame': 40, 'strength': 1.0, 'tag': 'settleGrounded'},
+    ],
+}
+
+
+AXE_KICK_RECOVERY_FOOTLINE_GUARD = {
+    'kind': 'sf2-axekick-recovery-footline-guard',
+    'enabled': True,
+    'reason': 'Ban the illegible both-feet-back tween. AxeKick recovery should keep the contact leg bend frozen at the held strike pose while only the foot and toe slide back toward idle.',
+    'startFrame': 33,
+    'endFrame': 39,
+    'referenceStartFrame': 33,
+    'referenceEndFrame': 40,
+    'holdRotationBones': [
+        'mixamorig:LeftUpLeg',
+        'mixamorig:LeftLeg',
+        'mixamorig:LeftFoot',
+        'mixamorig:LeftToeBase',
+    ],
+    'translationTracks': [
+        'mixamorig:LeftFoot.position',
+        'mixamorig:LeftToeBase.position',
+    ],
+    'easing': 'easeOutCubic',
+}
+
+
+AXE_KICK_BAD_FRAME_RULES = {
+    'kind': 'sf2-axekick-bad-frame-rules-v1',
+    'enabled': True,
+    'windows': [
+        {
+            'name': 'lateRecovery',
+            'startFrame': 34,
+            'endFrame': 39,
+            'rules': [
+                {
+                    'id': 'no-both-feet-back',
+                    'label': 'ban both-feet-back recovery stance',
+                    'allOf': [
+                        {'metric': 'leftFootMinusHipsForward', 'max': 0.02},
+                        {'metric': 'rightFootMinusHipsForward', 'max': -0.08},
+                    ],
+                },
+                {
+                    'id': 'limit-striking-foot-height',
+                    'label': 'striking foot cannot pop upward during late recovery',
+                    'conditions': [
+                        {'metric': 'leftFootHeight', 'max': 0.18},
+                    ],
+                },
+                {
+                    'id': 'limit-striking-foot-height-pop',
+                    'label': 'striking foot vertical delta cannot pop between recovery frames',
+                    'conditions': [
+                        {'metric': 'leftFootHeight', 'max': 0.18},
+                        {'metric': 'leftFootHeightDelta', 'maxAbs': 0.2},
+                    ],
+                },
+                {
+                    'id': 'limit-striking-foot-forward-delta',
+                    'label': 'striking foot forward motion cannot jump between recovery frames',
+                    'conditions': [
+                        {'metric': 'leftFootMinusHipsForwardDelta', 'maxAbs': 0.24},
+                    ],
+                },
+            ],
+        },
+    ],
+}
+
+
+FOOT_PLANT_PROFILES = {
+    'AxeKick': {
+        'kind': 'stationary-support-foot-plant',
+        'enabled': True,
+        'rootBone': 'mixamorig:Hips',
+        'windows': [
+            {
+                'footBone': 'mixamorig:RightFoot',
+                'anchorFrame': 0,
+                'startFrame': 0,
+                'endFrame': 40,
+                'reason': 'Stationary AxeKick should keep the support foot rock steady in world space while the body and striking leg move around that anchor.',
+            },
+        ],
+    },
+    'FrontKick': {
+        'kind': 'stationary-support-foot-plant',
+        'enabled': True,
+        'rootBone': 'mixamorig:Hips',
+        'windows': [
+            {
+                'footBone': 'mixamorig:RightFoot',
+                'anchorFrame': 0,
+                'startFrame': 0,
+                'endFrame': 40,
+                'reason': 'FrontKick is a stationary ballistic kick. The support foot should stay rock steady in world space while the striking leg snaps out and recoils.',
+            },
+        ],
+    },
+    'LowBackKick': {
+        'kind': 'stationary-support-foot-plant',
+        'enabled': True,
+        'rootBone': 'mixamorig:Hips',
+        'windows': [
+            {
+                'footBone': 'mixamorig:LeftFoot',
+                'anchorFrame': 0,
+                'startFrame': 0,
+                'endFrame': 40,
+                'reason': 'LowBackKick should keep one foot planted the whole time. The planted support leg carries the turn while the kicking leg reaches and retracts.',
+            },
+        ],
+    },
+    'AxleKick': {
+        'kind': 'stationary-support-foot-plant',
+        'enabled': True,
+        'rootBone': 'mixamorig:Hips',
+        'windows': [
+            {
+                'footBone': 'mixamorig:LeftFoot',
+                'anchorFrame': 11,
+                'startFrame': 11,
+                'endFrame': 27,
+                'reason': 'AxleKick can finish its chamber shift first, then the support foot must stay planted through the strike and immediate recoil before the loop recovery returns to idle.',
+            },
+        ],
+    },
+}
+
+
 GENERIC_KICK_PRECONTACT_UPPER_BODY_CARRY = {
     'kind': 'sf2-kick-precontact-upper-body-carry',
     'enabled': True,
@@ -181,6 +328,105 @@ GENERIC_KICK_PRECONTACT_UPPER_BODY_CARRY = {
         {'strength': 0.0, 'sourceTag': 'settle', 'tag': 'settled'},
     ],
 }
+
+
+FRONTKICK_CONTACT_MASS_CARRY = {
+    'kind': 'sf2-frontkick-contact-mass-carry',
+    'enabled': True,
+    'reason': 'FrontKick should keep ballistic snap but still read body mass at contact: hips drive a little farther through, body drops slightly into the support leg, and torso stays counterbalanced instead of becoming a pure leg-only strike.',
+    'hipOffset': [0.0, -2.4, 3.2],
+    'timeline': [
+        {'spriteFrame': 13, 'strength': 0.0, 'tag': 'preload'},
+        {'spriteFrame': 14, 'strength': 1.0, 'tag': 'contactDrive'},
+        {'spriteFrame': 15, 'strength': 1.0, 'tag': 'heldDrive'},
+        {'spriteFrame': 18, 'strength': 0.25, 'tag': 'recoilRelease'},
+        {'spriteFrame': 22, 'strength': 0.0, 'tag': 'recovered'},
+    ],
+}
+
+
+SQUASH_STRETCH_LAYERS = {
+    'AxeKick': {
+        'kind': 'smash-realistic-axekick-settle-cheat',
+        'enabled': True,
+        'reason': 'Use a restrained Smash-style squash/stretch settle on AxeKick so the held contact compresses into the recovery instead of reading as a hard pose cut to idle.',
+        'timeline': [
+            {'spriteFrame': 22, 'strength': 0.0, 'tag': 'contact'},
+            {'spriteFrame': 33, 'strength': 0.45, 'tag': 'heldContact'},
+            {'spriteFrame': 36, 'strength': 0.62, 'tag': 'releaseCarry'},
+            {'spriteFrame': 38, 'strength': 0.24, 'tag': 'recoverySettle'},
+            {'spriteFrame': 40, 'strength': 0.0, 'tag': 'settle'},
+        ],
+        'bones': {
+            'mixamorig:Spine': [0.993, 0.985, 1.006],
+            'mixamorig:Spine1': [0.989, 0.98, 1.01],
+            'mixamorig:Spine2': [0.985, 0.972, 1.014],
+        },
+    },
+    'FrontKick': {
+        'kind': 'smash-realistic-frontkick-force-cheat',
+        'enabled': True,
+        'reason': 'Use restrained Smash-style force cheating on a realistic rig: slight directional extension through the striking line plus tiny impact compression so the kick feels faster and heavier without obvious rubber deformation.',
+        'timeline': [
+            {'spriteFrame': 9, 'strength': 0.0, 'tag': 'loaded'},
+            {'spriteFrame': 14, 'strength': 1.0, 'tag': 'contactStretch'},
+            {'spriteFrame': 15, 'strength': 1.0, 'tag': 'heldStretch'},
+            {'spriteFrame': 18, 'strength': 0.35, 'tag': 'recoilRelease'},
+            {'spriteFrame': 22, 'strength': 0.0, 'tag': 'recovered'},
+        ],
+        'bones': {
+            'mixamorig:Spine': [0.992, 0.98, 1.03],
+            'mixamorig:Spine1': [0.99, 0.975, 1.04],
+            'mixamorig:Spine2': [0.985, 0.97, 1.05],
+            'mixamorig:LeftUpLeg': [1.015, 1.045, 1.03],
+            'mixamorig:LeftLeg': [0.985, 1.1, 1.07],
+            'mixamorig:LeftFoot': [0.985, 1.04, 1.06],
+            'mixamorig:RightUpLeg': [1.015, 0.98, 1.005],
+            'mixamorig:RightLeg': [1.02, 0.95, 1.005],
+        },
+    },
+}
+
+
+SMASH_REALISTIC_STEERING = {
+    'BallisticKick': {
+        'family': 'ballistic-kick',
+        'observationCharacter': 'Ganondorf',
+        'observationGame': 'Super Smash Bros. Ultimate',
+        'reason': 'Use Ganondorf as the realistic-body-cheat benchmark for ballistic kicks: preserve snap and recoil while letting torso compression, support-leg load, and slight directional extension make the strike feel heavier.',
+        'do': [
+            'preserve foot velocity over contact posing',
+            'let hips and torso contribute before the limb fully arrives',
+            'keep the head disciplined behind the striking line',
+            'use subtle directional extension and impact compression only',
+        ],
+        'avoid': [
+            'long contact display holds',
+            'visible rubber scaling',
+            'head-leading power generation',
+        ],
+        'referenceMoves': ['Forward aerial', "Wizard's Foot"],
+    },
+    'HeavyKick': {
+        'family': 'heavy-kick',
+        'observationCharacter': 'Ganondorf',
+        'observationGame': 'Super Smash Bros. Ultimate',
+        'reason': 'Use Ganondorf as the realistic-body-cheat benchmark for heavy kicks: big silhouette change, hips-first commitment, and chest/shoulder compression before release without turning the body into rubber.',
+        'do': [
+            'compress before release',
+            'lead power from hips through torso into the limb',
+            'hold a screenshot-worthy contact or apex read when the move identity needs it',
+            'favor silhouette expansion over obvious bone scaling',
+        ],
+        'avoid': [
+            'floating leg-only motion',
+            'cartoon stretch',
+            'face-first commitment',
+        ],
+        'referenceMoves': ['Forward smash', 'Up tilt', 'Down smash'],
+    },
+}
+
 
 
 ARM_OVERLAY_SOURCE = {
@@ -243,6 +489,22 @@ def load_attack_metadata(base):
             entries.append(next_entry)
     by_name = {entry['name']: entry for entry in entries}
     return [by_name[name] for name in ATTACK_ORDER if name in by_name]
+
+
+def smash_realistic_steering_profile(attack_name, attack_style):
+    if attack_name == 'FrontKick':
+        profile = dict(SMASH_REALISTIC_STEERING['BallisticKick'])
+        profile['attackName'] = attack_name
+        profile['appliedLayerKind'] = SQUASH_STRETCH_LAYERS.get(attack_name, {}).get('kind')
+        profile['timingBias'] = 'ballistic-snap'
+        return profile
+    if attack_style == 'kick' and attack_name in ('AxeKick', 'AxleKick', 'LowBackKick', 'SpinningHighKick', 'Backfist'):
+        profile = dict(SMASH_REALISTIC_STEERING['HeavyKick'])
+        profile['attackName'] = attack_name
+        profile['appliedLayerKind'] = SQUASH_STRETCH_LAYERS.get(attack_name, {}).get('kind')
+        profile['timingBias'] = 'heavy-commitment'
+        return profile
+    return None
 
 
 
@@ -483,6 +745,10 @@ def attack_segment_easing(from_tag, to_tag, attack_name=''):
         return 'holdThenSnap'
     if from_tag == 'contact' and to_tag == 'contactHold':
         return 'holdExact'
+    if attack_name == 'AxeKick' and from_tag == 'contactHold' and to_tag == 'recoil':
+        return 'movingHold'
+    if attack_name == 'AxeKick' and from_tag == 'recoil' and to_tag == 'recoverySettle':
+        return 'movingHold'
     if from_tag in ('contact', 'contactHold') and to_tag == 'recoil':
         return 'stepHold'
     if from_tag == 'recoil' and to_tag == 'settle':
@@ -568,10 +834,10 @@ def build_appeal_sprite_timing(base, index_data, metadata, anchors):
             ('apexHold', 19, anchor_from_source('apexHold', source_at(0.36667))),
             ('snap', 21, anchor_from_source('snap', source_at(0.4))),
             ('contact', 22, anchor_from_source('contact', source_at(0.43333))),
-            ('contactHold', 33, anchor_from_source('contactHold', source_at(0.43333))),
-            ('recoil', 36, anchor_from_source('recoil', source_at(0.7))),
-            ('recoverySettle', 38, anchor_from_source('recoverySettle', source_at(0.76667))),
-            ('settle', total_frames, anchor_from_source('settle', source_at(index_data['duration']))),
+            ('contactHold', 28, anchor_from_source('contactHold', source_at(0.43333))),
+            ('recoil', 31, anchor_from_source('recoil', source_at(0.53333))),
+            ('recoverySettle', 35, anchor_from_source('recoverySettle', source_at(0.66667))),
+            ('settle', total_frames, anchor_from_source('settle', source_at(0.0))),
         ]
         schedule, holds = emit_schedule(desired)
     elif attack_name == 'AxleKick':
@@ -583,7 +849,7 @@ def build_appeal_sprite_timing(base, index_data, metadata, anchors):
             ('contact', 18, anchor_from_source('contact', source_at(0.46667))),
             ('contactHold', 23, anchor_from_source('contactHold', source_at(0.46667))),
             ('recoil', 27, anchor_from_source('recoil', source_at(0.66667))),
-            ('settle', total_frames, anchor_from_source('settle', source_at(index_data['duration']))),
+            ('settle', total_frames, anchor_from_source('settle', source_at(0.0))),
         ]
         schedule, holds = emit_schedule(desired)
     elif attack_name == 'LowBackKick':
@@ -595,18 +861,18 @@ def build_appeal_sprite_timing(base, index_data, metadata, anchors):
             ('contact', 18, anchor_from_source('contact', source_at(0.33333))),
             ('contactHold', 23, anchor_from_source('contactHold', source_at(0.33333))),
             ('recoil', 27, anchor_from_source('recoil', source_at(0.8))),
-            ('settle', total_frames, anchor_from_source('settle', source_at(index_data['duration']))),
+            ('settle', total_frames, anchor_from_source('settle', source_at(0.0))),
         ]
         schedule, holds = emit_schedule(desired)
     elif attack_name == 'FrontKick':
         desired = [
             ('start', 0, anchor_from_source('start', source_at(0.03333))),
             ('anticipation', 9, anchor_from_source('anticipation', source_at(0.2))),
-            ('contact', 15, anchor_from_source('contact', source_at(0.36667))),
-            ('contactHold', 17, anchor_from_source('contactHold', source_at(0.36667))),
-            ('recoil', 19, anchor_from_source('recoil', source_at(0.5))),
-            ('recoilSettle', 21, anchor_from_source('recoilSettle', source_at(0.56667))),
-            ('settle', total_frames, anchor_from_source('settle', source_at(0.86667))),
+            ('contact', 14, anchor_from_source('contact', source_at(0.36667))),
+            ('contactHold', 15, anchor_from_source('contactHold', source_at(0.36667))),
+            ('recoil', 18, anchor_from_source('recoil', source_at(0.5))),
+            ('recoilSettle', 22, anchor_from_source('recoilSettle', source_at(0.56667))),
+            ('settle', total_frames, anchor_from_source('settle', source_at(0.03333))),
         ]
         schedule, holds = emit_schedule(desired)
     else:
@@ -623,7 +889,7 @@ def build_appeal_sprite_timing(base, index_data, metadata, anchors):
                 ('contact', contact_frame, pick_anchor('contact', 'anticipation', 'recoil')),
                 ('contactHold', contact_hold_frame, pick_anchor('contact', 'anticipation', 'recoil')),
                 ('recoil', recoil_frame, pick_anchor('recoil', 'contact', 'settle')),
-                ('settle', total_frames, pick_anchor('settle', 'recoil', 'contact')),
+                ('settle', total_frames, pick_anchor('start', 'anticipation', 'contact')),
             ]
         else:
             recoil_frame = min(total_frames - 2, contact_frame + 3)
@@ -632,7 +898,7 @@ def build_appeal_sprite_timing(base, index_data, metadata, anchors):
                 ('anticipation', anticipation_frame, pick_anchor('anticipation', 'contact', 'start')),
                 ('contact', contact_frame, pick_anchor('contact', 'anticipation', 'recoil')),
                 ('recoil', recoil_frame, pick_anchor('recoil', 'contact', 'settle')),
-                ('settle', total_frames, pick_anchor('settle', 'recoil', 'contact')),
+                ('settle', total_frames, pick_anchor('start', 'anticipation', 'contact')),
             ]
         schedule, holds = emit_schedule(desired)
 
@@ -686,6 +952,105 @@ def authored_contact_sample(base, attack_name, node_name, path_name, sample, out
         return base.quat_normalize(base.quat_mul(sample, delta))
     return sample
 
+
+
+def quat_to_euler_xyz(q):
+    x, y, z, w = q
+    sinr_cosp = 2.0 * (w * x + y * z)
+    cosr_cosp = 1.0 - 2.0 * (x * x + y * y)
+    roll_x = math.atan2(sinr_cosp, cosr_cosp)
+
+    sinp = 2.0 * (w * y - z * x)
+    if abs(sinp) >= 1.0:
+        pitch_y = math.copysign(math.pi / 2.0, sinp)
+    else:
+        pitch_y = math.asin(sinp)
+
+    siny_cosp = 2.0 * (w * z + x * y)
+    cosy_cosp = 1.0 - 2.0 * (y * y + z * z)
+    yaw_z = math.atan2(siny_cosp, cosy_cosp)
+    return [roll_x, pitch_y, yaw_z]
+
+
+def quat_from_euler_xyz(roll_x, pitch_y, yaw_z):
+    cx = math.cos(roll_x * 0.5)
+    sx = math.sin(roll_x * 0.5)
+    cy = math.cos(pitch_y * 0.5)
+    sy = math.sin(pitch_y * 0.5)
+    cz = math.cos(yaw_z * 0.5)
+    sz = math.sin(yaw_z * 0.5)
+    return [
+        sx * cy * cz + cx * sy * sz,
+        cx * sy * cz - sx * cy * sz,
+        cx * cy * sz + sx * sy * cz,
+        cx * cy * cz - sx * sy * sz,
+    ]
+
+
+def clamp_quat_x_to_reference(base, sample, reference):
+    sample_euler = quat_to_euler_xyz(sample)
+    reference_euler = quat_to_euler_xyz(reference)
+    if abs(sample_euler[0]) > abs(reference_euler[0]):
+        sample_euler[0] = reference_euler[0]
+        return base.quat_normalize(quat_from_euler_xyz(sample_euler[0], sample_euler[1], sample_euler[2]))
+    return sample
+
+
+def timeline_strength(base, timeline, output_time, easing='easeOutCubic'):
+    frame = round(output_time * 60.0, 3)
+    if frame < timeline[0]['spriteFrame'] - 0.001:
+        return 0.0
+    if frame <= timeline[0]['spriteFrame'] + 0.001:
+        return timeline[0]['strength']
+    for left, right in zip(timeline, timeline[1:]):
+        if frame <= right['spriteFrame'] + 0.001:
+            span = max(1e-6, right['spriteFrame'] - left['spriteFrame'])
+            alpha = (frame - left['spriteFrame']) / span
+            eased = base.easing_value(easing, alpha)
+            return base.lerp(left['strength'], right['strength'], eased)
+    return timeline[-1]['strength']
+
+
+def squash_stretch_strength(base, attack_name, output_time):
+    layer = SQUASH_STRETCH_LAYERS.get(attack_name)
+    if not layer or not layer.get('enabled'):
+        return 0.0
+    return timeline_strength(base, layer['timeline'], output_time)
+
+
+def squash_stretch_sample(base, attack_name, node_name, path_name, sample, output_time):
+    if path_name != 'scale' or not isinstance(sample, list):
+        return sample
+    layer = SQUASH_STRETCH_LAYERS.get(attack_name)
+    if not layer or not layer.get('enabled'):
+        return sample
+    target = layer.get('bones', {}).get(node_name)
+    if not target:
+        return sample
+    strength = squash_stretch_strength(base, attack_name, output_time)
+    if strength <= 0.00001:
+        return sample
+    out = []
+    for idx in range(min(len(sample), len(target))):
+        scale_mult = base.lerp(1.0, float(target[idx]), strength)
+        out.append(sample[idx] * scale_mult)
+    return out
+
+
+def frontkick_contact_mass_strength(base, attack_name, output_time):
+    if attack_name != 'FrontKick' or not FRONTKICK_CONTACT_MASS_CARRY.get('enabled'):
+        return 0.0
+    return timeline_strength(base, FRONTKICK_CONTACT_MASS_CARRY['timeline'], output_time)
+
+
+def frontkick_contact_mass_sample(base, attack_name, node_name, path_name, sample, output_time):
+    strength = frontkick_contact_mass_strength(base, attack_name, output_time)
+    if strength <= 0.00001 or attack_name != 'FrontKick':
+        return sample
+    if path_name == 'translation' and node_name == 'mixamorig:Hips':
+        offset = FRONTKICK_CONTACT_MASS_CARRY['hipOffset']
+        return [sample[i] + (offset[i] * strength) for i in range(3)]
+    return sample
 
 
 def authored_head_discipline_strength(base, attack_name, output_time):
@@ -808,6 +1173,28 @@ def axe_grounded_finish_lower_body_strength(base, attack_name, output_time):
             return base.lerp(left['strength'], right['strength'], eased)
     return timeline[-1]['strength']
 
+def axe_finish_grounding_strength(base, attack_name, output_time):
+    if attack_name != 'AxeKick' or not AXE_KICK_FINISH_GROUNDING.get('enabled'):
+        return 0.0
+    return timeline_strength(base, AXE_KICK_FINISH_GROUNDING['timeline'], output_time)
+
+
+
+def clamp_baked_quaternion_track_x_against_contact(base, values, contact_frame, clamp_from_frame):
+    stride = 4
+    if len(values) < (contact_frame + 1) * stride:
+        return values
+    reference = values[contact_frame * stride:(contact_frame + 1) * stride]
+    out = list(values)
+    for frame in range(clamp_from_frame, len(values) // stride):
+        start = frame * stride
+        sample = out[start:start + stride]
+        clamped = clamp_quat_x_to_reference(base, sample, reference)
+        out[start:start + stride] = [base.round_value(v, 6) for v in clamped]
+    return out
+
+
+
 def generic_kick_precontact_carry_profile(reduced_data, attack_name):
     if not GENERIC_KICK_PRECONTACT_UPPER_BODY_CARRY.get('enabled'):
         return None
@@ -857,10 +1244,141 @@ def generic_kick_precontact_carry_strength(base, carry_profile, output_time):
     return timeline[-1]['strength']
 
 
+def world_pose_from_baked_tracks(base, index, local_tracks_by_node, frame_index):
+    local = {}
+    for node_index, node in enumerate(index.nodes):
+        local[node_index] = {
+            'translation': list(node.get('translation', [0.0, 0.0, 0.0])),
+            'rotation': list(node.get('rotation', [0.0, 0.0, 0.0, 1.0])),
+            'scale': list(node.get('scale', [1.0, 1.0, 1.0])),
+        }
+    for node_name, entries in local_tracks_by_node.items():
+        node_index = index.name_to_index.get(base.canonical(node_name))
+        if node_index is None:
+            continue
+        for path_name, track in entries.items():
+            stride = 4 if path_name == 'rotation' else 3 if path_name in ('translation', 'scale') else 1
+            values = track['values']
+            sample = values[frame_index * stride:(frame_index + 1) * stride]
+            local[node_index][path_name] = list(sample) if stride > 1 else sample[0]
+    world = {}
+
+    def compute(node_index):
+        if node_index in world:
+            return world[node_index]
+        parent = index.parents.get(node_index)
+        local_state = local[node_index]
+        if parent is None:
+            value = (
+                local_state['translation'],
+                base.quat_normalize(local_state['rotation']),
+                local_state['scale'],
+            )
+        else:
+            parent_pos, parent_rot, parent_scale = compute(parent)
+            value = base.compose_world(
+                parent_pos,
+                parent_rot,
+                parent_scale,
+                local_state['translation'],
+                base.quat_normalize(local_state['rotation']),
+                local_state['scale'],
+            )
+        world[node_index] = value
+        return value
+
+    for node_index in range(len(index.nodes)):
+        compute(node_index)
+    return world
+
+
+def apply_support_foot_plant(base, index, tracks, attack_name, total_frames):
+    profile = FOOT_PLANT_PROFILES.get(attack_name)
+    if not profile or not profile.get('enabled'):
+        return tracks
+    tracks_by_name = {track['name']: track for track in tracks}
+    local_tracks_by_node = {}
+    for track in tracks:
+        if '.' not in track['name']:
+            continue
+        node_name, suffix = track['name'].rsplit('.', 1)
+        path_name = 'rotation' if suffix == 'quaternion' else 'translation' if suffix == 'position' else suffix
+        local_tracks_by_node.setdefault(node_name, {})[path_name] = track
+    windows = profile.get('windows') or [profile]
+    for window in windows:
+        root_bone = window.get('rootBone', profile.get('rootBone'))
+        root_track = tracks_by_name.get(root_bone + '.position')
+        if not root_track:
+            continue
+        foot_index = index.name_to_index.get(base.canonical(window['footBone']))
+        root_index = index.name_to_index.get(base.canonical(root_bone))
+        if foot_index is None or root_index is None:
+            continue
+        anchor_world = world_pose_from_baked_tracks(base, index, local_tracks_by_node, window['anchorFrame'])[foot_index][0]
+        values = list(root_track['values'])
+        for frame_index in range(window['startFrame'], min(window['endFrame'], total_frames) + 1):
+            world = world_pose_from_baked_tracks(base, index, local_tracks_by_node, frame_index)
+            current = world[foot_index][0]
+            delta_world = [anchor_world[i] - current[i] for i in range(3)]
+            parent_index = index.parents.get(root_index)
+            if parent_index is None:
+                delta_local = delta_world
+            else:
+                parent_pos, parent_rot, parent_scale = world[parent_index]
+                inv_parent_rot = base.quat_conjugate(parent_rot)
+                rotated = base.quat_rotate(inv_parent_rot, delta_world)
+                delta_local = [rotated[i] / parent_scale[i] if abs(parent_scale[i]) > 1e-8 else 0.0 for i in range(3)]
+            offset = frame_index * 3
+            values[offset:offset + 3] = [base.round_value(values[offset + i] + delta_local[i], 6) for i in range(3)]
+            local_tracks_by_node[root_bone]['translation']['values'] = values
+        root_track['values'] = values
+    return tracks
+
+
+
+def apply_axekick_recovery_footline_guard(base, tracks, attack_name, total_frames):
+    if attack_name != 'AxeKick' or not AXE_KICK_RECOVERY_FOOTLINE_GUARD.get('enabled'):
+        return tracks
+    tracks_by_name = {track['name']: track for track in tracks}
+    start_frame = AXE_KICK_RECOVERY_FOOTLINE_GUARD['startFrame']
+    end_frame = min(AXE_KICK_RECOVERY_FOOTLINE_GUARD['endFrame'], total_frames - 1)
+    ref_start = AXE_KICK_RECOVERY_FOOTLINE_GUARD['referenceStartFrame']
+    ref_end = AXE_KICK_RECOVERY_FOOTLINE_GUARD['referenceEndFrame']
+    span = max(1, ref_end - ref_start)
+    for track_name in AXE_KICK_RECOVERY_FOOTLINE_GUARD.get('translationTracks', []):
+        track = tracks_by_name.get(track_name)
+        if not track:
+            continue
+        values = list(track['values'])
+        stride = 3
+        start_sample = values[ref_start * stride:(ref_start + 1) * stride]
+        end_sample = values[ref_end * stride:(ref_end + 1) * stride]
+        for frame_index in range(start_frame, end_frame + 1):
+            alpha = max(0.0, min(1.0, (frame_index - ref_start) / span))
+            eased = base.easing_value(AXE_KICK_RECOVERY_FOOTLINE_GUARD['easing'], alpha)
+            sample = [base.lerp(start_sample[i], end_sample[i], eased) for i in range(stride)]
+            offset = frame_index * stride
+            values[offset:offset + stride] = [base.round_value(v, 6) for v in sample]
+        track['values'] = values
+    for node_name in AXE_KICK_RECOVERY_FOOTLINE_GUARD.get('holdRotationBones', []):
+        track = tracks_by_name.get(node_name + '.quaternion')
+        if not track:
+            continue
+        values = list(track['values'])
+        start_sample = values[ref_start * 4:(ref_start + 1) * 4]
+        for frame_index in range(start_frame, end_frame + 1):
+            offset = frame_index * 4
+            values[offset:offset + 4] = [base.round_value(v, 6) for v in start_sample]
+        track['values'] = values
+    return tracks
+
+
+
 def build_baked_poseclip(base, index, clip_name, attack_name, reduced_data):
     animation = index.animations[clip_name]
     sprite_frames = reduced_data['spriteFrames']
     duration = base.round_value(reduced_data['combatWindowFrames60fps'] / 60.0, 5)
+    source_duration = max((animation.get('key_times') or [0.0])[-1], 0.00001)
     output_times = [base.round_value(frame / 60.0, 5) for frame in range(reduced_data['combatWindowFrames60fps'] + 1)]
     segments = []
     for left, right in zip(sprite_frames, sprite_frames[1:]):
@@ -887,7 +1405,12 @@ def build_baked_poseclip(base, index, clip_name, attack_name, reduced_data):
                 span = max(1e-6, seg['endFrame'] - seg['startFrame'])
                 alpha = (frame - seg['startFrame']) / span
                 eased = attack_easing_value(base, seg['easing'], alpha)
-                return base.lerp(seg['startTime'], seg['endTime'], eased)
+                start_time = seg['startTime']
+                end_time = seg['endTime']
+                if end_time + 1e-6 < start_time:
+                    wrapped = base.lerp(start_time, end_time + source_duration, eased)
+                    return wrapped % source_duration
+                return base.lerp(start_time, end_time, eased)
         return segments[-1]['endTime']
 
     overlay_config = ARM_OVERLAY_SOURCE.get(attack_name)
@@ -958,6 +1481,16 @@ def build_baked_poseclip(base, index, clip_name, attack_name, reduced_data):
                     if carry_strength > 0.00001:
                         carry_sample = index._sample_channel(channel, kick_precontact_carry['sourceTime'])
                         base_sample = base.quat_slerp(base_sample, carry_sample, carry_strength)
+                if attack_name == 'AxeKick':
+                    finish_grounding_strength = axe_finish_grounding_strength(base, attack_name, output_time)
+                    if finish_grounding_strength > 0.00001:
+                        if path_name == 'translation' and node_name in AXE_KICK_FINISH_GROUNDING.get('translationBones', []):
+                            offset = AXE_KICK_FINISH_GROUNDING['hipOffset']
+                            base_sample = [base_sample[i] + (offset[i] * finish_grounding_strength) for i in range(len(base_sample))]
+                        elif path_name == 'rotation' and node_name in AXE_KICK_FINISH_GROUNDING['rotationBones']:
+                            contact_sample = index._sample_channel(channel, AXE_KICK_FINISH_GROUNDING['sourceTime'])
+                            clamped = clamp_quat_x_to_reference(base, base_sample, contact_sample)
+                            base_sample = base.quat_slerp(base_sample, clamped, finish_grounding_strength)
                 if overlay_channel:
                     overlay_time, phase_strength = overlay_phase(output_time)
                     overlay_sample = index._sample_channel(overlay_channel, overlay_time)
@@ -967,6 +1500,8 @@ def build_baked_poseclip(base, index, clip_name, attack_name, reduced_data):
                 else:
                     sample = base_sample
                 sample = authored_contact_sample(base, attack_name, node_name, path_name, sample, output_time)
+                sample = frontkick_contact_mass_sample(base, attack_name, node_name, path_name, sample, output_time)
+                sample = squash_stretch_sample(base, attack_name, node_name, path_name, sample, output_time)
                 sample = authored_head_discipline_sample(base, attack_name, node_name, path_name, sample, output_time)
                 sample = authored_head_gaze_sample(base, attack_name, node_name, path_name, sample, output_time)
                 sample = authored_contact_guard_sample(base, attack_name, node_name, path_name, sample, output_time)
@@ -974,12 +1509,20 @@ def build_baked_poseclip(base, index, clip_name, attack_name, reduced_data):
                     values.extend(base.round_value(v, 6) for v in sample)
                 else:
                     values.append(base.round_value(sample, 6))
+            if attack_name == 'AxeKick' and path_name == 'rotation' and node_name in AXE_KICK_FINISH_GROUNDING['rotationBones']:
+                values = clamp_baked_quaternion_track_x_against_contact(base, values, 22, 29)
+            stride = 4 if path_name == 'rotation' else 3 if path_name in ('translation', 'scale') else 1
+            if len(values) >= stride * 2:
+                values[-stride:] = values[:stride]
             tracks.append({
                 'name': track_name,
                 'type': 'quaternion' if path_name == 'rotation' else 'vector' if path_name in ('translation', 'scale') else 'number',
                 'times': output_times,
                 'values': values,
             })
+
+    tracks = apply_axekick_recovery_footline_guard(base, tracks, attack_name, int(reduced_data['combatWindowFrames60fps']))
+    tracks = apply_support_foot_plant(base, index, tracks, attack_name, int(reduced_data['combatWindowFrames60fps']))
 
     stem = safe_stem(attack_name)
     user_data = {
@@ -1000,8 +1543,18 @@ def build_baked_poseclip(base, index, clip_name, attack_name, reduced_data):
         user_data['headGazeStabilization'] = AXE_KICK_HEAD_GAZE_STABILIZATION
         user_data['contactGuardStabilization'] = AXE_KICK_CONTACT_GUARD_STABILIZATION
         user_data['groundedFinishLowerBodyCarry'] = AXE_KICK_GROUNDED_FINISH_LOWER_BODY_CARRY
+        user_data['finishGrounding'] = AXE_KICK_FINISH_GROUNDING
+        user_data['badFrameRules'] = AXE_KICK_BAD_FRAME_RULES
+    if attack_name in FOOT_PLANT_PROFILES:
+        user_data['footPlantProfile'] = FOOT_PLANT_PROFILES[attack_name]
     if kick_precontact_carry:
         user_data['kickPrecontactUpperBodyCarry'] = kick_precontact_carry
+    steering_profile = smash_realistic_steering_profile(attack_name, reduced_data.get('attackStyle', 'punch'))
+    if steering_profile:
+        user_data['smashRealisticSteering'] = steering_profile
+    squash_stretch = SQUASH_STRETCH_LAYERS.get(attack_name)
+    if squash_stretch and squash_stretch.get('enabled'):
+        user_data['squashStretchLayer'] = squash_stretch
     if attack_name == 'Headbutt':
         user_data['guardRuleException'] = HEADBUTT_GUARD_RULE_EXCEPTION
     if overlay_config:
@@ -1053,6 +1606,7 @@ def build_visual_evidence(base, attack_name, clip_name, reduced_data, poseclip, 
     contact_guard = user_data.get('contactGuardStabilization')
     kick_precontact_carry = user_data.get('kickPrecontactUpperBodyCarry')
     guard_rule_exception = user_data.get('guardRuleException')
+    smash_realistic_steering = user_data.get('smashRealisticSteering')
     contact_modifiers_by_frame = {}
     if contact_exaggeration:
         for phase in contact_exaggeration.get('timeline', []):
@@ -1191,6 +1745,7 @@ def build_visual_evidence(base, attack_name, clip_name, reduced_data, poseclip, 
         'contactGuardStabilization': contact_guard,
         'kickPrecontactUpperBodyCarry': kick_precontact_carry,
         'guardRuleException': guard_rule_exception,
+        'smashRealisticSteering': smash_realistic_steering,
         'captureSlots': slots,
     }
 
@@ -1276,6 +1831,7 @@ def main():
             visual_evidence = build_visual_evidence(base, attack_name, clip_name, reduced, poseclip, index_path, reduced_path, critique_path, poseclip_path, evidence_path)
             poseclip_path.write_text(json.dumps(poseclip, indent=2) + '\n')
             evidence_path.write_text(json.dumps(visual_evidence, indent=2) + '\n')
+            steering_profile = smash_realistic_steering_profile(attack_name, index_data.get('attackStyle', 'punch'))
             results.append({
                 'attackName': attack_name,
                 'clipName': clip_name,
@@ -1286,6 +1842,7 @@ def main():
                 'visualEvidence': str(evidence_path.relative_to(ROOT)),
                 'attackStyle': index_data.get('attackStyle', 'punch'),
                 'appealScoring': index_data.get('appealScoring', 'generic'),
+                'smashRealisticSteering': steering_profile,
                 'keyedFrames': len(index_data['frames']),
                 'sourceDuration': index_data['duration'],
                 'combatWindowFrames60fps': reduced['combatWindowFrames60fps'],

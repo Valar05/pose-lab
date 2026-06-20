@@ -96,14 +96,14 @@
     {
       "tag": "settle",
       "spriteFrame": 48,
-      "sourceFrameIndex": 25,
-      "sourceTime": 0.86667,
-      "description": "recovery extended leg, low foot, held pose",
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.03333,
+      "description": "guard extended leg, low foot, held pose",
       "attackStyle": "kick",
       "reach": -0.28518,
       "effectorHeight": -0.83695,
       "effectorExtension": 0.96782,
-      "motionTotal": 0.38034,
+      "motionTotal": 0.43752,
       "easingOptions": [
         "hold",
         "springLow",

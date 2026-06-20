@@ -18,6 +18,10 @@
 #actorTabs button.failed { color: #ffb2a3; border-color: rgba(255,120,90,0.5); }
 #panelTabs { position: absolute; left: 50%; bottom: max(10px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 7; display: grid; grid-template-columns: repeat(7, minmax(44px, 1fr)); gap: 5px; width: min(96vw, 600px); padding: 6px; background: rgba(4,8,11,0.78); border: 1px solid rgba(255,255,255,0.16); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
 .lab-panel { position: absolute; left: 10px; right: 10px; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 58px); z-index: 6; display: none; padding: 9px; background: rgba(4,8,11,0.86); border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 8px 24px rgba(0,0,0,0.38); }
+.player-transport { position: absolute; left: 10px; right: 10px; top: calc(max(94px, env(safe-area-inset-top) + 94px)); z-index: 7; display: grid; gap: 6px; padding: 7px 8px; background: rgba(4,8,11,0.88); border: 1px solid rgba(214,166,66,0.26); box-shadow: 0 6px 20px rgba(0,0,0,0.32); pointer-events: auto; }
+.player-transport-label { color: #d7f6ff; font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player-transport-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.player-transport-row button { min-height: 32px; padding: 4px 6px; border: 1px solid rgba(255,255,255,0.22); color: #f8f1dd; background: rgba(16,22,28,0.92); font: inherit; font-size: 11px; font-weight: 850; }
 .lab-panel.open { display: block; }
 .panel-title { margin-bottom: 6px; color: #f4ddac; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0; }
 #clipPanel { max-height: min(34vh, 300px); overflow: auto; }
@@ -60,7 +64,9 @@
 .cleanup-blend-row input { min-width: 0; width: 100%; accent-color: #d6a642; }
 #cleanupBlendHint { color: #d7f6ff; font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; text-align: right; }
 
-.cleanup-merge-section { margin: 8px 0; padding: 8px; border: 1px solid rgba(255,255,255,0.14); background: rgba(10,16,22,0.52); }
+.cleanup-merge-section, .cleanup-pose-index-section, .cleanup-critique-section { margin: 8px 0; padding: 8px; border: 1px solid rgba(255,255,255,0.14); background: rgba(10,16,22,0.52); }
+.cleanup-merge-section > summary, .cleanup-pose-index-section > summary, .cleanup-critique-section > summary { min-height: 28px; color: #f4ddac; font-size: 11px; font-weight: 900; cursor: pointer; }
+.cleanup-merge-section > :not(summary), .cleanup-pose-index-section > :not(summary), .cleanup-critique-section > :not(summary) { margin-top: 8px; }
 .cleanup-merge-title { margin-bottom: 5px; }
 .cleanup-merge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; margin: 0 0 7px; }
 .cleanup-merge-grid label { display: grid; grid-template-columns: 44px 1fr; gap: 6px; align-items: center; font-size: 12px; }
@@ -148,4 +154,547 @@ body.is-fpv:not(.panel-open-info) #labReadout { display: none; }
   #bonePanel, #cleanupPanel, #retargetPanel, #transformPanel, #labReadout { max-height: calc(100vh - 132px); }
 }
 
+
+body.critique-mode #labReadout { display: none; }
+body.critique-mode #diagnosticOverlay { display: none; }
+body.critique-mode #panelTabs { opacity: 1; }
+
+.cleanup-critique-section { margin: 8px 0 0; padding: 8px; border: 1px solid rgba(214,166,66,0.36); background: rgba(4,8,11,0.9); display: grid; gap: 7px; }
+.critique-summary { display: grid; gap: 2px; color: #d7f6ff; font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.critique-transport { display: grid; gap: 5px; }
+.critique-transport-mode-row, .critique-transport-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+.critique-transport-mode-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.critique-transport-mode-row button, .critique-transport-row button { min-height: 28px; padding: 4px 5px; border: 1px solid rgba(255,255,255,0.22); color: #f8f1dd; background: rgba(16,22,28,0.9); font: inherit; font-size: 10px; font-weight: 850; overflow-wrap: anywhere; }
+.critique-transport-mode-row button.active, .critique-transport-row button.active { color: #17140d; background: #d6a642; }
+.critique-scrub-row { display: grid; gap: 5px; font-size: 11px; font-weight: 850; }
+.critique-scrub { width: 100%; margin: 0; accent-color: #d6a642; }
+#critiqueTransportLabel, #critiqueTransportTime { color: #d7f6ff; font: 10px/1.15 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.critique-frame-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(52px, 1fr)); gap: 4px; }
+.critique-frame-buttons button { min-height: 28px; padding: 4px 5px; border: 1px solid rgba(255,255,255,0.22); color: #f8f1dd; background: rgba(16,22,28,0.9); font: inherit; font-size: 10px; font-weight: 850; overflow-wrap: anywhere; }
+.critique-frame-buttons button.active { color: #17140d; background: #d6a642; }
+.critique-frame-buttons button.noted { border-color: rgba(122, 183, 255, 0.64); box-shadow: inset 0 -2px 0 rgba(122, 183, 255, 0.68); }
+.critique-frame-buttons button.active.noted { background: linear-gradient(180deg, #d6a642 0%, #9dc0ea 100%); }
+.critique-note-line { display: grid; gap: 5px; font-size: 12px; font-weight: 850; }
+.critique-note-line textarea, .critique-meta-grid input { min-height: 34px; width: 100%; border: 1px solid rgba(255,255,255,0.22); color: #f8f1dd; background: rgba(16,22,28,0.96); font: inherit; font-weight: 800; }
+.critique-note-line textarea { min-height: 74px; resize: vertical; }
+.critique-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.critique-meta-grid label { display: grid; gap: 4px; font-size: 12px; font-weight: 850; }
+.critique-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#critiqueLog { min-height: 34px; margin: 0; color: #d7f6ff; font: 10px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+body.critique-mode #panelTabs { opacity: 1; }
+body.critique-mode #clipPanel { display: none !important; }
+body.critique-mode #bonePanel { display: none !important; }
+body.critique-mode #retargetPanel { display: none !important; }
+body.critique-mode #transformPanel { display: none !important; }
+body.critique-mode #labReadout { display: none !important; }
+body.critique-mode #diagnosticOverlay { display: none !important; }
+@media (orientation: landscape) {
+  #critiqueDock { width: min(30vw, 300px); }
+  .player-transport { left: 8px; right: auto; top: calc(max(72px, env(safe-area-inset-top) + 72px)); width: min(42vw, 420px); }
+}
 /* mocap-cleanup-0.8.0 */
+
+/* phone-controls-1.0: critique mode keeps the model as the primary surface. */
+body.phone-controls.critique-mode #labHeader {
+  min-height: 34px;
+  padding: max(4px, env(safe-area-inset-top)) 8px 4px;
+  background: linear-gradient(180deg, rgba(2,5,7,0.82), rgba(2,5,7,0.02));
+}
+body.phone-controls.critique-mode #labHeader a { min-width: 40px; min-height: 28px; font-size: 12px; }
+body.phone-controls.critique-mode #labHeader strong { font-size: 15px; }
+body.phone-controls.critique-mode #loadState { max-width: 42vw; font-size: 9px; }
+body.phone-controls.critique-mode #actorTabs {
+  left: 8px;
+  right: 92px;
+  top: calc(max(39px, env(safe-area-inset-top) + 39px));
+  transform: none;
+  justify-content: flex-start;
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 4px;
+  padding: 2px;
+  background: rgba(3,7,10,0.54);
+}
+body.phone-controls.critique-mode #actorTabs button {
+  min-width: auto;
+  min-height: 28px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  font-size: 11px;
+}
+body.phone-controls.critique-mode #viewTabs {
+  top: calc(max(39px, env(safe-area-inset-top) + 39px));
+  right: 8px;
+  bottom: auto;
+  z-index: 10;
+}
+body.phone-controls.critique-mode #viewTabs button { min-width: 38px; min-height: 28px; font-size: 10px; }
+body.phone-controls.critique-mode #labStatus {
+  top: calc(max(73px, env(safe-area-inset-top) + 73px));
+  width: min(70vw, 420px);
+  min-height: 20px;
+  padding: 3px 7px;
+  font-size: 9px;
+  opacity: 0.7;
+}
+body.phone-controls.critique-mode:not(.has-open-panel) #labStatus { opacity: 0.42; }
+body.phone-controls.critique-mode #panelTabs {
+  left: 8px;
+  right: 8px;
+  bottom: max(5px, env(safe-area-inset-bottom));
+  transform: none;
+  z-index: 12;
+  width: auto;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 3px;
+  padding: 4px;
+  background: rgba(4,8,11,0.88);
+  border-color: rgba(255,255,255,0.14);
+}
+body.phone-controls.critique-mode #panelTabs button {
+  min-width: 0;
+  min-height: 34px;
+  padding: 3px 2px;
+  font-size: 10px;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.phone-controls.critique-mode #playerTransport {
+  top: auto;
+  left: 8px;
+  right: 8px;
+  bottom: calc(max(5px, env(safe-area-inset-bottom)) + 48px);
+  z-index: 11;
+  gap: 4px;
+  padding: 5px 6px;
+  background: rgba(4,8,11,0.9);
+  border-color: rgba(214,166,66,0.34);
+}
+body.phone-controls.critique-mode .player-transport-label { font-size: 9px; }
+body.phone-controls.critique-mode .player-transport-row { gap: 4px; }
+body.phone-controls.critique-mode .player-transport-row button {
+  min-height: 30px;
+  padding: 3px 4px;
+  font-size: 10px;
+}
+
+body.phone-controls.critique-mode #playerStop {
+  display: none !important;
+}
+body.phone-controls.critique-mode .player-transport-row {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+body.phone-controls.critique-mode.pose-correction-active #playerPoseControls {
+  color: #17140d;
+  background: #d6a642;
+}
+body.phone-controls.critique-mode .lab-panel {
+  left: 8px;
+  right: 8px;
+  bottom: calc(max(5px, env(safe-area-inset-bottom)) + 126px);
+  top: auto;
+  width: auto;
+  max-height: min(40vh, 370px);
+  overflow: auto;
+  padding: 8px;
+  background: rgba(4,8,11,0.9);
+  border-color: rgba(255,255,255,0.18);
+}
+body.phone-controls.critique-mode #cleanupPanel,
+body.phone-controls.critique-mode #bonePanel,
+body.phone-controls.critique-mode #retargetPanel,
+body.phone-controls.critique-mode #transformPanel,
+body.phone-controls.critique-mode #labReadout {
+  display: none !important;
+}
+body.phone-controls.critique-mode #clipPanel:not(.open) {
+  display: none !important;
+}
+body.phone-controls.critique-mode #poseEditDock:not([open]) {
+  display: none !important;
+}
+body.phone-controls.critique-mode #cleanupPanel.open,
+body.phone-controls.critique-mode #clipPanel.open,
+body.phone-controls.critique-mode #bonePanel.open,
+body.phone-controls.critique-mode #retargetPanel.open,
+body.phone-controls.critique-mode #transformPanel.open,
+body.phone-controls.critique-mode #labReadout.open {
+  display: block !important;
+}
+body.phone-controls.critique-mode.sheet-clips #clipPanel { max-height: min(45vh, 410px); }
+body.phone-controls.critique-mode.sheet-pose #cleanupPanel { max-height: min(36vh, 340px); }
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel { max-height: min(43vh, 410px); }
+body.phone-controls.critique-mode.sheet-advanced #cleanupPanel { max-height: min(50vh, 470px); }
+body.phone-controls.critique-mode.sheet-bones #bonePanel { max-height: min(43vh, 410px); }
+body.phone-controls.critique-mode.sheet-view #labReadout { max-height: min(38vh, 360px); pointer-events: auto; }
+body.phone-controls.critique-mode #cleanupPanel > * { display: none !important; }
+body.phone-controls.critique-mode.sheet-pose #cleanupPanel > .panel-title,
+body.phone-controls.critique-mode.sheet-pose #cleanupPanel > #cleanupClipName,
+body.phone-controls.critique-mode.sheet-pose #cleanupPanel > #critiqueDock,
+body.phone-controls.critique-mode.sheet-pose #cleanupPanel > #cleanupStatus {
+  display: block !important;
+}
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > .panel-title,
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > #cleanupClipName,
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > .cleanup-editor,
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > .cleanup-transport,
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > .cleanup-range-grid,
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > .cleanup-edit-row,
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > .cleanup-blend-row,
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > .cleanup-save-row,
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > .cleanup-original-row,
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > #cleanupStatus {
+  display: block !important;
+}
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > .cleanup-transport,
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > .cleanup-range-grid,
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > .cleanup-edit-row,
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > .cleanup-blend-row,
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > .cleanup-save-row,
+body.phone-controls.critique-mode.sheet-edit #cleanupPanel > .cleanup-original-row {
+  display: grid !important;
+}
+body.phone-controls.critique-mode.sheet-advanced #cleanupPanel > .panel-title,
+body.phone-controls.critique-mode.sheet-advanced #cleanupPanel > #cleanupClipName,
+body.phone-controls.critique-mode.sheet-advanced #cleanupPanel > .asset-file-row,
+body.phone-controls.critique-mode.sheet-advanced #cleanupPanel > .cleanup-merge-section,
+body.phone-controls.critique-mode.sheet-advanced #cleanupPanel > .cleanup-pose-index-section,
+body.phone-controls.critique-mode.sheet-advanced #cleanupPanel > .cleanup-advanced,
+body.phone-controls.critique-mode.sheet-advanced #cleanupPanel > #cleanupStatus {
+  display: block !important;
+}
+body.phone-controls.critique-mode.sheet-advanced #cleanupPanel > .asset-file-row { display: grid !important; }
+body.phone-controls.critique-mode #cleanupTimelineCanvas { height: 54px; }
+body.phone-controls.critique-mode #cleanupMergeTimelineCanvas { height: 50px; }
+body.phone-controls.critique-mode .cleanup-readout,
+body.phone-controls.critique-mode #cleanupStatus,
+body.phone-controls.critique-mode #critiqueLog { font-size: 9px; }
+body.phone-controls.critique-mode .cleanup-range-grid,
+body.phone-controls.critique-mode .cleanup-edit-row,
+body.phone-controls.critique-mode .cleanup-blend-row,
+body.phone-controls.critique-mode .cleanup-save-row,
+body.phone-controls.critique-mode .button-row { gap: 5px; }
+body.phone-controls.critique-mode #cleanupPanel button,
+body.phone-controls.critique-mode #clipPanel button,
+body.phone-controls.critique-mode #bonePanel button { min-height: 30px; font-size: 10px; }
+body.phone-controls.critique-mode .critique-transport-mode-row button,
+body.phone-controls.critique-mode .critique-transport-row button,
+body.phone-controls.critique-mode .critique-frame-buttons button { min-height: 26px; font-size: 9px; }
+body.phone-controls.critique-mode .critique-note-line textarea { min-height: 56px; }
+@media (orientation: landscape) {
+  body.phone-controls.critique-mode .lab-panel {
+    left: auto;
+    right: 8px;
+    bottom: calc(max(5px, env(safe-area-inset-bottom)) + 48px);
+    width: min(33vw, 340px);
+    max-height: calc(100vh - 96px);
+  }
+  body.phone-controls.critique-mode #playerTransport {
+    left: 8px;
+    right: auto;
+    width: min(45vw, 460px);
+  }
+  body.phone-controls.critique-mode #panelTabs {
+    left: auto;
+    right: 8px;
+    width: min(49vw, 500px);
+  }
+}
+
+/* phone-controls-critique-station-1.0: compact critique rail plus hidden cleanup tools. */
+body.phone-controls.critique-mode #cleanupPanel {
+  max-height: calc(100vh - 92px);
+  overflow: auto;
+}
+body.phone-controls.critique-mode .critique-station {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 6px;
+  padding: 8px;
+  border: 1px solid rgba(214,166,66,0.22);
+  background: rgba(10,16,22,0.58);
+}
+body.phone-controls.critique-mode .critique-summary {
+  display: grid;
+  gap: 2px;
+  color: #d7f6ff;
+  font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+body.phone-controls.critique-mode .critique-summary strong {
+  color: #f4ddac;
+  font-size: 11px;
+}
+body.phone-controls.critique-mode .critique-summary span {
+  overflow-wrap: anywhere;
+}
+body.phone-controls.critique-mode .critique-action-row {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+body.phone-controls.critique-mode .critique-action-row button {
+  min-height: 30px;
+  padding: 4px 6px;
+  font-size: 10px;
+}
+body.phone-controls.critique-mode .critique-frame-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(48px, 1fr));
+  gap: 4px;
+}
+body.phone-controls.critique-mode .critique-frame-buttons button {
+  min-height: 26px;
+  padding: 4px 5px;
+  font-size: 9px;
+  line-height: 1.1;
+}
+body.phone-controls.critique-mode .cleanup-editor {
+  margin: 6px 0 5px;
+}
+body.phone-controls.critique-mode #cleanupTimelineCanvas {
+  height: 60px;
+}
+body.phone-controls.critique-mode .cleanup-scrub {
+  margin-top: 4px;
+}
+body.phone-controls.critique-mode .cleanup-transport,
+body.phone-controls.critique-mode .cleanup-range-grid,
+body.phone-controls.critique-mode .cleanup-edit-row,
+body.phone-controls.critique-mode .cleanup-blend-row,
+body.phone-controls.critique-mode .cleanup-merge-section,
+body.phone-controls.critique-mode .cleanup-pose-index-section,
+body.phone-controls.critique-mode .cleanup-save-row,
+body.phone-controls.critique-mode .cleanup-advanced,
+body.phone-controls.critique-mode .cleanup-original-row,
+body.phone-controls.critique-mode .asset-file-row,
+body.phone-controls.critique-mode #cleanupStatus {
+  display: none !important;
+}
+body.phone-controls.critique-mode #critiqueDock {
+  margin-top: 6px;
+}
+body.phone-controls.critique-mode .critique-note-line textarea {
+  min-height: 56px;
+}
+body.phone-controls.critique-mode .critique-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+body.phone-controls.critique-mode .critique-actions button {
+  min-height: 30px;
+  font-size: 10px;
+}
+
+/* phone-controls-bare-player-1.0: critique mode should collapse to the transport rail. */
+body.phone-controls.critique-mode #actorTabs,
+body.phone-controls.critique-mode #viewTabs,
+body.phone-controls.critique-mode #panelTabs,
+body.phone-controls.critique-mode #cleanupPanel,
+body.phone-controls.critique-mode #bonePanel,
+body.phone-controls.critique-mode #retargetPanel,
+body.phone-controls.critique-mode #transformPanel,
+body.phone-controls.critique-mode #labReadout,
+body.phone-controls.critique-mode #diagnosticOverlay,
+body.phone-controls.critique-mode #labStatus {
+  display: none !important;
+}
+body.phone-controls.critique-mode #playerTransport {
+  left: 8px;
+  right: 8px;
+  top: auto;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  z-index: 12;
+  width: auto;
+  max-height: calc(100vh - 16px);
+  overflow: auto;
+  gap: 6px;
+  padding: 8px;
+}
+body.phone-controls.critique-mode .player-transport-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+body.phone-controls.critique-mode .player-transport-time {
+  color: #f4ddac;
+  font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: nowrap;
+}
+body.phone-controls.critique-mode #cleanupTimelineCanvas {
+  height: 66px;
+}
+body.phone-controls.critique-mode .cleanup-scrub {
+  margin-top: 3px;
+}
+body.phone-controls.critique-mode .player-transport-row,
+body.phone-controls.critique-mode .critique-transport-jump-row {
+  gap: 4px;
+}
+body.phone-controls.critique-mode .critique-transport-jump-row {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+body.phone-controls.critique-mode .critique-dock {
+  display: grid;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid rgba(214,166,66,0.28);
+  background: rgba(4,8,11,0.92);
+}
+body.phone-controls.critique-mode .critique-dock > summary {
+  min-height: 30px;
+  color: #f4ddac;
+  font-size: 11px;
+  font-weight: 900;
+}
+body.phone-controls.critique-mode .critique-dock:not([open]) > :not(summary) {
+  display: none !important;
+}
+body.phone-controls.critique-mode .critique-summary {
+  display: grid;
+  gap: 2px;
+  color: #d7f6ff;
+  font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+body.phone-controls.critique-mode .critique-summary strong {
+  color: #f4ddac;
+  font-size: 11px;
+}
+body.phone-controls.critique-mode .critique-note-line textarea {
+  min-height: 56px;
+}
+body.phone-controls.critique-mode .critique-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+body.phone-controls.critique-mode .critique-actions button {
+  min-height: 30px;
+  font-size: 10px;
+}
+
+/* pose-edit-dock-1.0: advanced correction fallback; direct touch editing uses the HUD below. */
+body.phone-controls.critique-mode .pose-edit-dock {
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+body.phone-controls.critique-mode .pose-edit-dock > summary {
+  min-height: 26px;
+  color: #7fdcff;
+  font-size: 10px;
+  font-weight: 900;
+}
+body.phone-controls.critique-mode .pose-edit-dock:not([open]) > :not(summary) {
+  display: none !important;
+}
+body.phone-controls.critique-mode .pose-edit-dock[open] {
+  display: grid;
+  gap: 6px;
+  padding: 7px;
+  border: 1px solid rgba(127,220,255,0.22);
+  background: rgba(4,8,11,0.82);
+}
+body.phone-controls.critique-mode .pose-edit-dock button.active {
+  color: #0b1014;
+  background: #d6a642;
+  border-color: #f4ddac;
+}
+body.phone-controls.critique-mode #poseEditStatus {
+  min-height: 24px;
+  margin: 0;
+  color: #d7f6ff;
+  font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+/* touch-pose-hud-3.0: transparent draggable viewport-first pose dock for phone critique. */
+body.phone-controls.critique-mode #touchPoseHud {
+  display: none;
+  position: fixed;
+  left: var(--touch-pose-dock-x, 50%);
+  top: var(--touch-pose-dock-y, auto);
+  bottom: calc(max(10px, env(safe-area-inset-bottom)) + 54px);
+  z-index: 12;
+  width: min(96vw, 620px);
+  transform: translateX(-50%);
+  grid-template-columns: 42px minmax(88px, 1.25fr) 44px repeat(4, minmax(44px, 1fr));
+  gap: 4px;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid rgba(127,220,255,0.16);
+  background: rgba(4,8,11,0.24);
+  box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+  backdrop-filter: blur(3px);
+  pointer-events: auto;
+}
+body.phone-controls.critique-mode #touchPoseHud.active {
+  display: grid;
+}
+body.phone-controls.critique-mode #touchPoseHud.dock-dragged {
+  bottom: auto;
+  transform: none;
+}
+body.phone-controls.critique-mode #touchPoseHud.dock-dragging {
+  background: rgba(4,8,11,0.38);
+  border-color: rgba(127,220,255,0.34);
+}
+body.phone-controls.critique-mode #touchPoseDockHandle,
+body.phone-controls.critique-mode #touchPoseLabel,
+body.phone-controls.critique-mode #touchPoseMode {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #d7f6ff;
+  font: 10px/1.1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+body.phone-controls.critique-mode #touchPoseDockHandle {
+  color: #d7f6ff;
+  border: 1px dashed rgba(127,220,255,0.36);
+  text-align: center;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+body.phone-controls.critique-mode #touchPoseHud.dock-dragging #touchPoseDockHandle { cursor: grabbing; }
+body.phone-controls.critique-mode #touchPoseMode {
+  color: #0b1014;
+  background: #7fdcff;
+  text-align: center;
+  font-weight: 900;
+}
+body.phone-controls.critique-mode #touchPoseHud button {
+  min-height: 29px;
+  padding: 3px 5px;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #f8f1dd;
+  background: rgba(16,22,28,0.66);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 850;
+}
+body.phone-controls.critique-mode #touchPoseHud button:disabled {
+  color: rgba(248,241,221,0.35);
+  border-color: rgba(255,255,255,0.08);
+  background: rgba(16,22,28,0.45);
+}
+body.phone-controls.critique-mode #touchPoseUndo,
+body.phone-controls.critique-mode #touchPoseRedo {
+  color: #d7f6ff;
+}
+body.phone-controls.critique-mode #touchPoseModeToggle {
+  color: #17140d;
+  background: #d6a642;
+}
+@media (max-width: 560px) {
+  body.phone-controls.critique-mode #touchPoseHud {
+    grid-template-columns: 42px minmax(0, 1fr) 42px repeat(4, minmax(42px, 1fr));
+  }
+  body.phone-controls.critique-mode #touchPoseLabel {
+    grid-column: 2 / 3;
+  }
+  body.phone-controls.critique-mode #touchPoseMode {
+    grid-column: 3 / 4;
+  }
+}

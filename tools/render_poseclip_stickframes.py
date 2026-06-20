@@ -169,12 +169,13 @@ def sample_poseclip_world(base, index, bindings, time_value):
 
 
 def evidence_slots(evidence, clip, fps, mode):
-    if evidence and evidence.get('captureSlots'):
-        slots = list(evidence['captureSlots'])
-    else:
-        reduction = clip.get('userData', {}).get('sourceReduction', {})
+    reduction = clip.get('userData', {}).get('sourceReduction', {})
+    sprite_frames = reduction.get('spriteFrames', [])
+    if mode == 'read':
+        if evidence and evidence.get('captureSlots'):
+            return list(evidence['captureSlots'])
         slots = []
-        for frame in reduction.get('spriteFrames', []):
+        for frame in sprite_frames:
             sprite_frame = int(frame['spriteFrame'])
             slots.append({
                 'evidenceKey': f"generated:f{sprite_frame:03d}:{frame['tag']}",
@@ -185,10 +186,50 @@ def evidence_slots(evidence, clip, fps, mode):
                 'description': frame.get('description', ''),
                 'overlayPhases': [],
             })
-    slots = sorted(slots, key=lambda item: (int(item.get('spriteFrame', 0)), str(item.get('tag', ''))))
-    if mode == 'read':
+        return slots
+    if mode == 'step':
+        if evidence and evidence.get('captureSlots'):
+            source_slots = list(evidence['captureSlots'])
+            source_by_frame = {int(slot.get('spriteFrame', 0)): slot for slot in source_slots}
+        else:
+            source_by_frame = {int(frame.get('spriteFrame', 0)): frame for frame in sprite_frames}
+        if source_by_frame:
+            last_frame = max(source_by_frame)
+        else:
+            duration = float(clip.get('duration', 0.0))
+            last_frame = max(0, int(round(duration * fps)))
+        slots = []
+        for frame_no in range(last_frame + 1):
+            source_slot = source_by_frame.get(frame_no, {})
+            slots.append({
+                'evidenceKey': f'generated:f{frame_no:03d}:step',
+                'tag': f'f{frame_no:03d}',
+                'markerTag': source_slot.get('tag', ''),
+                'spriteFrame': frame_no,
+                'poseclipTime': round(frame_no / fps, 5),
+                'sourceTime': source_slot.get('sourceTime', round(frame_no / fps, 5)),
+                'description': source_slot.get('description', ''),
+                'overlayPhases': source_slot.get('overlayPhases', []),
+                'contactModifiers': source_slot.get('contactModifiers', []),
+                'headDiscipline': source_slot.get('headDiscipline', []),
+                'annotations': source_slot.get('annotations', []),
+            })
         return slots
 
+    slots = list(evidence['captureSlots']) if evidence and evidence.get('captureSlots') else []
+    if not slots:
+        slots = []
+        for frame in sprite_frames:
+            sprite_frame = int(frame['spriteFrame'])
+            slots.append({
+                'evidenceKey': f"generated:f{sprite_frame:03d}:{frame['tag']}",
+                'tag': frame['tag'],
+                'spriteFrame': sprite_frame,
+                'poseclipTime': round(sprite_frame / fps, 5),
+                'sourceTime': frame.get('sourceTime'),
+                'description': frame.get('description', ''),
+                'overlayPhases': [],
+            })
     duration = float(clip.get('duration', 0.0))
     last_frame = max(0, int(round(duration * fps)))
     by_frame = {int(slot.get('spriteFrame', 0)): slot for slot in slots}
@@ -203,7 +244,6 @@ def evidence_slots(evidence, clip, fps, mode):
         slot.setdefault('overlayPhases', [])
         all_slots.append(slot)
     return all_slots
-
 
 def axis_pair(view):
     if view == 'xz':
@@ -301,7 +341,7 @@ def draw_frame(base, index, world, slot, output_path, bounds, width, height, vie
     draw.rectangle((0, 0, width, 78), fill='#15232f')
     draw.rectangle((0, height - 58, width, height), fill='#15232f')
     draw.text((24, 18), title, fill='#f7f3e8')
-    draw.text((24, 42), f"f{int(slot.get('spriteFrame', 0)):03d}  {slot.get('tag', 'pose')}  t={float(slot.get('poseclipTime', 0.0)):.5f}s  view={view}", fill='#a7c7e7')
+    draw.text((24, 42), f"f{int(slot.get('spriteFrame', 0)):03d}  {slot.get('markerTag') or slot.get('tag', 'pose')}  t={float(slot.get('poseclipTime', 0.0)):.5f}s  view={view}", fill='#a7c7e7')
 
     for _, color, chain in BONE_CHAINS:
         chain_points = []
@@ -438,6 +478,7 @@ def write_critique_packet(out_dir, manifest):
         '',
         f"- Manifest: `{rel(out_dir / 'manifest.json')}`",
         f"- Critique guide: `{rel(CRITIQUE_GUIDE)}`",
+        f"- Critique mode: `{manifest.get('critiqueMode', {}).get('kind', 'standard')}`",
         f"- Poseclip: `{manifest.get('poseclip')}`",
         f"- Evidence: `{manifest.get('evidence')}`",
         f"- Video: `{manifest.get('video') or 'not generated'}`",
@@ -456,6 +497,7 @@ def write_critique_packet(out_dir, manifest):
         overlays = ', '.join(phase.get('tag', phase.get('mode', 'overlay')) for phase in frame.get('overlayPhases', [])) or 'none'
         modifiers = ', '.join(modifier.get('tag', modifier.get('kind', 'modifier')) for modifier in frame.get('contactModifiers', [])) or 'none'
         head_discipline = ', '.join(modifier.get('tag', modifier.get('kind', 'head')) for modifier in frame.get('headDiscipline', [])) or 'none'
+        annotations = frame.get('annotations', [])
         lines.extend([
             f"### f{int(frame.get('spriteFrame', 0)):03d} {frame.get('tag', 'pose')}",
             '',
@@ -464,10 +506,13 @@ def write_critique_packet(out_dir, manifest):
             f"- Poseclip time: `{frame.get('poseclipTime')}` seconds",
             f"- Source: `{frame.get('sourceClipName')}` at `{frame.get('sourceTime')}` seconds",
             f"- Description: {frame.get('description') or 'none'}",
+        f"- Marker: {frame.get('markerTag') or 'none'}",
             f"- Overlay phases: {overlays}",
             f"- Contact modifiers: {modifiers}",
             f"- Head discipline: {head_discipline}",
             f"- Evidence key: `{frame.get('evidenceKey')}`",
+            f"- Annotations: {len(annotations) if isinstance(annotations, list) else 0}",
+            '' if not annotations else '- Note: ' + ' | '.join((note.get('comment') or note.get('text') or '').strip() for note in annotations if (note.get('comment') or note.get('text'))),
             '',
         ])
     packet_path.write_text('\n'.join(lines).rstrip() + '\n')
@@ -502,6 +547,7 @@ def render(args):
         entry = {
             'evidenceKey': slot.get('evidenceKey'),
             'tag': tag,
+            'markerTag': slot.get('markerTag', ''),
             'spriteFrame': sprite_frame,
             'poseclipTime': float(slot.get('poseclipTime', sprite_frame / args.fps)),
             'sourceClipName': slot.get('sourceClipName'),
@@ -510,6 +556,7 @@ def render(args):
             'overlayPhases': slot.get('overlayPhases', []),
             'contactModifiers': slot.get('contactModifiers', []),
             'headDiscipline': slot.get('headDiscipline', []),
+            'annotations': slot.get('annotations', []),
             'png': rel(png_path),
             'durationToNext': round(duration_to_next(slots, idx, args.fps, clip_duration), 5),
         }
@@ -551,6 +598,7 @@ def render(args):
         'animationGif': animation_gif,
         'animationError': animation_error,
         'critiqueGuide': rel(CRITIQUE_GUIDE) if CRITIQUE_GUIDE.exists() else None,
+        'critiqueMode': (evidence or {}).get('critiqueMode', {'kind': 'standard'}),
     }
     packet_path = write_critique_packet(out_dir, manifest)
     manifest['critiquePacket'] = rel(packet_path)
@@ -573,7 +621,7 @@ def main():
     parser.add_argument('--model', default=str(DEFAULT_MODEL))
     parser.add_argument('--evidence')
     parser.add_argument('--out')
-    parser.add_argument('--frames', choices=['read', 'all'], default='read')
+    parser.add_argument('--frames', choices=['read', 'step', 'all'], default='read')
     parser.add_argument('--fps', type=int, default=60)
     parser.add_argument('--width', type=int, default=960)
     parser.add_argument('--height', type=int, default=720)

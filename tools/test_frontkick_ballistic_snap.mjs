@@ -38,9 +38,15 @@ assert(Number(contact.sourceTime.toFixed(5)) === 0.36667, `FrontKick contact sho
 assert(Number(contactHold.sourceTime.toFixed(5)) === 0.36667, `FrontKick contactHold should freeze the same extension frame at 0.36667, got ${contactHold.sourceTime}`);
 assert(Number(recoil.sourceTime.toFixed(5)) === 0.5, `FrontKick recoil should preserve the early retraction start frame at 0.50000, got ${recoil.sourceTime}`);
 assert(Number(recoilSettle.sourceTime.toFixed(5)) === 0.56667, `FrontKick recoilSettle should preserve the visible snap-back frame at 0.56667, got ${recoilSettle.sourceTime}`);
-assert(contactHold.spriteFrame - contact.spriteFrame <= 2, `FrontKick contact hold is too long (${contactHold.spriteFrame - contact.spriteFrame} frames); expected <= 2`);
+const extensionFrames = contact.spriteFrame - anticipation.spriteFrame;
+const contactFreezeFrames = contactHold.spriteFrame - contact.spriteFrame;
+const retractFrames = recoilSettle.spriteFrame - contactHold.spriteFrame;
+assert(extensionFrames <= 5, `FrontKick extension is still too visible (${extensionFrames} frames); expected <= 5`);
+assert(contactFreezeFrames <= 1, `FrontKick contact freeze is too long (${contactFreezeFrames} frames); expected <= 1`);
 assert(recoil.spriteFrame - contact.spriteFrame <= 4, `FrontKick recoil is too delayed (${recoil.spriteFrame - contact.spriteFrame} frames); expected <= 4`);
-assert(recoilSettle.spriteFrame - recoil.spriteFrame <= 3, `FrontKick recoilSettle should follow recoil quickly (${recoilSettle.spriteFrame - recoil.spriteFrame} frames); expected <= 3`);
+assert(recoilSettle.spriteFrame - recoil.spriteFrame <= 4, `FrontKick recoilSettle should follow recoil quickly (${recoilSettle.spriteFrame - recoil.spriteFrame} frames); expected <= 4`);
+assert(retractFrames >= 6, `FrontKick retraction is too compressed (${retractFrames} frames); expected >= 6`);
+assert(retractFrames > extensionFrames, `FrontKick should spend more time retracting than extending (${retractFrames} vs ${extensionFrames})`);
 
 const anticipationMetric = metric('anticipation');
 const contactMetric = metric('contact');
@@ -51,6 +57,11 @@ assert(contactMetric.positions.leftFoot[1] - anticipationMetric.positions.leftFo
 const recoilSettleMetric = metric('recoilSettle');
 assert(contactMetric.positions.leftFoot[2] - recoilSettleMetric.positions.leftFoot[2] >= 0.9, `FrontKick recoilSettle should visibly retract the foot path (${(contactMetric.positions.leftFoot[2] - recoilSettleMetric.positions.leftFoot[2]).toFixed(3)}); expected >= 0.9`);
 assert(Math.abs(holdMetric.positions.leftFoot[2] - contactMetric.positions.leftFoot[2]) <= 0.02, `FrontKick contact hold should be almost nonexistent in foot path (${Math.abs(holdMetric.positions.leftFoot[2] - contactMetric.positions.leftFoot[2]).toFixed(3)}); expected <= 0.02`);
+const hipDrive = contactMetric.positions.hips[2] - anticipationMetric.positions.hips[2];
+const hipDrop = anticipationMetric.positions.hips[1] - contactMetric.positions.hips[1];
+assert(hipDrive >= 0.2, `FrontKick contact needs stronger pelvis drive (${hipDrive.toFixed(3)}); expected >= 0.2`);
+assert(hipDrop >= 0.01, `FrontKick contact should drop slightly into the support leg (${hipDrop.toFixed(3)}); expected >= 0.01`);
+assert(contactMetric.xz.headMinusHipsForward <= -0.4, `FrontKick torso/head counterbalance collapsed forward (${contactMetric.xz.headMinusHipsForward.toFixed(3)}); expected <= -0.4`);
 
 if (failures.length) throw new Error(failures.join('\n'));
 
@@ -59,7 +70,9 @@ console.log(JSON.stringify({
   schedule: {
     anticipation: anticipation.sourceTime,
     contact: contact.sourceTime,
-    contactHoldFrames: contactHold.spriteFrame - contact.spriteFrame,
+    extensionFrames,
+    contactHoldFrames: contactFreezeFrames,
+    retractFrames,
     recoil: recoil.sourceTime,
     recoilSettle: recoilSettle.sourceTime,
   },

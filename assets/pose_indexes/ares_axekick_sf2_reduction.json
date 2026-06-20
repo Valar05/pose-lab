@@ -146,7 +146,7 @@
     },
     {
       "tag": "contactHold",
-      "spriteFrame": 33,
+      "spriteFrame": 28,
       "sourceFrameIndex": 13,
       "sourceTime": 0.43333,
       "description": "strike full leg extension, mid foot, snappy transition",
@@ -163,15 +163,15 @@
     },
     {
       "tag": "recoil",
-      "spriteFrame": 36,
-      "sourceFrameIndex": 21,
-      "sourceTime": 0.7,
-      "description": "recovery extended leg, low foot, readable shift",
+      "spriteFrame": 31,
+      "sourceFrameIndex": 16,
+      "sourceTime": 0.53333,
+      "description": "strike extended leg, low foot, held pose",
       "attackStyle": "kick",
-      "reach": 0.35298,
-      "effectorHeight": -0.86682,
-      "effectorExtension": 1.00213,
-      "motionTotal": 0.56644,
+      "reach": 0.52055,
+      "effectorHeight": -0.79467,
+      "effectorExtension": 1.04093,
+      "motionTotal": 0.41464,
       "easingOptions": [
         "dampedRecover",
         "microOvershoot",
@@ -180,15 +180,15 @@
     },
     {
       "tag": "recoverySettle",
-      "spriteFrame": 38,
-      "sourceFrameIndex": 23,
-      "sourceTime": 0.76667,
-      "description": "recovery extended leg, low foot, held pose",
+      "spriteFrame": 35,
+      "sourceFrameIndex": 20,
+      "sourceTime": 0.66667,
+      "description": "recovery extended leg, low foot, readable shift",
       "attackStyle": "kick",
-      "reach": 0.27924,
-      "effectorHeight": -0.87349,
-      "effectorExtension": 0.9691,
-      "motionTotal": 0.26574,
+      "reach": 0.40149,
+      "effectorHeight": -0.85372,
+      "effectorExtension": 1.01955,
+      "motionTotal": 0.59704,
       "easingOptions": [
         "hold",
         "springLow",
@@ -198,14 +198,14 @@
     {
       "tag": "settle",
       "spriteFrame": 40,
-      "sourceFrameIndex": 24,
-      "sourceTime": 0.8,
-      "description": "recovery extended leg, low foot, held pose",
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.0,
+      "description": "start extended leg, low foot, readable shift",
       "attackStyle": "kick",
       "reach": 0.26767,
       "effectorHeight": -0.87311,
       "effectorExtension": 0.9632,
-      "motionTotal": 0.07406,
+      "motionTotal": 0.91016,
       "easingOptions": [
         "hold",
         "springLow",
@@ -287,7 +287,7 @@
     {
       "from": "contact",
       "to": "contactHold",
-      "holdFrames": 11,
+      "holdFrames": 6,
       "easingOptions": [
         "stepHold",
         "ballisticRecoil",
@@ -307,7 +307,7 @@
     {
       "from": "recoil",
       "to": "recoverySettle",
-      "holdFrames": 2,
+      "holdFrames": 4,
       "easingOptions": [
         "dampedRecover",
         "microOvershoot",
@@ -317,7 +317,7 @@
     {
       "from": "recoverySettle",
       "to": "settle",
-      "holdFrames": 2,
+      "holdFrames": 5,
       "easingOptions": [
         "hold",
         "springLow",

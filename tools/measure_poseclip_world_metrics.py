@@ -84,6 +84,12 @@ def metric_frame(base, index, renderer, bindings, slot, view):
             'leftHandBelowSpine2Y': round(spine2[1] - left_hand[1], 6),
             'rightHandBelowSpine2Y': round(spine2[1] - right_hand[1], 6),
         },
+        'feet': {
+            'leftFootMinusHipsForward': round(left_foot[forward_axis] - hips[forward_axis], 6),
+            'rightFootMinusHipsForward': round(right_foot[forward_axis] - hips[forward_axis], 6),
+            'leftFootHeight': round(left_foot[1], 6),
+            'rightFootHeight': round(right_foot[1], 6),
+        },
         'posture': {
             'shoulderForwardFromSpine2Z': round(shoulder_mid[2] - spine2[2], 6),
             'shoulderUpFromSpine2Y': round(shoulder_mid[1] - spine2[1], 6),

@@ -3,16 +3,34 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
-import { applyGodotRestPose } from './godot-rest-poses.js?v=visual-qa-read-frames';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=visual-qa-read-frames';
-import { preferSavedClipForActor } from './startup-policy.js?v=visual-qa-read-frames';
-import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=visual-qa-read-frames';
+import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-22';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-22';
+import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-22';
+import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-22';
+import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-22';
 
 const LAB_BUILD = 'clean-sf2';
+const LAB_MODE = resolveLabMode(window.location.search || '');
+const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
 const ACTORS = RIG_PROFILES;
 const STORAGE_KEY = 'pose-lab:last-state:v1';
 const CLEANUP_DRAFTS_KEY = 'pose-lab:cleanup-drafts:v1';
+const CRITIQUE_NOTES_KEY = 'pose-lab:critique-notes:v1';
+const POSE_CORRECTIONS_KEY = 'pose-lab:pose-corrections:v1';
+const POSE_HISTORY_KEY = 'pose-lab:pose-history:v1';
+const POSE_HISTORY_LIMIT = 80;
+const CRITIQUE_STEP_FPS = 30;
+const CRITIQUE_LIVE_FPS = 60;
+const PHONE_SHEET_PANELS = ['clips', 'pose', 'edit', 'bones', 'advanced', 'view'];
+const CLEANUP_SHEET_PANELS = new Set(['pose', 'edit', 'advanced', 'cleanup']);
+const TOUCH_POSE_DRAG_THRESHOLD = 8;
+const TOUCH_POSE_FK_MIN_RADIUS = 12;
+const TOUCH_POSE_ROTATION_PAN_SPEED = 0.0045;
+const TOUCH_POSE_ROLL_DEADZONE = 0.045;
+const TOUCH_POSE_ROLL_PAN_DEADZONE = 14.0;
+const TOUCH_POSE_DOUBLE_TAP_MS = 360;
+const TOUCH_POSE_DOUBLE_TAP_PX = 32;
 const textureLoader = new THREE.TextureLoader();
 
 
@@ -30,6 +48,82 @@ function visualQaConfig() {
     clip: params.get('qaClip') || params.get('clip') || '',
     frameMode: params.get('qaFrameMode') || '',
   };
+
+}
+
+function debugBridgeConfig() {
+  const params = new URLSearchParams(window.location.search || '');
+  const enabled = params.get('debugBridge') === '1' || params.get('debugBridge') === 'true' || Boolean(params.get('debugBridgeUrl'));
+  const url = String(params.get('debugBridgeUrl') || '').trim().replace(/\/$/, '');
+  return {
+    enabled,
+    url,
+    label: String(params.get('debugLabel') || 'pose-lab-debug'),
+    timeoutMs: Math.max(2000, Number(params.get('debugBridgeTimeoutMs') || 15000)),
+    pollMs: Math.max(100, Number(params.get('debugBridgePollMs') || 250)),
+  };
+}
+
+function splitDebugCommand(input) {
+  const text = String(input || '').trim();
+  if (!text) return [];
+  const parts = [];
+  let token = '';
+  let quote = '';
+  let escaped = false;
+  for (const char of text) {
+    if (escaped) {
+      token += char;
+      escaped = false;
+      continue;
+    }
+    if (char === '\\') {
+      escaped = true;
+      continue;
+    }
+    if (quote) {
+      if (char === quote) {
+        quote = '';
+      } else {
+        token += char;
+      }
+      continue;
+    }
+    if (char === '"' || char === "'") {
+      quote = char;
+      continue;
+    }
+    if (/\s/.test(char)) {
+      if (token) {
+        parts.push(token);
+        token = '';
+      }
+      continue;
+    }
+    token += char;
+  }
+  if (token) parts.push(token);
+  return parts;
+}
+
+function normalizeDebugCommand(input) {
+  if (typeof input === 'string') {
+    const parts = splitDebugCommand(input);
+    return { name: String(parts[0] || '').trim().toLowerCase(), args: parts.slice(1), raw: input };
+  }
+  if (input && typeof input === 'object') {
+    const name = String(input.name || input.command || input.cmd || '').trim().toLowerCase();
+    const args = Array.isArray(input.args) ? input.args.map((value) => String(value)) : splitDebugCommand(String(input.text || input.command || ''));
+    return { name, args: input.args ? args : args.slice(1), raw: String(input.raw || input.text || input.command || ''), payload: input };
+  }
+  return { name: '', args: [], raw: '' };
+}
+
+function debugValueString(value) {
+  if (value == null) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+  return JSON.stringify(value);
 }
 
 function postVisualQaBeacon(stage, meta = {}) {
@@ -54,6 +148,17 @@ const UI = {
   loadState: document.getElementById('loadState'),
   status: document.getElementById('labStatus'),
   clipButtons: document.getElementById('clipButtons'),
+  playerTransportLabel: document.getElementById('playerTransportLabel'),
+  playerPrevFrame: document.getElementById('playerPrevFrame'),
+  playerPlayPause: document.getElementById('playerPlayPause'),
+  playerNextFrame: document.getElementById('playerNextFrame'),
+  playerClipPanel: document.getElementById('playerClipPanel'),
+  playerPoseControls: document.getElementById('playerPoseControls'),
+  playerStop: document.getElementById('playerStop'),
+  critiqueFrameButtons: document.getElementById('critiqueFrameButtons'),
+  critiqueResetPose: document.getElementById('critiqueResetPose'),
+  critiqueNewKey: document.getElementById('critiqueNewKey'),
+  critiqueCompare: document.getElementById('critiqueCompare'),
   clipSearch: document.getElementById('clipSearch'),
   clipHint: document.getElementById('clipHint'),
   cleanupClipName: document.getElementById('cleanupClipName'),
@@ -108,6 +213,71 @@ const UI = {
   cleanupReset: document.getElementById('cleanupReset'),
   cleanupStop: document.getElementById('cleanupStop'),
   cleanupStatus: document.getElementById('cleanupStatus'),
+  critiqueStepMode: document.getElementById('critiqueStepMode'),
+  critiqueLiveMode: document.getElementById('critiqueLiveMode'),
+  critiqueLoopMode: document.getElementById('critiqueLoopMode'),
+  critiquePingPongMode: document.getElementById('critiquePingPongMode'),
+  critiquePrevFrame: document.getElementById('critiquePrevFrame'),
+  critiqueNextFrame: document.getElementById('critiqueNextFrame'),
+  critiquePrevKeyframe: document.getElementById('critiquePrevKeyframe'),
+  critiqueNextKeyframe: document.getElementById('critiqueNextKeyframe'),
+  critiquePlayPause: document.getElementById('critiquePlayPause'),
+  critiqueJumpStart: document.getElementById('critiqueJumpStart'),
+  critiqueJumpAnticipation: document.getElementById('critiqueJumpAnticipation'),
+  critiqueJumpContact: document.getElementById('critiqueJumpContact'),
+  critiqueJumpRecovery: document.getElementById('critiqueJumpRecovery'),
+  critiqueJumpEnd: document.getElementById('critiqueJumpEnd'),
+  critiqueScrub: document.getElementById('critiqueScrub'),
+  critiqueFrameSummary: document.getElementById('critiqueFrameSummary'),
+  critiqueFrameLabel: document.getElementById('critiqueFrameLabel'),
+  critiqueFrameStatus: document.getElementById('critiqueFrameStatus'),
+  critiqueComment: document.getElementById('critiqueComment'),
+  critiqueMarks: document.getElementById('critiqueMarks'),
+  critiqueBones: document.getElementById('critiqueBones'),
+  critiqueSaveNote: document.getElementById('critiqueSaveNote'),
+  critiqueClearNote: document.getElementById('critiqueClearNote'),
+  critiqueCopyNote: document.getElementById('critiqueCopyNote'),
+  critiqueLog: document.getElementById('critiqueLog'),
+  critiqueDock: document.getElementById('critiqueDock'),
+  touchPoseHud: document.getElementById('touchPoseHud'),
+  touchPoseLabel: document.getElementById('touchPoseLabel'),
+  touchPoseMode: document.getElementById('touchPoseMode'),
+  touchPoseUndo: document.getElementById('touchPoseUndo'),
+  touchPoseRedo: document.getElementById('touchPoseRedo'),
+  touchPoseSave: document.getElementById('touchPoseSave'),
+  touchPoseReset: document.getElementById('touchPoseReset'),
+  touchPoseCancel: document.getElementById('touchPoseCancel'),
+  touchPoseModeToggle: document.getElementById('touchPoseModeToggle'),
+  touchPosePose: document.getElementById('touchPosePose'),
+  touchPoseClips: document.getElementById('touchPoseClips'),
+  touchPoseDockHandle: document.getElementById('touchPoseDockHandle'),
+  poseEditDock: document.getElementById('poseEditDock'),
+  poseBoneSearch: document.getElementById('poseBoneSearch'),
+  poseBoneSelect: document.getElementById('poseBoneSelect'),
+  poseModeIk: document.getElementById('poseModeIk'),
+  poseModeFk: document.getElementById('poseModeFk'),
+  poseSpaceGlobal: document.getElementById('poseSpaceGlobal'),
+  poseSpaceLocal: document.getElementById('poseSpaceLocal'),
+  poseNudgeX: document.getElementById('poseNudgeX'),
+  poseNudgeY: document.getElementById('poseNudgeY'),
+  poseNudgeZ: document.getElementById('poseNudgeZ'),
+  poseRotX: document.getElementById('poseRotX'),
+  poseRotY: document.getElementById('poseRotY'),
+  poseRotZ: document.getElementById('poseRotZ'),
+  poseScale: document.getElementById('poseScale'),
+  poseUseScale: document.getElementById('poseUseScale'),
+  poseNudgeXValue: document.getElementById('poseNudgeXValue'),
+  poseNudgeYValue: document.getElementById('poseNudgeYValue'),
+  poseNudgeZValue: document.getElementById('poseNudgeZValue'),
+  poseRotXValue: document.getElementById('poseRotXValue'),
+  poseRotYValue: document.getElementById('poseRotYValue'),
+  poseRotZValue: document.getElementById('poseRotZValue'),
+  poseScaleValue: document.getElementById('poseScaleValue'),
+  poseSaveKey: document.getElementById('poseSaveKey'),
+  poseResetKey: document.getElementById('poseResetKey'),
+  poseResetClip: document.getElementById('poseResetClip'),
+  poseCompareOverlay: document.getElementById('poseCompareOverlay'),
+  poseEditStatus: document.getElementById('poseEditStatus'),
   readout: document.getElementById('readoutText'),
   diagnostic: document.getElementById('diagnosticText'),
   tabs: [...document.querySelectorAll('#actorTabs button')],
@@ -243,6 +413,26 @@ function collectBones(root) {
     if (node.isBone) bones.push(node);
   });
   return bones;
+}
+
+function screenPointForWorld(world, camera, rect) {
+  const projected = world.clone().project(camera);
+  return {
+    x: rect.left + ((projected.x + 1) * 0.5 * rect.width),
+    y: rect.top + ((1 - projected.y) * 0.5 * rect.height),
+    z: projected.z,
+  };
+}
+
+function distanceToScreenSegment(point, start, end) {
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const lengthSq = dx * dx + dy * dy;
+  if (lengthSq <= 0.0001) return Math.hypot(point.x - start.x, point.y - start.y);
+  const t = clampValue(((point.x - start.x) * dx + (point.y - start.y) * dy) / lengthSq, 0, 1);
+  const x = start.x + dx * t;
+  const y = start.y + dy * t;
+  return Math.hypot(point.x - x, point.y - y);
 }
 
 function normalizeRigNodeName(name) {
@@ -907,6 +1097,15 @@ function solveTwoBoneIk(root, upper, lower, hand, targetWorld, iterations = 6) {
   }
 }
 
+function pinnedHingeTarget(anchorWorld, endpointWorld, targetWorld) {
+  const restVector = endpointWorld.clone().sub(anchorWorld);
+  const length = restVector.length();
+  if (!Number.isFinite(length) || length < 0.000001) return endpointWorld.clone();
+  const targetVector = targetWorld.clone().sub(anchorWorld);
+  if (!Number.isFinite(targetVector.lengthSq()) || targetVector.lengthSq() < 0.000001) return endpointWorld.clone();
+  return anchorWorld.clone().add(targetVector.normalize().multiplyScalar(length));
+}
+
 function clipSampleTimes(clip, fps = 30) {
   const duration = Math.max(0, Number(clip.duration || 0));
   const count = Math.max(2, Math.ceil(duration * fps) + 1);
@@ -1149,6 +1348,174 @@ function clampValue(value, min, max) {
   const n = Number(value);
   if (!Number.isFinite(n)) return min;
   return Math.max(min, Math.min(max, n));
+}
+
+function lerpValue(a, b, t) {
+  return Number(a || 0) + (Number(b || 0) - Number(a || 0)) * clampValue(t, 0, 1);
+}
+
+function smoothStepValue(t) {
+  const x = clampValue(t, 0, 1);
+  return x * x * (3 - (2 * x));
+}
+
+function isEndpointBoneName(name) {
+  return isIkControlBoneName(name);
+}
+
+function isIkControlBoneName(name) {
+  const value = String(name || '').toLowerCase();
+  if (!/hand|foot/.test(value)) return false;
+  if (/toe|finger|thumb|index|middle|ring|pinky|hitbox|end/.test(value)) return false;
+  const token = value.split(/[:_.\-\s]+/).filter(Boolean).pop() || value;
+  return token === 'hand' || token === 'lefthand' || token === 'righthand' || token === 'foot' || token === 'leftfoot' || token === 'rightfoot';
+}
+
+function isTouchPoseSelectableBoneName(name) {
+  const value = String(name || '').toLowerCase();
+  if (!value) return false;
+  if (/toe|finger|thumb|index|middle|ring|pinky|hitbox|end/.test(value)) return false;
+  return true;
+}
+
+function fkBoneRole(name) {
+  const value = String(name || '').toLowerCase().replace(/^mixamorig[:_]?/, '');
+  if (/upleg|upperleg|thigh/.test(value)) return 'upperLeg';
+  if (/(^|[^a-z])leg$|lowerleg|shin|calf/.test(value)) return 'lowerLeg';
+  if (/foot/.test(value)) return 'foot';
+  if (/(^|[^a-z])arm$|upperarm/.test(value)) return 'upperArm';
+  if (/forearm|lowerarm/.test(value)) return 'forearm';
+  if (/hand/.test(value)) return 'hand';
+  if (/spine|chest|hips|pelvis/.test(value)) return 'spine';
+  if (/neck|head/.test(value)) return 'head';
+  return 'generic';
+}
+
+function safeNormalizedVector(vector) {
+  if (!vector || vector.lengthSq() < 0.000001) return null;
+  return vector.clone().normalize();
+}
+
+function orthogonalizeAgainstTwist(axis, twist) {
+  if (!axis || !twist) return null;
+  const projection = axis.clone().sub(twist.clone().multiplyScalar(axis.dot(twist)));
+  return safeNormalizedVector(projection);
+}
+
+function synthesizeOrthogonalAxis(twist) {
+  const referenceVectors = [
+    new THREE.Vector3(1, 0, 0),
+    new THREE.Vector3(0, 1, 0),
+    new THREE.Vector3(0, 0, 1),
+  ];
+  let best = null;
+  let bestDot = Infinity;
+  for (const reference of referenceVectors) {
+    const dot = Math.abs(reference.dot(twist));
+    if (dot < bestDot) {
+      bestDot = dot;
+      best = reference;
+    }
+  }
+  if (!best) return null;
+  return safeNormalizedVector(best.clone().cross(twist)) || safeNormalizedVector(twist.clone().cross(best));
+}
+
+function avoidLongitudinalTwist(axis, twistAxisWorld, fallbackAxis = null) {
+  const normalized = safeNormalizedVector(axis);
+  const twist = safeNormalizedVector(twistAxisWorld);
+  if (!normalized) {
+    const fallback = safeNormalizedVector(fallbackAxis);
+    return fallback && twist ? orthogonalizeAgainstTwist(fallback, twist) || synthesizeOrthogonalAxis(twist) : fallback;
+  }
+  if (!twist) return normalized;
+  const projected = orthogonalizeAgainstTwist(normalized, twist);
+  if (projected) return projected;
+  const fallback = safeNormalizedVector(fallbackAxis);
+  if (fallback) {
+    const projectedFallback = orthogonalizeAgainstTwist(fallback, twist);
+    if (projectedFallback) return projectedFallback;
+  }
+  return synthesizeOrthogonalAxis(twist);
+}
+
+function createRigifyOutlineGeometry(points) {
+  return new THREE.BufferGeometry().setFromPoints(points.map((point) => new THREE.Vector3(point[0], point[1], point[2] || 0)));
+}
+
+function createRigifyCircleGeometry(radius = 0.145, segments = 40) {
+  const points = [];
+  for (let i = 0; i < segments; i += 1) {
+    const angle = (i / segments) * Math.PI * 2;
+    points.push([Math.cos(angle) * radius, Math.sin(angle) * radius, 0]);
+  }
+  return createRigifyOutlineGeometry(points);
+}
+
+function createRigifyFootGeometry(width = 0.27, height = 0.12) {
+  const w = width / 2;
+  const h = height / 2;
+  return createRigifyOutlineGeometry([[-w, -h, 0], [w, -h, 0], [w, h, 0], [-w, h, 0]]);
+}
+
+function poseEditDefaults() {
+  return {
+    mode: 'fk',
+    space: 'local',
+    x: 0,
+    y: 0,
+    z: 0,
+    rotX: 0,
+    rotY: 0,
+    rotZ: 0,
+    worldQuat: null,
+    axisMode: '',
+    axisWorld: null,
+    angle: 0,
+    gestureKind: '',
+    scale: 100,
+    useScale: false,
+  };
+}
+
+function blendPoseEdit(left = {}, right = {}, alpha = 0) {
+  const t = smoothStepValue(alpha);
+  const base = poseEditDefaults();
+  return {
+    ...base,
+    ...left,
+    mode: right.mode || left.mode || base.mode,
+    space: right.space || left.space || base.space,
+    x: lerpValue(left.x, right.x, t),
+    y: lerpValue(left.y, right.y, t),
+    z: lerpValue(left.z, right.z, t),
+    rotX: lerpValue(left.rotX, right.rotX, t),
+    rotY: lerpValue(left.rotY, right.rotY, t),
+    rotZ: lerpValue(left.rotZ, right.rotZ, t),
+    worldQuat: t >= 0.5 ? (right.worldQuat || null) : (left.worldQuat || null),
+    axisMode: t >= 0.5 ? (right.axisMode || '') : (left.axisMode || ''),
+    axisWorld: t >= 0.5 ? (right.axisWorld || null) : (left.axisWorld || null),
+    angle: lerpValue(left.angle, right.angle, t),
+    gestureKind: t >= 0.5 ? (right.gestureKind || '') : (left.gestureKind || ''),
+    scale: lerpValue(left.scale ?? 100, right.scale ?? 100, t),
+    useScale: Boolean(left.useScale || right.useScale),
+  };
+}
+
+
+function poseEditHasMeaningfulValue(edit = {}) {
+  if (!edit) return false;
+  if (edit.mode === 'hinge' && String(edit.axisMode || '') === 'pinned-parent-screen-target') return true;
+  if (Array.isArray(edit.worldQuat) && edit.worldQuat.length === 4) return true;
+  if (Math.abs(Number(edit.x || 0)) > 0.000001) return true;
+  if (Math.abs(Number(edit.y || 0)) > 0.000001) return true;
+  if (Math.abs(Number(edit.z || 0)) > 0.000001) return true;
+  if (Math.abs(Number(edit.rotX || 0)) > 0.000001) return true;
+  if (Math.abs(Number(edit.rotY || 0)) > 0.000001) return true;
+  if (Math.abs(Number(edit.rotZ || 0)) > 0.000001) return true;
+  if (Math.abs(Number(edit.angle || 0)) > 0.000001) return true;
+  if (edit.useScale) return true;
+  return false;
 }
 
 function makeTrackLike(sourceTrack, times, values) {
@@ -1559,7 +1926,8 @@ function mergeClips(sharedClips, ownClips) {
 
 function degToRad(value) { return THREE.MathUtils.degToRad(Number(value)); }
 function radToDeg(value) { return Math.round(THREE.MathUtils.radToDeg(value)); }
-function setStatus(text) { const next = 'lab ' + LAB_BUILD + ' | ' + text; UI.status.textContent = next; UI.loadState.textContent = next; }
+function wrapRadians(value) { return THREE.MathUtils.euclideanModulo(Number(value) + Math.PI, Math.PI * 2) - Math.PI; }
+function setStatus(text) { const next = STATUS_PREFIX + ' ' + LAB_BUILD + ' | ' + text; UI.status.textContent = next; UI.loadState.textContent = next; }
 function fmt(value) { return Number.isFinite(value) ? value.toFixed(3) : 'n/a'; }
 function fmtQuat(value) { return value ? [value.x, value.y, value.z, value.w].map(fmt).join(',') : 'n/a'; }
 
@@ -1954,12 +2322,18 @@ class PoseActor {
     this.poseStats = null;
     this.debugMarkers = new Map();
     this.debugLines = new Map();
+    this.showDebugHelpers = false;
     this.bones = [];
     this.boneByName = new Map();
     this.boneRest = new Map();
     this.boneEdits = new Map();
     this.boneHandles = new Map();
     this.boneLines = new Map();
+    this.touchRigControls = new Map();
+    this.showTouchRigControls = false;
+    this.touchRigControlGroup = new THREE.Group();
+    this.touchRigControlGroup.name = this.key + '-touch-rig-controls';
+    this.root.add(this.touchRigControlGroup);
     this.selectedBoneName = '';
     this.showBoneOverlay = false;
     this.legSymmetry = null;
@@ -2147,6 +2521,7 @@ class PoseActor {
     }
     this.addDebugHelpers();
     this.addBoneOverlay();
+    this.createTouchRigControls();
     this.addLegSymmetryOverlay();
     this.setBoneOverlayVisible(this.showBoneOverlay);
   }
@@ -2259,9 +2634,88 @@ class PoseActor {
     for (const line of this.boneLines.values()) line.visible = visible;
   }
 
+  setTouchRigControlsVisible(visible) {
+    this.showTouchRigControls = Boolean(visible);
+    this.updateTouchRigControls();
+  }
+
+  createTouchRigControls() {
+    const handHitGeometry = new THREE.SphereGeometry(0.18, 12, 8);
+    const footHitGeometry = new THREE.BoxGeometry(0.32, 0.18, 0.12);
+    const handOutlineGeometry = createRigifyCircleGeometry(0.145, 40);
+    const footOutlineGeometry = createRigifyFootGeometry(0.28, 0.13);
+    for (const bone of this.bones) {
+      if (!isIkControlBoneName(bone.name)) continue;
+      const isFoot = /foot/i.test(bone.name || '');
+      const color = isFoot ? 0x62f2b5 : 0xffcc3d;
+      const hitMaterial = new THREE.MeshBasicMaterial({
+        color,
+        depthTest: false,
+        transparent: true,
+        opacity: 0.46,
+        depthWrite: false,
+      });
+      const outlineMaterial = new THREE.LineBasicMaterial({
+        color,
+        depthTest: false,
+        transparent: true,
+        opacity: 1.0,
+        depthWrite: false,
+      });
+      const control = new THREE.Mesh(isFoot ? footHitGeometry : handHitGeometry, hitMaterial);
+      control.name = this.key + '-ik-hit-' + bone.name;
+      control.userData.actorKey = this.key;
+      control.userData.boneName = bone.name;
+      control.userData.controlKind = 'ik';
+      control.userData.rigifyControl = isFoot ? 'foot-square' : 'hand-circle';
+      control.renderOrder = 86;
+      const outline = new THREE.LineLoop(isFoot ? footOutlineGeometry : handOutlineGeometry, outlineMaterial);
+      outline.name = this.key + '-ik-outline-' + bone.name;
+      outline.userData.actorKey = this.key;
+      outline.userData.boneName = bone.name;
+      outline.userData.controlKind = 'ik-outline';
+      outline.renderOrder = 87;
+      control.add(outline);
+      this.touchRigControlGroup.add(control);
+      this.touchRigControls.set(bone.name, control);
+    }
+    this.updateTouchRigControls();
+  }
+
+  updateTouchRigControls() {
+    for (const [name, control] of this.touchRigControls) {
+      const bone = this.boneByName.get(name);
+      if (!bone) {
+        control.visible = false;
+        continue;
+      }
+      const world = bone.getWorldPosition(new THREE.Vector3());
+      const offset = /left/i.test(name) ? -0.16 : /right/i.test(name) ? 0.16 : 0.12;
+      world.x += offset;
+      world.y += /foot/i.test(name) ? 0.055 : 0.035;
+      control.position.copy(this.root.worldToLocal(world));
+      control.visible = this.showTouchRigControls;
+      if (!this.showTouchRigControls) continue;
+      const selected = name === this.selectedBoneName && this.selectedTouchControl?.kind === 'ik';
+      control.scale.setScalar(selected ? 1.85 : 1.55);
+      control.material.opacity = selected ? 0.72 : 0.5;
+      const outline = control.children.find((child) => child.isLineLoop);
+      if (outline?.material) {
+        outline.material.opacity = selected ? 1 : 0.88;
+        outline.material.linewidth = selected ? 3 : 2;
+      }
+    }
+  }
+
   selectBone(name) {
     if (!this.boneByName.has(name)) return false;
     this.selectedBoneName = name;
+    this.refreshBoneOverlayMaterials();
+    return true;
+  }
+
+  deselectBone() {
+    this.selectedBoneName = '';
     this.refreshBoneOverlayMaterials();
     return true;
   }
@@ -2303,9 +2757,11 @@ class PoseActor {
       ...edit,
     };
     this.boneEdits.set(name, next);
-    bone.position.copy(rest.position);
-    bone.quaternion.copy(rest.quaternion);
-    bone.scale.copy(rest.scale);
+    if (!this.activeAction) {
+      bone.position.copy(rest.position);
+      bone.quaternion.copy(rest.quaternion);
+      bone.scale.copy(rest.scale);
+    }
     if (next.useTranslate) {
       bone.position.x += Number(next.posX || 0) / 100;
       bone.position.y += Number(next.posY || 0) / 100;
@@ -2320,6 +2776,97 @@ class PoseActor {
       bone.scale.multiplyScalar(Math.max(0.01, s));
     }
     bone.updateMatrixWorld(true);
+  }
+
+  ikChainForEndpoint(name) {
+    const endpoint = this.boneByName.get(name);
+    if (!endpoint?.parent?.isBone || !endpoint.parent.parent?.isBone) return null;
+    const lower = endpoint.parent;
+    const upper = lower.parent;
+    if (!upper?.isBone || !lower?.isBone) return null;
+    return { upper, lower, endpoint };
+  }
+
+  poseOffsetVector(edit = {}, bone = null) {
+    const offset = new THREE.Vector3(Number(edit.x || 0) / 100, Number(edit.y || 0) / 100, Number(edit.z || 0) / 100);
+    if (edit.space === 'local' && bone) offset.applyQuaternion(worldQuaternionOf(bone));
+    return offset;
+  }
+
+  applyPoseFkEdit(name, edit = {}) {
+    const bone = this.boneByName.get(name);
+    if (!bone) return false;
+    const offset = new THREE.Vector3(Number(edit.x || 0) / 100, Number(edit.y || 0) / 100, Number(edit.z || 0) / 100);
+    if (offset.lengthSq() > 0.0000001) {
+      if (edit.space === 'global' && bone.parent) {
+        const targetWorld = worldPositionOf(bone).add(offset);
+        bone.parent.worldToLocal(targetWorld);
+        bone.position.copy(targetWorld);
+      } else {
+        bone.position.add(offset);
+      }
+    }
+    if (Array.isArray(edit.worldQuat) && edit.worldQuat.length === 4) {
+      const worldQuat = new THREE.Quaternion().fromArray(edit.worldQuat).normalize();
+      setBoneWorldQuaternion(bone, worldQuat);
+    } else {
+      const rotation = new THREE.Euler(degToRad(edit.rotX || 0), degToRad(edit.rotY || 0), degToRad(edit.rotZ || 0), bone.rotation.order || 'XYZ');
+      const delta = new THREE.Quaternion().setFromEuler(rotation);
+      if (Math.abs(delta.x) + Math.abs(delta.y) + Math.abs(delta.z) > 0.000001) {
+        if (edit.space === 'global') setBoneWorldQuaternion(bone, delta.multiply(worldQuaternionOf(bone)).normalize());
+        else bone.quaternion.multiply(delta).normalize();
+      }
+    }
+    if (edit.useScale) bone.scale.multiplyScalar(Math.max(0.01, Number(edit.scale || 100) / 100));
+    bone.updateMatrixWorld(true);
+    return true;
+  }
+
+  applyPoseIkEdit(name, edit = {}) {
+    const chain = this.ikChainForEndpoint(name);
+    if (!chain) return this.applyPoseFkEdit(name, { ...edit, mode: 'fk' });
+    this.model.updateMatrixWorld(true);
+    const target = worldPositionOf(chain.endpoint).add(this.poseOffsetVector(edit, chain.endpoint));
+    solveTwoBoneIk(this.model, chain.upper, chain.lower, chain.endpoint, target, 7);
+    this.model.updateMatrixWorld(true);
+    return true;
+  }
+
+  applyPosePinnedHingeEdit(name, edit = {}) {
+    const endpoint = this.boneByName.get(name);
+    const driver = endpoint?.parent?.isBone ? endpoint.parent : null;
+    if (!endpoint || !driver) return this.applyPoseFkEdit(name, { ...edit, mode: 'fk' });
+    this.model.updateMatrixWorld(true);
+    const anchorWorld = worldPositionOf(driver);
+    const endpointWorld = worldPositionOf(endpoint);
+    const targetWorld = endpointWorld.clone().add(this.poseOffsetVector(edit, endpoint));
+    const clampedTarget = pinnedHingeTarget(anchorWorld, endpointWorld, targetWorld);
+    rotateIkJointToward(driver, endpoint, clampedTarget, 1);
+    this.model.updateMatrixWorld(true);
+    return true;
+  }
+
+  resetPoseCorrectionBase() {
+    if (this.activeAction) {
+      const clip = this.activeAction._clip;
+      const duration = Math.max(0.001, clip?.duration || 0.001);
+      this.activeAction.time = clampValue(this.activeAction.time || 0, 0, duration);
+      this.mixer.update(0);
+    }
+    this.reapplyBoneEdits();
+    this.applyGrounding();
+    this.model.updateMatrixWorld(true);
+  }
+
+  applyPoseCorrection(correction = {}) {
+    const edits = correction.edits || {};
+    for (const [name, edit] of Object.entries(edits)) {
+      if (!isTouchPoseSelectableBoneName(name)) continue;
+      if (!poseEditHasMeaningfulValue(edit)) continue;
+      if (edit.mode === 'hinge') this.applyPosePinnedHingeEdit(name, edit);
+      else if (edit.mode === 'ik') this.applyPoseIkEdit(name, edit);
+      else this.applyPoseFkEdit(name, edit);
+    }
   }
 
   reapplyBoneEdits() {
@@ -2368,6 +2915,7 @@ class PoseActor {
       );
       marker.name = this.key + '-' + spec.label + '-marker';
       marker.renderOrder = 20;
+      marker.visible = false;
       this.root.add(marker);
       this.debugMarkers.set(spec.name, marker);
 
@@ -2377,6 +2925,7 @@ class PoseActor {
       );
       line.name = this.key + '-' + spec.label + '-drop-line';
       line.renderOrder = 19;
+      line.visible = false;
       this.root.add(line);
       this.debugLines.set(spec.name, line);
     }
@@ -2422,8 +2971,8 @@ class PoseActor {
         if (line) line.visible = false;
         continue;
       }
-      marker.visible = true;
-      line.visible = true;
+      marker.visible = this.showDebugHelpers;
+      line.visible = this.showDebugHelpers;
       const local = this.root.worldToLocal(world.clone());
       const floor = this.root.worldToLocal(new THREE.Vector3(world.x, 0, world.z));
       marker.position.copy(local);
@@ -2437,6 +2986,7 @@ class PoseActor {
 
   updateBoneOverlay() {
     this.refreshBoneOverlayMaterials();
+    this.updateTouchRigControls();
     for (const [name, bone] of this.boneByName) {
       const handle = this.boneHandles.get(name);
       if (!handle) continue;
@@ -2491,7 +3041,25 @@ class PoseActor {
     next.fadeIn(0.1).play();
     next.paused = false;
     this.activeAction = next;
+    if (!this.applyCritiqueClipState(next._clip)) this.resetAllBoneEdits();
+    this.mixer.setTime(0);
+    this.applyGrounding();
+    this.updateDebugHelpers();
+    this.updateBoneOverlay();
     this.rememberClip(name);
+  }
+
+  applyCritiqueClipState(clip) {
+    const critique = clip?.userData?.critique;
+    const edits = Array.isArray(critique?.boneEdits) ? critique.boneEdits : [];
+    if (!edits.length) return false;
+    this.resetAllBoneEdits();
+    for (const entry of edits) {
+      const boneName = entry?.boneName || entry?.name;
+      if (!boneName) continue;
+      this.applyBoneEdit(boneName, entry);
+    }
+    return true;
   }
 
   setRestPose(poseName) {
@@ -2606,6 +3174,7 @@ class PoseLab {
   constructor() {
     this.visualQa = visualQaConfig();
     this.visualQaState = { rendered: false, captured: 0, lastCaptureAt: 0, inFlight: false };
+    this.labMode = LAB_MODE;
     this.renderer = new THREE.WebGLRenderer({ canvas: UI.canvas, antialias: true, preserveDrawingBuffer: this.visualQa.enabled });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
     this.renderer.shadowMap.enabled = true;
@@ -2638,6 +3207,24 @@ class PoseLab {
     this.cleanupLastClipKey = '';
     this.cleanupScrubbing = false;
     this.cleanupTimelineDrag = null;
+    this.critiqueTransportMode = 'step';
+    this.critiqueFrameKey = '';
+    this.critiqueNotes = this.readCritiqueNotes();
+    this.poseCorrections = this.readPoseCorrections();
+    this.poseHistory = this.readPoseHistory();
+    this.poseEditorMode = 'fk';
+    this.poseEditorSpace = 'global';
+    this.poseCorrectionSessionActive = false;
+    this.poseOverlayEnabled = false;
+    this.startupReady = false;
+    this.critiqueNoteSaveTimer = null;
+    this.critiqueCompareState = null;
+    this.selectedTouchControl = null;
+    this.touchPoseDrag = null;
+    this.activeTouchPointers = new Map();
+    this.multiTouchPoseGesture = null;
+    this.touchPoseDockDrag = null;
+    this.lastTouchPoseTap = null;
     this.mergeLastPairKey = '';
     this.mergeLastSuggestedName = '';
     this.mergeTimelineDrag = null;
@@ -2646,13 +3233,19 @@ class PoseLab {
     this.attackMetadata = new Map();
     this.selected = 'player';
     this.viewMode = 'orbit';
-    this.activePanel = 'clips';
+    this.activePanel = this.labMode === 'critique' ? 'none' : 'clips';
     this.isRestoringState = false;
     this.stateSaveTimer = null;
     this.savedState = this.visualQa?.enabled ? {} : this.readSavedState();
+    this.debugBridge = debugBridgeConfig();
+    this.debugBridgeState = { enabled: this.debugBridge.enabled, connected: false, clientId: '', lastCommand: '', lastCommandId: '', lastResult: null, lastError: '', syncAt: 0 };
+    this.installDebugConsole();
   }
 
   async start() {
+    document.title = this.labMode === 'critique' ? 'Pose Critique' : 'Pose Lab';
+    document.body.classList.toggle('critique-mode', this.labMode === 'critique');
+    document.body.classList.toggle('phone-controls', true);
     this.setupScene();
     this.setupUi();
     this.resize();
@@ -2661,10 +3254,15 @@ class PoseLab {
     await this.loadActors();
     await this.loadAttackMetadata();
     this.renderActorTabs();
+    this.renderCritiqueFrames();
+    this.updateCritiqueDock(true);
     this.isRestoringState = true;
     this.selectStartupActor();
+    this.applySavedLayoutState();
     this.isRestoringState = false;
+    this.startupReady = true;
     this.saveState();
+    void this.startDebugBridge();
   }
 
   readSavedState() {
@@ -2711,8 +3309,9 @@ class PoseLab {
 
   savedPanelForActor(key, fallback = 'clips') {
     if (this.savedState?.actorKey !== key) return fallback;
-    const panel = this.savedState?.activePanel || this.savedState?.panel || '';
-    if (panel === 'none' || UI.panels[panel]) return panel;
+    if (this.labMode === 'critique') return fallback === 'clips' ? 'clips' : 'none';
+    const panel = this.savedState?.activeSheet || this.savedState?.activePanel || this.savedState?.panel || '';
+    if (panel === 'none' || UI.panels[this.panelElementName(panel)]) return panel;
     return fallback;
   }
 
@@ -2721,6 +3320,20 @@ class PoseLab {
     const searches = this.savedState?.clipSearches || {};
     if (Object.prototype.hasOwnProperty.call(searches, actor.key)) actor.clipSearch = String(searches[actor.key] || '');
     else if (this.savedState?.actorKey === actor.key && this.savedState?.clipSearch) actor.clipSearch = String(this.savedState.clipSearch || '');
+  }
+
+  applySavedLayoutState() {
+    if (this.visualQa?.enabled || !this.savedState) return;
+    if (['step', 'live', 'loop', 'pingpong'].includes(this.savedState.critiqueTransportMode)) {
+      this.critiqueTransportMode = this.savedState.critiqueTransportMode;
+      this.critiqueApplyPlaybackMode();
+      this.updateCritiqueTransportUi('restored ' + this.critiqueTransportMode);
+    }
+    const dockState = this.savedState.dockState || {};
+    if (UI.critiqueDock && typeof dockState.critiqueDockOpen === 'boolean') UI.critiqueDock.open = dockState.critiqueDockOpen;
+    if (UI.poseEditDock && typeof dockState.poseEditDockOpen === 'boolean') UI.poseEditDock.open = dockState.poseEditDockOpen;
+    this.applyTouchPoseDockPosition(dockState.touchPoseDockPosition);
+    if (this.savedState?.actorKey === this.selected) this.applySavedViewAngle(this.savedState.viewAngle);
   }
 
   queueStateSave() {
@@ -2741,6 +3354,7 @@ class PoseLab {
       actorKey: this.selected,
       actorLabel: actor?.info?.label || this.selected,
       activePanel: this.activePanel || 'clips',
+      activeSheet: this.activePanel || 'clips',
       viewMode: this.viewMode,
       viewAngle: this.captureViewAngle(),
       clipKey: clip ? clipKey(clip) : '',
@@ -2749,6 +3363,13 @@ class PoseLab {
       sourceName: clip?.userData?.sourceName || '',
       clipSearch: actor?.clipSearch || '',
       clipSearches: this.actorSearchState(),
+      critiqueTransportMode: this.critiqueTransportMode || 'step',
+      dockState: {
+        critiqueDockOpen: Boolean(UI.critiqueDock?.open),
+        poseEditDockOpen: Boolean(UI.poseEditDock?.open),
+        touchPoseDockPosition: this.captureTouchPoseDockPosition(),
+      },
+      critiqueFrameKey: this.critiqueFrameKey || '',
       savedAt: Date.now(),
     };
     this.savedState = state;
@@ -2815,10 +3436,15 @@ class PoseLab {
     const clip = requestedClip || savedClip || this.findStartupClip(actor) || actor.activeClip() || this.findFirstPlayableClip(actor);
     if (clip) actor.play(clipKey(clip));
     this.renderClipButtons();
-    const fallbackPanel = actor.info?.startupPanel || (UI.panels.cleanup?.classList.contains('open') ? 'cleanup' : 'clips');
+    const fallbackPanel = this.labMode === 'critique' ? 'none' : (actor.info?.startupPanel || (UI.panels.cleanup?.classList.contains('open') ? 'cleanup' : 'clips'));
     this.setPanel(options.restoreSavedUi ? this.savedPanelForActor(key, fallbackPanel) : fallbackPanel);
     if (options.restoreSavedUi && this.savedState?.actorKey === key) this.applySavedViewAngle(this.savedState.viewAngle);
     this.updateCleanupUi(clip ? 'loaded ' + actor.info.label + ' | ' + clipLabel(clip) : 'loaded ' + actor.info.label);
+    this.critiqueLoadSavedStateFromClip(actor, clip);
+    this.updateCritiqueTransportUi();
+    this.updatePlayerTransportUi();
+    this.updatePoseEditorUi();
+    this.updateCritiqueDock(true);
     this.updateReadout();
     this.saveState();
     setStatus(this.actorSelectionStatus(actor, clip));
@@ -2876,6 +3502,73 @@ class PoseLab {
     UI.cleanupTimelineCanvas?.addEventListener('pointerdown', (event) => this.beginCleanupTimelineDrag(event));
     UI.cleanupMergeTimelineCanvas?.addEventListener('pointerdown', (event) => this.beginMergeTimelineDrag(event));
     UI.cleanupPlayPause?.addEventListener('click', () => this.toggleCleanupPlayback());
+    for (const details of document.querySelectorAll('details.exclusive-accordion')) {
+      details.addEventListener('toggle', () => {
+        this.queueStateSave();
+        if (!details.open) return;
+        for (const other of document.querySelectorAll('details.exclusive-accordion')) {
+          if (other !== details) other.open = false;
+        }
+      });
+    }
+    this.primeExclusiveAccordionState();
+    UI.playerPlayPause?.addEventListener('click', () => (this.labMode === 'critique' ? this.critiqueTogglePlayback() : this.toggleCleanupPlayback()));
+    UI.playerPrevFrame?.addEventListener('click', () => this.stepActiveClipFrames(-1));
+    UI.playerNextFrame?.addEventListener('click', () => this.stepActiveClipFrames(1));
+    UI.playerClipPanel?.addEventListener('click', () => this.setPanel(this.activePanel === 'clips' ? 'none' : 'clips'));
+    UI.playerPoseControls?.addEventListener('click', () => this.openCorrectPose());
+    UI.playerStop?.addEventListener('click', () => { const actor = this.actors.get(this.selected); if (!actor) return; actor.stop(); this.renderClipButtons(); this.updateCleanupUi('stopped'); this.updateCritiqueTransportUi('stopped'); this.updatePlayerTransportUi('stopped'); this.updateReadout(); });
+    UI.critiqueStepMode?.addEventListener('click', () => this.critiqueSetTransportMode('step'));
+    UI.critiqueLiveMode?.addEventListener('click', () => this.critiqueSetTransportMode('live'));
+    UI.critiqueLoopMode?.addEventListener('click', () => this.critiqueSetTransportMode('loop'));
+    UI.critiquePingPongMode?.addEventListener('click', () => this.critiqueSetTransportMode('pingpong'));
+    UI.critiquePrevFrame?.addEventListener('click', () => this.critiqueSeekFrame((this.critiqueTimelineState()?.currentFrame || 0) - 1));
+    UI.critiqueNextFrame?.addEventListener('click', () => this.critiqueSeekFrame((this.critiqueTimelineState()?.currentFrame || 0) + 1));
+    UI.critiquePrevKeyframe?.addEventListener('click', () => this.critiqueStepKeyframe(-1));
+    UI.critiqueNextKeyframe?.addEventListener('click', () => this.critiqueStepKeyframe(1));
+    UI.critiquePlayPause?.addEventListener('click', () => this.critiqueTogglePlayback());
+    UI.critiqueJumpStart?.addEventListener('click', () => this.critiqueJumpSemantic('start'));
+    UI.critiqueJumpAnticipation?.addEventListener('click', () => this.critiqueJumpSemantic('anticipation'));
+    UI.critiqueJumpContact?.addEventListener('click', () => this.critiqueJumpSemantic('contact'));
+    UI.critiqueJumpRecovery?.addEventListener('click', () => this.critiqueJumpSemantic('recovery'));
+    UI.critiqueJumpEnd?.addEventListener('click', () => this.critiqueJumpSemantic('end'));
+    UI.critiqueScrub?.addEventListener('input', () => this.critiqueSeekFrame(Math.round(Number(UI.critiqueScrub.value || 0) * CRITIQUE_STEP_FPS)));
+    UI.critiqueResetPose?.addEventListener('click', () => this.openCorrectPose());
+    UI.critiqueNewKey?.addEventListener('click', () => this.critiquePromoteCurrentFrame());
+    UI.critiqueCompare?.addEventListener('click', () => this.critiqueToggleCompare());
+    UI.poseBoneSearch?.addEventListener('input', () => this.updatePoseEditorUi('filter bones'));
+    UI.poseBoneSelect?.addEventListener('change', () => this.selectPoseEditBone(UI.poseBoneSelect.value));
+    UI.poseModeIk?.addEventListener('click', () => this.setPoseEditorMode('ik'));
+    UI.poseModeFk?.addEventListener('click', () => this.setPoseEditorMode('fk'));
+    UI.poseSpaceGlobal?.addEventListener('click', () => this.setPoseEditorSpace('global'));
+    UI.poseSpaceLocal?.addEventListener('click', () => this.setPoseEditorSpace('local'));
+    for (const input of [UI.poseNudgeX, UI.poseNudgeY, UI.poseNudgeZ, UI.poseRotX, UI.poseRotY, UI.poseRotZ, UI.poseScale, UI.poseUseScale]) {
+      input?.addEventListener('input', () => this.applyPoseEditorEdit());
+      input?.addEventListener('change', () => this.applyPoseEditorEdit());
+    }
+    UI.poseSaveKey?.addEventListener('click', () => this.savePoseCorrectionKey());
+    UI.poseResetKey?.addEventListener('click', () => this.resetCurrentPoseCorrectionKey());
+    UI.poseResetClip?.addEventListener('click', () => this.resetActiveClipPoseCorrections());
+    UI.poseCompareOverlay?.addEventListener('click', () => this.togglePoseOverlayCompare());
+    UI.touchPoseUndo?.addEventListener('click', () => this.undoPoseCorrection());
+    UI.touchPoseRedo?.addEventListener('click', () => this.redoPoseCorrection());
+    UI.touchPoseSave?.addEventListener('click', () => this.savePoseCorrectionKey('saved touch pose'));
+    UI.touchPoseReset?.addEventListener('click', () => this.resetCurrentPoseCorrectionKey());
+    UI.touchPoseCancel?.addEventListener('click', () => this.clearBoneSelection('deselected bone'));
+    UI.touchPoseModeToggle?.addEventListener('click', () => this.toggleSelectedTouchEditMode());
+    UI.touchPosePose?.addEventListener('click', () => this.openCorrectPose());
+    UI.touchPoseClips?.addEventListener('click', () => this.setPanel(this.activePanel === 'clips' ? 'none' : 'clips'));
+    UI.touchPoseDockHandle?.addEventListener('pointerdown', (event) => this.beginTouchPoseDockDrag(event));
+    window.addEventListener('pointermove', (event) => this.updateTouchPoseDockDrag(event));
+    window.addEventListener('pointerup', (event) => this.finishTouchPoseDockDrag(event));
+    window.addEventListener('pointercancel', (event) => this.finishTouchPoseDockDrag(event));
+    UI.critiqueSaveNote?.addEventListener('click', () => { this.critiquePersistCurrentNote('saved note'); this.saveActiveCleanupDraft('manual'); });
+    UI.critiqueClearNote?.addEventListener('click', () => this.critiquePersistCurrentNote('cleared note'));
+    UI.critiqueCopyNote?.addEventListener('click', () => this.critiqueCopyCurrentNote());
+    for (const input of [UI.critiqueComment, UI.critiqueMarks, UI.critiqueBones]) {
+      input?.addEventListener('input', () => this.queueCritiqueNoteSave());
+      input?.addEventListener('change', () => this.queueCritiqueNoteSave());
+    }
     UI.cleanupSetStart?.addEventListener('click', () => this.setCleanupBoundary('start'));
     UI.cleanupSetEnd?.addEventListener('click', () => this.setCleanupBoundary('end'));
     for (const input of [UI.cleanupStart, UI.cleanupEnd, UI.cleanupBlendStart, UI.cleanupBlendEnd, UI.cleanupSmoothPasses, UI.cleanupFps, UI.cleanupUseTranslate, UI.cleanupUseRotate, UI.cleanupUseScale]) {
@@ -2907,6 +3600,7 @@ class PoseLab {
       const actor = this.actors.get(this.selected);
       if (!actor) return;
       actor.stop();
+    this.updatePlayerTransportUi('stopped');
       this.cleanupLastClipKey = '';
       this.renderClipButtons();
       this.updateCleanupUi('stopped');
@@ -2952,8 +3646,16 @@ class PoseLab {
     });
     UI.canvas.addEventListener('pointerdown', (event) => {
       this.pointerDown = { x: event.clientX, y: event.clientY };
+      this.handleTouchPosePointerDown(event);
     });
-    UI.canvas.addEventListener('pointerup', (event) => this.pickBoneHandle(event));
+    UI.canvas.addEventListener('pointermove', (event) => this.handleTouchPosePointerMove(event));
+    UI.canvas.addEventListener('pointerup', (event) => this.handleTouchPosePointerUp(event));
+    UI.canvas.addEventListener('pointercancel', (event) => this.handleTouchPosePointerCancel(event));
+    UI.canvas.addEventListener('lostpointercapture', (event) => this.handleTouchPosePointerCancel(event));
+    window.addEventListener('blur', (event) => this.cancelAllTouchPoseGestures(event, true));
+    document.addEventListener('visibilitychange', (event) => {
+      if (document.hidden) this.cancelAllTouchPoseGestures(event, true);
+    });
     UI.buildRetarget.addEventListener('click', () => this.buildRetarget());
     UI.swapRetarget.addEventListener('click', () => {
       const source = UI.sourceActor.value;
@@ -3144,7 +3846,7 @@ class PoseLab {
         const firstClip = prepared.find((clip) => clip.tracks?.length) || prepared[0];
         if (firstClip) actor.play(clipKey(firstClip));
         this.renderClipButtons();
-        this.setPanel('cleanup');
+        this.setPanel(this.labMode === 'critique' ? 'edit' : 'cleanup');
         this.updateCleanupUi('added clips to ' + actor.info.label + ': ' + files.map((file) => file.name).join(', '));
         this.updateReadout();
         this.saveState();
@@ -3182,7 +3884,7 @@ class PoseLab {
     this.selected = this.actors.has('orc') ? 'orc' : [...this.actors.keys()][0] || 'player';
     this.renderActorTabs();
     this.select(this.selected);
-    this.setPanel(this.actors.get(this.selected)?.info?.startupPanel || 'clips');
+    this.setPanel(this.labMode === 'critique' ? 'none' : (this.actors.get(this.selected)?.info?.startupPanel || 'clips'));
     setStatus('cleared opened local assets');
   }
 
@@ -3612,15 +4314,51 @@ class PoseLab {
       UI.boneSelect.append(option);
     }
     if (actor.selectedBoneName) UI.boneSelect.value = actor.selectedBoneName;
+    else UI.boneSelect.selectedIndex = -1;
   }
 
-  selectBone(name) {
-    const actor = this.actors.get(this.selected);
-    if (!actor || !actor.selectBone(name)) return;
-    UI.boneSelect.value = actor.selectedBoneName;
+  syncPoseEditorBoneSelection(actor = this.actors.get(this.selected), statusText = '') {
+    if (!actor) return;
+    if (UI.boneSelect) {
+      if (actor.selectedBoneName) UI.boneSelect.value = actor.selectedBoneName;
+      else UI.boneSelect.selectedIndex = -1;
+    }
+    if (UI.poseBoneSelect) {
+      if (actor.selectedBoneName) UI.poseBoneSelect.value = actor.selectedBoneName;
+      else UI.poseBoneSelect.selectedIndex = -1;
+    }
     this.setBoneUiValues(actor.currentBoneEdit());
     this.updateBoneUi();
-    setStatus('selected bone: ' + shortBoneName(actor.selectedBoneName));
+    this.updatePoseEditorUi(statusText);
+  }
+
+  selectBone(name, kind = '', editMode = '') {
+    const actor = this.actors.get(this.selected);
+    if (!actor || !actor.selectBone(name)) return;
+    const endpoint = isEndpointBoneName(actor.selectedBoneName);
+    const mode = kind === 'ik' && endpoint ? 'ik' : 'fk';
+    const previous = this.selectedTouchControl?.boneName === actor.selectedBoneName ? this.selectedTouchControl : null;
+    const nextEditMode = editMode || previous?.editMode || (mode === 'ik' ? 'hinge' : 'hinge');
+    this.selectedTouchControl = { actorKey: actor.key, boneName: actor.selectedBoneName, kind: mode, editMode: nextEditMode };
+    this.poseEditorMode = mode;
+    this.poseEditorSpace = nextEditMode === 'hinge' || this.poseEditorMode === 'ik' ? 'global' : 'local';
+    this.syncPoseEditorBoneSelection(actor, 'selected ' + shortBoneName(actor.selectedBoneName));
+    this.showTouchPoseHud(this.selectedTouchControl);
+    setStatus('selected bone: ' + shortBoneName(actor.selectedBoneName) + ' ' + nextEditMode);
+  }
+
+  clearBoneSelection(statusText = 'deselected bone') {
+    const actor = this.actors.get(this.selected);
+    if (!actor) return;
+    actor.deselectBone();
+    if (statusText === 'deselected bone') {
+      this.poseOverlayEnabled = false;
+      actor.seek(actor.activeAction?.time || 0);
+    }
+    this.selectedTouchControl = null;
+    this.hideTouchPoseHud();
+    this.syncPoseEditorBoneSelection(actor, statusText);
+    setStatus(statusText);
   }
 
   setBoneUiValues(edit) {
@@ -3675,6 +4413,78 @@ class PoseLab {
     this.updateReadout();
   }
 
+  bonePickObjects(actor = this.actors.get(this.selected)) {
+    if (!actor?.showBoneOverlay) return [];
+    return [
+      ...actor.boneHandles.values(),
+      ...actor.boneLines.values(),
+    ].filter((object) => object.visible && isTouchPoseSelectableBoneName(object.userData?.boneName));
+  }
+
+  pickBoneHandleHits(event, actor = this.actors.get(this.selected)) {
+    if (!actor?.showBoneOverlay) return [];
+    const rect = UI.canvas.getBoundingClientRect();
+    this.pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
+    this.pointer.y = -(((event.clientY - rect.top) / Math.max(1, rect.height)) * 2 - 1);
+    this.raycaster.setFromCamera(this.pointer, this.camera);
+    this.raycaster.params.Line.threshold = 0.1;
+    return this.raycaster.intersectObjects(this.bonePickObjects(actor), false);
+  }
+
+  pickTouchRigControlHits(event, actor = this.actors.get(this.selected)) {
+    if (!actor?.touchRigControls || !actor.showTouchRigControls) return [];
+    const rect = UI.canvas.getBoundingClientRect();
+    this.pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
+    this.pointer.y = -(((event.clientY - rect.top) / Math.max(1, rect.height)) * 2 - 1);
+    this.raycaster.setFromCamera(this.pointer, this.camera);
+    return this.raycaster.intersectObjects([...actor.touchRigControls.values()].filter((control) => control.visible), false);
+  }
+
+  pickNearestScreenBone(event, actor = this.actors.get(this.selected)) {
+    if (!actor) return null;
+    const rect = UI.canvas.getBoundingClientRect();
+    const point = { x: event.clientX, y: event.clientY };
+    const threshold = Math.max(22, Math.min(42, Math.min(rect.width, rect.height) * 0.045));
+    let best = null;
+    for (const bone of actor.bones || []) {
+      if (!bone?.parent?.isBone || !isTouchPoseSelectableBoneName(bone.name)) continue;
+      const start = screenPointForWorld(bone.parent.getWorldPosition(new THREE.Vector3()), this.camera, rect);
+      const end = screenPointForWorld(bone.getWorldPosition(new THREE.Vector3()), this.camera, rect);
+      if (start.z < -1 || start.z > 1 || end.z < -1 || end.z > 1) continue;
+      const distance = distanceToScreenSegment(point, start, end);
+      if (distance <= threshold && (!best || distance < best.distance)) best = { boneName: bone.name, distance };
+    }
+    return best;
+  }
+
+  touchControlScreenDistance(event, control) {
+    if (!control) return Number.POSITIVE_INFINITY;
+    const rect = UI.canvas.getBoundingClientRect();
+    const screen = screenPointForWorld(control.getWorldPosition(new THREE.Vector3()), this.camera, rect);
+    if (screen.z < -1 || screen.z > 1) return Number.POSITIVE_INFINITY;
+    return Math.hypot(event.clientX - screen.x, event.clientY - screen.y);
+  }
+
+  pickTouchPoseTarget(event, actor = this.actors.get(this.selected)) {
+    if (!actor) return null;
+    const controlHits = this.pickTouchRigControlHits(event, actor);
+    const control = controlHits[0]?.object || null;
+    const controlDistance = this.touchControlScreenDistance(event, control);
+    const handleHits = control ? [] : this.pickBoneHandleHits(event, actor);
+    const handle = handleHits[0]?.object || null;
+    const screenHit = this.pickNearestScreenBone(event, actor);
+    if (screenHit && (!control || screenHit.distance + 10 < controlDistance)) {
+      return { boneName: screenHit.boneName, kind: 'fk', source: 'screen-bone', distance: screenHit.distance };
+    }
+    if (control?.userData?.boneName) {
+      return { boneName: control.userData.boneName, kind: control.userData.controlKind || 'fk', source: 'touch-control', distance: controlDistance };
+    }
+    if (handle?.userData?.boneName) {
+      return { boneName: handle.userData.boneName, kind: 'fk', source: 'bone-handle', distance: 0 };
+    }
+    return null;
+  }
+
   pickBoneHandle(event) {
     if (!this.pointerDown) return;
     const dx = event.clientX - this.pointerDown.x;
@@ -3682,19 +4492,626 @@ class PoseLab {
     this.pointerDown = null;
     if (Math.hypot(dx, dy) > 12) return;
     const actor = this.actors.get(this.selected);
-    if (!actor?.showBoneOverlay) return;
-    const rect = UI.canvas.getBoundingClientRect();
-    this.pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
-    this.pointer.y = -(((event.clientY - rect.top) / Math.max(1, rect.height)) * 2 - 1);
-    this.raycaster.setFromCamera(this.pointer, this.camera);
-    const handles = [...actor.boneHandles.values()].filter((handle) => handle.visible);
-    const hits = this.raycaster.intersectObjects(handles, false);
-    if (!hits.length) return;
-    const boneName = hits[0].object.userData.boneName;
-    if (boneName) {
-      this.selectBone(boneName);
-      this.setPanel('bones');
+    if (!actor) return;
+    const target = this.pickTouchPoseTarget(event, actor);
+    if (!target) {
+      if (actor.selectedBoneName) this.clearBoneSelection('deselected bone');
+      return;
     }
+    const { boneName, kind } = target;
+    if (boneName && isTouchPoseSelectableBoneName(boneName)) {
+      this.selectBone(boneName, kind);
+    }
+  }
+
+  showTouchPoseHud(control = this.selectedTouchControl) {
+    const actor = this.actors.get(control?.actorKey || this.selected);
+    const boneName = control?.boneName || actor?.selectedBoneName || '';
+    if (!UI.touchPoseHud) return;
+    UI.touchPoseHud.classList.toggle('active', true);
+    if (UI.touchPoseLabel) UI.touchPoseLabel.textContent = boneName ? shortBoneName(boneName) : 'Pose: tap FK bone or IK handle';
+    if (UI.touchPoseMode) UI.touchPoseMode.textContent = String(control?.editMode || control?.kind || this.poseEditorMode || 'fk').toUpperCase();
+    this.updateUndoRedoUi();
+  }
+
+  hideTouchPoseHud() {
+    UI.touchPoseHud?.classList.toggle('active', false);
+  }
+
+
+  captureTouchPoseDockPosition() {
+    const style = UI.touchPoseHud?.style;
+    if (!style) return null;
+    const x = Number.parseFloat(style.getPropertyValue('--touch-pose-dock-x') || '');
+    const y = Number.parseFloat(style.getPropertyValue('--touch-pose-dock-y') || '');
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    return { x, y };
+  }
+
+  applyTouchPoseDockPosition(position = null) {
+    if (!UI.touchPoseHud || !position) return false;
+    const x = clampValue(Number(position.x || 0), -48, window.innerWidth + 48);
+    const y = clampValue(Number(position.y || 0), -48, window.innerHeight + 48);
+    UI.touchPoseHud.style.setProperty('--touch-pose-dock-x', x.toFixed(1) + 'px');
+    UI.touchPoseHud.style.setProperty('--touch-pose-dock-y', y.toFixed(1) + 'px');
+    UI.touchPoseHud.classList.toggle('dock-dragged', true);
+    return true;
+  }
+
+  beginTouchPoseDockDrag(event) {
+    if (!UI.touchPoseHud) return false;
+    const rect = UI.touchPoseHud.getBoundingClientRect();
+    this.touchPoseDockDrag = {
+      pointerId: event.pointerId,
+      offsetX: event.clientX - rect.left,
+      offsetY: event.clientY - rect.top,
+    };
+    UI.touchPoseDockHandle?.setPointerCapture?.(event.pointerId);
+    UI.touchPoseHud.classList.toggle('dock-dragging', true);
+    event.preventDefault?.();
+    event.stopPropagation?.();
+    return true;
+  }
+
+  updateTouchPoseDockDrag(event) {
+    const drag = this.touchPoseDockDrag;
+    if (!drag || event.pointerId !== drag.pointerId) return false;
+    this.applyTouchPoseDockPosition({ x: event.clientX - drag.offsetX, y: event.clientY - drag.offsetY });
+    event.preventDefault?.();
+    event.stopPropagation?.();
+    return true;
+  }
+
+  finishTouchPoseDockDrag(event) {
+    const drag = this.touchPoseDockDrag;
+    if (!drag || event.pointerId !== drag.pointerId) return false;
+    UI.touchPoseDockHandle?.releasePointerCapture?.(drag.pointerId);
+    this.touchPoseDockDrag = null;
+    UI.touchPoseHud?.classList.toggle('dock-dragging', false);
+    this.queueStateSave();
+    event.preventDefault?.();
+    event.stopPropagation?.();
+    return true;
+  }
+
+  touchWorldPlaneVectors() {
+    const right = new THREE.Vector3();
+    const up = new THREE.Vector3();
+    this.camera.matrixWorld.extractBasis(right, up, new THREE.Vector3());
+    return { right: right.normalize(), up: up.normalize() };
+  }
+
+
+  isTouchPoseDoubleTap(boneName, event) {
+    const last = this.lastTouchPoseTap;
+    const now = Date.now();
+    this.lastTouchPoseTap = { boneName, x: event.clientX, y: event.clientY, time: now };
+    if (!last || last.boneName !== boneName) return false;
+    if (now - last.time > TOUCH_POSE_DOUBLE_TAP_MS) return false;
+    return Math.hypot(event.clientX - last.x, event.clientY - last.y) <= TOUCH_POSE_DOUBLE_TAP_PX;
+  }
+
+  toggleSelectedTouchEditMode(statusText = '') {
+    const control = this.selectedTouchControl;
+    if (!control?.boneName) return null;
+    const nextMode = control.editMode === 'twist' ? 'hinge' : 'twist';
+    this.selectedTouchControl = { ...control, kind: control.kind || 'fk', editMode: nextMode };
+    this.poseEditorSpace = nextMode === 'hinge' ? 'global' : 'local';
+    this.showTouchPoseHud(this.selectedTouchControl);
+    this.updatePoseEditorUi(statusText || ('mode ' + nextMode + ' ' + shortBoneName(control.boneName)));
+    this.updateCritiqueTransportUi(statusText || ('mode ' + nextMode));
+    setStatus('selected bone: ' + shortBoneName(control.boneName) + ' ' + nextMode);
+    return this.selectedTouchControl;
+  }
+
+  screenPlaneWorldDelta(dx, dy, scale = 0.004) {
+    const { right, up } = this.touchWorldPlaneVectors();
+    return right.multiplyScalar(dx * scale).add(up.multiplyScalar(-dy * scale));
+  }
+
+  hingeTargetDelta(event, drag = this.touchPoseDrag) {
+    if (!drag?.startEdit) return null;
+    const dx = event.clientX - drag.startX;
+    const dy = event.clientY - drag.startY;
+    const world = this.screenPlaneWorldDelta(dx, dy);
+    return {
+      x: Number(drag.startEdit.x || 0) + world.x * 100,
+      y: Number(drag.startEdit.y || 0) + world.y * 100,
+      z: Number(drag.startEdit.z || 0) + world.z * 100,
+      worldDelta: world,
+    };
+  }
+
+  hingeEditMetadata(control = this.selectedTouchControl) {
+    const actor = this.actors.get(control?.actorKey || this.selected);
+    const endpoint = actor?.boneByName?.get(control?.boneName || '');
+    const driver = endpoint?.parent?.isBone ? endpoint.parent : null;
+    return {
+      drivenBoneName: endpoint?.name || control?.boneName || '',
+      anchorBoneName: driver?.name || '',
+    };
+  }
+
+  touchEditForControl(control = this.selectedTouchControl, create = true) {
+    const actor = this.actors.get(control?.actorKey || this.selected);
+    if (!actor || !control?.boneName) return null;
+    const key = this.currentPoseCorrectionKey(create);
+    if (!key) return null;
+    if (!key.edits) key.edits = {};
+    if (!key.edits[control.boneName]) key.edits[control.boneName] = {
+      ...poseEditDefaults(),
+      mode: control.kind === 'ik' ? 'ik' : 'fk',
+      space: control.kind === 'ik' ? 'global' : 'local',
+    };
+    return { actor, key, edit: key.edits[control.boneName] };
+  }
+
+  inferFkAxis(actor, boneName) {
+    const bone = actor?.boneByName?.get(boneName);
+    if (!actor || !bone) return null;
+    actor.model.updateMatrixWorld(true);
+    const role = fkBoneRole(boneName);
+    const origin = worldPositionOf(bone);
+    const childBone = (bone.children || []).find((child) => child.isBone && isTouchPoseSelectableBoneName(child.name));
+    const childWorld = childBone ? worldPositionOf(childBone) : null;
+    const parentWorld = bone.parent?.isBone ? worldPositionOf(bone.parent) : null;
+    const boneDirWorld = safeNormalizedVector(childWorld ? childWorld.clone().sub(origin) : (parentWorld ? origin.clone().sub(parentWorld) : null));
+    const parentDirWorld = safeNormalizedVector(parentWorld ? origin.clone().sub(parentWorld) : null);
+    const chainPlaneNormalWorld = safeNormalizedVector(parentDirWorld && boneDirWorld ? parentDirWorld.clone().cross(boneDirWorld) : null);
+    const twistAxisWorld = boneDirWorld;
+    const cameraAxis = new THREE.Vector3();
+    this.camera.getWorldDirection(cameraAxis).normalize();
+    const cameraUp = new THREE.Vector3();
+    const cameraRight = new THREE.Vector3();
+    this.camera.matrixWorld.extractBasis(cameraRight, cameraUp, new THREE.Vector3());
+    const swingFallback = avoidLongitudinalTwist(cameraAxis, twistAxisWorld, chainPlaneNormalWorld || cameraUp || cameraRight);
+    if ((role === 'lowerLeg' || role === 'forearm') && chainPlaneNormalWorld) {
+      const axis = avoidLongitudinalTwist(chainPlaneNormalWorld, twistAxisWorld, swingFallback);
+      if (axis) return { role, axisMode: 'inferred-hinge', axisWorld: axis.toArray(), boneDirWorld: boneDirWorld?.toArray() || null, parentDirWorld: parentDirWorld?.toArray() || null, chainPlaneNormalWorld: chainPlaneNormalWorld.toArray(), twistAxisWorld: twistAxisWorld?.toArray() || null };
+    }
+    if (role === 'upperLeg' || role === 'upperArm' || role === 'foot' || role === 'hand' || role === 'spine' || role === 'head') {
+      const axis = avoidLongitudinalTwist(chainPlaneNormalWorld || swingFallback, twistAxisWorld, swingFallback);
+      if (axis) return { role, axisMode: 'inferred-swing', axisWorld: axis.toArray(), boneDirWorld: boneDirWorld?.toArray() || null, parentDirWorld: parentDirWorld?.toArray() || null, chainPlaneNormalWorld: chainPlaneNormalWorld?.toArray() || null, twistAxisWorld: twistAxisWorld?.toArray() || null };
+    }
+    const axis = avoidLongitudinalTwist(swingFallback || cameraAxis, twistAxisWorld, cameraUp || cameraRight);
+    if (!axis) return null;
+    return { role, axisMode: 'fallback-screen', axisWorld: axis.toArray(), boneDirWorld: boneDirWorld?.toArray() || null, parentDirWorld: parentDirWorld?.toArray() || null, chainPlaneNormalWorld: chainPlaneNormalWorld?.toArray() || null, twistAxisWorld: twistAxisWorld?.toArray() || null };
+  }
+
+  screenPlaneFkContext(actor, boneName, event) {
+    const bone = actor?.boneByName?.get(boneName);
+    if (!actor || !bone) return null;
+    const rect = UI.canvas.getBoundingClientRect();
+    const originWorld = bone.getWorldPosition(new THREE.Vector3());
+    let endWorld = null;
+    const childBone = (bone.children || []).find((child) => child.isBone && isTouchPoseSelectableBoneName(child.name));
+    if (childBone) endWorld = childBone.getWorldPosition(new THREE.Vector3());
+    else if (bone.parent?.isBone) endWorld = originWorld.clone().add(originWorld.clone().sub(bone.parent.getWorldPosition(new THREE.Vector3())));
+    else endWorld = originWorld.clone().add(new THREE.Vector3(0, 0.12, 0));
+    const originScreen = screenPointForWorld(originWorld, this.camera, rect);
+    const endScreen = screenPointForWorld(endWorld, this.camera, rect);
+    const start = { x: endScreen.x - originScreen.x, y: endScreen.y - originScreen.y };
+    const radius = Math.hypot(start.x, start.y);
+    if (!Number.isFinite(radius) || radius < TOUCH_POSE_FK_MIN_RADIUS) return null;
+    return {
+      actorKey: actor.key,
+      boneName,
+      originWorld: originWorld.toArray(),
+      endWorld: endWorld.toArray(),
+      originScreen,
+      endScreen,
+      start,
+      radius,
+      pointerStart: { x: event.clientX, y: event.clientY },
+      startWorldQuat: worldQuaternionOf(bone).toArray(),
+      axisInfo: this.inferFkAxis(actor, boneName),
+    };
+  }
+
+  screenPlaneFkDelta(event) {
+    const fk = this.touchPoseDrag?.fk;
+    if (!fk) return null;
+    const current = { x: event.clientX - fk.originScreen.x, y: event.clientY - fk.originScreen.y };
+    const radius = Math.hypot(current.x, current.y);
+    if (!Number.isFinite(radius) || radius < TOUCH_POSE_FK_MIN_RADIUS) return null;
+    const start = fk.start;
+    const angle = Math.atan2(current.y, current.x) - Math.atan2(start.y, start.x);
+    const axisWorld = fk.axisInfo?.axisWorld ? new THREE.Vector3().fromArray(fk.axisInfo.axisWorld).normalize() : null;
+    if (!axisWorld || axisWorld.lengthSq() < 0.000001) return null;
+    const delta = new THREE.Quaternion().setFromAxisAngle(axisWorld, angle);
+    const startWorld = new THREE.Quaternion().fromArray(fk.startWorldQuat).normalize();
+    return { worldQuat: delta.multiply(startWorld).normalize(), axisMode: fk.axisInfo?.axisMode || 'fallback-screen', axisWorld: axisWorld.toArray(), angle };
+  }
+
+
+  trackTouchPointer(event) {
+    if (event?.pointerId === undefined) return;
+    if (event.pointerType && event.pointerType !== 'touch') return;
+    this.activeTouchPointers.set(event.pointerId, { id: event.pointerId, x: event.clientX, y: event.clientY });
+  }
+
+  updateTrackedTouchPointer(event) {
+    if (event?.pointerId === undefined) return;
+    if (!this.activeTouchPointers.has(event.pointerId)) return;
+    this.activeTouchPointers.set(event.pointerId, { id: event.pointerId, x: event.clientX, y: event.clientY });
+  }
+
+  releaseTrackedTouchPointer(event) {
+    if (event?.pointerId === undefined) return;
+    this.activeTouchPointers.delete(event.pointerId);
+  }
+
+  activeTouchPointList() {
+    return [...this.activeTouchPointers.values()].sort((a, b) => a.id - b.id);
+  }
+
+  allowCameraMultiTouch(event = null) {
+    if (this.touchPoseDrag) this.cancelTouchPoseDrag(event, false);
+    if (this.multiTouchPoseGesture) this.cancelMultiTouchPoseGesture(event, false);
+    this.pointerDown = null;
+    this.controls.enabled = true;
+    return false;
+  }
+
+  multiTouchMetrics(points = this.activeTouchPointList()) {
+    if (points.length < 2) return null;
+    const a = points[0];
+    const b = points[1];
+    const center = { x: (a.x + b.x) * 0.5, y: (a.y + b.y) * 0.5 };
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    return {
+      center,
+      distance: Math.max(1, Math.hypot(dx, dy)),
+      angle: Math.atan2(dy, dx),
+    };
+  }
+
+  fkBoneLongAxisWorld(actor, boneName) {
+    const bone = actor?.boneByName?.get(boneName);
+    if (!actor || !bone) return null;
+    actor.model.updateMatrixWorld(true);
+    const origin = worldPositionOf(bone);
+    const childBone = (bone.children || []).find((child) => child.isBone && isTouchPoseSelectableBoneName(child.name));
+    if (childBone) return safeNormalizedVector(worldPositionOf(childBone).sub(origin));
+    if (bone.parent?.isBone) return safeNormalizedVector(origin.sub(worldPositionOf(bone.parent)));
+    return null;
+  }
+
+  beginMultiTouchPoseGesture(event = null) {
+    const points = this.activeTouchPointList();
+    if (points.length < 2) return false;
+    const actor = this.actors.get(this.selected);
+    const boneName = this.selectedTouchControl?.boneName || actor?.selectedBoneName;
+    if (!actor || !boneName || !isTouchPoseSelectableBoneName(boneName)) return false;
+    const bone = actor.boneByName?.get(boneName);
+    if (!bone) return false;
+    const start = this.multiTouchMetrics(points);
+    if (!start) return false;
+    if (this.touchPoseDrag) this.cancelTouchPoseDrag(event, false);
+    actor.pauseActive(true);
+    actor.seek(actor.activeAction?.time || 0);
+    this.applyPoseCorrectionOverlay(actor);
+    this.selectBone(boneName, this.selectedTouchControl?.kind || 'fk', this.selectedTouchControl?.editMode || 'hinge');
+    const { right, up } = this.touchWorldPlaneVectors();
+    const control = { actorKey: actor.key, boneName, kind: this.selectedTouchControl?.kind || 'fk', editMode: this.selectedTouchControl?.editMode || 'hinge' };
+    const touchEdit = this.touchEditForControl(control, true);
+    if (!touchEdit) return false;
+    this.multiTouchPoseGesture = {
+      pointerIds: points.slice(0, 2).map((point) => point.id),
+      control,
+      start,
+      startEdit: { ...touchEdit.edit },
+      startWorldQuat: worldQuaternionOf(bone).toArray(),
+      cameraRight: right.toArray(),
+      cameraUp: up.toArray(),
+      boneLongAxisWorld: this.fkBoneLongAxisWorld(actor, boneName)?.toArray() || null,
+      editing: true,
+    };
+    this.controls.enabled = false;
+    for (const point of points.slice(0, 2)) UI.canvas.setPointerCapture?.(point.id);
+    event?.preventDefault?.();
+    return true;
+  }
+
+  multiTouchFkDelta() {
+    const gesture = this.multiTouchPoseGesture;
+    if (!gesture?.editing) return null;
+    const current = this.multiTouchMetrics();
+    if (!current) return null;
+    const centerDelta = {
+      x: current.center.x - gesture.start.center.x,
+      y: current.center.y - gesture.start.center.y,
+    };
+    const panDistance = Math.hypot(centerDelta.x, centerDelta.y);
+    const rotationDelta = wrapRadians(current.angle - gesture.start.angle);
+    const startWorld = new THREE.Quaternion().fromArray(gesture.startWorldQuat).normalize();
+    if (Math.abs(rotationDelta) >= TOUCH_POSE_ROLL_DEADZONE && panDistance <= TOUCH_POSE_ROLL_PAN_DEADZONE && gesture.boneLongAxisWorld) {
+      const axisWorld = new THREE.Vector3().fromArray(gesture.boneLongAxisWorld).normalize();
+      const roll = new THREE.Quaternion().setFromAxisAngle(axisWorld, rotationDelta);
+      return {
+        worldQuat: roll.multiply(startWorld).normalize(),
+        axisMode: 'phalanx-two-finger-roll',
+        axisWorld: axisWorld.toArray(),
+        angle: rotationDelta,
+        gestureKind: 'roll',
+      };
+    }
+    const cameraUp = new THREE.Vector3().fromArray(gesture.cameraUp).normalize();
+    const cameraRight = new THREE.Vector3().fromArray(gesture.cameraRight).normalize();
+    const horizontal = new THREE.Quaternion().setFromAxisAngle(cameraUp, -centerDelta.x * TOUCH_POSE_ROTATION_PAN_SPEED);
+    const vertical = new THREE.Quaternion().setFromAxisAngle(cameraRight, centerDelta.y * TOUCH_POSE_ROTATION_PAN_SPEED);
+    const worldQuat = horizontal.multiply(vertical).multiply(startWorld).normalize();
+    const axisWorld = safeNormalizedVector(cameraUp.clone().multiplyScalar(Math.abs(centerDelta.x)).add(cameraRight.clone().multiplyScalar(Math.abs(centerDelta.y)))) || cameraUp;
+    return {
+      worldQuat,
+      axisMode: 'phalanx-two-finger-pan',
+      axisWorld: axisWorld.toArray(),
+      angle: Math.hypot(centerDelta.x, centerDelta.y) * TOUCH_POSE_ROTATION_PAN_SPEED,
+      gestureKind: 'pan',
+    };
+  }
+
+  applyMultiTouchPoseDelta(event = null) {
+    const gesture = this.multiTouchPoseGesture;
+    if (!gesture?.editing) return null;
+    const beforeHistory = gesture.historyPushed ? null : this.poseHistorySnapshot('two-finger pose drag');
+    const touchEdit = this.touchEditForControl(gesture.control, true);
+    if (!touchEdit) return null;
+    if (!gesture.historyPushed) {
+      this.pushPoseHistory('two-finger pose drag', beforeHistory);
+      gesture.historyPushed = true;
+    }
+    const editMode = gesture.control.editMode || 'hinge';
+    let next = { ...gesture.startEdit };
+    if (editMode === 'twist') {
+      const fkDelta = this.multiTouchFkDelta();
+      if (!fkDelta) return null;
+      next = {
+        ...next,
+        mode: 'fk',
+        space: 'screen',
+        axisMode: fkDelta.axisMode,
+        axisWorld: fkDelta.axisWorld,
+        angle: fkDelta.angle,
+        gestureKind: 'twist',
+        worldQuat: fkDelta.worldQuat.toArray(),
+        rotX: 0,
+        rotY: 0,
+        rotZ: 0,
+      };
+    } else {
+      const current = this.multiTouchMetrics();
+      if (!current) return null;
+      const dx = current.center.x - gesture.start.center.x;
+      const dy = current.center.y - gesture.start.center.y;
+      const world = this.screenPlaneWorldDelta(dx, dy);
+      next = {
+        ...next,
+        ...this.hingeEditMetadata(gesture.control),
+        mode: 'hinge',
+        space: 'global',
+        x: Number(gesture.startEdit.x || 0) + world.x * 100,
+        y: Number(gesture.startEdit.y || 0) + world.y * 100,
+        z: Number(gesture.startEdit.z || 0) + world.z * 100,
+        axisMode: 'pinned-parent-screen-target',
+        gestureKind: 'hinge-pan',
+        worldQuat: null,
+        rotX: 0,
+        rotY: 0,
+        rotZ: 0,
+      };
+    }
+    touchEdit.key.edits[gesture.control.boneName] = next;
+    this.annotatePoseCorrectionKey(touchEdit.key, touchEdit.actor, touchEdit.actor.activeClip());
+    this.poseCorrectionSessionActive = true;
+    this.poseOverlayEnabled = true;
+    this.writePoseCorrections();
+    this.applyPoseCorrectionOverlay(touchEdit.actor);
+    this.updatePoseEditorUi('edited ' + shortBoneName(gesture.control.boneName));
+    this.updateCritiqueTransportUi('edited ' + shortBoneName(gesture.control.boneName));
+    this.showTouchPoseHud(gesture.control);
+    event?.preventDefault?.();
+    return next;
+  }
+
+  cancelMultiTouchPoseGesture(event = null, renderIfEdited = false) {
+    if (!this.multiTouchPoseGesture) return false;
+    const wasEditing = Boolean(this.multiTouchPoseGesture.editing);
+    for (const pointerId of this.multiTouchPoseGesture.pointerIds || []) UI.canvas.releasePointerCapture?.(pointerId);
+    this.multiTouchPoseGesture = null;
+    this.lastTouchPoseTap = null;
+    this.controls.enabled = true;
+    if (renderIfEdited && wasEditing) this.renderCritiqueFrames();
+    event?.preventDefault?.();
+    return true;
+  }
+
+  finishMultiTouchPoseGesture(event = null, renderIfEdited = true) {
+    return this.cancelMultiTouchPoseGesture(event, renderIfEdited);
+  }
+
+  cancelAllTouchPoseGestures(event = null, renderIfEdited = false) {
+    this.cancelMultiTouchPoseGesture(event, renderIfEdited);
+    this.cancelTouchPoseDrag(event, renderIfEdited);
+    this.activeTouchPointers.clear();
+  }
+
+  handleTouchPosePointerDown(event) {
+    this.trackTouchPointer(event);
+    if (this.activeTouchPointers.size >= 2) return this.allowCameraMultiTouch(event);
+    return this.beginTouchPoseDrag(event);
+  }
+
+  handleTouchPosePointerMove(event) {
+    this.updateTrackedTouchPointer(event);
+    if (this.multiTouchPoseGesture) return;
+    if (this.activeTouchPointers.size >= 2) {
+      this.allowCameraMultiTouch(event);
+      return;
+    }
+    this.updateTouchPoseDrag(event);
+  }
+
+  handleTouchPosePointerUp(event) {
+    const wasMulti = Boolean(this.multiTouchPoseGesture);
+    this.releaseTrackedTouchPointer(event);
+    if (wasMulti) {
+      if (this.activeTouchPointers.size < 2) return this.finishMultiTouchPoseGesture(event, true);
+      return true;
+    }
+    if (event?.pointerType === 'touch' && this.activeTouchPointers.size > 0 && !this.touchPoseDrag) return false;
+    if (this.finishTouchPoseDrag(event)) return true;
+    this.pickBoneHandle(event);
+    return false;
+  }
+
+  handleTouchPosePointerCancel(event) {
+    this.releaseTrackedTouchPointer(event);
+    if (this.multiTouchPoseGesture) return this.cancelMultiTouchPoseGesture(event, true);
+    return this.cancelTouchPoseDrag(event, true);
+  }
+
+  beginTouchPoseDrag(event) {
+    if (this.touchPoseDrag) this.cancelTouchPoseDrag(event, false);
+    if (this.multiTouchPoseGesture) this.cancelMultiTouchPoseGesture(event, true);
+    if (this.activeTouchPointers.size >= 2) return false;
+    const actor = this.actors.get(this.selected);
+    if (!actor) return false;
+    const target = this.pickTouchPoseTarget(event, actor);
+    const boneName = target?.boneName || '';
+    if (!boneName || !isTouchPoseSelectableBoneName(boneName)) return false;
+    const dragKind = target.kind === 'ik' ? 'ik' : 'fk';
+    const selectKind = dragKind === 'ik' ? 'ik' : 'fk';
+    actor.pauseActive(true);
+    actor.seek(actor.activeAction?.time || 0);
+    const isDoubleTap = this.isTouchPoseDoubleTap(boneName, event);
+    this.selectBone(boneName, selectKind, this.selectedTouchControl?.boneName === boneName ? this.selectedTouchControl?.editMode : 'hinge');
+    this.applyPoseCorrectionOverlay(actor);
+    if (isDoubleTap) {
+      this.toggleSelectedTouchEditMode();
+      event.preventDefault?.();
+      return true;
+    }
+    const editMode = this.selectedTouchControl?.editMode || 'hinge';
+    this.touchPoseDrag = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startEdit: null,
+      control: { actorKey: actor.key, boneName, kind: dragKind, editMode },
+      fk: this.screenPlaneFkContext(actor, boneName, event),
+      editing: false,
+    };
+    this.controls.enabled = false;
+    UI.canvas.setPointerCapture?.(event.pointerId);
+    event.preventDefault?.();
+    return true;
+  }
+
+  startTouchPoseEditDrag() {
+    if (!this.touchPoseDrag?.control) return null;
+    if (this.touchPoseDrag.control.kind !== 'ik' && this.touchPoseDrag.control.kind !== 'fk') return null;
+    if (this.touchPoseDrag.control.kind === 'fk' && this.touchPoseDrag.control.editMode === 'twist' && !this.touchPoseDrag.fk) return null;
+    const beforeHistory = this.poseHistorySnapshot('touch pose drag');
+    const touchEdit = this.touchEditForControl(this.touchPoseDrag.control, true);
+    if (!touchEdit) return null;
+    this.pushPoseHistory('touch pose drag', beforeHistory);
+    this.touchPoseDrag.historyPushed = true;
+    this.touchPoseDrag.startEdit = { ...touchEdit.edit };
+    this.touchPoseDrag.editing = true;
+    return touchEdit;
+  }
+
+  applyTouchPoseDelta(event) {
+    if (!this.touchPoseDrag?.editing || !this.touchPoseDrag.startEdit) return null;
+    if (event?.pointerId !== undefined && event.pointerId !== this.touchPoseDrag.pointerId) return null;
+    const { control, startEdit, startX, startY } = this.touchPoseDrag;
+    const touchEdit = this.touchEditForControl(control, true);
+    if (!touchEdit) return null;
+    const dx = event.clientX - startX;
+    const dy = event.clientY - startY;
+    const next = { ...startEdit, mode: control.kind === 'ik' ? 'ik' : 'fk', space: control.kind === 'ik' ? 'global' : 'screen' };
+    if (control.kind === 'fk' && control.editMode === 'twist') {
+      const fkDelta = this.screenPlaneFkDelta(event);
+      if (!fkDelta) return null;
+      next.mode = 'fk';
+      next.axisMode = 'selected-bone-twist';
+      next.axisWorld = fkDelta.axisWorld;
+      next.angle = fkDelta.angle;
+      next.gestureKind = 'twist';
+      next.worldQuat = fkDelta.worldQuat.toArray();
+      next.rotX = 0;
+      next.rotY = 0;
+      next.rotZ = 0;
+    } else if (control.kind === 'fk' || control.kind === 'ik') {
+      const hinge = this.hingeTargetDelta(event);
+      if (!hinge) return null;
+      Object.assign(next, this.hingeEditMetadata(control));
+      next.mode = 'hinge';
+      next.space = 'global';
+      next.x = hinge.x;
+      next.y = hinge.y;
+      next.z = hinge.z;
+      next.axisMode = 'pinned-parent-screen-target';
+      next.gestureKind = 'hinge-pan';
+      next.worldQuat = null;
+      next.rotX = 0;
+      next.rotY = 0;
+      next.rotZ = 0;
+    } else return null;
+    touchEdit.key.edits[control.boneName] = next;
+    this.annotatePoseCorrectionKey(touchEdit.key, touchEdit.actor, touchEdit.actor.activeClip());
+    this.poseCorrectionSessionActive = true;
+    this.poseOverlayEnabled = true;
+    this.writePoseCorrections();
+    this.applyPoseCorrectionOverlay(touchEdit.actor);
+    this.updatePoseEditorUi('edited ' + shortBoneName(control.boneName));
+    this.updateCritiqueTransportUi('edited ' + shortBoneName(control.boneName));
+    this.showTouchPoseHud(control);
+    return next;
+  }
+
+  updateTouchPoseDrag(event) {
+    if (!this.touchPoseDrag) return;
+    if (event.pointerId !== this.touchPoseDrag.pointerId) return;
+    if (event.buttons === 0) {
+      this.cancelTouchPoseDrag(event, false);
+      return;
+    }
+    const dx = event.clientX - this.touchPoseDrag.startX;
+    const dy = event.clientY - this.touchPoseDrag.startY;
+    if (!this.touchPoseDrag.editing) {
+      if (Math.hypot(dx, dy) < TOUCH_POSE_DRAG_THRESHOLD) {
+        event.preventDefault?.();
+        return;
+      }
+      if (!this.startTouchPoseEditDrag()) {
+        this.cancelTouchPoseDrag(event, false);
+        return;
+      }
+    }
+    this.applyTouchPoseDelta(event);
+    event.preventDefault?.();
+  }
+
+  cancelTouchPoseDrag(event = null, renderIfEdited = false) {
+    if (!this.touchPoseDrag) return false;
+    const wasEditing = Boolean(this.touchPoseDrag.editing);
+    UI.canvas.releasePointerCapture?.(this.touchPoseDrag.pointerId);
+    this.touchPoseDrag = null;
+    this.controls.enabled = true;
+    if (renderIfEdited && wasEditing) this.renderCritiqueFrames();
+    event?.preventDefault?.();
+    return true;
+  }
+
+  finishTouchPoseDrag(event) {
+    if (!this.touchPoseDrag) return false;
+    if (event?.pointerId !== undefined && event.pointerId !== this.touchPoseDrag.pointerId) return false;
+    const wasEditing = Boolean(this.touchPoseDrag.editing);
+    this.cancelTouchPoseDrag(event, true);
+    return wasEditing;
   }
 
   applyOrbitView(actor) {
@@ -3834,6 +5251,57 @@ class PoseLab {
     this.updateReadout();
   }
 
+  critiqueStateSnapshot(actor, clip = actor?.activeClip()) {
+    const frame = this.currentCritiqueFrameSlot(actor);
+    const noteKey = this.critiqueNoteKey(actor, clip, frame);
+    const savedNote = noteKey ? (this.critiqueNotes.entries?.[noteKey] || null) : null;
+    const liveComment = String(UI.critiqueComment?.value || '').trim();
+    const liveMarks = this.critiqueReadTextField(UI.critiqueMarks?.value || '');
+    const liveBones = this.critiqueReadTextField(UI.critiqueBones?.value || '');
+    const liveNote = liveComment || liveMarks.length || liveBones.length ? {
+      actorKey: actor?.key || '',
+      actorLabel: actor?.info?.label || actor?.key || '',
+      clipKey: clip ? clipKey(clip) : '',
+      clipName: clip?.name || '',
+      frameKey: frame?.frameKey || '',
+      tag: frame?.tag || '',
+      spriteFrame: frame?.spriteFrame,
+      sourceTime: Number(frame?.time || 0),
+      comment: liveComment,
+      marks: liveMarks,
+      bones: liveBones,
+      mode: 'grease-pencil-comment-v1',
+    } : null;
+    return {
+      schema: 'pose-lab-critique-state-v1',
+      savedAt: new Date().toISOString(),
+      actorKey: actor?.key || '',
+      actorLabel: actor?.info?.label || actor?.key || '',
+      clipKey: clip ? clipKey(clip) : '',
+      clipName: clip?.name || '',
+      frameKey: frame?.frameKey || '',
+      frameTag: frame?.tag || '',
+      spriteFrame: Number(frame?.spriteFrame || 0),
+      sourceTime: Number(frame?.time || 0),
+      note: liveNote || (savedNote ? { ...savedNote } : null),
+      boneEdits: actor ? [...actor.boneEdits.entries()].map(([boneName, edit]) => ({ boneName, ...edit })) : [],
+    };
+  }
+
+  critiqueLoadSavedStateFromClip(actor, clip) {
+    const critique = clip?.userData?.critique;
+    if (!actor || !critique) return false;
+    const edits = Array.isArray(critique.boneEdits) ? critique.boneEdits : [];
+    if (!edits.length) return false;
+    actor.resetAllBoneEdits();
+    for (const entry of edits) {
+      const boneName = entry?.boneName || entry?.name;
+      if (!boneName) continue;
+      actor.applyBoneEdit(boneName, entry);
+    }
+    return true;
+  }
+
   readCleanupDraftStore() {
     try { return JSON.parse(localStorage.getItem(CLEANUP_DRAFTS_KEY) || '{}') || {}; }
     catch (_err) { return {}; }
@@ -3848,7 +5316,9 @@ class PoseLab {
     const store = this.readCleanupDraftStore();
     const list = Array.isArray(store[actor.key]) ? store[actor.key] : [];
     const savedAt = Date.now();
-    const draft = { id: 'draft-' + savedAt, actorKey: actor.key, actorLabel: actor.info?.label || actor.key, savedAt, reason, clip: serializeAnimationClip(clip) };
+    const draftClip = serializeAnimationClip(clip);
+    draftClip.userData = { ...(draftClip.userData || {}), critique: this.critiqueStateSnapshot(actor, clip) };
+    const draft = { id: 'draft-' + savedAt, actorKey: actor.key, actorLabel: actor.info?.label || actor.key, savedAt, reason, clip: draftClip };
     store[actor.key] = [draft, ...list.filter((entry) => entry.clip?.name !== clip.name)].slice(0, 8);
     try {
       this.writeCleanupDraftStore(store);
@@ -3865,8 +5335,10 @@ class PoseLab {
     const actor = this.actors.get(this.selected);
     const clip = actor?.activeClip();
     if (!actor || !clip) { this.updateCleanupUi('no active clip to save'); return; }
+    this.critiquePersistCurrentNote('saved note');
     const ok = this.saveCleanupDraft(actor, clip, reason);
     this.updateCleanupUi(ok ? 'saved draft: ' + clip.name : 'draft save failed');
+    this.updatePlayerTransportUi(ok ? 'saved draft' : 'draft save failed');
   }
 
   restoreCleanupDrafts(actor) {
@@ -3877,7 +5349,7 @@ class PoseLab {
     for (const entry of list.slice().reverse()) {
       const clip = deserializeAnimationClip(entry.clip);
       if (!clip) continue;
-      clip.userData = { ...(clip.userData || {}), origin: clip.userData?.origin || ('cleanup:' + actor.key + ':restored-' + restored), cleanupActor: actor.key, restoredDraft: true };
+      clip.userData = { ...(clip.userData || {}), origin: clip.userData?.origin || ('cleanup:' + actor.key + ':restored-' + restored), cleanupActor: actor.key, restoredDraft: true, critique: clip.userData?.critique || entry.clip?.userData?.critique || null };
       const key = clipKey(clip);
       if (actor.actions.has(key)) continue;
       actor.clips.push(clip);
@@ -3887,6 +5359,7 @@ class PoseLab {
     if (restored) {
       actor.cleanupClipCount = actor.clips.filter((entry) => (entry.userData?.origin || '').startsWith('cleanup:')).length;
       if (UI.cleanupSaveStatus) UI.cleanupSaveStatus.textContent = 'restored drafts=' + restored;
+      this.updatePlayerTransportUi('restored drafts=' + restored);
     }
     return restored;
   }
@@ -3905,7 +5378,9 @@ class PoseLab {
     const actor = this.actors.get(this.selected);
     const clip = actor?.activeClip();
     if (!clip) { this.updateCleanupUi('no active clip to export'); return; }
-    const payload = { exportedAt: new Date().toISOString(), actorKey: actor.key, actorLabel: actor.info?.label || actor.key, clip: serializeAnimationClip(clip) };
+    const payloadClip = serializeAnimationClip(clip);
+    payloadClip.userData = { ...(payloadClip.userData || {}), critique: this.critiqueStateSnapshot(actor, clip) };
+    const payload = { exportedAt: new Date().toISOString(), actorKey: actor.key, actorLabel: actor.info?.label || actor.key, clip: payloadClip };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -3981,18 +5456,22 @@ class PoseLab {
     if (!clip || !UI.cleanupTimelineCanvas) return;
     event.preventDefault();
     const metrics = this.cleanupTimelineMetrics(clip);
-    const range = this.cleanupBlendRange(clip);
     const time = this.cleanupXToTime(event.clientX, metrics);
-    const x = event.clientX - metrics.rect.left;
-    const handleSpecs = [
-      ['blendStart', range.blendStart],
-      ['start', range.start],
-      ['end', range.end],
-      ['blendEnd', range.blendEnd],
-    ].map(([name, value]) => ({ name, value, x: this.timeToCleanupX(value, metrics) }));
-    const nearest = handleSpecs.reduce((best, item) => Math.abs(item.x - x) < Math.abs(best.x - x) ? item : best, handleSpecs[0]);
-    const mode = Math.abs(nearest.x - x) <= 14 ? nearest.name : 'newRange';
-    this.cleanupTimelineDrag = { mode, anchor: time };
+    if (this.labMode === 'critique') {
+      this.cleanupTimelineDrag = { mode: 'scrub', anchor: time };
+    } else {
+      const range = this.cleanupBlendRange(clip);
+      const x = event.clientX - metrics.rect.left;
+      const handleSpecs = [
+        ['blendStart', range.blendStart],
+        ['start', range.start],
+        ['end', range.end],
+        ['blendEnd', range.blendEnd],
+      ].map(([name, value]) => ({ name, value, x: this.timeToCleanupX(value, metrics) }));
+      const nearest = handleSpecs.reduce((best, item) => Math.abs(item.x - x) < Math.abs(best.x - x) ? item : best, handleSpecs[0]);
+      const mode = Math.abs(nearest.x - x) <= 14 ? nearest.name : 'newRange';
+      this.cleanupTimelineDrag = { mode, anchor: time };
+    }
     UI.cleanupTimelineCanvas.setPointerCapture?.(event.pointerId);
     const move = (nextEvent) => this.dragCleanupTimeline(nextEvent);
     const up = (nextEvent) => {
@@ -4014,6 +5493,10 @@ class PoseLab {
     if (!clip || !this.cleanupTimelineDrag) return;
     const metrics = this.cleanupTimelineMetrics(clip);
     const t = this.cleanupXToTime(event.clientX, metrics);
+    if (this.cleanupTimelineDrag.mode === 'scrub') {
+      this.scrubCleanupClip(t);
+      return;
+    }
     const range = this.cleanupBlendRange(clip);
     const next = { start: range.start, end: range.end, blendStart: range.blendStart, blendEnd: range.blendEnd };
     if (this.cleanupTimelineDrag.mode === 'newRange') {
@@ -4071,6 +5554,7 @@ class PoseLab {
     const xEnd = this.timeToCleanupX(range.end, metrics);
     const xBlendEnd = this.timeToCleanupX(range.blendEnd, metrics);
     const playX = this.timeToCleanupX(actor.activeAction?.time || 0, metrics);
+    const keyFrames = this.visualQaReadFrames(clip);
     ctx.fillStyle = '#18252d';
     ctx.fillRect(metrics.left, y, metrics.width, h);
     ctx.fillStyle = 'rgba(141,218,255,0.18)';
@@ -4082,18 +5566,39 @@ class PoseLab {
         ctx.fillRect(x, y + 2, 1, h - 4);
       }
     }
-    ctx.fillStyle = 'rgba(214,166,66,0.28)';
-    ctx.fillRect(xBlendStart, y, Math.max(0, xStart - xBlendStart), h);
-    ctx.fillRect(xEnd, y, Math.max(0, xBlendEnd - xEnd), h);
-    ctx.fillStyle = 'rgba(210,68,54,0.42)';
-    ctx.fillRect(xStart, y, Math.max(1, xEnd - xStart), h);
-    ctx.strokeStyle = '#d6a642';
-    ctx.lineWidth = 2;
-    for (const x of [xBlendStart, xStart, xEnd, xBlendEnd]) {
+    for (const frame of keyFrames) {
+      const x = this.timeToCleanupX(frame.time, metrics);
+      const isImportant = /start|anticipation|contact|recovery|recoil|settle/i.test(String(frame.tag || ''));
+      ctx.strokeStyle = isImportant ? '#d6a642' : 'rgba(141,218,255,0.9)';
+      ctx.lineWidth = isImportant ? 2 : 1;
       ctx.beginPath();
-      ctx.moveTo(x, y - 7);
-      ctx.lineTo(x, y + h + 7);
+      ctx.moveTo(x, y - (isImportant ? 7 : 4));
+      ctx.lineTo(x, y + h + (isImportant ? 7 : 4));
       ctx.stroke();
+      if (isImportant) {
+        ctx.fillStyle = '#d6a642';
+        ctx.fillRect(x - 2, y - 10, 4, 4);
+      }
+    }
+    if (this.labMode !== 'critique') {
+      ctx.fillStyle = 'rgba(214,166,66,0.28)';
+      ctx.fillRect(xBlendStart, y, Math.max(0, xStart - xBlendStart), h);
+      ctx.fillRect(xEnd, y, Math.max(0, xBlendEnd - xEnd), h);
+      ctx.fillStyle = 'rgba(210,68,54,0.42)';
+      ctx.fillRect(xStart, y, Math.max(1, xEnd - xStart), h);
+      ctx.strokeStyle = '#d6a642';
+      ctx.lineWidth = 2;
+      for (const x of [xBlendStart, xStart, xEnd, xBlendEnd]) {
+        ctx.beginPath();
+        ctx.moveTo(x, y - 7);
+        ctx.lineTo(x, y + h + 7);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#d7f6ff';
+      ctx.font = '10px ui-monospace, monospace';
+      ctx.fillText('blend', xBlendStart + 2, y - 9);
+      ctx.fillStyle = '#ffb2a3';
+      ctx.fillText('cut', xStart + 2, y + h + 18);
     }
     ctx.strokeStyle = '#f8f1dd';
     ctx.lineWidth = 2;
@@ -4101,11 +5606,6 @@ class PoseLab {
     ctx.moveTo(playX, y - 12);
     ctx.lineTo(playX, y + h + 12);
     ctx.stroke();
-    ctx.fillStyle = '#d7f6ff';
-    ctx.font = '10px ui-monospace, monospace';
-    ctx.fillText('blend', xBlendStart + 2, y - 9);
-    ctx.fillStyle = '#ffb2a3';
-    ctx.fillText('cut', xStart + 2, y + h + 18);
   }
 
   currentMergePair(preferActiveSource = false) {
@@ -4367,6 +5867,7 @@ class PoseLab {
     this.saveCleanupDraft(actor, next, 'autosave');
     this.saveState();
     this.renderClipButtons();
+    this.updateCritiqueDock(true);
     this.cleanupLastClipKey = '';
     this.updateCleanupUi('created merge-clips | key=' + key + '\n' + next.userData.mode);
     this.updateMergeUi('created merge ' + (next.userData.sourceName || next.name));
@@ -4387,11 +5888,919 @@ class PoseLab {
     };
   }
 
+  stepActiveClipFrames(deltaFrames = 1) {
+    const actor = this.actors.get(this.selected);
+    const clip = actor?.activeClip();
+    if (!actor?.activeAction || !clip) return;
+    const duration = Math.max(0.001, clip.duration || 0.001);
+    const frameCount = Math.max(1, Math.ceil(duration * CRITIQUE_STEP_FPS));
+    const currentFrame = this.poseFrameForTime(actor.activeAction.time || 0);
+    const nextFrame = ((currentFrame + Number(deltaFrames || 0)) % (frameCount + 1) + (frameCount + 1)) % (frameCount + 1);
+    actor.seek(clampValue(nextFrame / CRITIQUE_STEP_FPS, 0, duration));
+    this.updateCleanupUi('frame step ' + deltaFrames);
+    this.updateCritiqueTransportUi('frame step ' + deltaFrames);
+    this.updatePlayerTransportUi();
+    this.updateReadout();
+  }
+
+  primeExclusiveAccordionState() {
+    for (const details of document.querySelectorAll('details.exclusive-accordion')) {
+      details.open = false;
+    }
+  }
+
+  updatePlayerTransportUi(statusText = '') {
+    const actor = this.actors.get(this.selected);
+    const clip = actor?.activeClip();
+    if (!UI.playerTransportLabel) return;
+    if (!actor || !clip) {
+      UI.playerTransportLabel.textContent = statusText || 'No active clip';
+      if (UI.playerPlayPause) UI.playerPlayPause.textContent = 'Play';
+      if (UI.playerStop) UI.playerStop.disabled = true;
+      return;
+    }
+    const duration = Math.max(0.001, clip.duration || 0.001);
+    const time = clampValue(actor.activeAction?.time || 0, 0, duration);
+    UI.playerTransportLabel.textContent = clipLabel(clip) + ' | ' + fmt(time) + ' / ' + fmt(duration);
+    if (UI.playerPlayPause) UI.playerPlayPause.textContent = actor.activeAction?.paused ? 'Play' : 'Pause';
+    if (UI.playerStop) UI.playerStop.disabled = false;
+    if (UI.playerPrevFrame) UI.playerPrevFrame.disabled = false;
+    if (UI.playerNextFrame) UI.playerNextFrame.disabled = false;
+  }
+
   cleanupRange(clip) {
     const duration = Math.max(0.001, clip?.duration || 0.001);
     const start = clampValue(UI.cleanupStart?.value, 0, duration);
     const end = clampValue(UI.cleanupEnd?.value, 0, duration);
     return { start: Math.min(start, end), end: Math.max(start, end), duration };
+  }
+
+  critiqueTimelineState(actor = this.actors.get(this.selected), clip = actor?.activeClip()) {
+    const duration = Math.max(0.001, Number(clip?.duration || 0.001));
+    const currentTime = clampValue(actor?.activeAction?.time || 0, 0, duration);
+    const currentFrame = Math.round(currentTime * CRITIQUE_STEP_FPS);
+    const currentReadFrame = Math.round(currentTime * CRITIQUE_LIVE_FPS);
+    const keyframes = this.mergedCritiqueKeyframes(actor, clip);
+    return {
+      actor,
+      clip,
+      duration,
+      currentTime,
+      currentFrame,
+      currentReadFrame,
+      frameCount: Math.max(1, Math.ceil(duration * CRITIQUE_STEP_FPS)),
+      stepFps: CRITIQUE_STEP_FPS,
+      liveFps: CRITIQUE_LIVE_FPS,
+      keyframes,
+      mode: this.critiqueTransportMode || 'step',
+    };
+  }
+
+  critiqueSetTransportMode(mode = 'step') {
+    const nextMode = ['step', 'live', 'loop', 'pingpong'].includes(mode) ? mode : 'step';
+    this.critiqueTransportMode = nextMode;
+    this.critiqueApplyPlaybackMode();
+    this.updateCritiqueTransportUi('mode ' + nextMode);
+    this.saveState();
+  }
+
+  critiqueApplyPlaybackMode(actor = this.actors.get(this.selected)) {
+    if (!actor?.activeAction) return;
+    const action = actor.activeAction;
+    if (this.critiqueTransportMode === 'step') {
+      actor.pauseActive(true);
+      return;
+    }
+    actor.pauseActive(false);
+    if (this.critiqueTransportMode === 'pingpong') action.setLoop(THREE.LoopPingPong, Infinity);
+    else action.setLoop(THREE.LoopRepeat, Infinity);
+  }
+
+  critiqueSeekFrame(frameIndex = 0) {
+    const actor = this.actors.get(this.selected);
+    const state = this.critiqueTimelineState(actor);
+    if (!actor?.activeAction) return;
+    const frame = clampValue(Number(frameIndex || 0), 0, state.frameCount);
+    actor.seek(frame / CRITIQUE_STEP_FPS);
+    this.updateCritiqueTransportUi('frame ' + frame);
+    this.updateCritiqueDock(true, 'selected ' + frame);
+    this.updateReadout();
+  }
+
+  critiqueStepKeyframe(delta = 1) {
+    const state = this.critiqueTimelineState();
+    if (!state.clip) return;
+    const frames = (state.keyframes || []).filter((frame) => Number.isFinite(Number(frame.time))).sort((a, b) => Number(a.time) - Number(b.time));
+    const epsilon = 0.0005;
+    let targetTime = null;
+    if (frames.length) {
+      if (delta < 0) targetTime = [...frames].reverse().find((frame) => Number(frame.time) < state.currentTime - epsilon)?.time ?? frames[frames.length - 1].time;
+      else targetTime = frames.find((frame) => Number(frame.time) > state.currentTime + epsilon)?.time ?? frames[0].time;
+    }
+    if (targetTime == null) {
+      this.stepActiveClipFrames(delta);
+      return;
+    }
+    this.critiqueSeekFrame(Math.round(Number(targetTime) * CRITIQUE_STEP_FPS));
+  }
+
+  critiqueJumpSemantic(name = 'start') {
+    const state = this.critiqueTimelineState();
+    if (!state.clip) return;
+    const frames = state.keyframes || [];
+    const findTag = (tag) => frames.find((frame) => String(frame.tag || '').toLowerCase() === tag);
+    let targetTime = 0;
+    if (name === 'start') targetTime = 0;
+    else if (name === 'end') targetTime = state.duration;
+    else if (name === 'anticipation') targetTime = findTag('anticipation')?.time ?? Math.min(state.duration * 0.2, state.duration);
+    else if (name === 'contact') targetTime = findTag('contact')?.time ?? Math.min(state.duration * 0.5, state.duration);
+    else if (name === 'recovery') targetTime = findTag('recoil')?.time ?? findTag('recovery')?.time ?? Math.min(state.duration * 0.8, state.duration);
+    this.critiqueSeekFrame(Math.round(targetTime * CRITIQUE_STEP_FPS));
+  }
+
+  setCritiqueFrameSlot(frame) {
+    if (!frame) return;
+    const actor = this.actors.get(this.selected);
+    if (!actor?.activeAction) return;
+    actor.seek(Number(frame.time || 0));
+    this.updateCritiqueTransportUi('slot ' + (frame.frameKey || frame.tag || 'frame'));
+    this.updateCritiqueDock(true, 'selected ' + (frame.frameKey || frame.tag || 'frame'));
+    this.renderCritiqueFrames();
+    this.updateCritiqueDock(true);
+    this.updateReadout();
+  }
+
+  renderCritiqueFrames() {
+    const actor = this.actors.get(this.selected);
+    const clip = actor?.activeClip();
+    if (!UI.critiqueFrameButtons) return;
+    UI.critiqueFrameButtons.replaceChildren();
+    const frames = this.mergedCritiqueKeyframes(actor, clip);
+    if (!frames.length) {
+      const empty = document.createElement('button');
+      empty.type = 'button';
+      empty.className = 'empty-clip';
+      empty.disabled = true;
+      empty.textContent = this.labMode === 'critique' ? 'Critique frames pending' : 'Frame rail idle';
+      UI.critiqueFrameButtons.append(empty);
+      return;
+    }
+    for (const frame of frames) {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.dataset.frameKey = frame.frameKey || ('f' + String(frame.spriteFrame).padStart(3, '0'));
+      button.textContent = button.dataset.frameKey + (frame.tag ? ' ' + frame.tag : '');
+      const note = this.critiqueNoteForFrame(frame, actor, clip);
+      button.classList.toggle('active', Math.round((actor?.activeAction?.time || 0) * 60) === Number(frame.spriteFrame || 0));
+      button.classList.toggle('noted', Boolean(note));
+      if (note?.comment) button.title = note.comment;
+      button.addEventListener('click', () => this.setCritiqueFrameSlot(frame));
+      UI.critiqueFrameButtons.append(button);
+    }
+  }
+
+  readPoseCorrections() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(POSE_CORRECTIONS_KEY) || '{}') || {};
+      return { schema: 'pose-lab-pose-corrections-v1', entries: parsed.entries && typeof parsed.entries === 'object' ? parsed.entries : {} };
+    } catch (_err) {
+      return { schema: 'pose-lab-pose-corrections-v1', entries: {} };
+    }
+  }
+
+  writePoseCorrections() {
+    try { localStorage.setItem(POSE_CORRECTIONS_KEY, JSON.stringify(this.poseCorrections)); } catch (_err) {}
+    this.updateUndoRedoUi();
+  }
+
+  clonePoseCorrections(corrections = this.poseCorrections) {
+    try {
+      const copy = JSON.parse(JSON.stringify(corrections || {})) || {};
+      return { schema: 'pose-lab-pose-corrections-v1', entries: copy.entries && typeof copy.entries === 'object' ? copy.entries : {} };
+    } catch (_err) {
+      return { schema: 'pose-lab-pose-corrections-v1', entries: {} };
+    }
+  }
+
+  readPoseHistory() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(POSE_HISTORY_KEY) || '{}') || {};
+      return { schema: 'pose-lab-pose-history-v1', undo: Array.isArray(parsed.undo) ? parsed.undo : [], redo: Array.isArray(parsed.redo) ? parsed.redo : [] };
+    } catch (_err) {
+      return { schema: 'pose-lab-pose-history-v1', undo: [], redo: [] };
+    }
+  }
+
+  writePoseHistory() {
+    try { localStorage.setItem(POSE_HISTORY_KEY, JSON.stringify(this.poseHistory)); } catch (_err) {}
+    this.updateUndoRedoUi();
+  }
+
+  poseHistorySnapshot(label = 'pose edit') {
+    const actor = this.actors.get(this.selected);
+    const clip = actor?.activeClip();
+    return {
+      schema: 'pose-lab-pose-history-snapshot-v1',
+      label,
+      savedAt: Date.now(),
+      actorKey: actor?.key || this.selected || '',
+      clipKey: clip ? clipKey(clip) : '',
+      frame: this.currentPoseFrame(actor),
+      boneName: actor?.selectedBoneName || this.selectedTouchControl?.boneName || '',
+      editMode: this.selectedTouchControl?.editMode || this.poseEditorMode || 'fk',
+      poseCorrections: this.clonePoseCorrections(),
+    };
+  }
+
+  pushPoseHistory(label = 'pose edit', snapshot = null) {
+    const item = snapshot || this.poseHistorySnapshot(label);
+    this.poseHistory.undo.push(item);
+    if (this.poseHistory.undo.length > POSE_HISTORY_LIMIT) this.poseHistory.undo.splice(0, this.poseHistory.undo.length - POSE_HISTORY_LIMIT);
+    this.poseHistory.redo = [];
+    this.writePoseHistory();
+    return item;
+  }
+
+  hasPoseCorrectionEntries(corrections = this.poseCorrections) {
+    return Object.values(corrections?.entries || {}).some((entry) => Object.values(entry?.keys || {}).some((key) => Object.keys(key?.edits || {}).length));
+  }
+
+  restorePoseHistorySnapshot(snapshot, statusText = 'restored pose edit') {
+    if (!snapshot?.poseCorrections) return false;
+    this.poseCorrections = this.clonePoseCorrections(snapshot.poseCorrections);
+    this.writePoseCorrections();
+    this.poseCorrectionSessionActive = this.hasPoseCorrectionEntries();
+    this.poseOverlayEnabled = this.poseCorrectionSessionActive;
+    const actor = this.actors.get(this.selected);
+    actor?.seek(actor.activeAction?.time || 0);
+    this.applyPoseCorrectionOverlay(actor);
+    this.renderCritiqueFrames();
+    this.updatePoseEditorUi(statusText);
+    this.updateCritiqueTransportUi(statusText);
+    this.updatePlayerTransportUi(statusText);
+    this.showTouchPoseHud();
+    return true;
+  }
+
+  undoPoseCorrection() {
+    const snapshot = this.poseHistory?.undo?.pop();
+    if (!snapshot) return false;
+    this.poseHistory.redo.push(this.poseHistorySnapshot('redo pose edit'));
+    const restored = this.restorePoseHistorySnapshot(snapshot, 'undo pose edit');
+    this.writePoseHistory();
+    return restored;
+  }
+
+  redoPoseCorrection() {
+    const snapshot = this.poseHistory?.redo?.pop();
+    if (!snapshot) return false;
+    this.poseHistory.undo.push(this.poseHistorySnapshot('undo pose edit'));
+    if (this.poseHistory.undo.length > POSE_HISTORY_LIMIT) this.poseHistory.undo.splice(0, this.poseHistory.undo.length - POSE_HISTORY_LIMIT);
+    const restored = this.restorePoseHistorySnapshot(snapshot, 'redo pose edit');
+    this.writePoseHistory();
+    return restored;
+  }
+
+  updateUndoRedoUi() {
+    if (UI.touchPoseUndo) UI.touchPoseUndo.disabled = !this.poseHistory?.undo?.length;
+    if (UI.touchPoseRedo) UI.touchPoseRedo.disabled = !this.poseHistory?.redo?.length;
+    UI.touchPoseHud?.classList.toggle('can-undo', Boolean(this.poseHistory?.undo?.length));
+    UI.touchPoseHud?.classList.toggle('can-redo', Boolean(this.poseHistory?.redo?.length));
+  }
+
+  poseCorrectionEntryKey(actor = this.actors.get(this.selected), clip = actor?.activeClip()) {
+    if (!actor || !clip) return '';
+    return [actor.key || this.selected || 'actor', clipKey(clip)].join('::');
+  }
+
+  poseCorrectionEntry(actor = this.actors.get(this.selected), clip = actor?.activeClip(), create = false) {
+    const key = this.poseCorrectionEntryKey(actor, clip);
+    if (!key) return null;
+    if (!this.poseCorrections.entries[key] && create) {
+      this.poseCorrections.entries[key] = {
+        schema: 'pose-lab-pose-correction-entry-v1',
+        kind: 'critique-guidance',
+        destructive: false,
+        sourceClipMutation: 'forbidden',
+        learningGoal: 'infer correction intent and principles; do not copy corrected frames verbatim',
+        actorKey: actor.key,
+        actorLabel: actor.info?.label || actor.key,
+        clipKey: clipKey(clip),
+        clipName: clip.name || '',
+        keys: {},
+      };
+    }
+    return this.poseCorrections.entries[key] || null;
+  }
+
+  poseFrameForTime(time = 0) {
+    return Math.max(0, Math.round(Number(time || 0) * CRITIQUE_STEP_FPS));
+  }
+
+  currentPoseFrame(actor = this.actors.get(this.selected)) {
+    return this.poseFrameForTime(actor?.activeAction?.time || 0);
+  }
+
+  poseCorrectionFrames(actor = this.actors.get(this.selected), clip = actor?.activeClip()) {
+    const entry = this.poseCorrectionEntry(actor, clip, false);
+    const keys = Object.values(entry?.keys || {})
+      .map((key) => ({
+        frame: Number(key.frame || 0),
+        time: Number(key.time ?? (Number(key.frame || 0) / CRITIQUE_STEP_FPS)),
+        frameKey: 'k' + String(Number(key.frame || 0)).padStart(3, '0'),
+        spriteFrame: Math.round(Number(key.time ?? (Number(key.frame || 0) / CRITIQUE_STEP_FPS)) * CRITIQUE_LIVE_FPS),
+        tag: key.tag || 'key',
+        source: 'pose-correction',
+      }))
+      .filter((key) => Number.isFinite(key.frame))
+      .sort((a, b) => a.time - b.time);
+    return keys;
+  }
+
+  mergedCritiqueKeyframes(actor = this.actors.get(this.selected), clip = actor?.activeClip()) {
+    const seen = new Set();
+    return [...this.visualQaReadFrames(clip), ...this.poseCorrectionFrames(actor, clip)]
+      .filter((frame) => {
+        const key = String(Math.round(Number(frame.time || 0) * CRITIQUE_STEP_FPS)) + ':' + String(frame.tag || '');
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      })
+      .sort((a, b) => Number(a.time || 0) - Number(b.time || 0));
+  }
+
+  currentPoseCorrectionKey(create = false) {
+    const actor = this.actors.get(this.selected);
+    const clip = actor?.activeClip();
+    const entry = this.poseCorrectionEntry(actor, clip, create);
+    if (!entry) return null;
+    const frame = this.currentPoseFrame(actor);
+    const frameId = String(frame);
+    if (!entry.keys[frameId] && create) {
+      entry.keys[frameId] = {
+        schema: 'pose-lab-pose-correction-key-v1',
+        kind: 'critique-guidance',
+        destructive: false,
+        sourceClipMutation: 'forbidden',
+        learningGoal: 'infer correction intent and principles; do not copy corrected frames verbatim',
+        frame,
+        time: frame / CRITIQUE_STEP_FPS,
+        tag: 'key',
+        edits: {},
+      };
+    }
+    return entry.keys[frameId] || null;
+  }
+
+  correctionForActorTime(actor = this.actors.get(this.selected), clip = actor?.activeClip()) {
+    if (!this.poseCorrectionSessionActive || !this.poseOverlayEnabled) return null;
+    const entry = this.poseCorrectionEntry(actor, clip, false);
+    const keys = Object.values(entry?.keys || {}).sort((a, b) => Number(a.frame || 0) - Number(b.frame || 0));
+    if (!keys.length) return null;
+    const frame = this.currentPoseFrame(actor);
+    const exact = keys.find((key) => Number(key.frame || 0) === frame);
+    if (exact) return exact;
+    const prev = [...keys].reverse().find((key) => Number(key.frame || 0) < frame);
+    const next = keys.find((key) => Number(key.frame || 0) > frame);
+    if (!prev && !next) return null;
+    if (!prev) return next;
+    if (!next) return prev;
+    const span = Math.max(1, Number(next.frame || 0) - Number(prev.frame || 0));
+    const alpha = (frame - Number(prev.frame || 0)) / span;
+    const names = new Set([...Object.keys(prev.edits || {}), ...Object.keys(next.edits || {})]);
+    const edits = {};
+    for (const name of names) edits[name] = blendPoseEdit(prev.edits?.[name] || poseEditDefaults(), next.edits?.[name] || poseEditDefaults(), alpha);
+    return { schema: 'pose-lab-pose-correction-key-v1', frame, time: frame / CRITIQUE_STEP_FPS, tag: 'blend', edits };
+  }
+
+  applyPoseCorrectionOverlay(actor = this.actors.get(this.selected)) {
+    if (!this.poseCorrectionSessionActive || !this.poseOverlayEnabled) return;
+    const clip = actor?.activeClip();
+    const correction = this.correctionForActorTime(actor, clip);
+    if (!actor || !correction) return;
+    actor.resetPoseCorrectionBase();
+    actor.applyPoseCorrection(correction);
+  }
+
+  readCritiqueNotes() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(CRITIQUE_NOTES_KEY) || '{}') || {};
+      return { schema: 'pose-lab-critique-notes-v1', entries: parsed.entries && typeof parsed.entries === 'object' ? parsed.entries : {} };
+    } catch (_err) {
+      return { schema: 'pose-lab-critique-notes-v1', entries: {} };
+    }
+  }
+
+  writeCritiqueNotes() {
+    try { localStorage.setItem(CRITIQUE_NOTES_KEY, JSON.stringify(this.critiqueNotes)); } catch (_err) {}
+  }
+
+  critiqueNoteKey(actor = this.actors.get(this.selected), clip = actor?.activeClip(), frame = this.currentCritiqueFrameSlot(actor)) {
+    if (!actor || !clip || !frame) return '';
+    return [actor.key || this.selected || 'actor', clipKey(clip), frame.frameKey || ('f' + String(frame.spriteFrame || 0).padStart(3, '0'))].join('::');
+  }
+
+  critiqueNoteForFrame(frame, actor = this.actors.get(this.selected), clip = actor?.activeClip()) {
+    const key = this.critiqueNoteKey(actor, clip, frame);
+    return key ? (this.critiqueNotes?.entries?.[key] || clip?.userData?.critique?.note || null) : (clip?.userData?.critique?.note || null);
+  }
+
+  currentCritiqueFrameSlot(actor = this.actors.get(this.selected)) {
+    const state = this.critiqueTimelineState(actor);
+    const frames = state.keyframes || [];
+    const currentFrame = Number.isFinite(state.currentFrame) ? state.currentFrame : 0;
+    if (!frames.length) return {
+      frameKey: 'f' + String(currentFrame).padStart(3, '0'),
+      tag: 'frame',
+      spriteFrame: Number(state.currentReadFrame || currentFrame),
+      time: Number(state.currentTime || 0),
+    };
+    const exact = frames.find((frame) => Number(frame.spriteFrame || 0) === Number(state.currentReadFrame || currentFrame));
+    if (exact) return exact;
+    return frames.reduce((best, frame) => {
+      if (!best) return frame;
+      const currentDelta = Math.abs(Number(frame.spriteFrame || 0) - Number(state.currentReadFrame || currentFrame));
+      const bestDelta = Math.abs(Number(best.spriteFrame || 0) - Number(state.currentReadFrame || currentFrame));
+      return currentDelta < bestDelta ? frame : best;
+    }, null);
+  }
+
+  critiqueReadTextField(value) {
+    return String(value || '')
+      .split(/[\n,;]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
+  critiqueLoadFrameNote(note) {
+    if (!note) {
+      if (UI.critiqueComment) UI.critiqueComment.value = '';
+      if (UI.critiqueMarks) UI.critiqueMarks.value = '';
+      if (UI.critiqueBones) UI.critiqueBones.value = '';
+      return;
+    }
+    if (UI.critiqueComment) UI.critiqueComment.value = String(note.comment || '');
+    if (UI.critiqueMarks) UI.critiqueMarks.value = (note.marks || []).join(', ');
+    if (UI.critiqueBones) UI.critiqueBones.value = (note.bones || []).join(', ');
+  }
+
+  critiquePersistCurrentNote(statusText = 'saved note') {
+    const actor = this.actors.get(this.selected);
+    const clip = actor?.activeClip();
+    const frame = this.currentCritiqueFrameSlot(actor);
+    if (!actor || !clip || !frame) {
+      this.updateCritiqueDock(true, 'no frame selected');
+      return null;
+    }
+    const key = this.critiqueNoteKey(actor, clip, frame);
+    if (!key) return null;
+    const comment = String(UI.critiqueComment?.value || '').trim();
+    const marks = this.critiqueReadTextField(UI.critiqueMarks?.value || '');
+    const bones = this.critiqueReadTextField(UI.critiqueBones?.value || '');
+    const now = new Date().toISOString();
+    const existing = this.critiqueNotes.entries[key] || null;
+    if (!comment && !marks.length && !bones.length) {
+      delete this.critiqueNotes.entries[key];
+      this.writeCritiqueNotes();
+      this.renderCritiqueFrames();
+      this.updateCritiqueDock(true);
+      this.updateCritiqueDock(true, statusText || 'cleared note');
+      return { removed: true, key };
+    }
+    this.critiqueNotes.entries[key] = {
+      createdAt: existing?.createdAt || now,
+      updatedAt: now,
+      actorKey: actor.key,
+      actorLabel: actor.info?.label || actor.key,
+      clipKey: clipKey(clip),
+      clipName: clip.name || '',
+      frameKey: frame.frameKey || '',
+      tag: frame.tag || '',
+      spriteFrame: frame.spriteFrame,
+      sourceTime: Number(frame.time || 0),
+      comment,
+      marks,
+      bones,
+      mode: 'grease-pencil-comment-v1',
+    };
+    this.critiqueFrameKey = key;
+    this.writeCritiqueNotes();
+    this.renderCritiqueFrames();
+    this.updateCritiqueDock(true);
+    this.updateCritiqueDock(true, statusText || 'saved note');
+    return this.critiqueNotes.entries[key];
+  }
+
+  critiqueCopyCurrentNote() {
+    const actor = this.actors.get(this.selected);
+    const clip = actor?.activeClip();
+    const frame = this.currentCritiqueFrameSlot(actor);
+    if (!actor || !clip || !frame) return;
+    const key = this.critiqueNoteKey(actor, clip, frame);
+    const note = key ? (this.critiqueNotes.entries[key] || clip?.userData?.critique?.note || null) : (clip?.userData?.critique?.note || null);
+    const payload = note || {
+      actorKey: actor.key,
+      actorLabel: actor.info?.label || actor.key,
+      clipKey: clipKey(clip),
+      clipName: clip.name || '',
+      frameKey: frame.frameKey || '',
+      tag: frame.tag || '',
+      spriteFrame: frame.spriteFrame,
+      sourceTime: Number(frame.time || 0),
+      comment: String(UI.critiqueComment?.value || '').trim(),
+      marks: this.critiqueReadTextField(UI.critiqueMarks?.value || ''),
+      bones: this.critiqueReadTextField(UI.critiqueBones?.value || ''),
+      mode: 'grease-pencil-comment-v1',
+    };
+    const text = JSON.stringify(payload, null, 2);
+    if (navigator?.clipboard?.writeText) navigator.clipboard.writeText(text).then(() => this.updateCritiqueDock(false, 'copied note json')).catch(() => this.updateCritiqueDock(false, 'copy failed'));
+  }
+
+  poseEditableBones(actor = this.actors.get(this.selected)) {
+    const query = String(UI.poseBoneSearch?.value || '').toLowerCase().trim();
+    return (actor?.bones || []).filter((bone) => {
+      if (!query) return true;
+      return String(bone.name || '').toLowerCase().includes(query) || shortBoneName(bone.name).toLowerCase().includes(query);
+    });
+  }
+
+  populatePoseBoneSelect(actor = this.actors.get(this.selected)) {
+    if (!UI.poseBoneSelect) return;
+    const previous = actor?.selectedBoneName || '';
+    UI.poseBoneSelect.replaceChildren();
+    for (const bone of this.poseEditableBones(actor)) {
+      const option = document.createElement('option');
+      option.value = bone.name;
+      option.textContent = shortBoneName(bone.name);
+      option.title = bone.name;
+      UI.poseBoneSelect.append(option);
+    }
+    if (previous && [...UI.poseBoneSelect.options].some((option) => option.value === previous)) UI.poseBoneSelect.value = previous;
+    else UI.poseBoneSelect.selectedIndex = -1;
+  }
+
+  poseEditForSelectedBone(create = false) {
+    const actor = this.actors.get(this.selected);
+    const boneName = UI.poseBoneSelect?.value || actor?.selectedBoneName || '';
+    const key = this.currentPoseCorrectionKey(create);
+    if (!key || !boneName) return { key: null, boneName, edit: poseEditDefaults() };
+    if (!key.edits) key.edits = {};
+    if (!key.edits[boneName] && create) {
+      key.edits[boneName] = {
+        ...poseEditDefaults(),
+        mode: 'fk',
+        space: 'local',
+      };
+    }
+    return { key, boneName, edit: { ...poseEditDefaults(), ...(key.edits[boneName] || {}) } };
+  }
+
+  setPoseEditorValues(edit = poseEditDefaults()) {
+    const fields = [
+      [UI.poseNudgeX, UI.poseNudgeXValue, edit.x || 0, ''],
+      [UI.poseNudgeY, UI.poseNudgeYValue, edit.y || 0, ''],
+      [UI.poseNudgeZ, UI.poseNudgeZValue, edit.z || 0, ''],
+      [UI.poseRotX, UI.poseRotXValue, edit.rotX || 0, ''],
+      [UI.poseRotY, UI.poseRotYValue, edit.rotY || 0, ''],
+      [UI.poseRotZ, UI.poseRotZValue, edit.rotZ || 0, ''],
+      [UI.poseScale, UI.poseScaleValue, edit.scale || 100, '%'],
+    ];
+    for (const [input, label, value, suffix] of fields) {
+      if (input) input.value = String(Math.round(Number(value || 0)));
+      if (label) label.textContent = String(Math.round(Number(value || 0))) + suffix;
+    }
+    if (UI.poseUseScale) UI.poseUseScale.checked = Boolean(edit.useScale);
+  }
+
+  getPoseEditorValues() {
+    return {
+      ...poseEditDefaults(),
+      mode: this.poseEditorMode,
+      space: this.poseEditorSpace,
+      x: Number(UI.poseNudgeX?.value || 0),
+      y: Number(UI.poseNudgeY?.value || 0),
+      z: Number(UI.poseNudgeZ?.value || 0),
+      rotX: Number(UI.poseRotX?.value || 0),
+      rotY: Number(UI.poseRotY?.value || 0),
+      rotZ: Number(UI.poseRotZ?.value || 0),
+      scale: Number(UI.poseScale?.value || 100),
+      useScale: Boolean(UI.poseUseScale?.checked),
+    };
+  }
+
+  updatePoseEditorUi(statusText = '') {
+    const actor = this.actors.get(this.selected);
+    this.populatePoseBoneSelect(actor);
+    const { boneName, edit } = this.poseEditForSelectedBone(false);
+    const endpoint = isEndpointBoneName(boneName);
+    if (!this.poseEditorMode || (this.poseEditorMode === 'ik' && !endpoint)) this.poseEditorMode = 'fk';
+    if (!this.poseEditorSpace || this.poseEditorMode === 'fk') this.poseEditorSpace = 'local';
+    const current = { ...edit, mode: this.poseEditorMode, space: this.poseEditorSpace };
+    this.setPoseEditorValues(current);
+    UI.poseModeIk?.classList.toggle('active', this.poseEditorMode === 'ik');
+    UI.poseModeFk?.classList.toggle('active', this.poseEditorMode === 'fk');
+    UI.poseSpaceGlobal?.classList.toggle('active', this.poseEditorSpace === 'global');
+    UI.poseSpaceLocal?.classList.toggle('active', this.poseEditorSpace === 'local');
+    if (UI.poseModeIk) UI.poseModeIk.disabled = !endpoint;
+    if (UI.poseEditStatus) UI.poseEditStatus.textContent = statusText || (boneName ? [shortBoneName(boneName), this.poseEditorMode.toUpperCase(), this.poseEditorSpace, 'frame ' + this.currentPoseFrame(actor)].join(' | ') : 'select a bone');
+  }
+
+  selectPoseEditBone(name) {
+    const actor = this.actors.get(this.selected);
+    if (actor?.selectBone(name)) {
+      if (UI.boneSelect) UI.boneSelect.value = actor.selectedBoneName;
+      this.poseEditorMode = 'fk';
+      this.poseEditorSpace = 'local';
+      this.updatePoseEditorUi('selected ' + shortBoneName(actor.selectedBoneName));
+    }
+  }
+
+  setPoseEditorMode(mode) {
+    const boneName = UI.poseBoneSelect?.value || '';
+    this.poseEditorMode = mode === 'ik' && isEndpointBoneName(boneName) ? 'ik' : 'fk';
+    this.applyPoseEditorEdit('mode ' + this.poseEditorMode);
+  }
+
+  setPoseEditorSpace(space) {
+    this.poseEditorSpace = space === 'global' ? 'global' : 'local';
+    this.applyPoseEditorEdit('space ' + this.poseEditorSpace);
+  }
+
+  currentCritiqueLearningContext(actor = this.actors.get(this.selected), clip = actor?.activeClip()) {
+    const frame = this.currentCritiqueFrameSlot(actor);
+    const key = this.critiqueNoteKey(actor, clip, frame);
+    const saved = key ? this.critiqueNotes.entries[key] || null : null;
+    const liveComment = String(UI.critiqueComment?.value || '').trim();
+    const liveMarks = this.critiqueReadTextField(UI.critiqueMarks?.value || '');
+    const liveBones = this.critiqueReadTextField(UI.critiqueBones?.value || '');
+    return {
+      schema: 'pose-lab-correction-learning-context-v1',
+      frameKey: frame?.frameKey || '',
+      frameTag: frame?.tag || '',
+      spriteFrame: Number(frame?.spriteFrame || 0),
+      sourceTime: Number(frame?.time || actor?.activeAction?.time || 0),
+      comment: liveComment || saved?.comment || '',
+      marks: liveMarks.length ? liveMarks : (saved?.marks || []),
+      bones: liveBones.length ? liveBones : (saved?.bones || []),
+    };
+  }
+
+  annotatePoseCorrectionKey(key, actor = this.actors.get(this.selected), clip = actor?.activeClip()) {
+    if (!key) return null;
+    key.kind = 'critique-guidance';
+    key.destructive = false;
+    key.sourceClipMutation = 'forbidden';
+    key.learningGoal = 'infer correction intent and principles; do not copy corrected frames verbatim';
+    key.learningContext = this.currentCritiqueLearningContext(actor, clip);
+    return key;
+  }
+
+  applyPoseEditorEdit(statusText = 'edited pose') {
+    const actor = this.actors.get(this.selected);
+    const boneName = UI.poseBoneSelect?.value || actor?.selectedBoneName || '';
+    if (!actor || !boneName) return null;
+    this.pushPoseHistory(statusText || 'edited pose');
+    const key = this.currentPoseCorrectionKey(true);
+    if (!key) return null;
+    const edit = this.getPoseEditorValues();
+    edit.mode = edit.mode === 'ik' && isEndpointBoneName(boneName) ? 'ik' : 'fk';
+    key.edits[boneName] = edit;
+    this.annotatePoseCorrectionKey(key, actor, actor.activeClip());
+    this.poseCorrectionSessionActive = true;
+    this.poseOverlayEnabled = true;
+    this.writePoseCorrections();
+    this.applyPoseCorrectionOverlay(actor);
+    this.updatePoseEditorUi(statusText);
+    this.updateCritiqueTransportUi(statusText);
+    return key;
+  }
+
+  savePoseCorrectionKey(statusText = 'saved pose key') {
+    const key = this.applyPoseEditorEdit(statusText);
+    if (!key) return null;
+    key.tag = 'key';
+    key.updatedAt = new Date().toISOString();
+    this.annotatePoseCorrectionKey(key);
+    this.writePoseCorrections();
+    this.renderCritiqueFrames();
+    this.updateCritiqueDock(true, statusText);
+    return key;
+  }
+
+  resetCurrentPoseCorrectionKey() {
+    const actor = this.actors.get(this.selected);
+    const clip = actor?.activeClip();
+    const entry = this.poseCorrectionEntry(actor, clip, false);
+    const frame = this.currentPoseFrame(actor);
+    if (entry?.keys?.[String(frame)]) this.pushPoseHistory('reset pose frame ' + frame);
+    if (entry?.keys) delete entry.keys[String(frame)];
+    this.writePoseCorrections();
+    this.setPoseEditorValues(poseEditDefaults());
+    actor?.seek(actor.activeAction?.time || 0);
+    this.updatePoseEditorUi('reset pose frame ' + frame);
+    this.renderCritiqueFrames();
+  }
+
+  resetActiveClipPoseCorrections() {
+    const actor = this.actors.get(this.selected);
+    const clip = actor?.activeClip();
+    const key = this.poseCorrectionEntryKey(actor, clip);
+    if (key && this.poseCorrections.entries[key]) this.pushPoseHistory('reset clip edits');
+    if (key) delete this.poseCorrections.entries[key];
+    this.writePoseCorrections();
+    actor?.seek(actor.activeAction?.time || 0);
+    this.updatePoseEditorUi('reset clip edits');
+    this.renderCritiqueFrames();
+  }
+
+  togglePoseOverlayCompare() {
+    this.poseOverlayEnabled = !this.poseOverlayEnabled;
+    const actor = this.actors.get(this.selected);
+    actor?.seek(actor.activeAction?.time || 0);
+    UI.poseCompareOverlay?.classList.toggle('active', this.poseOverlayEnabled);
+    this.updatePoseEditorUi(this.poseOverlayEnabled ? 'corrections on' : 'corrections off');
+  }
+
+  openCorrectPose() {
+    const actor = this.actors.get(this.selected);
+    this.poseCorrectionSessionActive = true;
+    this.poseOverlayEnabled = false;
+    if (actor) {
+      actor.setBoneOverlayVisible(true);
+      actor.setTouchRigControlsVisible(true);
+      actor.seek(actor.activeAction?.time || 0);
+    }
+    document.body.classList.toggle('pose-correction-active', true);
+    this.populatePoseBoneSelect(actor);
+    if (UI.poseEditDock) UI.poseEditDock.open = false;
+    this.showTouchPoseHud({ actorKey: actor?.key || this.selected, boneName: '', kind: 'fk' });
+    this.updatePoseEditorUi('FK skeleton and IK handles active. Drag a bone for FK or a large hand/foot control for IK.');
+    this.updateCritiqueDock(true, 'IK handles active; FK bones remain selectable');
+  }
+
+  critiquePromoteCurrentFrame() {
+    const actor = this.actors.get(this.selected);
+    const clip = actor?.activeClip();
+    const frame = this.currentCritiqueFrameSlot(actor);
+    if (!actor || !clip || !frame) {
+      this.updateCritiqueDock(true, 'no frame selected');
+      return null;
+    }
+    const key = this.critiqueNoteKey(actor, clip, frame);
+    if (!key) return null;
+    const poseKey = this.currentPoseCorrectionKey(true);
+    if (poseKey) {
+      poseKey.tag = frame.tag || 'key';
+      poseKey.updatedAt = new Date().toISOString();
+      this.annotatePoseCorrectionKey(poseKey, actor, clip);
+      this.writePoseCorrections();
+    }
+    const now = new Date().toISOString();
+    const existing = this.critiqueNotes.entries[key] || null;
+    const comment = String(UI.critiqueComment?.value || existing?.comment || frame.tag || 'key pose').trim() || 'key pose';
+    const marks = new Set(this.critiqueReadTextField(UI.critiqueMarks?.value || ''));
+    for (const mark of existing?.marks || []) marks.add(mark);
+    marks.add('key');
+    const bones = existing?.bones?.length ? [...existing.bones] : this.critiqueReadTextField(UI.critiqueBones?.value || '');
+    this.critiqueNotes.entries[key] = {
+      createdAt: existing?.createdAt || now,
+      updatedAt: now,
+      actorKey: actor.key,
+      actorLabel: actor.info?.label || actor.key,
+      clipKey: clipKey(clip),
+      clipName: clip.name || '',
+      frameKey: frame.frameKey || '',
+      tag: frame.tag || '',
+      spriteFrame: frame.spriteFrame,
+      sourceTime: Number(frame.time || 0),
+      comment,
+      marks: [...marks],
+      bones,
+      mode: 'pose-keyframe-v1',
+    };
+    this.critiqueFrameKey = key;
+    this.writeCritiqueNotes();
+    this.renderCritiqueFrames();
+    this.updateCritiqueDock(true, 'marked key pose');
+    return this.critiqueNotes.entries[key];
+  }
+
+  critiqueToggleCompare() {
+    const actor = this.actors.get(this.selected);
+    const activeClip = actor?.activeClip();
+    if (!actor || !activeClip) return;
+    if (this.critiqueCompareState?.actorKey === actor.key && this.critiqueCompareState?.clipKey) {
+      const restore = this.critiqueCompareState;
+      const restoreClip = this.findClipByKey(actor, restore.clipKey);
+      if (restoreClip) {
+        actor.play(clipKey(restoreClip));
+        actor.seek(clampValue(restore.time || 0, 0, Math.max(0.001, restoreClip.duration || 0.001)));
+      }
+      this.critiqueCompareState = null;
+      this.updateCritiqueDock(true, 'compare off');
+      return;
+    }
+    const sourceKey = activeClip.userData?.sourceKey;
+    if (!sourceKey || !actor.actions.has(sourceKey)) {
+      this.updateCritiqueDock(true, 'no source clip to compare');
+      return;
+    }
+    this.critiqueCompareState = {
+      actorKey: actor.key,
+      clipKey: clipKey(activeClip),
+      clipName: activeClip.name || '',
+      time: Number(actor.activeAction?.time || 0),
+      sourceKey,
+    };
+    const sourceClip = actor.actions.get(sourceKey)?._clip || this.findClipByKey(actor, sourceKey);
+    if (sourceClip) {
+      actor.play(sourceKey);
+      actor.seek(clampValue(this.critiqueCompareState.time, 0, Math.max(0.001, sourceClip.duration || 0.001)));
+    }
+    this.updateCritiqueDock(true, 'compare source');
+  }
+
+  updateCritiqueDock(force = false, statusText = '') {
+    return this.critiqueUpdateDock(force, statusText);
+  }
+
+  critiqueUpdateDock(force = false, statusText = '') {
+    const actor = this.actors.get(this.selected);
+    const clip = actor?.activeClip();
+    const frame = this.currentCritiqueFrameSlot(actor);
+    const clipLabelText = clip ? clipLabel(clip) : 'no clip';
+    const frameKey = this.critiqueNoteKey(actor, clip, frame);
+    const note = frameKey ? this.critiqueNotes.entries[frameKey] || clip?.userData?.critique?.note || null : clip?.userData?.critique?.note || null;
+    if (UI.critiqueFrameSummary) {
+      const noteCount = Object.keys(this.critiqueNotes.entries || {}).length;
+      UI.critiqueFrameSummary.textContent = (actor?.info?.label || 'Pose Critique') + ' | ' + clipLabelText + ' | notes=' + noteCount;
+    }
+    if (UI.critiqueFrameLabel) {
+      UI.critiqueFrameLabel.textContent = frame ? (frame.frameKey || 'frame') + ' • ' + (frame.tag || 'frame') + ' • ' + String(frame.spriteFrame || 0) : 'No active frame';
+    }
+    if (UI.critiqueFrameStatus) UI.critiqueFrameStatus.textContent = note ? (note.comment || 'saved note') : 'Pick a frame, then note the pose';
+    if (force || this.critiqueFrameKey !== frameKey) {
+      this.critiqueFrameKey = frameKey;
+      this.critiqueLoadFrameNote(note);
+    }
+    if (UI.critiqueLog) {
+      if (statusText) UI.critiqueLog.textContent = statusText;
+      else if (note?.comment) UI.critiqueLog.textContent = note.comment;
+      else UI.critiqueLog.textContent = 'notes idle';
+    }
+    if (UI.critiqueFrameStatus && this.critiqueCompareState?.actorKey === actor?.key) UI.critiqueFrameStatus.textContent = 'Compare mode active';
+    if (UI.critiqueSaveNote) UI.critiqueSaveNote.disabled = !(actor && clip && frame);
+    if (UI.critiqueClearNote) UI.critiqueClearNote.disabled = !(actor && clip && frame) && !note;
+    if (UI.critiqueCopyNote) UI.critiqueCopyNote.disabled = !(actor && clip && frame);
+    if (UI.critiqueCompare) UI.critiqueCompare.classList.toggle('active', Boolean(this.critiqueCompareState));
+  }
+
+  queueCritiqueNoteSave() {
+    if (this.critiqueNoteSaveTimer) window.clearTimeout(this.critiqueNoteSaveTimer);
+    this.critiqueNoteSaveTimer = window.setTimeout(() => {
+      this.critiqueNoteSaveTimer = null;
+      this.critiquePersistCurrentNote();
+    }, 180);
+  }
+
+  critiqueTogglePlayback() {
+    const actor = this.actors.get(this.selected);
+    if (!actor?.activeAction) return;
+    actor.pauseActive(!actor.activeAction.paused);
+    this.critiqueTransportMode = actor.activeAction.paused ? 'step' : 'live';
+    this.critiqueApplyPlaybackMode(actor);
+    this.updateCritiqueTransportUi(actor.activeAction.paused ? 'paused' : 'playing');
+    this.updateCritiqueDock(false);
+  }
+
+  updateCritiqueTransportUi(statusText = '') {
+    const actor = this.actors.get(this.selected);
+    const state = this.critiqueTimelineState(actor);
+    if (!UI.critiqueScrub || !actor?.activeAction || !state.clip) {
+      if (UI.critiquePlayPause) UI.critiquePlayPause.textContent = 'Pause';
+      this.updateCritiqueDock(false);
+      if (UI.critiqueScrub) {
+        UI.critiqueScrub.value = '0';
+        UI.critiqueScrub.max = '0';
+      }
+      return;
+    }
+    const currentTime = state.currentTime;
+    UI.critiqueScrub.max = state.duration.toFixed(3);
+    UI.critiqueScrub.step = '0.001';
+    UI.critiqueScrub.value = currentTime.toFixed(3);
+    if (UI.critiquePlayPause) UI.critiquePlayPause.textContent = actor.activeAction.paused ? 'Play' : 'Pause';
+    for (const [button, mode] of [
+      [UI.critiqueStepMode, 'step'],
+      [UI.critiqueLiveMode, 'live'],
+      [UI.critiqueLoopMode, 'loop'],
+      [UI.critiquePingPongMode, 'pingpong'],
+    ]) {
+      button?.classList.toggle('active', this.critiqueTransportMode === mode);
+    }
+    if (UI.critiqueScrub && !statusText) UI.critiqueScrub.title = 'step frame ' + state.currentFrame + ' / read ' + state.currentReadFrame;
+    if (UI.critiqueScrub) UI.critiqueScrub.step = String(1 / CRITIQUE_STEP_FPS);
+    this.updateCritiqueDock(false, statusText);
   }
 
   updateCleanupUi(statusText = '') {
@@ -4421,7 +6830,7 @@ class PoseLab {
     UI.cleanupScrub.step = '0.001';
     if (!this.cleanupScrubbing) UI.cleanupScrub.value = String(time);
     UI.cleanupTime.textContent = fmt(Number(UI.cleanupScrub.value || time)) + ' / ' + fmt(duration);
-    UI.cleanupPlayPause.textContent = actor.activeAction?.paused ? 'Play' : 'Pause';
+    if (UI.cleanupPlayPause) UI.cleanupPlayPause.textContent = actor.activeAction?.paused ? 'Play' : 'Pause';
     if (UI.cleanupSmoothStrengthValue) UI.cleanupSmoothStrengthValue.textContent = Math.round(Number(UI.cleanupSmoothStrength?.value || 0)) + '%';
     const range = this.cleanupBlendRange(clip);
     UI.cleanupStart.value = range.start.toFixed(3);
@@ -4433,6 +6842,7 @@ class PoseLab {
     this.updateMergeUi();
     if (statusText) UI.cleanupStatus.textContent = statusText;
     else if (!UI.cleanupStatus.textContent || UI.cleanupStatus.textContent === 'waiting') UI.cleanupStatus.textContent = 'ready';
+    this.updatePlayerTransportUi();
     this.renderPoseIndexUi();
   }
 
@@ -4449,6 +6859,7 @@ class PoseLab {
     if (!actor?.activeAction) return;
     actor.pauseActive(!actor.activeAction.paused);
     this.updateCleanupUi(actor.activeAction.paused ? 'paused' : 'playing');
+    this.updatePlayerTransportUi(actor.activeAction.paused ? 'paused' : 'playing');
   }
 
   setCleanupBoundary(which) {
@@ -4504,6 +6915,7 @@ class PoseLab {
     this.saveCleanupDraft(actor, next, 'autosave');
     this.saveState();
     this.renderClipButtons();
+    this.updateCritiqueDock(true);
     this.cleanupLastClipKey = '';
     this.updateCleanupUi('created ' + next.userData.cleanupOp + ' | key=' + key + '\n' + next.userData.mode);
     this.updateReadout();
@@ -4520,21 +6932,42 @@ class PoseLab {
     actor.play(sourceKey);
     this.saveState();
     this.renderClipButtons();
+    this.updateCritiqueDock(true);
     this.cleanupLastClipKey = '';
     this.updateCleanupUi('restored original');
     this.updateReadout();
   }
 
+  normalizePanelName(panel) {
+    const requested = panel || 'none';
+    if (requested === 'view') return 'view';
+    if (requested === 'advanced') return 'advanced';
+    if (requested === 'edit') return 'edit';
+    if (requested === 'pose') return 'pose';
+    if (requested === 'cleanup') return this.labMode === 'critique' ? 'edit' : 'cleanup';
+    return (UI.panels[requested] || requested === 'none') ? requested : 'none';
+  }
+
+  panelElementName(panel) {
+    if (CLEANUP_SHEET_PANELS.has(panel)) return 'cleanup';
+    if (panel === 'view') return 'info';
+    return panel;
+  }
+
   setPanel(panel) {
-    const nextPanel = panel || 'none';
+    const nextPanel = this.normalizePanelName(panel);
+    const elementPanel = this.panelElementName(nextPanel);
     this.activePanel = nextPanel;
     for (const button of UI.panelButtons) button.classList.toggle('active', button.dataset.panel === nextPanel);
     for (const [name, element] of Object.entries(UI.panels)) {
-      if (element) element.classList.toggle('open', name === nextPanel);
+      if (element) element.classList.toggle('open', nextPanel !== 'none' && name === elementPanel);
     }
-    document.body.classList.toggle('panel-open-info', nextPanel === 'info');
+    for (const name of PHONE_SHEET_PANELS) document.body.classList.toggle('sheet-' + name, nextPanel === name);
+    document.body.dataset.sheet = nextPanel;
+    document.body.classList.toggle('panel-open-info', elementPanel === 'info');
     document.body.classList.toggle('has-open-panel', nextPanel !== 'none');
-    if (nextPanel === 'cleanup') this.updateCleanupUi();
+    if (elementPanel === 'cleanup') this.updateCleanupUi();
+    if (nextPanel === 'pose' || this.labMode === 'critique') this.updateCritiqueDock(true);
     this.saveState();
   }
 
@@ -4587,13 +7020,20 @@ class PoseLab {
       button.classList.toggle('active', entry.key === active);
       button.addEventListener('click', () => {
         actor.play(entry.key);
+        actor.pauseActive(false);
+        this.critiqueTransportMode = 'live';
         this.saveState();
         this.renderClipButtons();
-        this.updateCleanupUi();
+        this.updateCleanupUi('playing ' + entry.label);
+        this.updatePlayerTransportUi('playing ' + entry.label);
+        this.updateCritiqueTransportUi('playing ' + entry.label);
         this.updateReadout();
       });
       UI.clipButtons.append(button);
     }
+    this.renderCritiqueFrames();
+    this.updateCritiqueDock(true);
+    this.updateCritiqueDock(true);
   }
 
   setUiValues(posX, posY, posZ, x, y, z, scale, basisX = 0, basisY = 0, basisZ = 0) {
@@ -4627,12 +7067,415 @@ class PoseLab {
     this.updateReadout();
   }
 
+
   updateReadout() {
     const actor = this.actors.get(this.selected);
     if (!actor) return;
     UI.readout.textContent = 'view=' + this.viewMode + '\n' + actor.readout();
     if (UI.diagnostic) UI.diagnostic.textContent = actor.diagnosticLine();
     if (UI.panels.cleanup?.classList.contains('open')) this.updateCleanupUi();
+    this.updateCritiqueTransportUi();
+    this.updateCritiqueDock(true);
+  }
+
+  installDebugConsole() {
+    if (typeof window === 'undefined') return;
+    const api = {
+      help: () => this.debugHelpText(),
+      helpText: () => this.debugHelpText(),
+      commands: () => this.debugCommandNames(),
+      status: () => this.debugSnapshot(),
+      snapshot: () => this.debugSnapshot(),
+      readout: () => this.debugReadout(),
+      diagnostic: () => this.debugDiagnostic(),
+      exec: (input) => this.executeDebugCommand(input),
+      run: (input) => this.executeDebugCommand(input),
+      beacon: () => this.debugEmitBeacon('manual'),
+      capture: () => this.debugEmitCapture('manual'),
+    };
+    window.poseLab = this;
+    window.poseLabDebug = api;
+    window.__poseLabDebug = api;
+    window.poseLabDebugState = this.debugBridgeState;
+  }
+
+  debugCommandNames() {
+    return ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'beacon', 'capture', 'qa'];
+  }
+
+  debugHelpText() {
+    return [
+      'Pose Lab debug commands:',
+      this.debugCommandNames().join(', '),
+      'Examples:',
+      '  status',
+      '  actor orc',
+      '  clip standing_melee_attack_horizontal [smooth]',
+      '  bone mixamorig:LeftHand',
+      '  view firstPerson',
+      '  panel bones',
+      '  pause',
+      '  seek 0.25',
+      '  qa capture',
+    ].join('\n');
+  }
+
+  debugCurrentActor() {
+    return this.actors.get(this.selected) || null;
+  }
+
+  debugCurrentClip(actor = this.debugCurrentActor()) {
+    return actor?.activeClip() || null;
+  }
+
+  debugReadout(actor = this.debugCurrentActor()) {
+    return {
+      readout: actor?.readout?.() || '',
+      diagnostic: actor?.diagnosticLine?.() || '',
+    };
+  }
+
+  debugSnapshot() {
+    const actor = this.debugCurrentActor();
+    const clip = this.debugCurrentClip(actor);
+    const readout = this.debugReadout(actor);
+    return {
+      schema: 'pose-lab-debug-snapshot-v1',
+      build: LAB_BUILD,
+      labMode: this.labMode,
+      startupReady: this.startupReady,
+      selectedActor: this.selected || '',
+      actorLabel: actor?.info?.label || '',
+      activePanel: this.activePanel || 'none',
+      viewMode: this.viewMode,
+      selectedBone: actor?.selectedBoneName || '',
+      selectedBoneStatus: actor?.selectedBoneStatus?.() || '',
+      selectedBoneEdit: actor?.selectedBoneName ? { ...(actor?.currentBoneEdit?.(actor.selectedBoneName) || {}), boneName: actor.selectedBoneName } : null,
+      selectedBoneLocalQuaternion: actor?.selectedBoneName && actor?.boneByName?.has(actor.selectedBoneName)
+        ? actor.boneByName.get(actor.selectedBoneName).quaternion.toArray()
+        : null,
+      selectedBoneRestQuaternion: actor?.selectedBoneName && actor?.boneRest?.has(actor.selectedBoneName)
+        ? actor.boneRest.get(actor.selectedBoneName).quaternion.toArray()
+        : null,
+      selectedBoneWorldQuaternion: actor?.selectedBoneName && actor?.boneByName?.has(actor.selectedBoneName)
+        ? worldQuaternionOf(actor.boneByName.get(actor.selectedBoneName)).toArray()
+        : null,
+      boneEditCount: actor?.boneEdits?.size || 0,
+      activeClip: clip ? {
+        name: clip.name || '',
+        key: clipKey(clip),
+        origin: clip?.userData?.origin || '',
+        sourceName: clip?.userData?.sourceName || '',
+        duration: Number(clip.duration || 0),
+        time: Number(actor?.activeAction?.time || 0),
+        paused: Boolean(actor?.activeAction?.paused),
+      } : null,
+      readout: readout.readout,
+      diagnostic: readout.diagnostic,
+      statusText: UI.status?.textContent || '',
+      loadStateText: UI.loadState?.textContent || '',
+      visualQa: this.visualQa ? {
+        enabled: Boolean(this.visualQa.enabled),
+        beacon: Boolean(this.visualQa.beacon),
+        capture: Boolean(this.visualQa.capture),
+        actor: this.visualQa.actor || '',
+        clip: this.visualQa.clip || '',
+        frameMode: this.visualQa.frameMode || '',
+        rendered: Boolean(this.visualQaState?.rendered),
+        captured: Number(this.visualQaState?.captured || 0),
+      } : null,
+      debugBridge: {
+        enabled: Boolean(this.debugBridge?.enabled),
+        url: this.debugBridge?.url || '',
+        connected: Boolean(this.debugBridgeState?.connected),
+        clientId: this.debugBridgeState?.clientId || '',
+        lastCommand: this.debugBridgeState?.lastCommand || '',
+        lastCommandId: this.debugBridgeState?.lastCommandId || '',
+        lastError: this.debugBridgeState?.lastError || '',
+        syncAt: Number(this.debugBridgeState?.syncAt || 0),
+      },
+    };
+  }
+
+  debugEmitBeacon(stage = 'manual') {
+    const snapshot = this.debugSnapshot();
+    const actor = this.debugCurrentActor();
+    const clip = this.debugCurrentClip(actor);
+    const meta = {
+      actor: snapshot.selectedActor,
+      clip: clip?.name || '',
+      clipKey: clip ? clipKey(clip) : '',
+      origin: clip?.userData?.origin || '',
+      sourceName: clip?.userData?.sourceName || '',
+      frameMode: this.visualQa?.frameMode || '',
+    };
+    if (this.visualQa?.enabled) postVisualQaBeacon(stage, meta);
+    return { ok: true, command: 'beacon', stage, sent: Boolean(this.visualQa?.enabled), meta, snapshot };
+  }
+
+  debugEmitCapture(stage = 'manual') {
+    const snapshot = this.debugSnapshot();
+    const actor = this.debugCurrentActor();
+    const clip = this.debugCurrentClip(actor);
+    const meta = {
+      actor: snapshot.selectedActor,
+      clip: clip?.name || '',
+      clipKey: clip ? clipKey(clip) : '',
+      origin: clip?.userData?.origin || '',
+      sourceName: clip?.userData?.sourceName || '',
+      tag: 'debug',
+      spriteFrame: '',
+      poseclipTime: '',
+      frameMode: this.visualQa?.frameMode || '',
+    };
+    if (this.visualQa?.enabled) postVisualQaCapture(this.renderer.domElement, meta);
+    return { ok: true, command: 'capture', stage, sent: Boolean(this.visualQa?.enabled), meta, snapshot };
+  }
+
+  async executeDebugCommand(input) {
+    const spec = normalizeDebugCommand(input);
+    const actor = this.debugCurrentActor();
+    const respond = (extra = {}) => ({ ok: true, command: spec.name, args: spec.args, ...extra, snapshot: this.debugSnapshot() });
+    if (!spec.name) return { ok: false, command: '', error: 'debug command required', commands: this.debugCommandNames(), snapshot: this.debugSnapshot() };
+
+    switch (spec.name) {
+      case 'help':
+        return { ok: true, command: spec.name, help: this.debugHelpText(), commands: this.debugCommandNames(), snapshot: this.debugSnapshot() };
+      case 'status':
+      case 'snapshot':
+      case 'inspect':
+      case 'state':
+        return respond();
+      case 'readout': {
+        const readout = this.debugReadout(actor);
+        return { ok: true, command: spec.name, text: readout.readout, diagnostic: readout.diagnostic, snapshot: this.debugSnapshot() };
+      }
+      case 'diagnostic': {
+        const readout = this.debugReadout(actor);
+        return { ok: true, command: spec.name, text: readout.diagnostic, snapshot: this.debugSnapshot() };
+      }
+      case 'actor': {
+        const target = String(spec.args[0] || '').trim();
+        if (!target) return { ok: false, command: spec.name, error: 'actor name required', snapshot: this.debugSnapshot() };
+        if (!this.actors.has(target)) {
+          if (!ACTORS[target]) return { ok: false, command: spec.name, error: 'unknown actor: ' + target, snapshot: this.debugSnapshot() };
+          await this.loadActorProfile(target, ACTORS[target]);
+        }
+        this.activateActor(target, { preferSaved: false, restoreSavedUi: false });
+        return respond({ message: 'selected actor ' + target });
+      }
+      case 'clip': {
+        const target = spec.args.join(' ').trim();
+        if (!target) return { ok: false, command: spec.name, error: 'clip name required', snapshot: this.debugSnapshot() };
+        if (!actor) return { ok: false, command: spec.name, error: 'no active actor', snapshot: this.debugSnapshot() };
+        const clip = this.findClipByName(actor, target);
+        if (!clip) return { ok: false, command: spec.name, error: 'clip not found: ' + target, available: actor.clips.slice(0, 16).map((entry) => entry.name), snapshot: this.debugSnapshot() };
+        const previousClipKey = actor.activeAction ? clipKey(actor.activeAction._clip) : '';
+        actor.play(clipKey(clip));
+        actor.pauseActive(false);
+        this.critiqueTransportMode = 'live';
+        this.updateCleanupUi('debug clip ' + clipLabel(clip));
+        this.updatePlayerTransportUi('debug clip ' + clipLabel(clip));
+        this.updateCritiqueTransportUi('debug clip ' + clipLabel(clip));
+        this.updateReadout();
+        const snapshot = this.debugSnapshot();
+        return respond({ message: 'playing ' + clipLabel(clip), activeClipChanged: previousClipKey !== clipKey(clip), paused: false, snapshot });
+      }
+      case 'bone': {
+        if (!actor) return { ok: false, command: spec.name, error: 'no active actor', snapshot: this.debugSnapshot() };
+        const subcommand = String(spec.args[0] || '').trim().toLowerCase();
+        const rest = spec.args.slice(1);
+        const isShortcutName = subcommand && !['select', 'status', 'state', 'reset', 'rotate'].includes(subcommand);
+        const selectBoneByName = (name) => {
+          const boneName = String(name || '').trim();
+          if (!boneName || boneName === 'clear' || boneName === 'none') {
+            this.clearBoneSelection('deselected bone');
+            return { ok: true, cleared: true };
+          }
+          if (!actor.selectBone(boneName)) return { ok: false, error: 'bone not found: ' + boneName };
+          this.updateBoneUi();
+          this.updateReadout();
+          return { ok: true, boneName };
+        };
+        if (subcommand === 'state' || subcommand === 'status') {
+          const boneName = rest.join(' ').trim() || actor.selectedBoneName;
+          const bone = boneName ? actor.boneByName.get(boneName) : null;
+          const restPose = boneName ? actor.boneRest.get(boneName) : null;
+          if (!bone || !restPose) return { ok: false, command: spec.name, error: 'bone not found: ' + (boneName || ''), snapshot: this.debugSnapshot() };
+          return {
+            ok: true,
+            command: spec.name,
+            action: subcommand,
+            bone: {
+              name: bone.name,
+              selected: bone.name === actor.selectedBoneName,
+              localQuaternion: bone.quaternion.toArray(),
+              restQuaternion: restPose.quaternion.toArray(),
+              worldQuaternion: worldQuaternionOf(bone).toArray(),
+              edit: actor.currentBoneEdit?.(boneName) || null,
+            },
+            snapshot: this.debugSnapshot(),
+          };
+        }
+        if (subcommand === 'reset') {
+          const boneName = rest.join(' ').trim() || actor.selectedBoneName;
+          if (!boneName) return { ok: false, command: spec.name, error: 'bone name required', snapshot: this.debugSnapshot() };
+          if (!actor.boneByName.has(boneName)) return { ok: false, command: spec.name, error: 'bone not found: ' + boneName, snapshot: this.debugSnapshot() };
+          actor.resetBoneEdit?.(boneName);
+          actor.selectBone?.(boneName);
+          this.updateBoneUi();
+          this.updateReadout();
+          return respond({ message: 'reset bone ' + boneName });
+        }
+        if (subcommand === 'rotate') {
+          let boneName = actor.selectedBoneName;
+          let rotationArgs = rest;
+          if (rotationArgs.length >= 4 && !Number.isFinite(Number(rotationArgs[0]))) {
+            boneName = String(rotationArgs[0] || '').trim();
+            rotationArgs = rotationArgs.slice(1);
+          }
+          const rotX = Number(rotationArgs[0]);
+          const rotY = Number(rotationArgs[1]);
+          const rotZ = Number(rotationArgs[2]);
+          if (!boneName) return { ok: false, command: spec.name, error: 'bone name required', snapshot: this.debugSnapshot() };
+          if (!Number.isFinite(rotX) || !Number.isFinite(rotY) || !Number.isFinite(rotZ)) return { ok: false, command: spec.name, error: 'rotate expects numeric x y z degrees', snapshot: this.debugSnapshot() };
+          if (!actor.boneByName.has(boneName)) return { ok: false, command: spec.name, error: 'bone not found: ' + boneName, snapshot: this.debugSnapshot() };
+          actor.selectBone?.(boneName);
+          if (typeof actor.applyBoneEdit !== 'function') return { ok: false, command: spec.name, error: 'actor cannot apply bone edits', snapshot: this.debugSnapshot() };
+          actor.applyBoneEdit(boneName, { rotX, rotY, rotZ, useTranslate: false, useRotate: true, useScale: false });
+          this.updateBoneUi();
+          this.updateReadout();
+          return respond({ message: 'rotated bone ' + boneName, bone: { name: boneName, rotX, rotY, rotZ } });
+        }
+        if (!subcommand || subcommand === 'select' || isShortcutName) {
+          const target = subcommand === 'select' ? rest.join(' ').trim() : [subcommand, ...rest].join(' ').trim();
+          const selected = selectBoneByName(target);
+          if (!selected.ok) return { ok: false, command: spec.name, error: selected.error, snapshot: this.debugSnapshot() };
+          return selected.cleared
+            ? respond({ message: 'cleared bone selection' })
+            : respond({ message: 'selected bone ' + selected.boneName });
+        }
+        return { ok: false, command: spec.name, error: 'unknown bone subcommand: ' + subcommand, snapshot: this.debugSnapshot() };
+      }
+      case 'view': {
+        const mode = String(spec.args[0] || '').trim();
+        if (!mode) return { ok: false, command: spec.name, error: 'view mode required', snapshot: this.debugSnapshot() };
+        this.setViewMode(mode);
+        return respond({ message: 'view ' + this.viewMode });
+      }
+      case 'panel': {
+        const panel = String(spec.args[0] || '').trim();
+        if (!panel) return { ok: false, command: spec.name, error: 'panel name required', snapshot: this.debugSnapshot() };
+        this.setPanel(panel);
+        return respond({ message: 'panel ' + this.activePanel });
+      }
+      case 'play': {
+        if (!actor?.activeAction) return { ok: false, command: spec.name, error: 'no active clip', snapshot: this.debugSnapshot() };
+        actor.pauseActive(false);
+        this.updateCleanupUi('playing');
+        this.updatePlayerTransportUi('playing');
+        this.updateCritiqueTransportUi('playing');
+        return respond({ message: 'playing' });
+      }
+      case 'pause': {
+        if (!actor?.activeAction) return { ok: false, command: spec.name, error: 'no active clip', snapshot: this.debugSnapshot() };
+        actor.pauseActive(true);
+        this.updateCleanupUi('paused');
+        this.updatePlayerTransportUi('paused');
+        this.updateCritiqueTransportUi('paused');
+        return respond({ message: 'paused' });
+      }
+      case 'stop': {
+        if (!actor?.activeAction) return { ok: false, command: spec.name, error: 'no active clip', snapshot: this.debugSnapshot() };
+        actor.stop();
+        this.updateCleanupUi('stopped');
+        this.updatePlayerTransportUi('stopped');
+        this.updateCritiqueTransportUi('stopped');
+        return respond({ message: 'stopped' });
+      }
+      case 'seek':
+      case 'time': {
+        if (!actor?.activeClip()) return { ok: false, command: spec.name, error: 'no active clip', snapshot: this.debugSnapshot() };
+        const value = Number(spec.args[0]);
+        if (!Number.isFinite(value)) return { ok: false, command: spec.name, error: 'seek time must be numeric', snapshot: this.debugSnapshot() };
+        actor.seek(value);
+        return respond({ message: 'seek ' + value });
+      }
+      case 'frame': {
+        if (!actor?.activeClip()) return { ok: false, command: spec.name, error: 'no active clip', snapshot: this.debugSnapshot() };
+        const value = Number(spec.args[0]);
+        if (!Number.isFinite(value)) return { ok: false, command: spec.name, error: 'frame must be numeric', snapshot: this.debugSnapshot() };
+        actor.seek(value / CRITIQUE_STEP_FPS);
+        return respond({ message: 'frame ' + value });
+      }
+      case 'beacon':
+        return this.debugEmitBeacon(spec.args[0] || 'manual');
+      case 'capture':
+        return this.debugEmitCapture(spec.args[0] || 'manual');
+      case 'qa': {
+        const sub = String(spec.args[0] || 'status').trim();
+        if (sub === 'beacon') return this.debugEmitBeacon(spec.args[1] || 'qa');
+        if (sub === 'capture') return this.debugEmitCapture(spec.args[1] || 'qa');
+        return { ok: true, command: spec.name, subcommand: sub, snapshot: this.debugSnapshot() };
+      }
+      default:
+        return { ok: false, command: spec.name, error: 'unknown debug command: ' + spec.name, commands: this.debugCommandNames(), snapshot: this.debugSnapshot() };
+    }
+  }
+
+  async startDebugBridge() {
+    if (!this.debugBridge?.enabled || !this.debugBridge.url) {
+      if (this.debugBridgeState) this.debugBridgeState.lastError = this.debugBridge?.enabled ? 'missing debugBridgeUrl' : '';
+      return null;
+    }
+    if (this.debugBridgePromise) return this.debugBridgePromise;
+    const baseUrl = this.debugBridge.url.replace(/\/$/, '');
+    const bridge = this.debugBridgeState;
+    bridge.lastError = '';
+    const run = async () => {
+      const register = await fetch(baseUrl + '/register', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ label: this.debugBridge.label, build: LAB_BUILD, labMode: this.labMode, url: window.location.href }),
+      });
+      if (!register.ok) throw new Error('bridge register HTTP ' + register.status);
+      const registered = await register.json();
+      bridge.connected = true;
+      bridge.clientId = String(registered.clientId || '');
+      bridge.syncAt = Date.now();
+      while (bridge.connected) {
+        const controller = new AbortController();
+        const timer = window.setTimeout(() => controller.abort(), this.debugBridge.timeoutMs);
+        try {
+          const next = await fetch(baseUrl + '/next?clientId=' + encodeURIComponent(bridge.clientId), { signal: controller.signal });
+          if (!next.ok) throw new Error('bridge next HTTP ' + next.status);
+          const payload = await next.json();
+          if (!payload || !payload.id) continue;
+          bridge.lastCommand = String(payload.command?.name || payload.command?.command || '');
+          bridge.lastCommandId = String(payload.id || '');
+          const result = await this.executeDebugCommand(payload.command);
+          bridge.lastResult = result;
+          bridge.syncAt = Date.now();
+          await fetch(baseUrl + '/result', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ clientId: bridge.clientId, commandId: payload.id, result }),
+          });
+        } catch (error) {
+          if (String(error?.name || '') === 'AbortError') continue;
+          bridge.lastError = error?.message || String(error);
+          await new Promise((resolve) => window.setTimeout(resolve, this.debugBridge.pollMs));
+        } finally {
+          window.clearTimeout(timer);
+        }
+      }
+    };
+    this.debugBridgePromise = run().catch((error) => {
+      bridge.connected = false;
+      bridge.lastError = error?.message || String(error);
+      return null;
+    });
+    return this.debugBridgePromise;
   }
 
   updateDiagnosticOverlay() {
@@ -4641,21 +7484,45 @@ class PoseLab {
     UI.diagnostic.textContent = actor.diagnosticLine();
     if (UI.panels.info?.classList.contains('open')) UI.readout.textContent = 'view=' + this.viewMode + '\n' + actor.readout();
     if (UI.panels.cleanup?.classList.contains('open')) this.updateCleanupUi();
+    this.updateCritiqueTransportUi();
+    this.updateCritiqueDock(true);
   }
 
 
   visualQaReadFrames(clip) {
     const frames = clip?.userData?.sourceReduction?.spriteFrames || [];
-    return frames.map((frame) => ({
-      tag: frame.tag || '',
-      spriteFrame: Number(frame.spriteFrame || 0),
-      time: Number.isFinite(Number(frame.spriteFrame)) ? Number(frame.spriteFrame) / 60 : Number(frame.sourceTime || 0),
-    })).filter((frame) => Number.isFinite(frame.time));
+    if (frames.length) {
+      return frames.map((frame) => {
+        const spriteFrame = Number(frame.spriteFrame || 0);
+        return {
+          frameKey: 'f' + String(spriteFrame).padStart(3, '0'),
+          tag: frame.tag || '',
+          spriteFrame,
+          time: Number.isFinite(Number(frame.spriteFrame)) ? spriteFrame / 60 : Number(frame.sourceTime || 0),
+        };
+      }).filter((frame) => Number.isFinite(frame.time));
+    }
+    const duration = Math.max(0, Number(clip?.duration || 0));
+    const fps = 30;
+    const sampleCount = Math.max(2, Math.ceil(duration * 30) + 1);
+    const framesOut = [];
+    for (let i = 0; i < sampleCount; i += 1) {
+      const time = (duration * i) / (sampleCount - 1);
+      const spriteFrame = Math.round(time * fps);
+      framesOut.push({
+        frameKey: 'f' + String(spriteFrame).padStart(3, '0'),
+        tag: i === 0 ? 'start' : (i === sampleCount - 1 ? 'settle' : 'frame'),
+        spriteFrame,
+        time,
+      });
+    }
+    return framesOut.filter((frame) => Number.isFinite(frame.time));
   }
 
   handleVisualQaFrame() {
     if (!this.visualQa?.enabled) return;
     if (!this.actors.size) return;
+    if (!this.startupReady) return;
     const actor = this.actors.get(this.selected);
     const clip = actor?.activeAction?._clip;
     if (this.visualQa.actor && this.selected !== this.visualQa.actor) return;
@@ -4722,8 +7589,14 @@ class PoseLab {
 
   frame() {
     const dt = Math.min(0.05, this.clock.getDelta());
-    for (const actor of this.actors.values()) actor.update(dt);
+    for (const actor of this.actors.values()) {
+      actor.update(dt);
+      if (actor.key === this.selected) this.applyPoseCorrectionOverlay(actor);
+    }
     this.updateDiagnosticOverlay();
+    if (this.labMode === 'critique') this.updateCleanupUi();
+    this.updateCritiqueTransportUi();
+    this.updateCritiqueDock(true);
     this.updateFirstPersonCamera();
     if (this.controls.enabled) this.controls.update();
     this.renderer.render(this.scene, this.camera);

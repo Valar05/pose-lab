@@ -23,6 +23,7 @@
     "reason": "Headbutt is allowed to break ordinary hand guard rules because the arms sell the head-driven body commitment and recoil.",
     "rule": "Do not apply generic contact/recovery guard stabilization to Headbutt unless a visual test proves the arms stop selling the motion."
   },
+  "smashRealisticSteering": null,
   "captureSlots": [
     {
       "evidenceKey": "ares:headbutt:sf2:f000:start",
@@ -134,14 +135,14 @@
       "spriteFrame": 40,
       "poseclipTime": 0.66667,
       "sourceClipName": "Headbutt",
-      "sourceFrameIndex": 22,
-      "sourceTime": 0.76667,
-      "description": "recovery coiled head guard, level head, held pose",
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.03333,
+      "description": "guard coiled head guard, level head, readable shift",
       "attackStyle": "headbutt",
       "reach": 0.0,
       "effectorHeight": -0.0,
       "effectorExtension": 0.0,
-      "motionTotal": 0.38946,
+      "motionTotal": 1.01171,
       "overlayPhases": [],
       "contactModifiers": [],
       "headDiscipline": [],

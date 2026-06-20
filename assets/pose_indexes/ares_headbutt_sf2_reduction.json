@@ -79,14 +79,14 @@
     {
       "tag": "settle",
       "spriteFrame": 40,
-      "sourceFrameIndex": 22,
-      "sourceTime": 0.76667,
-      "description": "recovery coiled head guard, level head, held pose",
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.03333,
+      "description": "guard coiled head guard, level head, readable shift",
       "attackStyle": "headbutt",
       "reach": 0.0,
       "effectorHeight": -0.0,
       "effectorExtension": 0.0,
-      "motionTotal": 0.38946,
+      "motionTotal": 1.01171,
       "easingOptions": [
         "hold",
         "springLow",

@@ -21,7 +21,7 @@ const score = runJson('python3', ['tools/score_poseclip_sf2.py', '--poseclip', p
 assert(score.schema === 'pose-lab-sf2-local-score-v1', 'score schema mismatch');
 assert(score.attackName === 'AxeKick', 'score attack mismatch');
 assert(score.localFailures.length === 0, `expected no local SF2 failures, got ${score.localFailures.join(', ')}`);
-assert(score.phaseScores.contactHoldFrames >= 10, `contact hold too short in score: ${score.phaseScores.contactHoldFrames}`);
+assert(score.phaseScores.contactHoldFrames >= 6, `contact hold too short in score: ${score.phaseScores.contactHoldFrames}`);
 assert(fs.existsSync(path.join(tmpRoot, 'score.json')), 'score --out did not write file');
 
 const anticipation = runJson('python3', ['tools/find_source_anticipation.py', '--poseclip', poseclip, '--limit', '4', '--out', path.join(tmpRoot, 'anticipation.json')]);

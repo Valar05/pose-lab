@@ -28,17 +28,17 @@
     ],
     "timeline": [
       {
-        "spriteFrame": 15,
+        "spriteFrame": 14,
         "strength": 1.0,
         "tag": "contactCarry"
       },
       {
-        "spriteFrame": 17,
+        "spriteFrame": 15,
         "strength": 1.0,
         "tag": "heldContactCarry"
       },
       {
-        "spriteFrame": 19,
+        "spriteFrame": 18,
         "strength": 0.22,
         "tag": "recoilRelease"
       },
@@ -50,6 +50,30 @@
     ]
   },
   "guardRuleException": null,
+  "smashRealisticSteering": {
+    "family": "ballistic-kick",
+    "observationCharacter": "Ganondorf",
+    "observationGame": "Super Smash Bros. Ultimate",
+    "reason": "Use Ganondorf as the realistic-body-cheat benchmark for ballistic kicks: preserve snap and recoil while letting torso compression, support-leg load, and slight directional extension make the strike feel heavier.",
+    "do": [
+      "preserve foot velocity over contact posing",
+      "let hips and torso contribute before the limb fully arrives",
+      "keep the head disciplined behind the striking line",
+      "use subtle directional extension and impact compression only"
+    ],
+    "avoid": [
+      "long contact display holds",
+      "visible rubber scaling",
+      "head-leading power generation"
+    ],
+    "referenceMoves": [
+      "Forward aerial",
+      "Wizard's Foot"
+    ],
+    "attackName": "FrontKick",
+    "appliedLayerKind": "smash-realistic-frontkick-force-cheat",
+    "timingBias": "ballistic-snap"
+  },
   "captureSlots": [
     {
       "evidenceKey": "ares:frontkick:sf2:f000:start",
@@ -104,10 +128,10 @@
       "notes": []
     },
     {
-      "evidenceKey": "ares:frontkick:sf2:f015:contact",
+      "evidenceKey": "ares:frontkick:sf2:f014:contact",
       "tag": "contact",
-      "spriteFrame": 15,
-      "poseclipTime": 0.25,
+      "spriteFrame": 14,
+      "poseclipTime": 0.23333,
       "sourceClipName": "FrontKick",
       "sourceFrameIndex": 10,
       "sourceTime": 0.36667,
@@ -139,15 +163,15 @@
       ],
       "screenshot": {
         "linked": false,
-        "expectedPath": "assets/pose_evidence/ares/frontkick/sf2/f015_contact.png"
+        "expectedPath": "assets/pose_evidence/ares/frontkick/sf2/f014_contact.png"
       },
       "notes": []
     },
     {
-      "evidenceKey": "ares:frontkick:sf2:f017:contactHold",
+      "evidenceKey": "ares:frontkick:sf2:f015:contactHold",
       "tag": "contactHold",
-      "spriteFrame": 17,
-      "poseclipTime": 0.28333,
+      "spriteFrame": 15,
+      "poseclipTime": 0.25,
       "sourceClipName": "FrontKick",
       "sourceFrameIndex": 10,
       "sourceTime": 0.36667,
@@ -179,15 +203,15 @@
       ],
       "screenshot": {
         "linked": false,
-        "expectedPath": "assets/pose_evidence/ares/frontkick/sf2/f017_contactHold.png"
+        "expectedPath": "assets/pose_evidence/ares/frontkick/sf2/f015_contactHold.png"
       },
       "notes": []
     },
     {
-      "evidenceKey": "ares:frontkick:sf2:f019:recoil",
+      "evidenceKey": "ares:frontkick:sf2:f018:recoil",
       "tag": "recoil",
-      "spriteFrame": 19,
-      "poseclipTime": 0.31667,
+      "spriteFrame": 18,
+      "poseclipTime": 0.3,
       "sourceClipName": "FrontKick",
       "sourceFrameIndex": 14,
       "sourceTime": 0.5,
@@ -219,15 +243,15 @@
       ],
       "screenshot": {
         "linked": false,
-        "expectedPath": "assets/pose_evidence/ares/frontkick/sf2/f019_recoil.png"
+        "expectedPath": "assets/pose_evidence/ares/frontkick/sf2/f018_recoil.png"
       },
       "notes": []
     },
     {
-      "evidenceKey": "ares:frontkick:sf2:f021:recoilSettle",
+      "evidenceKey": "ares:frontkick:sf2:f022:recoilSettle",
       "tag": "recoilSettle",
-      "spriteFrame": 21,
-      "poseclipTime": 0.35,
+      "spriteFrame": 22,
+      "poseclipTime": 0.36667,
       "sourceClipName": "FrontKick",
       "sourceFrameIndex": 16,
       "sourceTime": 0.56667,
@@ -245,7 +269,7 @@
       "kickPrecontactUpperBodyCarry": [],
       "screenshot": {
         "linked": false,
-        "expectedPath": "assets/pose_evidence/ares/frontkick/sf2/f021_recoilSettle.png"
+        "expectedPath": "assets/pose_evidence/ares/frontkick/sf2/f022_recoilSettle.png"
       },
       "notes": []
     },
@@ -255,14 +279,14 @@
       "spriteFrame": 40,
       "poseclipTime": 0.66667,
       "sourceClipName": "FrontKick",
-      "sourceFrameIndex": 25,
-      "sourceTime": 0.86667,
-      "description": "settle extended leg, low foot, held pose",
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.03333,
+      "description": "guard extended leg, low foot, held pose",
       "attackStyle": "kick",
       "reach": 0.26767,
       "effectorHeight": -0.87311,
       "effectorExtension": 0.9632,
-      "motionTotal": 0.32791,
+      "motionTotal": 0.27866,
       "overlayPhases": [],
       "contactModifiers": [],
       "headDiscipline": [],

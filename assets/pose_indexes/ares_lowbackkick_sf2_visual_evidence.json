@@ -50,6 +50,31 @@
     ]
   },
   "guardRuleException": null,
+  "smashRealisticSteering": {
+    "family": "heavy-kick",
+    "observationCharacter": "Ganondorf",
+    "observationGame": "Super Smash Bros. Ultimate",
+    "reason": "Use Ganondorf as the realistic-body-cheat benchmark for heavy kicks: big silhouette change, hips-first commitment, and chest/shoulder compression before release without turning the body into rubber.",
+    "do": [
+      "compress before release",
+      "lead power from hips through torso into the limb",
+      "hold a screenshot-worthy contact or apex read when the move identity needs it",
+      "favor silhouette expansion over obvious bone scaling"
+    ],
+    "avoid": [
+      "floating leg-only motion",
+      "cartoon stretch",
+      "face-first commitment"
+    ],
+    "referenceMoves": [
+      "Forward smash",
+      "Up tilt",
+      "Down smash"
+    ],
+    "attackName": "LowBackKick",
+    "appliedLayerKind": null,
+    "timingBias": "heavy-commitment"
+  },
   "captureSlots": [
     {
       "evidenceKey": "ares:lowbackkick:sf2:f000:start",
@@ -281,14 +306,14 @@
       "spriteFrame": 40,
       "poseclipTime": 0.66667,
       "sourceClipName": "LowBackKick",
-      "sourceFrameIndex": 29,
-      "sourceTime": 0.96667,
-      "description": "settle extended leg, low foot, held pose",
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.0,
+      "description": "start extended leg, low foot, readable shift",
       "attackStyle": "kick",
       "reach": -0.28517,
       "effectorHeight": -0.83695,
       "effectorExtension": 0.96782,
-      "motionTotal": 0.36072,
+      "motionTotal": 0.6377,
       "overlayPhases": [],
       "contactModifiers": [],
       "headDiscipline": [],

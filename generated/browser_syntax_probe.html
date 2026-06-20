@@ -1,0 +1,7 @@
+<!doctype html>
+<meta charset='utf-8'>
+<title>syntax probe</title>
+<script type='module'>
+  const value = ({a: {b: 1}})?.a?.b ?? 0;
+  fetch('/__visual_qa_smoke?stage=syntax-probe&value=' + value).catch(() => {});
+</script>

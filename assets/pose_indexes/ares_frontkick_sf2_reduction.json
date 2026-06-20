@@ -44,7 +44,7 @@
     },
     {
       "tag": "contact",
-      "spriteFrame": 15,
+      "spriteFrame": 14,
       "sourceFrameIndex": 10,
       "sourceTime": 0.36667,
       "description": "strike full leg extension, high foot, snappy transition",
@@ -61,7 +61,7 @@
     },
     {
       "tag": "contactHold",
-      "spriteFrame": 17,
+      "spriteFrame": 15,
       "sourceFrameIndex": 10,
       "sourceTime": 0.36667,
       "description": "strike full leg extension, high foot, snappy transition",
@@ -78,7 +78,7 @@
     },
     {
       "tag": "recoil",
-      "spriteFrame": 19,
+      "spriteFrame": 18,
       "sourceFrameIndex": 14,
       "sourceTime": 0.5,
       "description": "strike extended leg, mid foot, snappy transition",
@@ -95,7 +95,7 @@
     },
     {
       "tag": "recoilSettle",
-      "spriteFrame": 21,
+      "spriteFrame": 22,
       "sourceFrameIndex": 16,
       "sourceTime": 0.56667,
       "description": "strike chambered leg, low foot, readable shift",
@@ -113,14 +113,14 @@
     {
       "tag": "settle",
       "spriteFrame": 40,
-      "sourceFrameIndex": 25,
-      "sourceTime": 0.86667,
-      "description": "settle extended leg, low foot, held pose",
+      "sourceFrameIndex": 0,
+      "sourceTime": 0.03333,
+      "description": "guard extended leg, low foot, held pose",
       "attackStyle": "kick",
       "reach": 0.26767,
       "effectorHeight": -0.87311,
       "effectorExtension": 0.9632,
-      "motionTotal": 0.32791,
+      "motionTotal": 0.27866,
       "easingOptions": [
         "hold",
         "springLow",
@@ -142,7 +142,7 @@
     {
       "from": "anticipation",
       "to": "contact",
-      "holdFrames": 6,
+      "holdFrames": 5,
       "easingOptions": [
         "holdThenSnap",
         "snapLunge",
@@ -152,7 +152,7 @@
     {
       "from": "contact",
       "to": "contactHold",
-      "holdFrames": 2,
+      "holdFrames": 1,
       "easingOptions": [
         "stepHold",
         "ballisticRecoil",
@@ -162,7 +162,7 @@
     {
       "from": "contactHold",
       "to": "recoil",
-      "holdFrames": 2,
+      "holdFrames": 3,
       "easingOptions": [
         "hold",
         "springLow",
@@ -172,7 +172,7 @@
     {
       "from": "recoil",
       "to": "recoilSettle",
-      "holdFrames": 2,
+      "holdFrames": 4,
       "easingOptions": [
         "dampedRecover",
         "microOvershoot",
@@ -182,7 +182,7 @@
     {
       "from": "recoilSettle",
       "to": "settle",
-      "holdFrames": 19,
+      "holdFrames": 18,
       "easingOptions": [
         "hold",
         "springLow",

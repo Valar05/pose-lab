@@ -2,10 +2,11 @@ __pycache__/
 *.pyc
 *.pyo
 
-.git/
-
 # transient render and metric scratch outputs
 /generated/manual_renders/
+/generated/pose_renders/
+/generated/critique_packets/
+/generated/openai_critiques/
 /generated/*.json
 /generated/*.mp4
 /generated/*.webm
@@ -17,3 +18,45 @@ __pycache__/
 
 # local server / editor noise
 .DS_Store
+
+# BEGIN CODEX WORKSPACE HYGIENE
+# Credentials and local machine state
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*_SECRET*
+*secret*.json
+*credentials*.json
+
+# Editor/OS noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Dependency/cache folders
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# Local Godot/editor runtime cache
+.godot/
+
+# Local release/build outputs
+release/*.zip
+dist/
+build/
+coverage/
+
+# Local logs
+*.log
+logs/
+# END CODEX WORKSPACE HYGIENE

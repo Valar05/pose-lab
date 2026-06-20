@@ -24,3 +24,4 @@
 - Use the reduced poseclip for readable combat timing, not the full mocap clip for hit timing.
 - Keep hit activation tied to metadata; late source tail frames are presentation only.
 - If the reduced clip glides, clamp root or hip translation separately from hands and shoulders.
+ - Keep the planted support foot rock steady through `recoil` and `recoverySettle`; if the world foot drifts, fix the support-leg chain quaternions instead of moving the planted foot track.

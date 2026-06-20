@@ -1,0 +1,34 @@
+<!doctype html>
+<meta charset='utf-8'>
+<title>import probe</title>
+<script type='module'>
+  (async () => {
+    const modules = [
+      '../vendor/three/build/three.module.js',
+      '../vendor/three/examples/jsm/loaders/GLTFLoader.js',
+      '../vendor/three/examples/jsm/loaders/FBXLoader.js',
+      '../vendor/three/examples/jsm/controls/OrbitControls.js',
+      '../vendor/three/examples/jsm/utils/SkeletonUtils.js',
+      '../src/godot-rest-poses.js?v=visual-qa-step-rail-6',
+      '../src/rig-profiles.js?v=visual-qa-step-rail-6',
+      '../src/startup-policy.mjs?v=visual-qa-step-rail-6',
+      '../src/clip-search.js?v=visual-qa-step-rail-6',
+      '../src/lab-mode.mjs?v=visual-qa-step-rail-6',
+      '../src/pose-lab.js?v=visual-qa-step-rail-6',
+    ];
+    let badName = '';
+    let badMessage = '';
+    for (const spec of modules) {
+      try {
+        await import(spec);
+      } catch (err) {
+        badName = spec;
+        badMessage = String(err && err.message || err);
+        break;
+      }
+    }
+    fetch('/__visual_qa_smoke?stage=import-probe&badName=' + encodeURIComponent(badName) + '&message=' + encodeURIComponent(badMessage)).catch(() => {});
+  })().catch((err) => {
+    fetch('/__visual_qa_smoke?stage=import-probe-top&badName=' + encodeURIComponent('probe') + '&message=' + encodeURIComponent(String(err && err.message || err))).catch(() => {});
+  });
+</script>

@@ -21,6 +21,7 @@
       "visualEvidence": "assets/pose_indexes/ares_jab_sf2_visual_evidence.json",
       "attackStyle": "punch",
       "appealScoring": "source-burst-clean",
+      "smashRealisticSteering": null,
       "keyedFrames": 23,
       "sourceDuration": 0.76667,
       "combatWindowFrames60fps": 15,
@@ -97,6 +98,7 @@
       "visualEvidence": "assets/pose_indexes/ares_cross_sf2_visual_evidence.json",
       "attackStyle": "punch",
       "appealScoring": "source-burst-clean",
+      "smashRealisticSteering": null,
       "keyedFrames": 27,
       "sourceDuration": 0.86667,
       "combatWindowFrames60fps": 33,
@@ -173,6 +175,7 @@
       "visualEvidence": "assets/pose_indexes/ares_lefthook_sf2_visual_evidence.json",
       "attackStyle": "punch",
       "appealScoring": "source-burst-clean",
+      "smashRealisticSteering": null,
       "keyedFrames": 21,
       "sourceDuration": 0.66667,
       "combatWindowFrames60fps": 21,
@@ -249,6 +252,7 @@
       "visualEvidence": "assets/pose_indexes/ares_leftuppercut_sf2_visual_evidence.json",
       "attackStyle": "punch",
       "appealScoring": "source-burst-clean",
+      "smashRealisticSteering": null,
       "keyedFrames": 21,
       "sourceDuration": 0.66667,
       "combatWindowFrames60fps": 15,
@@ -325,6 +329,7 @@
       "visualEvidence": "assets/pose_indexes/ares_rightuppercut_sf2_visual_evidence.json",
       "attackStyle": "punch",
       "appealScoring": "source-burst-clean",
+      "smashRealisticSteering": null,
       "keyedFrames": 21,
       "sourceDuration": 0.66667,
       "combatWindowFrames60fps": 33,
@@ -401,6 +406,7 @@
       "visualEvidence": "assets/pose_indexes/ares_headbutt_sf2_visual_evidence.json",
       "attackStyle": "headbutt",
       "appealScoring": "source-burst-clean",
+      "smashRealisticSteering": null,
       "keyedFrames": 23,
       "sourceDuration": 0.76667,
       "combatWindowFrames60fps": 40,
@@ -477,6 +483,7 @@
       "visualEvidence": "assets/pose_indexes/ares_supermanpunch_sf2_visual_evidence.json",
       "attackStyle": "punch",
       "appealScoring": "source-burst-clean",
+      "smashRealisticSteering": null,
       "keyedFrames": 21,
       "sourceDuration": 0.7,
       "combatWindowFrames60fps": 36,
@@ -553,6 +560,31 @@
       "visualEvidence": "assets/pose_indexes/ares_lowbackkick_sf2_visual_evidence.json",
       "attackStyle": "kick",
       "appealScoring": "source-burst-clean",
+      "smashRealisticSteering": {
+        "family": "heavy-kick",
+        "observationCharacter": "Ganondorf",
+        "observationGame": "Super Smash Bros. Ultimate",
+        "reason": "Use Ganondorf as the realistic-body-cheat benchmark for heavy kicks: big silhouette change, hips-first commitment, and chest/shoulder compression before release without turning the body into rubber.",
+        "do": [
+          "compress before release",
+          "lead power from hips through torso into the limb",
+          "hold a screenshot-worthy contact or apex read when the move identity needs it",
+          "favor silhouette expansion over obvious bone scaling"
+        ],
+        "avoid": [
+          "floating leg-only motion",
+          "cartoon stretch",
+          "face-first commitment"
+        ],
+        "referenceMoves": [
+          "Forward smash",
+          "Up tilt",
+          "Down smash"
+        ],
+        "attackName": "LowBackKick",
+        "appliedLayerKind": null,
+        "timingBias": "heavy-commitment"
+      },
       "keyedFrames": 30,
       "sourceDuration": 0.96667,
       "combatWindowFrames60fps": 40,
@@ -629,6 +661,30 @@
       "visualEvidence": "assets/pose_indexes/ares_frontkick_sf2_visual_evidence.json",
       "attackStyle": "kick",
       "appealScoring": "source-burst-clean",
+      "smashRealisticSteering": {
+        "family": "ballistic-kick",
+        "observationCharacter": "Ganondorf",
+        "observationGame": "Super Smash Bros. Ultimate",
+        "reason": "Use Ganondorf as the realistic-body-cheat benchmark for ballistic kicks: preserve snap and recoil while letting torso compression, support-leg load, and slight directional extension make the strike feel heavier.",
+        "do": [
+          "preserve foot velocity over contact posing",
+          "let hips and torso contribute before the limb fully arrives",
+          "keep the head disciplined behind the striking line",
+          "use subtle directional extension and impact compression only"
+        ],
+        "avoid": [
+          "long contact display holds",
+          "visible rubber scaling",
+          "head-leading power generation"
+        ],
+        "referenceMoves": [
+          "Forward aerial",
+          "Wizard's Foot"
+        ],
+        "attackName": "FrontKick",
+        "appliedLayerKind": "smash-realistic-frontkick-force-cheat",
+        "timingBias": "ballistic-snap"
+      },
       "keyedFrames": 26,
       "sourceDuration": 0.86667,
       "combatWindowFrames60fps": 40,
@@ -705,6 +761,7 @@
       "visualEvidence": "assets/pose_indexes/ares_backfist_sf2_visual_evidence.json",
       "attackStyle": "punch",
       "appealScoring": "source-burst-clean",
+      "smashRealisticSteering": null,
       "keyedFrames": 24,
       "sourceDuration": 0.76667,
       "combatWindowFrames60fps": 40,
@@ -781,6 +838,31 @@
       "visualEvidence": "assets/pose_indexes/ares_spinninghighkick_sf2_visual_evidence.json",
       "attackStyle": "kick",
       "appealScoring": "source-burst-clean",
+      "smashRealisticSteering": {
+        "family": "heavy-kick",
+        "observationCharacter": "Ganondorf",
+        "observationGame": "Super Smash Bros. Ultimate",
+        "reason": "Use Ganondorf as the realistic-body-cheat benchmark for heavy kicks: big silhouette change, hips-first commitment, and chest/shoulder compression before release without turning the body into rubber.",
+        "do": [
+          "compress before release",
+          "lead power from hips through torso into the limb",
+          "hold a screenshot-worthy contact or apex read when the move identity needs it",
+          "favor silhouette expansion over obvious bone scaling"
+        ],
+        "avoid": [
+          "floating leg-only motion",
+          "cartoon stretch",
+          "face-first commitment"
+        ],
+        "referenceMoves": [
+          "Forward smash",
+          "Up tilt",
+          "Down smash"
+        ],
+        "attackName": "SpinningHighKick",
+        "appliedLayerKind": null,
+        "timingBias": "heavy-commitment"
+      },
       "keyedFrames": 26,
       "sourceDuration": 0.86667,
       "combatWindowFrames60fps": 48,
@@ -857,6 +939,31 @@
       "visualEvidence": "assets/pose_indexes/ares_axekick_sf2_visual_evidence.json",
       "attackStyle": "kick",
       "appealScoring": "source-burst-clean",
+      "smashRealisticSteering": {
+        "family": "heavy-kick",
+        "observationCharacter": "Ganondorf",
+        "observationGame": "Super Smash Bros. Ultimate",
+        "reason": "Use Ganondorf as the realistic-body-cheat benchmark for heavy kicks: big silhouette change, hips-first commitment, and chest/shoulder compression before release without turning the body into rubber.",
+        "do": [
+          "compress before release",
+          "lead power from hips through torso into the limb",
+          "hold a screenshot-worthy contact or apex read when the move identity needs it",
+          "favor silhouette expansion over obvious bone scaling"
+        ],
+        "avoid": [
+          "floating leg-only motion",
+          "cartoon stretch",
+          "face-first commitment"
+        ],
+        "referenceMoves": [
+          "Forward smash",
+          "Up tilt",
+          "Down smash"
+        ],
+        "attackName": "AxeKick",
+        "appliedLayerKind": "smash-realistic-axekick-settle-cheat",
+        "timingBias": "heavy-commitment"
+      },
       "keyedFrames": 25,
       "sourceDuration": 0.8,
       "combatWindowFrames60fps": 40,
@@ -933,6 +1040,31 @@
       "visualEvidence": "assets/pose_indexes/ares_axlekick_sf2_visual_evidence.json",
       "attackStyle": "kick",
       "appealScoring": "source-burst-clean",
+      "smashRealisticSteering": {
+        "family": "heavy-kick",
+        "observationCharacter": "Ganondorf",
+        "observationGame": "Super Smash Bros. Ultimate",
+        "reason": "Use Ganondorf as the realistic-body-cheat benchmark for heavy kicks: big silhouette change, hips-first commitment, and chest/shoulder compression before release without turning the body into rubber.",
+        "do": [
+          "compress before release",
+          "lead power from hips through torso into the limb",
+          "hold a screenshot-worthy contact or apex read when the move identity needs it",
+          "favor silhouette expansion over obvious bone scaling"
+        ],
+        "avoid": [
+          "floating leg-only motion",
+          "cartoon stretch",
+          "face-first commitment"
+        ],
+        "referenceMoves": [
+          "Forward smash",
+          "Up tilt",
+          "Down smash"
+        ],
+        "attackName": "AxleKick",
+        "appliedLayerKind": null,
+        "timingBias": "heavy-commitment"
+      },
       "keyedFrames": 28,
       "sourceDuration": 0.93333,
       "combatWindowFrames60fps": 40,

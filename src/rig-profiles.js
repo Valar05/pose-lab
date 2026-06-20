@@ -1,4 +1,4 @@
-import { RIG_PROFILES as GRAVITY_FIST_SOURCE_PROFILES } from './rig-profiles.gravity-fist.js?v=visual-qa-read-frames';
+import { RIG_PROFILES as GRAVITY_FIST_SOURCE_PROFILES } from './rig-profiles.gravity-fist.js?v=pose-editor-15';
 
 const BASE_RIG_PROFILES = {
   orc: {
