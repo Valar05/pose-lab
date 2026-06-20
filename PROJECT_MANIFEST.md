@@ -1,6 +1,6 @@
 # Project Manifest: pose-lab
 
-- Generated: 2026-06-20T17:00:50-05:00
+- Generated: 2026-06-20T17:47:30-05:00
 - Workspace path: `/storage/emulated/0/Documents/GodotProjects/pose-lab`
 - Git repository: yes
 - Git remote: `https://github.com/Valar05/pose-lab.git`
@@ -23,6 +23,9 @@
 > - `assets/models/arcane/Animation_*.fbx`: Arcane Manifold native leg/turn animation clips loaded onto the full rig.
 > - `assets/source/arcane/Player.tscn`: Arcane Manifold scene reference for active player model and AnimationPlayer wiring.
 > - `assets/asset_manifest.json`: asset source and processing notes.
+> ## Run
+> ```sh
+> python -m http.server 8797
 
 ## Entrypoints And Validation Clues
 - No standard entrypoint was detected. Inspect top-level files and add project-specific validation commands when known.
@@ -37,6 +40,7 @@
 - `index.html`
 - `pose-critique.html`
 - `pose-lab.html`
+- `PROJECT_MANIFEST.md`
 - `PROJECT_ORIENTATION.md`
 - `src/`
 - `tools/`
@@ -46,4 +50,3 @@
 - `.gitignore` contains a Codex workspace hygiene block for credentials, caches, and local build outputs.
 - `.gitattributes` contains a Codex Git LFS block for common binary assets, models, audio, video, archives, fonts, and PDFs.
 - `git lfs install --local` was attempted for this repository during the manifest pass.
-
