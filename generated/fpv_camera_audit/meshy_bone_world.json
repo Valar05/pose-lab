@@ -1,0 +1,587 @@
+{
+  "schema": "pose-lab-meshy-fpv-bone-world-audit-v1",
+  "source": "assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb",
+  "targetHeight": 1.89,
+  "bounds": {
+    "min": [
+      -0.5208,
+      0,
+      -0.2046
+    ],
+    "max": [
+      0.5208,
+      1.89,
+      0.2046
+    ],
+    "center": [
+      0,
+      0.945,
+      0
+    ],
+    "size": [
+      1.0416,
+      1.89,
+      0.4092
+    ]
+  },
+  "positions": {
+    "Hips": [
+      0.0041,
+      1.029,
+      0.0502
+    ],
+    "Spine": [
+      0.002,
+      1.4229,
+      0.028
+    ],
+    "Spine01": [
+      0.0027,
+      1.2916,
+      0.0354
+    ],
+    "Spine02": [
+      0.0034,
+      1.1603,
+      0.0428
+    ],
+    "Head": [
+      0,
+      1.5917,
+      0.0184
+    ],
+    "RightShoulder": [
+      -0.0457,
+      1.4669,
+      0.013
+    ],
+    "RightArm": [
+      -0.2365,
+      1.4669,
+      -0.0021
+    ],
+    "RightForeArm": [
+      -0.314,
+      1.2264,
+      -0.0499
+    ],
+    "RightHand": [
+      -0.4363,
+      1.0143,
+      0.0032
+    ],
+    "LeftShoulder": [
+      0.0497,
+      1.4751,
+      0.0131
+    ],
+    "LeftArm": [
+      0.2406,
+      1.4751,
+      -0.0019
+    ],
+    "LeftForeArm": [
+      0.3303,
+      1.2223,
+      -0.0493
+    ],
+    "LeftHand": [
+      0.4485,
+      1.0103,
+      0.0031
+    ]
+  },
+  "missing": [
+    "Neck"
+  ],
+  "vectors": {
+    "headToSpine02": [
+      0.0034,
+      -0.4314,
+      0.0244
+    ],
+    "spine02ToHead": [
+      -0.0034,
+      0.4314,
+      -0.0244
+    ],
+    "spine02ToRightHand": [
+      -0.4397,
+      -0.146,
+      -0.0396
+    ],
+    "spine02ToLeftHand": [
+      0.4451,
+      -0.15,
+      -0.0397
+    ],
+    "leftHandToRightHand": [
+      -0.8848,
+      0.0041,
+      0.0001
+    ]
+  },
+  "candidates": {
+    "plusX": {
+      "camera": [
+        0.36,
+        1.6317,
+        0.0184
+      ],
+      "insideBounds": true,
+      "exitDistanceFromHead": 0.5208,
+      "to": {
+        "Hips": {
+          "dotForward": -0.3559,
+          "rel": [
+            -0.3559,
+            -0.6027,
+            0.0318
+          ]
+        },
+        "Spine": {
+          "dotForward": -0.358,
+          "rel": [
+            -0.358,
+            -0.2088,
+            0.0095
+          ]
+        },
+        "Spine01": {
+          "dotForward": -0.3573,
+          "rel": [
+            -0.3573,
+            -0.3401,
+            0.017
+          ]
+        },
+        "Spine02": {
+          "dotForward": -0.3566,
+          "rel": [
+            -0.3566,
+            -0.4714,
+            0.0244
+          ]
+        },
+        "Head": {
+          "dotForward": -0.36,
+          "rel": [
+            -0.36,
+            -0.04,
+            0
+          ]
+        },
+        "RightShoulder": {
+          "dotForward": -0.4057,
+          "rel": [
+            -0.4057,
+            -0.1648,
+            -0.0055
+          ]
+        },
+        "RightArm": {
+          "dotForward": -0.5965,
+          "rel": [
+            -0.5965,
+            -0.1648,
+            -0.0205
+          ]
+        },
+        "RightForeArm": {
+          "dotForward": -0.674,
+          "rel": [
+            -0.674,
+            -0.4053,
+            -0.0683
+          ]
+        },
+        "RightHand": {
+          "dotForward": -0.7963,
+          "rel": [
+            -0.7963,
+            -0.6173,
+            -0.0153
+          ]
+        },
+        "LeftShoulder": {
+          "dotForward": -0.3103,
+          "rel": [
+            -0.3103,
+            -0.1566,
+            -0.0054
+          ]
+        },
+        "LeftArm": {
+          "dotForward": -0.1194,
+          "rel": [
+            -0.1194,
+            -0.1566,
+            -0.0203
+          ]
+        },
+        "LeftForeArm": {
+          "dotForward": -0.0297,
+          "rel": [
+            -0.0297,
+            -0.4094,
+            -0.0677
+          ]
+        },
+        "LeftHand": {
+          "dotForward": 0.0885,
+          "rel": [
+            0.0885,
+            -0.6214,
+            -0.0153
+          ]
+        }
+      }
+    },
+    "minusX": {
+      "camera": [
+        -0.36,
+        1.6317,
+        0.0184
+      ],
+      "insideBounds": true,
+      "exitDistanceFromHead": 0.5208,
+      "to": {
+        "Hips": {
+          "dotForward": -0.3641,
+          "rel": [
+            0.3641,
+            -0.6027,
+            0.0318
+          ]
+        },
+        "Spine": {
+          "dotForward": -0.362,
+          "rel": [
+            0.362,
+            -0.2088,
+            0.0095
+          ]
+        },
+        "Spine01": {
+          "dotForward": -0.3627,
+          "rel": [
+            0.3627,
+            -0.3401,
+            0.017
+          ]
+        },
+        "Spine02": {
+          "dotForward": -0.3634,
+          "rel": [
+            0.3634,
+            -0.4714,
+            0.0244
+          ]
+        },
+        "Head": {
+          "dotForward": -0.36,
+          "rel": [
+            0.36,
+            -0.04,
+            0
+          ]
+        },
+        "RightShoulder": {
+          "dotForward": -0.3143,
+          "rel": [
+            0.3143,
+            -0.1648,
+            -0.0055
+          ]
+        },
+        "RightArm": {
+          "dotForward": -0.1235,
+          "rel": [
+            0.1235,
+            -0.1648,
+            -0.0205
+          ]
+        },
+        "RightForeArm": {
+          "dotForward": -0.046,
+          "rel": [
+            0.046,
+            -0.4053,
+            -0.0683
+          ]
+        },
+        "RightHand": {
+          "dotForward": 0.0763,
+          "rel": [
+            -0.0763,
+            -0.6173,
+            -0.0153
+          ]
+        },
+        "LeftShoulder": {
+          "dotForward": -0.4097,
+          "rel": [
+            0.4097,
+            -0.1566,
+            -0.0054
+          ]
+        },
+        "LeftArm": {
+          "dotForward": -0.6006,
+          "rel": [
+            0.6006,
+            -0.1566,
+            -0.0203
+          ]
+        },
+        "LeftForeArm": {
+          "dotForward": -0.6903,
+          "rel": [
+            0.6903,
+            -0.4094,
+            -0.0677
+          ]
+        },
+        "LeftHand": {
+          "dotForward": -0.8085,
+          "rel": [
+            0.8085,
+            -0.6214,
+            -0.0153
+          ]
+        }
+      }
+    },
+    "plusZ": {
+      "camera": [
+        0,
+        1.6317,
+        0.3784
+      ],
+      "insideBounds": false,
+      "exitDistanceFromHead": 0.1862,
+      "to": {
+        "Hips": {
+          "dotForward": -0.3282,
+          "rel": [
+            0.0041,
+            -0.6027,
+            -0.3282
+          ]
+        },
+        "Spine": {
+          "dotForward": -0.3505,
+          "rel": [
+            0.002,
+            -0.2088,
+            -0.3505
+          ]
+        },
+        "Spine01": {
+          "dotForward": -0.343,
+          "rel": [
+            0.0027,
+            -0.3401,
+            -0.343
+          ]
+        },
+        "Spine02": {
+          "dotForward": -0.3356,
+          "rel": [
+            0.0034,
+            -0.4714,
+            -0.3356
+          ]
+        },
+        "Head": {
+          "dotForward": -0.36,
+          "rel": [
+            0,
+            -0.04,
+            -0.36
+          ]
+        },
+        "RightShoulder": {
+          "dotForward": -0.3655,
+          "rel": [
+            -0.0457,
+            -0.1648,
+            -0.3655
+          ]
+        },
+        "RightArm": {
+          "dotForward": -0.3805,
+          "rel": [
+            -0.2365,
+            -0.1648,
+            -0.3805
+          ]
+        },
+        "RightForeArm": {
+          "dotForward": -0.4283,
+          "rel": [
+            -0.314,
+            -0.4053,
+            -0.4283
+          ]
+        },
+        "RightHand": {
+          "dotForward": -0.3753,
+          "rel": [
+            -0.4363,
+            -0.6173,
+            -0.3753
+          ]
+        },
+        "LeftShoulder": {
+          "dotForward": -0.3654,
+          "rel": [
+            0.0497,
+            -0.1566,
+            -0.3654
+          ]
+        },
+        "LeftArm": {
+          "dotForward": -0.3803,
+          "rel": [
+            0.2406,
+            -0.1566,
+            -0.3803
+          ]
+        },
+        "LeftForeArm": {
+          "dotForward": -0.4277,
+          "rel": [
+            0.3303,
+            -0.4094,
+            -0.4277
+          ]
+        },
+        "LeftHand": {
+          "dotForward": -0.3753,
+          "rel": [
+            0.4485,
+            -0.6214,
+            -0.3753
+          ]
+        }
+      }
+    },
+    "minusZ": {
+      "camera": [
+        0,
+        1.6317,
+        -0.3416
+      ],
+      "insideBounds": false,
+      "exitDistanceFromHead": 0.2231,
+      "to": {
+        "Hips": {
+          "dotForward": -0.3918,
+          "rel": [
+            0.0041,
+            -0.6027,
+            0.3918
+          ]
+        },
+        "Spine": {
+          "dotForward": -0.3695,
+          "rel": [
+            0.002,
+            -0.2088,
+            0.3695
+          ]
+        },
+        "Spine01": {
+          "dotForward": -0.377,
+          "rel": [
+            0.0027,
+            -0.3401,
+            0.377
+          ]
+        },
+        "Spine02": {
+          "dotForward": -0.3844,
+          "rel": [
+            0.0034,
+            -0.4714,
+            0.3844
+          ]
+        },
+        "Head": {
+          "dotForward": -0.36,
+          "rel": [
+            0,
+            -0.04,
+            0.36
+          ]
+        },
+        "RightShoulder": {
+          "dotForward": -0.3545,
+          "rel": [
+            -0.0457,
+            -0.1648,
+            0.3545
+          ]
+        },
+        "RightArm": {
+          "dotForward": -0.3395,
+          "rel": [
+            -0.2365,
+            -0.1648,
+            0.3395
+          ]
+        },
+        "RightForeArm": {
+          "dotForward": -0.2917,
+          "rel": [
+            -0.314,
+            -0.4053,
+            0.2917
+          ]
+        },
+        "RightHand": {
+          "dotForward": -0.3447,
+          "rel": [
+            -0.4363,
+            -0.6173,
+            0.3447
+          ]
+        },
+        "LeftShoulder": {
+          "dotForward": -0.3546,
+          "rel": [
+            0.0497,
+            -0.1566,
+            0.3546
+          ]
+        },
+        "LeftArm": {
+          "dotForward": -0.3397,
+          "rel": [
+            0.2406,
+            -0.1566,
+            0.3397
+          ]
+        },
+        "LeftForeArm": {
+          "dotForward": -0.2923,
+          "rel": [
+            0.3303,
+            -0.4094,
+            0.2923
+          ]
+        },
+        "LeftHand": {
+          "dotForward": -0.3447,
+          "rel": [
+            0.4485,
+            -0.6214,
+            0.3447
+          ]
+        }
+      }
+    }
+  },
+  "conclusion": "Do not use a hardcoded world +/-Z camera until this report is checked against the active model orientation. Choose the candidate that is outsideBounds=false and has hands forward/in front, not just a named axis."
+}

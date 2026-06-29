@@ -36,6 +36,10 @@ for (const snippet of [
   "case 'stop':",
   "case 'seek':",
   "case 'frame':",
+  "case 'fpv':",
+  "debugFirstPersonFrustum(sampleArgs = [])",
+  "cameraSpace:",
+  "inFrustum",
   "case 'beacon':",
   "case 'capture':",
   "case 'qa':",
@@ -53,7 +57,7 @@ for (const snippet of [
   assert(source.includes(snippet), `missing debug CLI snippet: ${snippet}`);
 }
 
-for (const command of ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'beacon', 'capture', 'qa']) {
+for (const command of ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'fpv', 'beacon', 'capture', 'qa']) {
   assert(source.includes(`'${command}'`), `missing command name in source: ${command}`);
 }
 

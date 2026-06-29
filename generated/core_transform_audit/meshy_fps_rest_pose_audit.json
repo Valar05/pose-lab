@@ -1,0 +1,94 @@
+{
+  "schema": "pose-lab-meshy-fps-rest-pose-audit-v1",
+  "source": {
+    "modelRest": {
+      "right": [
+        -0.6052,
+        0.1356,
+        0.0091
+      ],
+      "left": [
+        0.6052,
+        0.1356,
+        0.0091
+      ],
+      "weapon": [
+        -0.6987,
+        0.1223,
+        -0.0036
+      ]
+    },
+    "tPoseRest": {
+      "right": [
+        -0.6052,
+        0.1356,
+        0.0091
+      ],
+      "left": [
+        0.6052,
+        0.1356,
+        0.0091
+      ],
+      "weapon": [
+        -0.6987,
+        0.1223,
+        -0.0036
+      ]
+    },
+    "ready": {
+      "right": [
+        -0.2694,
+        0.0851,
+        0.2324
+      ],
+      "left": [
+        0.1635,
+        0.0782,
+        0.2932
+      ],
+      "weapon": [
+        -0.2182,
+        0.1262,
+        0.3016
+      ]
+    }
+  },
+  "target": {
+    "modelRest": {
+      "right": [
+        -0.3964,
+        -0.127,
+        -0.0409
+      ],
+      "left": [
+        0.3994,
+        -0.1348,
+        -0.0455
+      ]
+    },
+    "bindRest": {
+      "right": [
+        -0.3964,
+        -0.127,
+        -0.0409
+      ],
+      "left": [
+        0.3994,
+        -0.1348,
+        -0.0455
+      ]
+    },
+    "bindRestBoneCount": 24
+  },
+  "sourceRestProvider": "0T-Pose",
+  "targetRestProvider": "skin-bind",
+  "clip": "OneHandReady",
+  "metrics": {
+    "fpsRightModelRestToReady": 0.4064,
+    "fpsRightTPoseRestToReady": 0.4064,
+    "fpsLeftModelRestToReady": 0.5283,
+    "fpsLeftTPoseRestToReady": 0.5283,
+    "meshyModelToBindRightDelta": 0,
+    "meshyModelToBindLeftDelta": 0
+  }
+}

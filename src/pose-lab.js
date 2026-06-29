@@ -3,13 +3,13 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
-import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-22';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-22';
-import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-22';
-import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-22';
-import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-22';
+import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-99';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-99';
+import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-99';
+import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-99';
+import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-99';
 
-const LAB_BUILD = 'clean-sf2';
+const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
@@ -47,6 +47,7 @@ function visualQaConfig() {
     actor: params.get('qaActor') || params.get('actor') || '',
     clip: params.get('qaClip') || params.get('clip') || '',
     frameMode: params.get('qaFrameMode') || '',
+    viewMode: params.get('qaView') || params.get('viewMode') || '',
   };
 
 }
@@ -394,15 +395,62 @@ function sanitizeBoneName(name) {
   return String(name || '').replace(/[\[\]\.:/]/g, '_');
 }
 
+function collectSkinnedSkeletonBoneSet(root) {
+  const set = new Set();
+  root?.traverse?.((node) => {
+    if (!node.isSkinnedMesh || !node.skeleton?.bones) return;
+    for (const bone of node.skeleton.bones) set.add(bone);
+  });
+  return set;
+}
+
+function meaningfulBoneChild(node) {
+  const nodeName = canonicalBoneName(node?.name || '');
+  return node?.children?.find((child) => {
+    if (!child.isBone) return false;
+    const childName = canonicalBoneName(child.name || '');
+    if (!childName || childName === nodeName) return false;
+    if (/end$/.test(childName) && node?.children?.some((sibling) => sibling.isBone && canonicalBoneName(sibling.name || '') !== childName && canonicalBoneName(sibling.name || '') !== nodeName)) return false;
+    return true;
+  }) || null;
+}
+
+function scoreNamedBoneCandidate(node, skeletonBones) {
+  let score = 0;
+  if (skeletonBones.has(node)) score += 100;
+  if (meaningfulBoneChild(node)) score += 30;
+  if (node.parent?.isBone && canonicalBoneName(node.parent.name) === canonicalBoneName(node.name)) score -= 20;
+  if (!meaningfulBoneChild(node) && node.parent?.isBone) score -= 8;
+  return score;
+}
+
 function findNamedBone(root, name) {
   if (!name) return null;
   const sanitized = sanitizeBoneName(name);
-  let found = root.getObjectByName(name) || root.getObjectByName(sanitized);
-  if (found) return found;
-  root.traverse((node) => {
-    if (found || !node.isBone) return;
+  const wanted = canonicalBoneName(name);
+  const requestedTail = String(name || '').split(':').pop().split('_').pop();
+  const candidates = [];
+  root?.traverse?.((node) => {
+    if (!node.isBone) return;
     const nodeName = node.name || '';
-    if (nodeName === name || nodeName === sanitized || sanitizeBoneName(nodeName) === sanitized || nodeName.endsWith(name.split(':').pop()) || nodeName.endsWith(name.split('_').pop())) found = node;
+    if (nodeName === name || nodeName === sanitized || sanitizeBoneName(nodeName) === sanitized || nodeName.endsWith(requestedTail) || canonicalBoneName(nodeName) === wanted) candidates.push(node);
+  });
+  if (!candidates.length) return null;
+  const skeletonBones = collectSkinnedSkeletonBoneSet(root);
+  candidates.sort((a, b) => scoreNamedBoneCandidate(b, skeletonBones) - scoreNamedBoneCandidate(a, skeletonBones));
+  return candidates[0];
+}
+
+function findNamedObject(root, name) {
+  if (!name) return null;
+  const sanitized = sanitizeBoneName(name);
+  const wanted = canonicalBoneName(name);
+  const requestedTail = String(name || '').split(':').pop().split('_').pop();
+  let found = null;
+  root?.traverse?.((node) => {
+    if (found) return;
+    const nodeName = node.name || '';
+    if (nodeName === name || nodeName === sanitized || sanitizeBoneName(nodeName) === sanitized || nodeName.endsWith(requestedTail) || canonicalBoneName(nodeName) === wanted) found = node;
   });
   return found;
 }
@@ -502,6 +550,56 @@ function applyVisualOverlayMaterials(root, textureSet = {}, options = {}) {
     node.castShadow = false;
     node.receiveShadow = false;
   });
+}
+
+function materialArray(material) {
+  if (!material) return [];
+  return Array.isArray(material) ? material.filter(Boolean) : [material];
+}
+
+function collectSourceMaterials(root) {
+  const materials = [];
+  root?.traverse?.((node) => {
+    if (!node?.isMesh && !node?.isSkinnedMesh) return;
+    for (const material of materialArray(node.material)) {
+      if (material && !materials.includes(material)) materials.push(material);
+    }
+  });
+  return materials;
+}
+
+function cloneTransferredMaterial(material) {
+  const clone = material?.clone?.() || new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.82, metalness: 0.08 });
+  for (const key of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'emissiveMap', 'aoMap']) {
+    if (clone[key]) clone[key] = clone[key].clone?.() || clone[key];
+  }
+  if (clone.map) clone.map.colorSpace = THREE.SRGBColorSpace;
+  if (clone.emissiveMap) clone.emissiveMap.colorSpace = THREE.SRGBColorSpace;
+  clone.needsUpdate = true;
+  return clone;
+}
+
+function applyMaterialSourceMaterials(targetRoot, sourceRoot, config = {}) {
+  const sourceMaterials = collectSourceMaterials(sourceRoot);
+  if (!sourceMaterials.length) return { applied: 0, sourceMaterials: 0 };
+  let applied = 0;
+  const includeSkinned = config.includeSkinned !== false;
+  const targetNames = new Set(config.targetMeshes || []);
+  targetRoot?.traverse?.((node) => {
+    if (!node?.isMesh && !node?.isSkinnedMesh) return;
+    if (node.isSkinnedMesh && !includeSkinned) return;
+    if (targetNames.size && !targetNames.has(node.name)) return;
+    const existing = materialArray(node.material);
+    const next = existing.length > 1
+      ? existing.map((_, index) => cloneTransferredMaterial(sourceMaterials[index] || sourceMaterials[0]))
+      : cloneTransferredMaterial(sourceMaterials[0]);
+    node.material = Array.isArray(node.material) ? next : next;
+    node.frustumCulled = false;
+    node.castShadow = false;
+    node.receiveShadow = false;
+    applied += 1;
+  });
+  return { applied, sourceMaterials: sourceMaterials.length };
 }
 
 function rebindVisualOverlayToRig(visualRoot, rigRoot) {
@@ -617,6 +715,43 @@ function stabilizeQuaternionTrack(track) {
   return flips;
 }
 
+function quaternionTrackSeamDegrees(track) {
+  const values = track?.values;
+  if (!track?.name?.endsWith?.('.quaternion') || !values || values.length < 8) return 0;
+  const last = values.length - 4;
+  const dot = Math.abs(
+    values[0] * values[last]
+    + values[1] * values[last + 1]
+    + values[2] * values[last + 2]
+    + values[3] * values[last + 3]
+  );
+  return radToDeg(2 * Math.acos(Math.max(-1, Math.min(1, dot))));
+}
+
+function closeQuaternionLoopSeam(track) {
+  const values = track?.values;
+  if (!track?.name?.endsWith?.('.quaternion') || !values || values.length < 8) return 0;
+  const seamDegrees = quaternionTrackSeamDegrees(track);
+  const last = values.length - 4;
+  values[last] = values[0];
+  values[last + 1] = values[1];
+  values[last + 2] = values[2];
+  values[last + 3] = values[3];
+  stabilizeQuaternionTrack(track);
+  return seamDegrees;
+}
+
+function closeQuaternionLoopSeams(tracks = []) {
+  let closedTrackCount = 0;
+  let maxSeamBeforeDeg = 0;
+  for (const track of tracks) {
+    if (!track?.name?.endsWith?.('.quaternion') || !track.values || track.values.length < 8) continue;
+    maxSeamBeforeDeg = Math.max(maxSeamBeforeDeg, closeQuaternionLoopSeam(track));
+    closedTrackCount += 1;
+  }
+  return { closedTrackCount, maxSeamBeforeDeg };
+}
+
 function trackTargetName(trackName) {
   const normalized = normalizeTrackName(trackName);
   const match = normalized.match(/^(.*)\.(position|quaternion|scale|morphTargetInfluences)$/);
@@ -629,6 +764,15 @@ function trackChannel(trackName) {
   if (normalized.endsWith('.quaternion')) return 'rotate';
   if (normalized.endsWith('.scale')) return 'scale';
   return 'other';
+}
+
+function clipHasQuaternionTrackForBone(clip, boneName) {
+  const wanted = canonicalBoneName(boneName);
+  if (!wanted) return false;
+  return (clip?.tracks || []).some((track) => {
+    const normalized = normalizeTrackName(track.name || '');
+    return normalized.endsWith('.quaternion') && canonicalBoneName(trackTargetName(normalized)) === wanted;
+  });
 }
 
 function isRigRootTarget(name) {
@@ -746,7 +890,7 @@ function prepareGroundedClips(clips, targetRoot, origin = 'own', options = {}) {
   const translationMode = Number.isFinite(translationScale) && Math.abs(translationScale - 1) > 0.0001 ? ' translationScale=' + translationScale : '';
   const stripRootMotionXZ = options.stripRootMotionXZ ?? false;
   return (clips || []).map((clip) => {
-    const tracks = [];
+    let tracks = [];
     let quaternionFlips = 0;
     let translationKeys = 0;
     for (const sourceTrack of clip.tracks) {
@@ -835,6 +979,75 @@ function retargetSharedClips(sharedClips, sourceRoot, targetRoot, options = {}) 
   return prepared;
 }
 
+function buildRestDeltaRotationClips(sharedClips, sourceRoot, targetRoot, options = {}) {
+  const sourceLabel = options.sourceLabel || 'source';
+  const targetLabel = options.targetLabel || 'target';
+  const names = options.names || {};
+  const targetNameMap = collectNodeNameMap(targetRoot);
+  const keepRootRotation = options.keepRootRotation === true;
+  const built = [];
+  let failures = 0;
+  sourceRoot.updateMatrixWorld(true);
+  targetRoot.updateMatrixWorld(true);
+  for (const clip of sharedClips || []) {
+    let tracks = [];
+    let quaternionFlips = 0;
+    for (const sourceTrack of clip.tracks || []) {
+      const normalizedName = normalizeTrackName(sourceTrack.name);
+      if (!normalizedName.endsWith('.quaternion')) continue;
+      const sourceName = trackTargetName(normalizedName);
+      if (isRigRootTarget(sourceName) && !keepRootRotation) continue;
+      const sourceBone = findNamedBone(sourceRoot, sourceName);
+      const targetName = names[sourceName]
+        || targetNameMap.get(sourceName)
+        || targetNameMap.get(threeSanitizeNodeName(sourceName))
+        || sourceName;
+      const targetBone = findNamedBone(targetRoot, targetName);
+      if (!sourceBone || !targetBone || !sourceTrack.values || sourceTrack.values.length < 4) continue;
+      const sourceRest = restQuaternionFor(sourceName, sourceBone, sourceRestMap);
+      const targetRest = targetBone.quaternion.clone().normalize();
+      const invSourceRest = sourceRest.clone().invert();
+      const values = new Float32Array(sourceTrack.values.length);
+      for (let i = 0; i + 3 < sourceTrack.values.length; i += 4) {
+        const current = new THREE.Quaternion(
+          sourceTrack.values[i],
+          sourceTrack.values[i + 1],
+          sourceTrack.values[i + 2],
+          sourceTrack.values[i + 3]
+        ).normalize();
+        const delta = invSourceRest.clone().multiply(current).normalize();
+        const target = targetRest.clone().multiply(delta).normalize();
+        values[i] = target.x;
+        values[i + 1] = target.y;
+        values[i + 2] = target.z;
+        values[i + 3] = target.w;
+      }
+      const nextTrack = new THREE.QuaternionKeyframeTrack(targetBone.name + '.quaternion', sourceTrack.times.slice(), values);
+      quaternionFlips += stabilizeQuaternionTrack(nextTrack);
+      tracks.push(nextTrack);
+    }
+    if (!tracks.length) {
+      failures += 1;
+      continue;
+    }
+    const next = new THREE.AnimationClip(clip.name + ' -> ' + targetLabel + ' [RD]', clip.duration, tracks);
+    next.optimize();
+    next.userData = {
+      origin: 'retarget:' + sourceLabel + '->' + targetLabel + ':RD',
+      mode: 'rest-delta-rotation tracks=' + tracks.length,
+      sourceName: clip.name,
+      sourceActor: sourceLabel,
+      targetActor: targetLabel,
+      quaternionFlips,
+      positionPolicy: 'target-rest-only',
+    };
+    built.push(next);
+  }
+  built.failures = failures;
+  built.fallback = built.length === 0;
+  return built;
+}
+
 function filenameStem(url) {
   return String(url || '').split('/').pop().replace(/\.(glb|gltf|fbx)$/i, '');
 }
@@ -899,14 +1112,14 @@ function resolveMapTargets(sourceName, directMap = {}, directPairs = []) {
 }
 
 function firstBoneChild(node) {
-  return node?.children?.find((child) => child.isBone) || null;
+  return meaningfulBoneChild(node) || node?.children?.find((child) => child.isBone) || null;
 }
 
 function shouldUseChainUpBasis(sourceName, targetName, mode) {
   if (mode !== 'chain-up') return false;
-  const source = canonicalBoneName(sourceName);
+  const source = canonicalBoneName(sourceName).replace(/^mixamorig/, '');
   const target = canonicalBoneName(targetName);
-  const sourceArm = /^(armr|arml|forearmr|forearml|handr|handl)$/.test(source);
+  const sourceArm = /^(armr|arml|forearmr|forearml|handr|handl|rightarm|leftarm|rightforearm|leftforearm|righthand|lefthand)$/.test(source);
   const targetArm = /^(rightarm|leftarm|rightforearm|leftforearm|righthand|lefthand)$/.test(target);
   return sourceArm && targetArm;
 }
@@ -957,12 +1170,200 @@ function mapDeltaThroughChainUpBasis(delta, sourceBone, targetBone) {
   return targetBasis.clone().multiply(canonicalDelta).multiply(targetBasis.clone().invert()).normalize();
 }
 
+function sampleQuaternionTrackAt(track, time) {
+  if (!track?.values?.length) return new THREE.Quaternion();
+  const result = track.createInterpolant(new Float32Array(4)).evaluate(time);
+  return new THREE.Quaternion(result[0], result[1], result[2], result[3]).normalize();
+}
+
+function clipRestQuaternionMap(clip) {
+  const map = new Map();
+  if (!clip?.tracks?.length) return map;
+  for (const track of clip.tracks) {
+    const normalizedName = normalizeTrackName(track.name);
+    if (!normalizedName.endsWith('.quaternion')) continue;
+    const name = trackTargetName(normalizedName);
+    if (!name || map.has(canonicalBoneName(name))) continue;
+    map.set(canonicalBoneName(name), sampleQuaternionTrackAt(track, track.times?.[0] || 0));
+  }
+  return map;
+}
+
+function skinnedBindLocalQuaternionMap(root) {
+  const worldByBone = new Map();
+  const localByName = new Map();
+  root?.traverse?.((node) => {
+    if (!node.isSkinnedMesh || !node.skeleton?.bones?.length || !node.skeleton?.boneInverses?.length) return;
+    node.skeleton.bones.forEach((bone, index) => {
+      const inverse = node.skeleton.boneInverses[index];
+      if (!bone || !inverse || worldByBone.has(bone)) return;
+      worldByBone.set(bone, inverse.clone().invert());
+    });
+  });
+  const position = new THREE.Vector3();
+  const quaternion = new THREE.Quaternion();
+  const scale = new THREE.Vector3();
+  for (const [bone, worldMatrix] of worldByBone.entries()) {
+    const parentWorld = bone.parent?.isBone ? worldByBone.get(bone.parent) : null;
+    const localMatrix = parentWorld ? parentWorld.clone().invert().multiply(worldMatrix) : worldMatrix.clone();
+    localMatrix.decompose(position, quaternion, scale);
+    localByName.set(canonicalBoneName(bone.name), quaternion.clone().normalize());
+  }
+  return localByName;
+}
+
+function restQuaternionFor(name, node, restMap) {
+  return restMap?.get?.(canonicalBoneName(name))?.clone?.().normalize?.() || node?.quaternion?.clone?.().normalize?.() || new THREE.Quaternion();
+}
+
+function applyLocalQuaternionRest(root, restMap) {
+  if (!restMap?.size) return;
+  root?.traverse?.((node) => {
+    if (!node.isBone && !node.isObject3D) return;
+    const rest = restMap.get(canonicalBoneName(node.name));
+    if (!rest) return;
+    node.quaternion.copy(rest).normalize();
+    node.updateMatrix();
+  });
+  root.updateMatrixWorld(true);
+}
+
+function boneSegmentDirectionWorld(start, end) {
+  if (!start || !end) return null;
+  const direction = worldPositionOf(end).sub(worldPositionOf(start));
+  return direction.lengthSq() > 0.000001 ? direction.normalize() : null;
+}
+
+function mappedSourceSegmentDirection(sourceStart, sourceEnd, sourceFrame, targetFrame) {
+  const sourceWorld = boneSegmentDirectionWorld(sourceStart, sourceEnd);
+  if (!sourceWorld) return null;
+  return mapWorldDirectionBetweenFrames(sourceWorld, sourceFrame, targetFrame);
+}
+
+function projectedDirectionAroundAxis(direction, axis) {
+  if (!direction || !axis) return null;
+  const projected = direction.clone().sub(axis.clone().multiplyScalar(direction.dot(axis)));
+  return projected.lengthSq() > 0.000001 ? projected.normalize() : null;
+}
+
+function rotateHandRollToWorldReference(targetRoot, hand, forearm, desiredWorld, localAxis = [0, 1, 0], strength = 1, rollOffsetDeg = 0) {
+  if (!hand || !forearm || !desiredWorld) return null;
+  const rollAxis = boneSegmentDirectionWorld(forearm, hand);
+  if (!rollAxis) return null;
+  const desired = projectedDirectionAroundAxis(desiredWorld, rollAxis);
+  const current = projectedDirectionAroundAxis(worldDirectionOf(hand, localAxis), rollAxis);
+  if (!desired || !current) return null;
+  const beforeDeg = radToDeg(current.angleTo(desired));
+  const signed = Math.atan2(new THREE.Vector3().crossVectors(current, desired).dot(rollAxis), current.dot(desired));
+  const rollStrength = clampValue(strength, 0, 1);
+  const offsetRad = THREE.MathUtils.degToRad(Number(rollOffsetDeg) || 0);
+  const applied = (signed * rollStrength) + offsetRad;
+  const turn = new THREE.Quaternion().setFromAxisAngle(rollAxis, applied).normalize();
+  setBoneWorldQuaternion(hand, turn.multiply(worldQuaternionOf(hand)).normalize());
+  targetRoot.updateMatrixWorld(true);
+  const after = projectedDirectionAroundAxis(worldDirectionOf(hand, localAxis), rollAxis);
+  return {
+    beforeDeg,
+    afterDeg: after ? radToDeg(after.angleTo(desired)) : beforeDeg,
+    appliedDeg: Math.abs(radToDeg(applied)),
+    rollOffsetDeg: Number(rollOffsetDeg) || 0,
+    strength: rollStrength,
+  };
+}
+
+function correctedTargetRestMapFromSegments(sourceRoot, targetRoot, sourceRestMap, targetRestMap, config = {}) {
+  const chains = Array.isArray(config.chains) ? config.chains : [];
+  if (!chains.length) return { map: targetRestMap, corrected: 0, maxErrorBeforeDeg: 0, maxErrorAfterDeg: 0 };
+  const sourceClone = cloneSkinnedObject(sourceRoot);
+  const targetClone = cloneSkinnedObject(targetRoot);
+  applyLocalQuaternionRest(sourceClone, sourceRestMap);
+  applyLocalQuaternionRest(targetClone, targetRestMap);
+  sourceClone.updateMatrixWorld(true);
+  targetClone.updateMatrixWorld(true);
+  const sourceFrame = findBoneCanonical(sourceClone, config.sourceFrame || config.sourceChest || 'ShoulderCenter');
+  const targetFrame = findBoneCanonical(targetClone, config.targetFrame || config.targetChest || 'Spine02');
+  if (!sourceFrame || !targetFrame) return { map: targetRestMap, corrected: 0, maxErrorBeforeDeg: 0, maxErrorAfterDeg: 0 };
+
+  const corrected = new Map(targetRestMap || []);
+  let correctedCount = 0;
+  let handRollCorrectedCount = 0;
+  let maxErrorBeforeDeg = 0;
+  let maxErrorAfterDeg = 0;
+  let maxHandRollBeforeDeg = 0;
+  let maxHandRollAfterDeg = 0;
+  let maxHandRollAppliedDeg = 0;
+  const solveSegment = (sourceAName, sourceBName, targetAName, targetBName) => {
+    const sourceA = findBoneCanonical(sourceClone, sourceAName);
+    const sourceB = findBoneCanonical(sourceClone, sourceBName);
+    const targetA = findBoneCanonical(targetClone, targetAName);
+    const targetB = findBoneCanonical(targetClone, targetBName);
+    if (!sourceA || !sourceB || !targetA || !targetB) return false;
+    const desired = mappedSourceSegmentDirection(sourceA, sourceB, sourceFrame, targetFrame);
+    const current = boneSegmentDirectionWorld(targetA, targetB);
+    if (!desired || !current) return false;
+    const beforeDeg = radToDeg(current.angleTo(desired));
+    maxErrorBeforeDeg = Math.max(maxErrorBeforeDeg, beforeDeg);
+    const turn = new THREE.Quaternion().setFromUnitVectors(current, desired).normalize();
+    setBoneWorldQuaternion(targetA, turn.multiply(worldQuaternionOf(targetA)).normalize());
+    targetClone.updateMatrixWorld(true);
+    const after = boneSegmentDirectionWorld(targetA, targetB);
+    if (after) maxErrorAfterDeg = Math.max(maxErrorAfterDeg, radToDeg(after.angleTo(desired)));
+    corrected.set(canonicalBoneName(targetA.name), targetA.quaternion.clone().normalize());
+    correctedCount += 1;
+    return true;
+  };
+
+  for (const chain of chains) {
+    solveSegment(chain.sourceUpper, chain.sourceLower, chain.targetUpper, chain.targetLower);
+    solveSegment(chain.sourceLower, chain.sourceHand, chain.targetLower, chain.targetHand);
+  }
+  for (const pair of config.handDownReferencePairs || []) {
+    const targetForearm = findBoneCanonical(targetClone, pair.targetForearm);
+    const targetHand = findBoneCanonical(targetClone, pair.targetHand);
+    if (!targetForearm || !targetHand) continue;
+    let desired = null;
+    if (pair.sourceHand && pair.sourceLocalAxis) {
+      const sourceHand = findBoneCanonical(sourceClone, pair.sourceHand);
+      if (sourceHand) desired = mapWorldDirectionBetweenFrames(worldDirectionOf(sourceHand, pair.sourceLocalAxis), sourceFrame, targetFrame);
+    }
+    if (!desired) desired = new THREE.Vector3().fromArray(pair.worldDirection || [0, -1, 0]).normalize();
+    const result = rotateHandRollToWorldReference(targetClone, targetHand, targetForearm, desired, pair.targetLocalAxis || [0, 1, 0], pair.strength ?? 1, pair.rollOffsetDeg || 0);
+    if (!result) continue;
+    maxHandRollBeforeDeg = Math.max(maxHandRollBeforeDeg, result.beforeDeg);
+    maxHandRollAfterDeg = Math.max(maxHandRollAfterDeg, result.afterDeg);
+    maxHandRollAppliedDeg = Math.max(maxHandRollAppliedDeg, result.appliedDeg || 0);
+    corrected.set(canonicalBoneName(targetHand.name), targetHand.quaternion.clone().normalize());
+    handRollCorrectedCount += 1;
+  }
+  return {
+    map: corrected,
+    corrected: correctedCount,
+    handRollCorrected: handRollCorrectedCount,
+    maxErrorBeforeDeg: Number(maxErrorBeforeDeg.toFixed(3)),
+    maxErrorAfterDeg: Number(maxErrorAfterDeg.toFixed(3)),
+    maxHandRollBeforeDeg: Number(maxHandRollBeforeDeg.toFixed(3)),
+    maxHandRollAfterDeg: Number(maxHandRollAfterDeg.toFixed(3)),
+    maxHandRollAppliedDeg: Number(maxHandRollAppliedDeg.toFixed(3)),
+  };
+}
+
+function sharedSameNameRotationPairs(sourceRoot, targetRoot, options = {}) {
+  if (!options.mapSameNameBones) return [];
+  const targetNames = new Set(collectBones(targetRoot).map((bone) => bone.name));
+  const excluded = new Set(options.excludeSameNameBones || ['Armature', 'Root']);
+  return collectBones(sourceRoot)
+    .filter((bone) => targetNames.has(bone.name) && !excluded.has(bone.name))
+    .map((bone) => ({ from: bone.name, to: bone.name, strength: Number(options.sameNameStrength ?? 1) }));
+}
+
 function buildMappedRotationClips(sharedClips, sourceRoot, targetRoot, options = {}) {
   const sourceLabel = options.sourceLabel || 'source';
   const targetLabel = options.targetLabel || 'target';
   const directMap = options.directRotationMap || {};
-  const directPairs = options.directRotationPairs || [];
+  const directPairs = [...(options.directRotationPairs || []), ...sharedSameNameRotationPairs(sourceRoot, targetRoot, options)];
   const skipClipNames = new Set(options.skipClipNames || []);
+  const clipNames = new Set(options.clipNames || options.clips || []);
+  const clipPattern = options.clipPattern ? new RegExp(options.clipPattern) : null;
   const boneRollCorrection = options.boneRollCorrection || 'none';
   sourceRoot.updateMatrixWorld(true);
   targetRoot.updateMatrixWorld(true);
@@ -970,7 +1371,8 @@ function buildMappedRotationClips(sharedClips, sourceRoot, targetRoot, options =
   let failures = 0;
   for (const clip of sharedClips || []) {
     if (skipClipNames.has(clip.name)) continue;
-    const tracks = [];
+    if ((clipNames.size || clipPattern) && !clipNames.has(clip.name) && !clipPattern?.test(clip.name || '')) continue;
+    let tracks = [];
     let flips = 0;
     for (const sourceTrack of clip.tracks || []) {
       const normalizedName = normalizeTrackName(sourceTrack.name);
@@ -980,7 +1382,7 @@ function buildMappedRotationClips(sharedClips, sourceRoot, targetRoot, options =
       if (!targetSpecs.length) continue;
       const sourceBone = findNamedBone(sourceRoot, sourceName);
       if (!sourceBone || !sourceTrack.values || sourceTrack.values.length < 4) continue;
-      const sourceRest = sourceBone.quaternion.clone().normalize();
+      const sourceRest = restQuaternionFor(sourceName, sourceBone, sourceRestMap);
       const invSourceRest = sourceRest.clone().invert();
       for (const targetSpec of targetSpecs) {
         const targetBone = findNamedBone(targetRoot, targetSpec.name);
@@ -995,7 +1397,9 @@ function buildMappedRotationClips(sharedClips, sourceRoot, targetRoot, options =
             sourceTrack.values[i + 2],
             sourceTrack.values[i + 3]
           ).normalize();
-          const delta = invSourceRest.clone().multiply(current).normalize();
+          const delta = options.absoluteSourcePose === true
+            ? current.clone().normalize()
+            : invSourceRest.clone().multiply(current).normalize();
           const weightedDelta = new THREE.Quaternion().identity().slerp(delta, strength).normalize();
           const mappedDelta = shouldUseChainUpBasis(sourceName, targetSpec.name, boneRollCorrection)
             ? mapDeltaThroughChainUpBasis(weightedDelta, sourceBone, targetBone)
@@ -1015,15 +1419,347 @@ function buildMappedRotationClips(sharedClips, sourceRoot, targetRoot, options =
       failures += 1;
       continue;
     }
-    const next = new THREE.AnimationClip(clip.name + ' arms -> ' + targetLabel, clip.duration, tracks);
+    const clipSuffix = options.clipSuffix || 'arms -> ' + targetLabel;
+    const originPrefix = options.originPrefix || 'mapped-arms:' + sourceLabel + '->' + targetLabel;
+    const next = new THREE.AnimationClip(clip.name + ' ' + clipSuffix, clip.duration, tracks);
     next.optimize();
     next.userData = {
-      origin: 'mapped-arms:' + sourceLabel + '->' + targetLabel,
-      mode: 'mapped-chain-up-basis-rest-delta tracks=' + tracks.length,
+      origin: originPrefix,
+      mode: (boneRollCorrection === 'chain-up' ? 'mapped-chain-up-basis-rest-delta' : 'mapped-rest-delta') + ' tracks=' + tracks.length,
       sourceName: clip.name,
       sourceActor: sourceLabel,
       targetActor: targetLabel,
       quaternionFlips: flips,
+    };
+    built.push(next);
+  }
+  built.failures = failures;
+  built.fallback = built.length === 0;
+  return built;
+}
+
+function buildFpsUpperKeyConvertClips(sharedClips, sourceRoot, targetRoot, options = {}) {
+  const sourceLabel = options.sourceLabel || 'source';
+  const targetLabel = options.targetLabel || 'target';
+  const directMap = options.directRotationMap || {};
+  const directPairs = [...(options.directRotationPairs || []), ...sharedSameNameRotationPairs(sourceRoot, targetRoot, options)];
+  const skipClipNames = new Set(options.skipClipNames || []);
+  const clipNames = new Set(options.clipNames || options.clips || []);
+  const clipPattern = options.clipPattern ? new RegExp(options.clipPattern) : null;
+  const boneRollCorrection = options.boneRollCorrection || 'none';
+  const weaponConfig = options.weaponKeyConvert || {};
+  const sourceRestClipName = options.sourceRestClip || '';
+  const sourceRestClip = sourceRestClipName ? (sharedClips || []).find((entry) => entry.name === sourceRestClipName) : null;
+  const sourceRestMap = clipRestQuaternionMap(sourceRestClip);
+  const targetRestProvider = options.targetRestProvider || 'model-node';
+  let targetRestMap = targetRestProvider === 'skin-bind' ? skinnedBindLocalQuaternionMap(targetRoot) : new Map();
+  const restSegmentCorrection = options.restSegmentCorrection?.enabled === true
+    ? correctedTargetRestMapFromSegments(sourceRoot, targetRoot, sourceRestMap, targetRestMap, options.restSegmentCorrection)
+    : { map: targetRestMap, corrected: 0, maxErrorBeforeDeg: 0, maxErrorAfterDeg: 0 };
+  targetRestMap = restSegmentCorrection.map || targetRestMap;
+  sourceRoot.updateMatrixWorld(true);
+  targetRoot.updateMatrixWorld(true);
+  const built = [];
+  let failures = 0;
+  for (const clip of sharedClips || []) {
+    if (skipClipNames.has(clip.name)) continue;
+    if ((clipNames.size || clipPattern) && !clipNames.has(clip.name) && !clipPattern?.test(clip.name || '')) continue;
+    let tracks = [];
+    const sourceTrackByName = new Map();
+    let flips = 0;
+    for (const sourceTrack of clip.tracks || []) {
+      const normalizedName = normalizeTrackName(sourceTrack.name);
+      if (!normalizedName.endsWith('.quaternion')) continue;
+      const sourceName = trackTargetName(normalizedName);
+      sourceTrackByName.set(canonicalBoneName(sourceName), sourceTrack);
+      const targetSpecs = resolveMapTargets(sourceName, directMap, directPairs);
+      if (!targetSpecs.length) continue;
+      const sourceBone = findNamedBone(sourceRoot, sourceName);
+      if (!sourceBone || !sourceTrack.values || sourceTrack.values.length < 4) continue;
+      const sourceRest = restQuaternionFor(sourceName, sourceBone, sourceRestMap);
+      const invSourceRest = sourceRest.clone().invert();
+      for (const targetSpec of targetSpecs) {
+        const targetNode = findNamedObject(targetRoot, targetSpec.name);
+        if (!targetNode) continue;
+        const targetRest = restQuaternionFor(targetSpec.name, targetNode, targetRestMap);
+        const strength = Math.max(0, Math.min(2, Number(targetSpec.strength ?? 1)));
+        const values = new Float32Array(sourceTrack.values.length);
+        for (let i = 0; i + 3 < sourceTrack.values.length; i += 4) {
+          const current = new THREE.Quaternion(
+            sourceTrack.values[i],
+            sourceTrack.values[i + 1],
+            sourceTrack.values[i + 2],
+            sourceTrack.values[i + 3]
+          ).normalize();
+          const delta = options.absoluteSourcePose === true
+            ? current.clone().normalize()
+            : invSourceRest.clone().multiply(current).normalize();
+          const weightedDelta = new THREE.Quaternion().identity().slerp(delta, strength).normalize();
+          const mappedDelta = shouldUseChainUpBasis(sourceName, targetSpec.name, boneRollCorrection) && targetNode.isBone
+            ? mapDeltaThroughChainUpBasis(weightedDelta, sourceBone, targetNode)
+            : weightedDelta;
+          const target = targetRest.clone().multiply(mappedDelta).normalize();
+          values[i] = target.x;
+          values[i + 1] = target.y;
+          values[i + 2] = target.z;
+          values[i + 3] = target.w;
+        }
+        const nextTrack = new THREE.QuaternionKeyframeTrack(targetSpec.name + '.quaternion', sourceTrack.times.slice(), values);
+        flips += stabilizeQuaternionTrack(nextTrack);
+        tracks.push(nextTrack);
+      }
+    }
+    const ikGuide = options.ikOrientationGuide || {};
+    const ikMode = ikGuide.mode || (ikGuide.replaceTracks === false ? 'source-key-correction' : 'replace-tracks');
+    const ikPreservesSourceTracks = ikMode === 'source-key-correction';
+    let ikGuidedTrackCount = 0;
+    let ikCorrectedTrackCount = 0;
+    let ikCorrectionJitterMaxDeg = 0;
+    if (ikGuide.enabled !== false && Array.isArray(ikGuide.chains) && ikGuide.chains.length) {
+      const sourceClone = cloneSkinnedObject(sourceRoot);
+      const targetClone = cloneSkinnedObject(targetRoot);
+      const sourceChest = findBoneCanonical(sourceClone, ikGuide.sourceChest || 'ShoulderCenter');
+      const targetChest = findBoneCanonical(targetClone, ikGuide.targetChest || 'Spine02');
+      const sourceMixer = new THREE.AnimationMixer(sourceClone);
+      const sourceAction = sourceMixer.clipAction(clip);
+      sourceAction.play();
+      const sourceRestPose = captureBonePose(sourceClone);
+      const targetRestPose = captureBonePose(targetClone);
+      const guidedTrackNames = new Set();
+      const guidedTracks = [];
+      if (sourceChest && targetChest) {
+        for (const chainSpec of ikGuide.chains) {
+          const sourceHandName = chainSpec.sourceHand || '';
+          const sourceHandTrack = sourceTrackByName.get(canonicalBoneName(sourceHandName));
+          const sourceHand = findBoneCanonical(sourceClone, sourceHandName);
+          const upper = findBoneCanonical(targetClone, chainSpec.targetUpper);
+          const lower = findBoneCanonical(targetClone, chainSpec.targetLower);
+          const hand = findBoneCanonical(targetClone, chainSpec.targetHand);
+          if (!sourceHandTrack || !sourceHand || !upper || !lower || !hand) continue;
+          const times = sourceHandTrack.times.slice();
+          const upperValues = new Float32Array(times.length * 4);
+          const lowerValues = new Float32Array(times.length * 4);
+          const length = armChainLength(upper, lower, hand);
+          for (let sampleIndex = 0; sampleIndex < times.length; sampleIndex += 1) {
+            const time = times[sampleIndex];
+            restoreBonePose(sourceClone, sourceRestPose);
+            restoreBonePose(targetClone, targetRestPose);
+            applyLocalQuaternionRest(targetClone, targetRestMap);
+            sourceMixer.setTime(time);
+            for (const targetTrack of tracks) {
+              const targetName = trackTargetName(targetTrack.name);
+              const targetNode = findNamedObject(targetClone, targetName);
+              if (!targetNode) continue;
+              targetNode.quaternion.copy(sampleQuaternionTrackAt(targetTrack, time));
+            }
+            sourceClone.updateMatrixWorld(true);
+            targetClone.updateMatrixWorld(true);
+            const sourceLocal = sourceHandLocal(sourceChest, sourceHand);
+            const targetWorld = guidedTargetWorldFromSource(targetChest, sourceLocal, { ...ikGuide, ...chainSpec });
+            const clampedTarget = clampTargetToArmReach(upper, targetWorld, length, Number(chainSpec.reachScale ?? ikGuide.reachScale ?? 0.98));
+            solveTwoBoneIk(targetClone, upper, lower, hand, clampedTarget, Number(chainSpec.iterations ?? ikGuide.iterations ?? 8));
+            targetClone.updateMatrixWorld(true);
+            const base = sampleIndex * 4;
+            upperValues[base] = upper.quaternion.x;
+            upperValues[base + 1] = upper.quaternion.y;
+            upperValues[base + 2] = upper.quaternion.z;
+            upperValues[base + 3] = upper.quaternion.w;
+            lowerValues[base] = lower.quaternion.x;
+            lowerValues[base + 1] = lower.quaternion.y;
+            lowerValues[base + 2] = lower.quaternion.z;
+            lowerValues[base + 3] = lower.quaternion.w;
+          }
+          for (const [boneName, values, defaultStrength] of [[upper.name, upperValues, ikGuide.correctionStrength ?? 0.55], [lower.name, lowerValues, ikGuide.correctionStrength ?? 0.55]]) {
+            const guided = new THREE.QuaternionKeyframeTrack(boneName + '.quaternion', times, values);
+            flips += stabilizeQuaternionTrack(guided);
+            guidedTracks.push(guided);
+            guidedTrackNames.add(canonicalBoneName(boneName));
+            if (ikPreservesSourceTracks) {
+              const targetTrack = tracks.find((track) => canonicalBoneName(trackTargetName(track.name)) === canonicalBoneName(boneName));
+              if (!targetTrack?.values?.length) continue;
+              const strength = Math.max(0, Math.min(1, Number(chainSpec.correctionStrength ?? defaultStrength)));
+              const staticClips = new Set(ikGuide.staticCorrectionClips || []);
+              const useStaticCorrection = staticClips.has(clip.name);
+              const firstDirect = sampleQuaternionTrackAt(targetTrack, times[0] || 0);
+              const firstGuided = sampleQuaternionTrackAt(guided, times[0] || 0);
+              const staticCorrection = firstDirect.clone().invert().multiply(firstGuided).normalize();
+              for (let sampleIndex = 0; sampleIndex < times.length; sampleIndex += 1) {
+                const time = times[sampleIndex];
+                const directQ = sampleQuaternionTrackAt(targetTrack, time);
+                const guidedQ = useStaticCorrection
+                  ? directQ.clone().multiply(staticCorrection).normalize()
+                  : sampleQuaternionTrackAt(guided, time);
+                if (useStaticCorrection) {
+                  const rawGuidedQ = sampleQuaternionTrackAt(guided, time);
+                  const jitterDot = Math.abs(firstGuided.dot(rawGuidedQ));
+                  ikCorrectionJitterMaxDeg = Math.max(ikCorrectionJitterMaxDeg, radToDeg(2 * Math.acos(Math.max(-1, Math.min(1, jitterDot)))));
+                }
+                const corrected = directQ.slerp(guidedQ, strength).normalize();
+                const base = sampleIndex * 4;
+                targetTrack.values[base] = corrected.x;
+                targetTrack.values[base + 1] = corrected.y;
+                targetTrack.values[base + 2] = corrected.z;
+                targetTrack.values[base + 3] = corrected.w;
+              }
+              flips += stabilizeQuaternionTrack(targetTrack);
+              ikCorrectedTrackCount += 1;
+            }
+          }
+        }
+      }
+      if (guidedTracks.length && !ikPreservesSourceTracks) {
+        tracks = tracks.filter((track) => !guidedTrackNames.has(canonicalBoneName(trackTargetName(track.name))));
+        tracks.push(...guidedTracks);
+        ikGuidedTrackCount = guidedTracks.length;
+      } else if (guidedTracks.length) {
+        ikGuidedTrackCount = guidedTracks.length;
+      }
+    }
+    const sourceWeaponName = weaponConfig.sourceWeapon || 'Weapon.R';
+    const sourceHandName = weaponConfig.sourceHand || 'Hand.R';
+    const targetHandName = weaponConfig.targetHand || 'RightHand';
+    const targetWeaponName = weaponConfig.targetWeapon || 'WeaponGrip';
+    const sourceWeaponFrameName = weaponConfig.sourceFrame || weaponConfig.sourceChest || 'ShoulderCenter';
+    const targetWeaponFrameName = weaponConfig.targetFrame || weaponConfig.targetChest || 'Spine02';
+    const sourceWeaponTrack = sourceTrackByName.get(canonicalBoneName(sourceWeaponName));
+    if (sourceWeaponTrack) {
+      const sourceClone = cloneSkinnedObject(sourceRoot);
+      const targetClone = cloneSkinnedObject(targetRoot);
+      const sourceHand = findNamedBone(sourceClone, sourceHandName);
+      const sourceWeapon = findNamedBone(sourceClone, sourceWeaponName);
+      const sourceFrame = findBoneCanonical(sourceClone, sourceWeaponFrameName);
+      const targetHand = findNamedObject(targetClone, targetHandName);
+      const targetWeapon = findNamedObject(targetClone, targetWeaponName);
+      const targetFrame = findBoneCanonical(targetClone, targetWeaponFrameName);
+      if (sourceHand && sourceWeapon && targetHand && targetWeapon) {
+        const sourceRestPose = captureBonePose(sourceClone);
+        const targetRestPose = captureBonePose(targetClone);
+        applyLocalQuaternionRest(targetClone, targetRestMap);
+        targetClone.updateMatrixWorld(true);
+        const targetHandToWeaponRest = worldQuaternionOf(targetHand).invert().multiply(worldQuaternionOf(targetWeapon)).normalize();
+        const sourceMixer = new THREE.AnimationMixer(sourceClone);
+        const sourceAction = sourceMixer.clipAction(clip);
+        sourceAction.play();
+        const targetTrackValues = new Float32Array(sourceWeaponTrack.times.length * 4);
+        const targetHandTrackValues = new Float32Array(sourceWeaponTrack.times.length * 4);
+        let solvedWeaponFrames = 0;
+        for (let sampleIndex = 0; sampleIndex < sourceWeaponTrack.times.length; sampleIndex += 1) {
+          const time = sourceWeaponTrack.times[sampleIndex];
+          restoreBonePose(sourceClone, sourceRestPose);
+          restoreBonePose(targetClone, targetRestPose);
+          applyLocalQuaternionRest(targetClone, targetRestMap);
+          sourceMixer.setTime(time);
+          for (const targetTrack of tracks) {
+            const targetName = trackTargetName(targetTrack.name);
+            const targetNode = findNamedObject(targetClone, targetName);
+            if (!targetNode) continue;
+            targetNode.quaternion.copy(sampleQuaternionTrackAt(targetTrack, time));
+          }
+          sourceClone.updateMatrixWorld(true);
+          targetClone.updateMatrixWorld(true);
+          let targetWeaponWorld = null;
+          if (weaponConfig.frameSolve !== false && sourceFrame && targetFrame) {
+            const sourceTipWorld = weaponTipWorldFromSocket(sourceWeapon, weaponConfig.sourceTipLocal || [0.00854, 0.57786, 0.00995]);
+            const sourceBladeWorld = sourceTipWorld.sub(worldPositionOf(sourceWeapon));
+            const sourceUpWorld = worldDirectionOf(sourceWeapon, weaponConfig.sourceUpAxis || [0, 1, 0]);
+            const mappedBlade = mapWorldDirectionBetweenFrames(sourceBladeWorld, sourceFrame, targetFrame);
+            const mappedUp = mapWorldDirectionBetweenFrames(sourceUpWorld, sourceFrame, targetFrame);
+            targetWeaponWorld = quaternionFromBladeFrame(mappedBlade, mappedUp);
+            solvedWeaponFrames += 1;
+            if (weaponConfig.applyToHand !== false) {
+              const solvedHandWorld = targetWeaponWorld.clone().multiply(targetHandToWeaponRest.clone().invert()).normalize();
+              const handStrength = Math.max(0, Math.min(1, Number(weaponConfig.handStrength ?? 0.85)));
+              if (handStrength < 1) {
+                const currentHandWorld = worldQuaternionOf(targetHand);
+                setBoneWorldQuaternion(targetHand, currentHandWorld.slerp(solvedHandWorld, handStrength).normalize());
+              } else {
+                setBoneWorldQuaternion(targetHand, solvedHandWorld);
+              }
+              targetClone.updateMatrixWorld(true);
+            }
+          }
+          if (!targetWeaponWorld) {
+            const sourceWeaponRelativeToWrist = worldQuaternionOf(sourceHand).invert().multiply(worldQuaternionOf(sourceWeapon)).normalize();
+            targetWeaponWorld = worldQuaternionOf(targetHand).multiply(sourceWeaponRelativeToWrist).normalize();
+          }
+          setBoneWorldQuaternion(targetWeapon, targetWeaponWorld);
+          targetClone.updateMatrixWorld(true);
+          const base = sampleIndex * 4;
+          const handQ = targetHand.quaternion;
+          targetHandTrackValues[base] = handQ.x;
+          targetHandTrackValues[base + 1] = handQ.y;
+          targetHandTrackValues[base + 2] = handQ.z;
+          targetHandTrackValues[base + 3] = handQ.w;
+          const q = targetWeapon.quaternion;
+          targetTrackValues[base] = q.x;
+          targetTrackValues[base + 1] = q.y;
+          targetTrackValues[base + 2] = q.z;
+          targetTrackValues[base + 3] = q.w;
+        }
+        if (weaponConfig.applyToHand !== false && solvedWeaponFrames > 0) {
+          const handTrack = new THREE.QuaternionKeyframeTrack(targetHandName + '.quaternion', sourceWeaponTrack.times.slice(), targetHandTrackValues);
+          flips += stabilizeQuaternionTrack(handTrack);
+          tracks = tracks.filter((track) => canonicalBoneName(trackTargetName(track.name)) !== canonicalBoneName(targetHandName));
+          tracks.push(handTrack);
+        }
+        const weaponTrack = new THREE.QuaternionKeyframeTrack(targetWeaponName + '.quaternion', sourceWeaponTrack.times.slice(), targetTrackValues);
+        flips += stabilizeQuaternionTrack(weaponTrack);
+        tracks.push(weaponTrack);
+        if (solvedWeaponFrames > 0) weaponConfig.solvedWeaponFrames = solvedWeaponFrames;
+      }
+    }
+    if (!tracks.length) {
+      failures += 1;
+      continue;
+    }
+    const loopSeam = options.preserveLoopSeam ? closeQuaternionLoopSeams(tracks) : { closedTrackCount: 0, maxSeamBeforeDeg: 0 };
+    const handRestLeakage = generatedHandRestLeakageMetrics(targetRoot, tracks, targetRestMap, {
+      frame: options.handRestLeakageFrame || options.targetFrame || ikGuide.targetChest || weaponConfig.targetFrame || 'Spine02',
+      rightHand: options.handRestLeakageRightHand || weaponConfig.targetHand || 'RightHand',
+      leftHand: options.handRestLeakageLeftHand || 'LeftHand',
+      time: Number(options.handRestLeakageTime ?? 0.254),
+      duration: clip.duration,
+    });
+    const clipSuffix = options.clipSuffix || 'arms -> ' + targetLabel;
+    const originPrefix = options.originPrefix || 'mapped-arms:' + sourceLabel + '->' + targetLabel;
+    const next = new THREE.AnimationClip(clip.name + ' ' + clipSuffix, clip.duration, tracks);
+    next.userData = {
+      origin: originPrefix,
+      mode: 'fps-upper-key-convert source-authored-times tracks=' + tracks.length,
+      sourceName: clip.name,
+      sourceActor: sourceLabel,
+      targetActor: targetLabel,
+      quaternionFlips: flips,
+      keyConvert: {
+        preservesSourceTimes: true,
+        noUniformSampling: true,
+        absoluteSourcePose: options.absoluteSourcePose === true,
+        sourceRestClip: sourceRestClip?.name || 'model-node',
+        targetRestProvider,
+        targetBindRestBones: targetRestMap.size,
+        restSegmentCorrection: {
+          corrected: restSegmentCorrection.corrected || 0,
+          handRollCorrected: restSegmentCorrection.handRollCorrected || 0,
+          maxErrorBeforeDeg: restSegmentCorrection.maxErrorBeforeDeg || 0,
+          maxErrorAfterDeg: restSegmentCorrection.maxErrorAfterDeg || 0,
+          maxHandRollBeforeDeg: restSegmentCorrection.maxHandRollBeforeDeg || 0,
+          maxHandRollAfterDeg: restSegmentCorrection.maxHandRollAfterDeg || 0,
+          maxHandRollAppliedDeg: restSegmentCorrection.maxHandRollAppliedDeg || 0,
+        },
+        ikOrientationGuide: ikGuidedTrackCount > 0,
+        ikOrientationMode: ikMode,
+        ikPreservesSourceTracks,
+        ikCorrectedTrackCount,
+        ikCorrectionJitterMaxDeg: Number(ikCorrectionJitterMaxDeg.toFixed(3)),
+        weaponFrameSolve: weaponConfig.frameSolve !== false,
+        solvedWeaponFrames: Number(weaponConfig.solvedWeaponFrames || 0),
+        weaponSocket: targetWeaponName,
+        weaponSource: sourceWeaponName,
+        handRestLeakage,
+        loopSeamClosed: Boolean(options.preserveLoopSeam),
+        loopSeamClosedTracks: loopSeam.closedTrackCount,
+        maxLoopSeamBeforeCloseDeg: Number(loopSeam.maxSeamBeforeDeg.toFixed(3)),
+      },
     };
     built.push(next);
   }
@@ -1067,6 +1803,42 @@ function worldQuaternionOf(node) {
   const value = new THREE.Quaternion();
   node?.getWorldQuaternion(value);
   return value;
+}
+
+function worldDirectionOf(node, localDirection = [0, 0, 1]) {
+  return new THREE.Vector3(
+    Number(localDirection[0] || 0),
+    Number(localDirection[1] || 0),
+    Number(localDirection[2] ?? 1)
+  ).applyQuaternion(worldQuaternionOf(node)).normalize();
+}
+
+function weaponTipWorldFromSocket(socket, localTip = [0, 0, 0.85]) {
+  return socket.localToWorld(new THREE.Vector3(
+    Number(localTip[0] || 0),
+    Number(localTip[1] || 0),
+    Number(localTip[2] ?? 0.85)
+  ));
+}
+
+function mapWorldDirectionBetweenFrames(direction, sourceFrame, targetFrame) {
+  if (!direction || direction.lengthSq() < 0.000001 || !sourceFrame || !targetFrame) return direction?.clone?.() || new THREE.Vector3(0, 0, 1);
+  const sourceLocal = direction.clone().normalize().applyQuaternion(worldQuaternionOf(sourceFrame).invert()).normalize();
+  return sourceLocal.applyQuaternion(worldQuaternionOf(targetFrame)).normalize();
+}
+
+function quaternionFromBladeFrame(bladeDirection, upSeed = new THREE.Vector3(0, 1, 0)) {
+  const zAxis = bladeDirection?.clone?.() || new THREE.Vector3(0, 0, 1);
+  if (zAxis.lengthSq() < 0.000001) zAxis.set(0, 0, 1);
+  zAxis.normalize();
+  let yAxis = upSeed?.clone?.() || new THREE.Vector3(0, 1, 0);
+  if (yAxis.lengthSq() < 0.000001 || Math.abs(yAxis.normalize().dot(zAxis)) > 0.96) yAxis = Math.abs(zAxis.y) < 0.96 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0);
+  yAxis.sub(zAxis.clone().multiplyScalar(yAxis.dot(zAxis)));
+  if (yAxis.lengthSq() < 0.000001) yAxis = Math.abs(zAxis.y) < 0.96 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0);
+  yAxis.normalize();
+  const xAxis = new THREE.Vector3().crossVectors(yAxis, zAxis).normalize();
+  yAxis = new THREE.Vector3().crossVectors(zAxis, xAxis).normalize();
+  return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(xAxis, yAxis, zAxis)).normalize();
 }
 
 function setBoneWorldQuaternion(bone, worldQuaternion) {
@@ -1120,6 +1892,44 @@ function sourceHandLocal(sourceChest, sourceHand) {
   return local;
 }
 
+function localPositionInFrame(frame, node) {
+  const local = worldPositionOf(node);
+  frame.worldToLocal(local);
+  return local;
+}
+
+function generatedHandRestLeakageMetrics(targetRoot, tracks, targetRestMap, config = {}) {
+  const targetClone = cloneSkinnedObject(targetRoot);
+  applyLocalQuaternionRest(targetClone, targetRestMap);
+  targetClone.updateMatrixWorld(true);
+  const frame = findBoneCanonical(targetClone, config.frame || 'Spine02');
+  const rightHand = findBoneCanonical(targetClone, config.rightHand || 'RightHand');
+  const leftHand = findBoneCanonical(targetClone, config.leftHand || 'LeftHand');
+  if (!frame || !rightHand || !leftHand) return null;
+  const restRight = localPositionInFrame(frame, rightHand);
+  const restLeft = localPositionInFrame(frame, leftHand);
+  const sampleTime = Math.max(0, Math.min(Number(config.time ?? 0.254), Number(config.duration || 0.254)));
+  for (const track of tracks || []) {
+    if (!track?.name?.endsWith?.('.quaternion')) continue;
+    const targetName = trackTargetName(track.name);
+    const targetNode = findNamedObject(targetClone, targetName);
+    if (!targetNode) continue;
+    targetNode.quaternion.copy(sampleQuaternionTrackAt(track, sampleTime));
+  }
+  targetClone.updateMatrixWorld(true);
+  const readyRight = localPositionInFrame(frame, rightHand);
+  const readyLeft = localPositionInFrame(frame, leftHand);
+  return {
+    sampleTime: Number(sampleTime.toFixed(4)),
+    rightHandRestLeakageDelta: Number(readyRight.distanceTo(restRight).toFixed(4)),
+    leftHandRestLeakageDelta: Number(readyLeft.distanceTo(restLeft).toFixed(4)),
+    rightHandRestLocal: restRight.toArray().map((value) => Number(value.toFixed(4))),
+    rightHandReadyLocal: readyRight.toArray().map((value) => Number(value.toFixed(4))),
+    leftHandRestLocal: restLeft.toArray().map((value) => Number(value.toFixed(4))),
+    leftHandReadyLocal: readyLeft.toArray().map((value) => Number(value.toFixed(4))),
+  };
+}
+
 function guidedTargetLocalFromSource(sourceLocal, options = {}) {
   const lateralScale = Number(options.lateralScale ?? 1.15);
   const verticalScale = Number(options.verticalScale ?? 0.75);
@@ -1128,7 +1938,7 @@ function guidedTargetLocalFromSource(sourceLocal, options = {}) {
   return new THREE.Vector3(
     sourceLocal.x * lateralScale,
     sourceLocal.y * verticalScale + verticalOffset,
-    Math.max(0.08, sourceLocal.z * forwardScale)
+    Math.max(Number(options.forwardMin ?? 0.08), sourceLocal.z * forwardScale)
   );
 }
 
@@ -1178,6 +1988,7 @@ function armChainLength(upper, lower, hand) {
   return worldPositionOf(lower).distanceTo(worldPositionOf(upper)) + worldPositionOf(hand).distanceTo(worldPositionOf(lower));
 }
 
+
 function buildPositionGuidedArmClips(sharedClips, sourceRoot, targetRoot, options = {}) {
   const config = options.positionGuidedArmClips;
   if (!config) {
@@ -1186,15 +1997,12 @@ function buildPositionGuidedArmClips(sharedClips, sourceRoot, targetRoot, option
     empty.fallback = false;
     return empty;
   }
-  const clipNames = new Set(Array.isArray(config.clips) ? config.clips : []);
-  const clipPattern = config.clipPattern ? new RegExp(config.clipPattern) : null;
-  const shouldGuideClip = (clipName) => Boolean(config.allClips || clipNames.has(clipName) || clipPattern?.test(clipName));
   const sourceLabel = options.sourceLabel || 'source';
   const targetLabel = options.targetLabel || 'target';
   const built = [];
   let failures = 0;
   for (const clip of sharedClips || []) {
-    if (!shouldGuideClip(clip.name)) continue;
+    if (!config.allClips && !(config.clips || []).includes(clip.name) && !(config.clipPattern && new RegExp(config.clipPattern).test(clip.name || ''))) continue;
     const sourceClone = cloneSkinnedObject(sourceRoot);
     const targetClone = cloneSkinnedObject(targetRoot);
     const sourceChest = findBoneCanonical(sourceClone, config.sourceChest || 'ShoulderCenter');
@@ -1203,25 +2011,61 @@ function buildPositionGuidedArmClips(sharedClips, sourceRoot, targetRoot, option
       failures += 1;
       continue;
     }
+    sourceClone.updateMatrixWorld(true);
+    targetClone.updateMatrixWorld(true);
+    const sourceRestPose = captureBonePose(sourceClone);
+    const targetRestPose = captureBonePose(targetClone);
     const sourceMixer = new THREE.AnimationMixer(sourceClone);
     const sourceAction = sourceMixer.clipAction(clip);
     sourceAction.play();
-    sourceClone.updateMatrixWorld(true);
-    targetClone.updateMatrixWorld(true);
-    const targetRestPose = captureBonePose(targetClone);
+    const rotationPairs = config.rotationPairs || options.positionGuidedRotationPairs || [];
+    const rotationPairTargets = [];
+    for (const pair of rotationPairs) {
+      const targetBone = findBoneCanonical(targetClone, pair.to);
+      if (targetBone) rotationPairTargets.push(targetBone);
+    }
+    const restMap = {
+      source: restQuaternionMap(sourceClone, rotationPairs.map((pair) => pair.from)),
+      target: restQuaternionMap(targetClone, rotationPairs.map((pair) => pair.to)),
+    };
     const times = clipSampleTimes(clip, Number(config.sampleFps || 30));
     const trackValues = new Map();
     const targetBones = new Map();
+    for (const bone of rotationPairTargets) {
+      if (!trackValues.has(bone.name)) {
+        trackValues.set(bone.name, new Float32Array(times.length * 4));
+        targetBones.set(bone.name, bone);
+      }
+    }
     const chains = [];
     for (const chainSpec of config.chains || []) {
       const sourceHand = findBoneCanonical(sourceClone, chainSpec.sourceHand);
+      const sourceWrist = findBoneCanonical(sourceClone, chainSpec.sourceWrist || chainSpec.sourceHand);
       const upper = findBoneCanonical(targetClone, chainSpec.targetUpper);
       const lower = findBoneCanonical(targetClone, chainSpec.targetLower);
       const hand = findBoneCanonical(targetClone, chainSpec.targetHand);
-      if (!sourceHand || !upper || !lower || !hand) continue;
-      const chain = { sourceHand, upper, lower, hand, length: armChainLength(upper, lower, hand), spec: chainSpec };
+      if (!sourceHand || !sourceWrist || !upper || !lower || !hand) continue;
+      const sourceWeaponName = chainSpec.sourceWeaponSocket || config.sourceWeaponSocket || '';
+      const targetWeaponName = chainSpec.targetWeaponSocket || config.targetWeaponSocket || '';
+      const sourceWeapon = sourceWeaponName ? findBoneCanonical(sourceClone, sourceWeaponName) : null;
+      const targetWeapon = targetWeaponName ? findBoneCanonical(targetClone, targetWeaponName) : null;
+      const chain = {
+        sourceHand,
+        sourceWrist,
+        upper,
+        lower,
+        hand,
+        sourceWeapon,
+        targetWeapon,
+        length: armChainLength(upper, lower, hand),
+        spec: chainSpec,
+        sourceWristRest: sourceWrist.quaternion.clone().normalize(),
+        targetWristRest: hand.quaternion.clone().normalize(),
+        sourceWeaponRest: sourceWeapon?.quaternion?.clone?.().normalize?.() || null,
+        targetWeaponRest: targetWeapon?.quaternion?.clone?.().normalize?.() || null,
+      };
       chains.push(chain);
-      for (const bone of [upper, lower, hand]) {
+      for (const bone of [upper, lower, hand, targetWeapon].filter(Boolean)) {
         if (!trackValues.has(bone.name)) {
           trackValues.set(bone.name, new Float32Array(times.length * 4));
           targetBones.set(bone.name, bone);
@@ -1232,21 +2076,60 @@ function buildPositionGuidedArmClips(sharedClips, sourceRoot, targetRoot, option
       failures += 1;
       continue;
     }
+    const parity = {
+      wristSamples: 0,
+      weaponSocketSamples: 0,
+      maxHandBehindChest: 0,
+      targetWeaponTracks: [...new Set(chains.map((chain) => chain.targetWeapon?.name).filter(Boolean))],
+    };
     for (let sampleIndex = 0; sampleIndex < times.length; sampleIndex += 1) {
       const time = times[sampleIndex];
+      restoreBonePose(sourceClone, sourceRestPose);
       restoreBonePose(targetClone, targetRestPose);
       sourceMixer.setTime(time);
       sourceClone.updateMatrixWorld(true);
       targetClone.updateMatrixWorld(true);
-      for (const chain of chains) {
-        const sourceLocal = sourceHandLocal(sourceChest, chain.sourceHand);
-        const targetWorld = guidedTargetWorldFromSource(targetChest, sourceLocal, { ...config, ...chain.spec });
-        const clampedTarget = clampTargetToArmReach(chain.upper, targetWorld, chain.length, Number(chain.spec.reachScale ?? config.reachScale ?? 0.97));
-        solveTwoBoneIk(targetClone, chain.upper, chain.lower, chain.hand, clampedTarget, Number(config.iterations || 6));
-        applyLocalRotationOffset(chain.hand, chain.spec.handRollAxis || config.handRollAxis || 'y', Number(chain.spec.handRollDeg ?? 0));
-        targetClone.updateMatrixWorld(true);
-      }
+      for (const pair of rotationPairs) applyDampedRotationPair(sourceClone, targetClone, pair, restMap);
       targetClone.updateMatrixWorld(true);
+      for (const chain of chains) {
+        const spec = chain.spec;
+        const sourceLocal = sourceHandLocal(sourceChest, chain.sourceHand);
+        const targetWorld = guidedTargetWorldFromSource(targetChest, sourceLocal, { ...config, ...spec });
+        const clampedTarget = clampTargetToArmReach(chain.upper, targetWorld, chain.length, Number(spec.reachScale ?? config.reachScale ?? 0.97));
+        solveTwoBoneIk(targetClone, chain.upper, chain.lower, chain.hand, clampedTarget, Number(config.iterations || 6));
+        const copyWrist = Boolean(spec.copyWristOrientation ?? config.copyWristOrientation);
+        if (copyWrist) {
+          const sourceDelta = chain.sourceWristRest.clone().invert().multiply(chain.sourceWrist.quaternion.clone().normalize()).normalize();
+          const mappedDelta = shouldUseChainUpBasis(chain.sourceWrist.name, chain.hand.name, spec.boneRollCorrection || config.boneRollCorrection || options.boneRollCorrection || 'none')
+            ? mapDeltaThroughChainUpBasis(sourceDelta, chain.sourceWrist, chain.hand)
+            : sourceDelta;
+          const target = chain.targetWristRest.clone().multiply(mappedDelta).normalize();
+          const strength = Math.max(0, Math.min(1, Number(spec.wristStrength ?? config.wristStrength ?? 1)));
+          if (strength < 1) chain.hand.quaternion.slerp(target, strength).normalize();
+          else chain.hand.quaternion.copy(target);
+          parity.wristSamples += 1;
+        } else {
+          applyLocalRotationOffset(chain.hand, spec.handRollAxis || config.handRollAxis || 'y', Number(spec.handRollDeg ?? 0));
+        }
+        const copyWeapon = Boolean(spec.copyWeaponSocket ?? config.copyWeaponSocket);
+        if (copyWeapon && chain.sourceWeapon && chain.targetWeapon) {
+          const sourceWristWorld = worldQuaternionOf(chain.sourceWrist);
+          const sourceWeaponWorld = worldQuaternionOf(chain.sourceWeapon);
+          const sourceWeaponRelativeToWrist = sourceWristWorld.clone().invert().multiply(sourceWeaponWorld).normalize();
+          const targetWeaponWorld = worldQuaternionOf(chain.hand).multiply(sourceWeaponRelativeToWrist).normalize();
+          const weaponStrength = Math.max(0, Math.min(1, Number(spec.weaponStrength ?? config.weaponStrength ?? 1)));
+          if (weaponStrength < 1) {
+            const currentWorld = worldQuaternionOf(chain.targetWeapon);
+            setBoneWorldQuaternion(chain.targetWeapon, currentWorld.slerp(targetWeaponWorld, weaponStrength).normalize());
+          } else {
+            setBoneWorldQuaternion(chain.targetWeapon, targetWeaponWorld);
+          }
+          parity.weaponSocketSamples += 1;
+        }
+        targetClone.updateMatrixWorld(true);
+        const targetChestLocal = targetChest.worldToLocal(worldPositionOf(chain.hand));
+        parity.maxHandBehindChest = Math.max(parity.maxHandBehindChest, Math.max(0, -targetChestLocal.z));
+      }
       for (const [boneName, values] of trackValues) {
         const q = targetBones.get(boneName).quaternion;
         const base = sampleIndex * 4;
@@ -1263,11 +2146,430 @@ function buildPositionGuidedArmClips(sharedClips, sourceRoot, targetRoot, option
       flips += stabilizeQuaternionTrack(track);
       tracks.push(track);
     }
-    const next = new THREE.AnimationClip(clip.name + ' arms -> ' + targetLabel, clip.duration, tracks);
+    const clipSuffix = options.clipSuffix || ('arms -> ' + targetLabel);
+    const originPrefix = options.originPrefix || ('mapped-arms:' + sourceLabel + '->' + targetLabel);
+    const next = new THREE.AnimationClip(clip.name + ' ' + clipSuffix, clip.duration, tracks);
+    next.optimize();
+    const parityActive = parity.wristSamples > 0 || parity.weaponSocketSamples > 0;
+    next.userData = {
+      origin: originPrefix,
+      mode: (parityActive ? 'fps-pose-parity-arm' : 'position-guided-source-grip-ik') + ' tracks=' + tracks.length + ' fwd=' + (config.targetForwardAxis || 'z') + ' sourceScale=' + (config.sourceScale || 'per-axis') + ' rotationPairs=' + rotationPairs.length,
+      sourceName: clip.name,
+      sourceActor: sourceLabel,
+      targetActor: targetLabel,
+      quaternionFlips: flips,
+      poseParity: {
+        wristSamples: parity.wristSamples,
+        weaponSocketSamples: parity.weaponSocketSamples,
+        targetWeaponTracks: parity.targetWeaponTracks,
+        maxHandBehindChest: roundMetric(parity.maxHandBehindChest, 4),
+      },
+    };
+    built.push(next);
+  }
+  built.failures = failures;
+  built.fallback = built.length === 0;
+  return built;
+}
+
+function boneLocalPoint(anchor, point, fallbackLocal = [0, 0, 0]) {
+  if (!anchor || !point) return new THREE.Vector3(Number(fallbackLocal[0] || 0), Number(fallbackLocal[1] || 0), Number(fallbackLocal[2] || 0));
+  const local = worldPositionOf(point);
+  anchor.worldToLocal(local);
+  return local;
+}
+
+function boneWorldPointFromLocal(anchor, local) {
+  return anchor.localToWorld(local.clone());
+}
+
+function makeShoulderRetargetFrame(anchor, hand, chest = null) {
+  const origin = worldPositionOf(anchor);
+  const x = worldPositionOf(hand).sub(origin);
+  if (x.lengthSq() < 0.000001) x.set(1, 0, 0);
+  x.normalize();
+  const upSeed = chest ? worldPositionOf(chest).sub(origin) : new THREE.Vector3(0, 1, 0);
+  if (upSeed.lengthSq() < 0.000001) upSeed.set(0, 1, 0);
+  let z = new THREE.Vector3().crossVectors(x, upSeed);
+  if (z.lengthSq() < 0.000001) z = new THREE.Vector3().crossVectors(x, new THREE.Vector3(0, 0, 1));
+  if (z.lengthSq() < 0.000001) z.set(0, 0, 1);
+  z.normalize();
+  const y = new THREE.Vector3().crossVectors(z, x).normalize();
+  return { origin, x, y, z };
+}
+
+function frameLocalPoint(frame, nodeOrPoint) {
+  const p = nodeOrPoint?.isVector3 ? nodeOrPoint.clone() : worldPositionOf(nodeOrPoint);
+  const v = p.sub(frame.origin);
+  return new THREE.Vector3(v.dot(frame.x), v.dot(frame.y), v.dot(frame.z));
+}
+
+function frameWorldPoint(frame, local) {
+  return frame.origin.clone()
+    .add(frame.x.clone().multiplyScalar(local.x))
+    .add(frame.y.clone().multiplyScalar(local.y))
+    .add(frame.z.clone().multiplyScalar(local.z));
+}
+
+function makeBodyCutFrame(shoulder, oppositeShoulder, chest = null, hips = null) {
+  const origin = worldPositionOf(shoulder);
+  const lateralSeed = oppositeShoulder ? origin.clone().sub(worldPositionOf(oppositeShoulder)) : new THREE.Vector3(1, 0, 0);
+  if (lateralSeed.lengthSq() < 0.000001) lateralSeed.set(1, 0, 0);
+  const lateral = lateralSeed.normalize();
+  const upSeed = chest && hips ? worldPositionOf(chest).sub(worldPositionOf(hips)) : chest ? worldPositionOf(chest).sub(origin) : new THREE.Vector3(0, 1, 0);
+  if (upSeed.lengthSq() < 0.000001) upSeed.set(0, 1, 0);
+  let forward = new THREE.Vector3().crossVectors(lateral, upSeed);
+  if (forward.lengthSq() < 0.000001) forward.set(0, 0, 1);
+  forward.normalize();
+  const up = new THREE.Vector3().crossVectors(forward, lateral).normalize();
+  return { origin, lateral, up, forward };
+}
+
+function bodyFrameWorldPoint(frame, local) {
+  return frame.origin.clone()
+    .add(frame.lateral.clone().multiplyScalar(local.x))
+    .add(frame.up.clone().multiplyScalar(local.y))
+    .add(frame.forward.clone().multiplyScalar(local.z));
+}
+
+function authoredSabrePoint(points, t) {
+  const phase = Math.max(0, Math.min(1, t));
+  const keys = points || [
+    { t: 0, p: [0.34, -0.42, 0.16] },
+    { t: 0.18, p: [0.58, 0.18, 0.22] },
+    { t: 0.34, p: [0.78, 0.54, 0.30] },
+    { t: 0.48, p: [0.66, 0.42, 0.34] },
+    { t: 0.64, p: [0.48, 0.10, 0.28] },
+    { t: 0.82, p: [0.36, -0.30, 0.20] },
+    { t: 1, p: [0.34, -0.42, 0.16] },
+  ];
+  let lo = keys[0];
+  let hi = keys[keys.length - 1];
+  for (let i = 0; i < keys.length - 1; i += 1) {
+    if (phase >= keys[i].t && phase <= keys[i + 1].t) {
+      lo = keys[i]; hi = keys[i + 1]; break;
+    }
+  }
+  const span = Math.max(0.000001, hi.t - lo.t);
+  const a = smoothStepValue((phase - lo.t) / span);
+  return new THREE.Vector3(
+    lerpValue(lo.p[0], hi.p[0], a),
+    lerpValue(lo.p[1], hi.p[1], a),
+    lerpValue(lo.p[2], hi.p[2], a)
+  );
+}
+
+function scaledLocalDelta(currentLocal, restLocal, sourceScale, targetScale, multiplier = 1) {
+  const scale = (targetScale / Math.max(0.000001, sourceScale)) * Number(multiplier || 1);
+  return currentLocal.clone().sub(restLocal).multiplyScalar(scale);
+}
+
+function vectorTravel(points = []) {
+  if (!points.length) return 0;
+  let minX = Infinity; let minY = Infinity; let minZ = Infinity;
+  let maxX = -Infinity; let maxY = -Infinity; let maxZ = -Infinity;
+  for (const point of points) {
+    minX = Math.min(minX, point.x); minY = Math.min(minY, point.y); minZ = Math.min(minZ, point.z);
+    maxX = Math.max(maxX, point.x); maxY = Math.max(maxY, point.y); maxZ = Math.max(maxZ, point.z);
+  }
+  return new THREE.Vector3(maxX - minX, maxY - minY, maxZ - minZ).length();
+}
+
+function vectorAxisTravel(points = [], axis = 'z') {
+  if (!points.length) return 0;
+  let min = Infinity;
+  let max = -Infinity;
+  for (const point of points) {
+    min = Math.min(min, Number(point[axis] || 0));
+    max = Math.max(max, Number(point[axis] || 0));
+  }
+  return max - min;
+}
+
+function roundMetric(value, digits = 4) {
+  const n = Number(value || 0);
+  if (!Number.isFinite(n)) return 0;
+  const scale = 10 ** digits;
+  return Math.round(n * scale) / scale;
+}
+
+function compactPoint(point) {
+  return [roundMetric(point.x, 4), roundMetric(point.y, 4), roundMetric(point.z, 4)];
+}
+
+function sampleDebugPoint(sampleIndex, totalSamples, stride = 3) {
+  if (sampleIndex === 0 || sampleIndex === totalSamples - 1) return true;
+  return sampleIndex % Math.max(1, stride) === 0;
+}
+
+function shouldWeaponGuideClip(clipName, config = {}) {
+  const names = new Set(config.clips || []);
+  const pattern = config.clipPattern ? new RegExp(config.clipPattern) : null;
+  return Boolean(config.allClips || names.has(clipName) || pattern?.test(clipName));
+}
+
+function mapWeaponLocalFromSource(sourceLocal, options = {}) {
+  const lateralScale = Number(options.lateralScale ?? 1);
+  const verticalScale = Number(options.verticalScale ?? 1);
+  const forwardScale = Number(options.forwardScale ?? 1);
+  const offset = options.localOffset || [0, 0, 0];
+  return new THREE.Vector3(
+    sourceLocal.x * lateralScale + Number(offset[0] || 0),
+    sourceLocal.y * verticalScale + Number(offset[1] || 0),
+    sourceLocal.z * forwardScale + Number(offset[2] || 0)
+  );
+}
+
+function weaponTargetWorldFromSource(targetChest, sourceLocal, options = {}) {
+  const targetLocal = mapWeaponLocalFromSource(sourceLocal, options);
+  if ((options.targetBasis || 'bone') === 'bone') return targetChest.localToWorld(targetLocal.clone());
+  const origin = worldPositionOf(targetChest);
+  const lateral = axisVector(options.targetLateralAxis || 'x');
+  const vertical = axisVector(options.targetVerticalAxis || 'y');
+  const forward = axisVector(options.targetForwardAxis || 'z');
+  return origin
+    .add(lateral.multiplyScalar(targetLocal.x))
+    .add(vertical.multiplyScalar(targetLocal.y))
+    .add(forward.multiplyScalar(targetLocal.z));
+}
+
+function findFirstExistingBone(root, names = []) {
+  for (const name of names || []) {
+    const bone = findBoneCanonical(root, name);
+    if (bone) return bone;
+  }
+  return null;
+}
+
+function sourceBoneLocal(sourceChest, sourceBone, fallbackLocal = [0, 0, 0]) {
+  if (!sourceBone) return new THREE.Vector3(Number(fallbackLocal[0] || 0), Number(fallbackLocal[1] || 0), Number(fallbackLocal[2] || 0));
+  const local = worldPositionOf(sourceBone);
+  sourceChest.worldToLocal(local);
+  return local;
+}
+
+function applyDampedRotationPair(sourceRoot, targetRoot, pair, restMap) {
+  const sourceBone = findBoneCanonical(sourceRoot, pair.from);
+  const targetBone = findBoneCanonical(targetRoot, pair.to);
+  const sourceRest = restMap.source.get(pair.from);
+  const targetRest = restMap.target.get(pair.to);
+  if (!sourceBone || !targetBone || !sourceRest || !targetRest) return false;
+  const delta = sourceRest.clone().invert().multiply(sourceBone.quaternion.clone().normalize()).normalize();
+  const weighted = new THREE.Quaternion().identity().slerp(delta, Math.max(0, Math.min(2, Number(pair.strength ?? 1)))).normalize();
+  targetBone.quaternion.copy(targetRest.clone().multiply(weighted).normalize());
+  return true;
+}
+
+function restQuaternionMap(root, names = []) {
+  const map = new Map();
+  for (const name of names || []) {
+    const bone = findBoneCanonical(root, name);
+    if (bone) map.set(name, bone.quaternion.clone().normalize());
+  }
+  return map;
+}
+
+function bladeTipWorldFromHand(hand, tipOffset = [0, 0, 0.85]) {
+  const offset = new THREE.Vector3(Number(tipOffset[0] || 0), Number(tipOffset[1] || 0), Number(tipOffset[2] ?? 0.85));
+  return worldPositionOf(hand).add(offset.applyQuaternion(worldQuaternionOf(hand)));
+}
+
+function aimHandBladeAtTarget(root, hand, targetTipWorld, tipOffset = [0, 0, 0.85], strength = 1) {
+  const handWorld = worldPositionOf(hand);
+  const currentTip = bladeTipWorldFromHand(hand, tipOffset);
+  const currentDir = currentTip.sub(handWorld);
+  const targetDir = targetTipWorld.clone().sub(handWorld);
+  if (currentDir.lengthSq() < 0.000001 || targetDir.lengthSq() < 0.000001) return false;
+  currentDir.normalize();
+  targetDir.normalize();
+  const turn = new THREE.Quaternion().setFromUnitVectors(currentDir, targetDir);
+  if (strength < 1) turn.slerp(new THREE.Quaternion(), 1 - strength).normalize();
+  setBoneWorldQuaternion(hand, turn.multiply(worldQuaternionOf(hand)).normalize());
+  root.updateMatrixWorld(true);
+  return true;
+}
+
+function buildWeaponPathIkClips(sharedClips, sourceRoot, targetRoot, options = {}) {
+  const config = options.weaponPathIk || {};
+  const sourceLabel = options.sourceLabel || 'source';
+  const targetLabel = options.targetLabel || 'target';
+  const clipSuffix = options.clipSuffix || '-> ' + targetLabel + ' [SABRE]';
+  const originPrefix = options.originPrefix || 'retarget:' + sourceLabel + '->' + targetLabel + ':SABRE';
+  const built = [];
+  let failures = 0;
+  const torsoPairs = config.torsoRotationPairs || [];
+  const torsoNames = [...new Set(torsoPairs.flatMap((pair) => [pair.from, pair.to]).filter(Boolean))];
+  for (const clip of sharedClips || []) {
+    if (!shouldWeaponGuideClip(clip.name, config)) continue;
+    const sourceClone = cloneSkinnedObject(sourceRoot);
+    const targetClone = cloneSkinnedObject(targetRoot);
+    const sourceAnchor = findBoneCanonical(sourceClone, config.sourceAnchor || config.sourceShoulder || 'RightShoulder');
+    const targetAnchor = findBoneCanonical(targetClone, config.targetAnchor || config.targetShoulder || 'RightShoulder');
+    const sourceGrip = findBoneCanonical(sourceClone, config.sourceGrip || 'RightHand');
+    const sourceTip = findFirstExistingBone(sourceClone, config.sourceTipPriority || ['SwordR_end', 'SwordR']);
+    const sourceChest = findBoneCanonical(sourceClone, config.sourceChest || 'Spine') || sourceAnchor;
+    const targetChest = findBoneCanonical(targetClone, config.targetChest || 'Spine') || targetAnchor;
+    const targetHips = findBoneCanonical(targetClone, config.targetHips || 'Hips') || findBoneCanonical(targetClone, 'Root') || targetChest;
+    const targetOppositeShoulder = findBoneCanonical(targetClone, config.targetOppositeShoulder || 'LeftShoulder');
+    const upper = findBoneCanonical(targetClone, config.targetUpper || 'RightArm');
+    const lower = findBoneCanonical(targetClone, config.targetLower || 'RightForeArm');
+    const hand = findBoneCanonical(targetClone, config.targetHand || 'RightHand');
+    if (!sourceAnchor || !targetAnchor || !sourceGrip || !upper || !lower || !hand) {
+      failures += 1;
+      continue;
+    }
+    sourceClone.updateMatrixWorld(true);
+    targetClone.updateMatrixWorld(true);
+    const sourceRestPose = captureBonePose(sourceClone);
+    const targetRestPose = captureBonePose(targetClone);
+    const fallbackTip = config.sourceFallbackTipOffset || config.virtualBladeTipOffset || [0, 0, 0.85];
+    const sourceRestFrame = makeShoulderRetargetFrame(sourceAnchor, sourceGrip, sourceChest);
+    const targetRestFrame = makeShoulderRetargetFrame(targetAnchor, hand, targetChest);
+    const sourceRestGripLocal = frameLocalPoint(sourceRestFrame, sourceGrip);
+    const sourceRestTipLocal = sourceTip
+      ? frameLocalPoint(sourceRestFrame, sourceTip)
+      : sourceRestGripLocal.clone().add(new THREE.Vector3(Number(fallbackTip[0] || 0), Number(fallbackTip[1] || 0), Number(fallbackTip[2] ?? 0.85)));
+    const targetRestTipLocal = frameLocalPoint(targetRestFrame, bladeTipWorldFromHand(hand, config.virtualBladeTipOffset || [0, 0, 0.85]));
+    const sourceArmLength = Math.max(0.000001, worldPositionOf(sourceGrip).distanceTo(worldPositionOf(sourceAnchor)));
+    const targetArmLength = Math.max(0.000001, armChainLength(upper, lower, hand));
+    const sourceBladeLength = Math.max(0.000001, boneWorldPointFromLocal(sourceAnchor, sourceRestTipLocal).distanceTo(worldPositionOf(sourceGrip)));
+    const targetBladeLength = Math.max(0.000001, boneWorldPointFromLocal(targetAnchor, targetRestTipLocal).distanceTo(worldPositionOf(hand)));
+    const sourceMixer = new THREE.AnimationMixer(sourceClone);
+    const sourceAction = sourceMixer.clipAction(clip);
+    sourceAction.play();
+    const restMap = {
+      source: restQuaternionMap(sourceClone, torsoNames),
+      target: restQuaternionMap(targetClone, torsoNames),
+    };
+    const times = clipSampleTimes(clip, Number(config.sampleFps || 30));
+    const trackedNames = [...new Set([
+      ...torsoPairs.map((pair) => pair.to),
+      upper.name,
+      lower.name,
+      hand.name,
+    ].filter(Boolean))];
+    const trackValues = new Map(trackedNames.map((name) => [name, new Float32Array(times.length * 4)]));
+    const targetBones = new Map(trackedNames.map((name) => [name, findBoneCanonical(targetClone, name)]).filter((entry) => entry[1]));
+    const chainLength = armChainLength(upper, lower, hand);
+    const metrics = {
+      sampleCount: times.length,
+      sourceArmLength,
+      targetArmLength,
+      sourceBladeLength,
+      targetBladeLength,
+      maxReachClampRatio: 0,
+      reachClampSamples: 0,
+    };
+    const sourceGripPoints = [];
+    const sourceTipPoints = [];
+    const targetGripPoints = [];
+    const targetTipPoints = [];
+    const debugTimes = [];
+    const debugTargetTipLocalPoints = [];
+    const debugTargetGripLocalPoints = [];
+    let solvedSamples = 0;
+    for (let sampleIndex = 0; sampleIndex < times.length; sampleIndex += 1) {
+      const time = times[sampleIndex];
+      restoreBonePose(sourceClone, sourceRestPose);
+      restoreBonePose(targetClone, targetRestPose);
+      sourceMixer.setTime(time);
+      sourceClone.updateMatrixWorld(true);
+      targetClone.updateMatrixWorld(true);
+      for (const pair of torsoPairs) applyDampedRotationPair(sourceClone, targetClone, pair, restMap);
+      targetClone.updateMatrixWorld(true);
+
+      const sourceFrame = makeShoulderRetargetFrame(sourceAnchor, sourceGrip, sourceChest);
+      const targetFrame = makeShoulderRetargetFrame(targetAnchor, hand, targetChest);
+      const sourceGripLocal = frameLocalPoint(sourceFrame, sourceGrip);
+      const sourceTipLocal = sourceTip
+        ? frameLocalPoint(sourceFrame, sourceTip)
+        : sourceGripLocal.clone().add(sourceRestTipLocal.clone().sub(sourceRestGripLocal));
+      let gripWorld;
+      let tipWorld;
+      if ((config.pathMode || 'source-blade-tip') === 'authored-diagonal-cut') {
+        const bodyFrame = makeBodyCutFrame(targetAnchor, targetOppositeShoulder, targetChest, targetHips);
+        const phase = Math.max(0, Math.min(1, time / Math.max(0.001, clip.duration || 0.001)));
+        const gripLocal = authoredSabrePoint(config.authoredGripPath, phase).multiplyScalar(targetArmLength);
+        const nextPhase = Math.max(0, Math.min(1, phase + 0.035));
+        const nextGripLocal = authoredSabrePoint(config.authoredGripPath, nextPhase).multiplyScalar(targetArmLength);
+        const cutDirection = nextGripLocal.clone().sub(gripLocal);
+        if (cutDirection.lengthSq() < 0.000001) cutDirection.set(-1, -0.7, -0.35);
+        cutDirection.normalize();
+        const bladeUp = bodyFrame.up.clone().multiplyScalar(Number(config.authoredBladeUp ?? 0.18));
+        gripWorld = bodyFrameWorldPoint(bodyFrame, gripLocal);
+        tipWorld = gripWorld.clone().add(bodyFrame.lateral.clone().multiplyScalar(cutDirection.x * targetBladeLength))
+          .add(bodyFrame.up.clone().multiplyScalar(cutDirection.y * targetBladeLength))
+          .add(bodyFrame.forward.clone().multiplyScalar((Math.abs(cutDirection.z) > 0.001 ? cutDirection.z : -0.18) * targetBladeLength))
+          .add(bladeUp);
+      } else {
+        const tipDelta = scaledLocalDelta(sourceTipLocal, sourceRestTipLocal, sourceArmLength, targetArmLength, config.pathScale ?? 2);
+        const bladeDirLocal = sourceTipLocal.clone().sub(sourceGripLocal);
+        if (bladeDirLocal.lengthSq() < 0.000001) bladeDirLocal.copy(sourceRestTipLocal).sub(sourceRestGripLocal);
+        bladeDirLocal.normalize();
+        const tipLocal = targetRestTipLocal.clone().add(tipDelta);
+        const swingPulse = Math.sin(Math.PI * Math.max(0, Math.min(1, time / Math.max(0.001, clip.duration || 0.001))));
+        const liftAmount = targetArmLength * Number(config.tipLift ?? 0) * swingPulse;
+        tipLocal.y += liftAmount;
+        const gripLocal = tipLocal.clone().sub(bladeDirLocal.multiplyScalar(targetBladeLength));
+        gripLocal.y += liftAmount * Number(config.gripLiftStrength ?? 0.55);
+        gripWorld = frameWorldPoint(targetFrame, gripLocal);
+        tipWorld = frameWorldPoint(targetFrame, tipLocal);
+      }
+      const shoulderWorld = worldPositionOf(upper);
+      const rawReach = shoulderWorld.distanceTo(gripWorld);
+      const maxReach = Math.max(0.001, chainLength * Number(config.reachScale ?? 0.98));
+      const clampRatio = rawReach / maxReach;
+      if (clampRatio > 1) metrics.reachClampSamples += 1;
+      metrics.maxReachClampRatio = Math.max(metrics.maxReachClampRatio, clampRatio);
+      const clampedGrip = clampTargetToArmReach(upper, gripWorld, chainLength, Number(config.reachScale ?? 0.98));
+      solveTwoBoneIk(targetClone, upper, lower, hand, clampedGrip, Number(config.iterations || 8));
+      targetClone.updateMatrixWorld(true);
+      aimHandBladeAtTarget(targetClone, hand, tipWorld, config.virtualBladeTipOffset || [0, 0, 0.85], Number(config.handAimStrength ?? 1));
+      applyLocalRotationOffset(hand, config.handRollAxis || 'y', Number(config.handRollDeg ?? 0));
+      targetClone.updateMatrixWorld(true);
+      solvedSamples += 1;
+
+      const sourceGripWorld = worldPositionOf(sourceGrip);
+      const sourceTipWorld = sourceTip ? worldPositionOf(sourceTip) : sourceGrip.localToWorld(new THREE.Vector3(Number(fallbackTip[0] || 0), Number(fallbackTip[1] || 0), Number(fallbackTip[2] ?? 0.85)));
+      const targetGripWorld = worldPositionOf(hand);
+      const targetTipWorld = bladeTipWorldFromHand(hand, config.virtualBladeTipOffset || [0, 0, 0.85]);
+      sourceGripPoints.push(sourceGripWorld);
+      sourceTipPoints.push(sourceTipWorld);
+      targetGripPoints.push(targetGripWorld);
+      targetTipPoints.push(targetTipWorld);
+      if (sampleDebugPoint(sampleIndex, times.length, Number(config.debugArcStride || 3))) {
+        debugTimes.push(roundMetric(time, 4));
+        const targetTipLocal = targetClone.worldToLocal(targetTipWorld.clone());
+        const targetGripLocal = targetClone.worldToLocal(targetGripWorld.clone());
+        debugTargetTipLocalPoints.push(compactPoint(targetTipLocal));
+        debugTargetGripLocalPoints.push(compactPoint(targetGripLocal));
+      }
+
+      for (const [boneName, values] of trackValues) {
+        const bone = targetBones.get(boneName);
+        if (!bone) continue;
+        const q = bone.quaternion;
+        const base = sampleIndex * 4;
+        values[base] = q.x;
+        values[base + 1] = q.y;
+        values[base + 2] = q.z;
+        values[base + 3] = q.w;
+      }
+    }
+    const tracks = [];
+    let flips = 0;
+    for (const [boneName, values] of trackValues) {
+      const track = new THREE.QuaternionKeyframeTrack(boneName + '.quaternion', times, values);
+      flips += stabilizeQuaternionTrack(track);
+      tracks.push(track);
+    }
+    const clipSuffix = options.clipSuffix || ('arms -> ' + targetLabel);
+    const originPrefix = options.originPrefix || ('mapped-arms:' + sourceLabel + '->' + targetLabel);
+    const next = new THREE.AnimationClip(clip.name + ' ' + clipSuffix, clip.duration, tracks);
     next.optimize();
     next.userData = {
-      origin: 'mapped-arms:' + sourceLabel + '->' + targetLabel,
-      mode: 'position-guided-world-forward-ik tracks=' + tracks.length + ' fwd=' + (config.targetForwardAxis || 'z'),
+      origin: originPrefix,
+      mode: 'position-guided-source-grip-ik tracks=' + tracks.length + ' fwd=' + (config.targetForwardAxis || 'z') + ' sourceScale=' + (config.sourceScale || 'per-axis'),
       sourceName: clip.name,
       sourceActor: sourceLabel,
       targetActor: targetLabel,
@@ -1939,6 +3241,10 @@ function clipMatchesPreference(candidate, pref) {
   return Boolean(pref.name && candidate.name === pref.name);
 }
 
+function rawSourceClips(actor) {
+  return [...(actor?.rawClips || []), ...(actor?.rawExtraClips || [])];
+}
+
 function roundValue(value, digits = 5) {
   const factor = 10 ** digits;
   return Math.round(Number(value || 0) * factor) / factor;
@@ -2272,6 +3578,8 @@ function matrixFromGodotTransform(transform) {
   ).setPosition(position[0] || 0, position[1] || 0, position[2] || 0);
 }
 
+
+
 class PoseActor {
   constructor(key, source, clips, profile = null) {
     this.key = key;
@@ -2297,6 +3605,7 @@ class PoseActor {
     this.manualOffset.add(this.offset);
     this.root.add(this.manualOffset);
     this.rawClips = clips || [];
+    this.rawExtraClips = [];
     if (this.info.rest?.clip || this.info.restClip) {
       restoreBonePose(this.model, this.loadedModelPose);
       const restClipName = applyClipFirstFramePose(this.model, this.rawClips, this.info.rest?.clip || this.info.restClip);
@@ -2347,6 +3656,7 @@ class PoseActor {
     for (const clip of this.clips) this.actions.set(clipKey(clip), this.mixer.clipAction(clip));
     this.root.position.x = this.info.labPositionX ?? this.info.position ?? 0;
     this.applyTransform(actorTransform(this.info));
+    this.createWeaponProxy();
     this.addHelpers();
   }
 
@@ -2428,6 +3738,7 @@ class PoseActor {
     this.applyGrounding();
     this.updateDebugHelpers();
     this.updateBoneOverlay();
+    this.updateWeaponProxyVisibility();
   }
 
   fitToHeight(height) {
@@ -2461,6 +3772,12 @@ class PoseActor {
     };
   }
 
+  applyMaterialSource(materialRoot, config = {}) {
+    const result = applyMaterialSourceMaterials(this.model, materialRoot, config);
+    this.materialSource = { root: materialRoot, config, result };
+    return this.materialSource;
+  }
+
   attachVisualOverlay(overlayRoot, config = {}, textureSet = {}) {
     if (!overlayRoot) return null;
     if (this.visualOverlay?.root?.parent) this.visualOverlay.root.parent.remove(this.visualOverlay.root);
@@ -2484,6 +3801,157 @@ class PoseActor {
     this.model.add(overlayRoot);
     this.visualOverlay = { root: overlayRoot, bindStats, config };
     return this.visualOverlay;
+  }
+
+  createWeaponProxy() {
+    const config = this.info.weaponProxy;
+    if (!config) return null;
+    const rightHand = findBoneCanonical(this.model, config.handBone || 'RightHand');
+    const leftHand = config.leftHandBone ? findBoneCanonical(this.model, config.leftHandBone) : null;
+    const sourceSocket = config.sourceSocketBone ? findBoneCanonical(this.model, config.sourceSocketBone) : null;
+    if (!rightHand && !sourceSocket) return null;
+    const length = Number(config.length ?? config.tipOffset?.[2] ?? 0.85);
+    const root = new THREE.Bone();
+    root.name = config.socketBone || config.boneName || this.info.weaponAttachment?.socketBone || 'WeaponR';
+    root.userData.syntheticWeaponBone = true;
+    root.userData.twoHandCenteredWeaponBone = Boolean(leftHand && !sourceSocket && (config.positionMode || 'two-hand-center') !== 'right-hand');
+    root.userData.sourceSocketBone = sourceSocket?.name || '';
+    root.userData.positionMode = config.positionMode || (leftHand && !sourceSocket ? 'two-hand-center' : 'right-hand');
+    const blade = new THREE.Mesh(
+      new THREE.CylinderGeometry(Number(config.bladeRadius || 0.012), Number(config.bladeRadius || 0.018), Math.max(0.05, length), 8),
+      new THREE.MeshBasicMaterial({ color: Number(config.bladeColor || 0xd8f1ff), transparent: true, opacity: Number(config.bladeOpacity ?? 0.82) })
+    );
+    blade.name = root.name + '-fallback-blade';
+    blade.userData.weaponFallback = true;
+    blade.rotation.x = Math.PI / 2;
+    blade.position.z = length * 0.5;
+    root.add(blade);
+    const hilt = new THREE.Mesh(
+      new THREE.BoxGeometry(Number(config.hiltWidth || 0.22), Number(config.hiltHeight || 0.035), Number(config.hiltDepth || 0.045)),
+      new THREE.MeshBasicMaterial({ color: Number(config.hiltColor || 0xffd36d), transparent: true, opacity: 0.95 })
+    );
+    hilt.name = root.name + '-fallback-hilt';
+    hilt.userData.weaponFallback = true;
+    root.add(hilt);
+    if (Array.isArray(config.gripOffset) && !leftHand && !sourceSocket) root.position.fromArray(config.gripOffset);
+    if (Array.isArray(config.rotationDeg)) root.rotation.set(...config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
+    root.visible = false;
+    if (sourceSocket) sourceSocket.add(root);
+    else if (leftHand) this.model.add(root);
+    else rightHand.add(root);
+    this.boneByName.set(root.name, root);
+    this.boneRest.set(root.name, {
+      position: root.position.clone(),
+      quaternion: root.quaternion.clone(),
+      scale: root.scale.clone(),
+    });
+    const arc = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]),
+      new THREE.LineBasicMaterial({ color: Number(config.debugArcColor || 0x42e9ff), transparent: true, opacity: Number(config.debugArcOpacity ?? 0.9) })
+    );
+    arc.name = this.key + '-weapon-path-debug-arc';
+    arc.frustumCulled = false;
+    arc.visible = false;
+    this.model.add(arc);
+    this.weaponProxy = { root, arc, config, handBone: rightHand?.name || '', leftHandBone: leftHand?.name || '', sourceSocketBone: sourceSocket?.name || '', rightHand, leftHand, sourceSocket, arcKey: '' };
+    this.updateWeaponSocketTransform();
+    return this.weaponProxy;
+  }
+
+  updateWeaponSocketTransform() {
+    const proxy = this.weaponProxy;
+    if (!proxy?.root) return;
+    const animatedSocketRotation = clipHasQuaternionTrackForBone(this.activeAction?._clip, proxy.root.name);
+    if (proxy.sourceSocket) {
+      if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.fromArray(proxy.config.gripOffset);
+      else proxy.root.position.set(0, 0, 0);
+      return;
+    }
+    if (!proxy.leftHand || !proxy.rightHand) return;
+    this.model.updateMatrixWorld(true);
+    const rightWorld = worldPositionOf(proxy.rightHand);
+    const leftWorld = worldPositionOf(proxy.leftHand);
+    const socketWorld = (proxy.config.positionMode || 'two-hand-center') === 'right-hand'
+      ? rightWorld.clone()
+      : rightWorld.clone().add(leftWorld).multiplyScalar(0.5);
+    const local = this.model.worldToLocal(socketWorld);
+    if (Array.isArray(proxy.config.gripOffset)) local.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
+    proxy.root.position.copy(local);
+    if (!animatedSocketRotation) {
+      const modelWorldQuat = worldQuaternionOf(this.model).invert();
+      proxy.root.quaternion.copy(modelWorldQuat.multiply(worldQuaternionOf(proxy.rightHand))).normalize();
+    }
+  }
+
+  attachWeaponAttachment(weaponRoot, config = {}) {
+    if (!weaponRoot || !this.weaponProxy?.root) return null;
+    const socket = this.weaponProxy.root;
+    for (const child of socket.children.filter((entry) => entry.userData?.weaponFallback)) socket.remove(child);
+    weaponRoot.name = config.name || socket.name + '-model';
+    weaponRoot.scale.setScalar(Number(config.scale ?? 1));
+    if (Array.isArray(config.rotationDeg)) weaponRoot.rotation.set(...config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
+    if (Array.isArray(config.position)) weaponRoot.position.fromArray(config.position);
+    if (Array.isArray(config.gripLocalPosition)) {
+      const localGrip = new THREE.Vector3().fromArray(config.gripLocalPosition);
+      localGrip.multiplyScalar(Number(config.scale ?? 1));
+      localGrip.applyQuaternion(weaponRoot.quaternion);
+      weaponRoot.position.sub(localGrip);
+    }
+    weaponRoot.traverse((node) => {
+      if (!node?.isMesh) return;
+      node.frustumCulled = false;
+      node.castShadow = false;
+      node.receiveShadow = false;
+    });
+    socket.add(weaponRoot);
+    const tip = new THREE.Group();
+    tip.name = config.tipMarker || 'WeaponGrip_end';
+    if (Array.isArray(config.tipLocalPosition)) {
+      const localTip = new THREE.Vector3().fromArray(config.tipLocalPosition);
+      localTip.multiplyScalar(Number(config.scale ?? 1));
+      localTip.applyQuaternion(weaponRoot.quaternion);
+      localTip.add(weaponRoot.position);
+      tip.position.copy(localTip);
+    } else {
+      tip.position.fromArray(config.tipOffset || this.info.weaponProxy?.tipOffset || [0, 0, 0.85]);
+    }
+    socket.add(tip);
+    this.boneByName.set(tip.name, tip);
+    this.boneRest.set(tip.name, {
+      position: tip.position.clone(),
+      quaternion: tip.quaternion.clone(),
+      scale: tip.scale.clone(),
+    });
+    this.weaponProxy.model = weaponRoot;
+    this.weaponProxy.tipMarker = tip;
+    this.updateWeaponSocketTransform();
+    return this.weaponProxy;
+  }
+
+  updateWeaponArc(clip, active) {
+    const arc = this.weaponProxy?.arc;
+    if (!arc) return;
+    const points = clip?.userData?.weaponPathDebug?.targetTipLocalPoints || [];
+    const arcActive = Boolean(active && points.length >= 2);
+    arc.visible = arcActive;
+    if (!arcActive) return;
+    const key = clip.name + ':' + points.length + ':' + points[0]?.join(',') + ':' + points[points.length - 1]?.join(',');
+    if (this.weaponProxy.arcKey === key) return;
+    const vectors = points.map((point) => new THREE.Vector3(Number(point[0] || 0), Number(point[1] || 0), Number(point[2] || 0)));
+    arc.geometry.dispose();
+    arc.geometry = new THREE.BufferGeometry().setFromPoints(vectors);
+    arc.geometry.computeBoundingSphere();
+    this.weaponProxy.arcKey = key;
+  }
+
+  updateWeaponProxyVisibility() {
+    if (!this.weaponProxy?.root) return;
+    this.updateWeaponSocketTransform();
+    const clip = this.activeAction?._clip;
+    const patterns = this.weaponProxy.config.visibleClipPatterns || ['\\[FPS-SWORD-UPPER\\]', 'OneHand'];
+    const active = Boolean(clip?.userData?.weaponPathIk || patterns.some((pattern) => new RegExp(pattern).test(clip?.name || '')));
+    this.weaponProxy.root.visible = active;
+    this.updateWeaponArc(clip, active);
   }
 
   addHelpers() {
@@ -2525,6 +3993,7 @@ class PoseActor {
     this.addLegSymmetryOverlay();
     this.setBoneOverlayVisible(this.showBoneOverlay);
   }
+
 
   addLegSymmetryOverlay() {
     const config = this.info.legSymmetry;
@@ -3030,15 +4499,24 @@ class PoseActor {
   play(name) {
     const next = this.actions.get(name);
     if (!next) return;
-    if (!this.activeAction) {
-      restoreBonePose(this.model, this.modelRestPose);
-      if (this.currentRestPose) applyGodotRestPose(this.model, this.currentRestPose);
+
+    // Sparse clips must start from a clean rest pose. Do not blend from the
+    // previous action, or unkeyed bones keep locomotion/pose residue.
+    if (this.mixer) this.mixer.stopAllAction();
+    for (const action of this.actions.values()) {
+      action.enabled = false;
+      action.stop();
+      action.reset();
+      action.weight = 0;
     }
-    if (this.activeAction && this.activeAction !== next) this.activeAction.fadeOut(0.1);
+    restoreBonePose(this.model, this.modelRestPose);
+    if (this.currentRestPose) applyGodotRestPose(this.model, this.currentRestPose);
+
     next.enabled = true;
+    next.weight = 1;
     next.reset();
     next.setLoop(THREE.LoopRepeat, Infinity);
-    next.fadeIn(0.1).play();
+    next.play();
     next.paused = false;
     this.activeAction = next;
     if (!this.applyCritiqueClipState(next._clip)) this.resetAllBoneEdits();
@@ -3046,6 +4524,7 @@ class PoseActor {
     this.applyGrounding();
     this.updateDebugHelpers();
     this.updateBoneOverlay();
+    this.updateWeaponProxyVisibility();
     this.rememberClip(name);
   }
 
@@ -3072,6 +4551,7 @@ class PoseActor {
     this.boneEdits.clear();
     this.cacheBones();
     this.applyGrounding();
+    this.updateWeaponProxyVisibility();
   }
 
   stop() {
@@ -3101,6 +4581,7 @@ class PoseActor {
 
   update(dt) {
     this.mixer.update(dt);
+    this.updateWeaponProxyVisibility();
     this.reapplyBoneEdits();
     this.applyGrounding();
     this.updateLegSymmetryOverlay();
@@ -3388,19 +4869,46 @@ class PoseLab {
   }
 
 
+  preferredCombatClip(actor, clip) {
+    if (!actor || !clip) return clip || null;
+    const aliases = actor.info?.animationAliases || {};
+    for (const preferences of Object.values(aliases)) {
+      if (!Array.isArray(preferences) || !preferences.includes(clip.name)) continue;
+      const ibPreferred = preferences.find((name) => /\[FPS-SWORD-UPPER\]/.test(String(name || '')));
+      if (!ibPreferred || ibPreferred === clip.name) return clip;
+      const match = actor.clips.find((candidate) => candidate.name === ibPreferred || clipKey(candidate) === ibPreferred || clipLabel(candidate) === ibPreferred);
+      return match || clip;
+    }
+    return clip;
+  }
+
+  preferredSabreClip(actor, clip) {
+    return this.preferredCombatClip(actor, clip);
+  }
+
   findClipByName(actor, name) {
     const wanted = String(name || '').trim().toLowerCase();
     if (!actor || !wanted) return null;
+    const aliases = actor.info?.animationAliases || {};
+    for (const [alias, preferences] of Object.entries(aliases)) {
+      if (String(alias || '').trim().toLowerCase() !== wanted) continue;
+      for (const pref of preferences || []) {
+        const match = actor.clips.find((clip) => clip.name === pref || clipKey(clip) === pref || clipLabel(clip) === pref);
+        if (match) return this.preferredSabreClip(actor, match);
+      }
+    }
     const entries = actor.clips.map((clip) => ({
       clip,
       labels: [clip.name, clipLabel(clip), clip.userData?.sourceName, clip.userData?.origin].filter(Boolean).map((value) => String(value).trim().toLowerCase()),
     }));
-    return entries.find((entry) => entry.labels[0] === wanted)?.clip
+    const found = entries.find((entry) => entry.labels[0] === wanted)?.clip
       || entries.find((entry) => entry.labels[1] === wanted)?.clip
       || entries.find((entry) => entry.labels.some((label) => label === wanted))?.clip
       || entries.find((entry) => entry.labels.some((label) => label.includes(wanted)))?.clip
       || null;
+    return this.preferredSabreClip(actor, found);
   }
+
 
   findStartupClip(actor) {
     const pref = actor?.info?.startupClip;
@@ -3433,7 +4941,7 @@ class PoseLab {
     if (this.viewMode === 'firstPerson' && !actor.info?.firstPersonCamera) this.setViewMode('orbit');
     const savedClip = options.preferSaved && this.savedState?.actorKey === key ? this.findSavedClip(actor, this.savedState) : null;
     const requestedClip = options.clipName ? this.findClipByName(actor, options.clipName) : null;
-    const clip = requestedClip || savedClip || this.findStartupClip(actor) || actor.activeClip() || this.findFirstPlayableClip(actor);
+    const clip = this.preferredSabreClip(actor, requestedClip || savedClip || this.findStartupClip(actor) || actor.activeClip() || this.findFirstPlayableClip(actor));
     if (clip) actor.play(clipKey(clip));
     this.renderClipButtons();
     const fallbackPanel = this.labMode === 'critique' ? 'none' : (actor.info?.startupPanel || (UI.panels.cleanup?.classList.contains('open') ? 'cleanup' : 'clips'));
@@ -3456,7 +4964,7 @@ class PoseLab {
     const savedActorKey = this.savedState?.actorKey;
     const actorKey = visualActorKey || (savedActorKey && this.actors.has(savedActorKey) ? savedActorKey : (startupEntry?.[0] || 'player'));
     const actor = this.actors.get(actorKey);
-    const nextViewMode = this.savedState?.actorKey === actorKey ? (this.savedState?.viewAngle?.mode || this.savedState?.viewMode || actor?.info?.startupViewMode) : actor?.info?.startupViewMode;
+    const nextViewMode = this.visualQa?.viewMode || (this.savedState?.actorKey === actorKey ? (this.savedState?.viewAngle?.mode || this.savedState?.viewMode || actor?.info?.startupViewMode) : actor?.info?.startupViewMode);
     const preferSaved = this.savedState?.actorKey === actorKey ? true : preferSavedClipForActor(actor?.info);
     this.activateActor(actorKey, { preferSaved: visualActorKey ? false : preferSaved, restoreSavedUi: visualActorKey ? false : this.savedState?.actorKey === actorKey, viewMode: nextViewMode, clipName: this.visualQa?.clip || '' });
   }
@@ -3902,6 +5410,14 @@ class PoseLab {
       this.scene.add(actor.root);
       actor.root.visible = false;
       this.renderActorTabs();
+      if (info.materialSource?.url) {
+        try {
+          const materialLoaded = await this.loadAsset(info.materialSource.url);
+          actor.applyMaterialSource(materialLoaded.scene, info.materialSource);
+        } catch (err) {
+          console.warn('material source transfer failed', info.materialSource.url, err);
+        }
+      }
       if (info.visualOverlay?.textures) {
         try {
           const overlayTextures = await loadVisualOverlayTextureSet(info.visualOverlay);
@@ -3915,7 +5431,16 @@ class PoseLab {
           console.warn('visual overlay failed', info.visualOverlay.url || 'texture-set', err);
         }
       }
+      if (info.weaponAttachment?.url) {
+        try {
+          const weaponLoaded = await this.loadAsset(info.weaponAttachment.url);
+          actor.attachWeaponAttachment(weaponLoaded.scene, info.weaponAttachment);
+        } catch (err) {
+          console.warn('weapon attachment failed', info.weaponAttachment.url, err);
+        }
+      }
       const extraClips = await this.loadExtraClips(info);
+      actor.rawExtraClips = extraClips;
       let preparedExtraClips = [];
       if (extraClips.length) {
         const originPrefix = 'own-extra:' + key + ':';
@@ -4135,6 +5660,96 @@ class PoseLab {
   }
 
 
+  async buildAutoRetargets() {
+    for (const [targetKey, target] of this.actors) {
+      const specs = target.info?.autoRetargetSources || [];
+      for (const spec of specs) {
+        const sourceKey = spec.sourceKey;
+        if (!sourceKey || sourceKey === targetKey) continue;
+        const sourceInfo = ACTORS[sourceKey];
+        if (!sourceInfo) continue;
+        const source = await this.loadActorProfile(sourceKey, sourceInfo);
+        const sourceClips = rawSourceClips(source);
+        const channels = spec.channels || { translate: true, rotate: true, scale: false };
+        const retargetOptions = {
+          channels,
+          positionPolicy: spec.positionPolicy || target.info.retargetOptions?.positionPolicy || 'hips',
+          sourceLabel: sourceKey,
+          targetLabel: targetKey,
+          names: spec.names || target.info.retargetOptions?.names || {},
+          translationScale: spec.translationScale ?? target.info.retargetOptions?.translationScale ?? 1,
+          stripRootMotionXZ: spec.stripRootMotionXZ ?? target.info.ownClipOptions?.stripRootMotionXZ ?? false,
+          lockHipRotation: spec.lockHipRotation ?? false,
+          keepRootRotation: spec.keepRootRotation === true,
+        };
+        const mappedTag = spec.clipTag || (spec.retargetMode === 'weapon-path-ik' ? 'SABRE' : 'MC');
+        const customOriginPrefix = spec.originPrefix || (spec.retargetMode === 'weapon-path-ik'
+          ? 'retarget:' + sourceKey + '->' + targetKey + ':' + mappedTag
+          : spec.retargetMode === 'mapped-rotation' || spec.retargetMode === 'position-guided-arm' || spec.retargetMode === 'fps-upper-key-convert'
+            ? 'retarget:' + sourceKey + '->' + targetKey + ':' + mappedTag
+            : '');
+        const retargeted = spec.retargetMode === 'weapon-path-ik'
+          ? buildWeaponPathIkClips(sourceClips, source.model, target.model, {
+            ...retargetOptions,
+            weaponPathIk: spec.weaponPathIk || {},
+            clipSuffix: spec.clipSuffix || ('-> ' + targetKey + ' [' + mappedTag + ']'),
+            originPrefix: customOriginPrefix,
+          })
+          : spec.retargetMode === 'position-guided-arm'
+            ? buildPositionGuidedArmClips(sourceClips, source.model, target.model, {
+              ...retargetOptions,
+              positionGuidedArmClips: spec.positionGuidedArmClips || target.info.retargetOptions?.positionGuidedArmClips,
+              clipSuffix: spec.clipSuffix || ('-> ' + targetKey + ' [' + mappedTag + ']'),
+              originPrefix: customOriginPrefix,
+            })
+            : spec.retargetMode === 'fps-upper-key-convert'
+              ? buildFpsUpperKeyConvertClips(sourceClips, source.model, target.model, {
+              ...retargetOptions,
+              directRotationMap: spec.directRotationMap || target.info.retargetOptions?.directRotationMap || {},
+              directRotationPairs: spec.directRotationPairs || target.info.retargetOptions?.directRotationPairs || [],
+              boneRollCorrection: spec.boneRollCorrection || target.info.retargetOptions?.boneRollCorrection || 'none',
+              mapSameNameBones: spec.mapSameNameBones === true,
+              excludeSameNameBones: spec.excludeSameNameBones || [],
+              sameNameStrength: spec.sameNameStrength ?? 1,
+              clipPattern: spec.clipPattern || '',
+              clipNames: spec.clipNames || spec.clips || [],
+              sourceRestClip: spec.sourceRestClip || '',
+              targetRestProvider: spec.targetRestProvider || '',
+              restSegmentCorrection: spec.restSegmentCorrection || {},
+              absoluteSourcePose: spec.absoluteSourcePose === true,
+              preserveLoopSeam: spec.preserveLoopSeam === true,
+              weaponKeyConvert: spec.weaponKeyConvert || {},
+              ikOrientationGuide: spec.ikOrientationGuide || {},
+              clipSuffix: spec.clipSuffix || ('-> ' + targetKey + ' [' + mappedTag + ']'),
+              originPrefix: customOriginPrefix,
+            })
+              : spec.retargetMode === 'mapped-rotation'
+              ? buildMappedRotationClips(sourceClips, source.model, target.model, {
+              ...retargetOptions,
+              directRotationMap: spec.directRotationMap || target.info.retargetOptions?.directRotationMap || {},
+              directRotationPairs: spec.directRotationPairs || target.info.retargetOptions?.directRotationPairs || [],
+              boneRollCorrection: spec.boneRollCorrection || target.info.retargetOptions?.boneRollCorrection || 'none',
+              mapSameNameBones: spec.mapSameNameBones === true,
+              excludeSameNameBones: spec.excludeSameNameBones || [],
+              sameNameStrength: spec.sameNameStrength ?? 1,
+              clipPattern: spec.clipPattern || '',
+              clipNames: spec.clipNames || spec.clips || [],
+              clipSuffix: spec.clipSuffix || ('-> ' + targetKey + ' [' + mappedTag + ']'),
+              originPrefix: customOriginPrefix,
+            })
+              : spec.retargetMode === 'rest-delta-rotation'
+              ? buildRestDeltaRotationClips(sourceClips, source.model, target.model, retargetOptions)
+              : retargetSharedClips(sourceClips, source.model, target.model, retargetOptions);
+        if (customOriginPrefix) target.addCustomClips(retargeted, customOriginPrefix, channels);
+        else target.addRetargetedClips(retargeted, sourceKey, channels);
+        source.setRestPose(source.currentRestPose);
+        target.setRestPose(target.currentRestPose);
+        target.sharedFallback = Boolean(retargeted.fallback);
+        target.retargetFailures = Number(retargeted.failures || 0);
+      }
+    }
+  }
+
   async loadActors() {
     for (const [key, info] of Object.entries(ACTORS)) {
       try {
@@ -4149,7 +5764,7 @@ class PoseLab {
     const ares = this.actors.get('ares');
     const titan = this.actors.get('titan');
     if (ares && titan) {
-      const sharedForTitan = retargetSharedClips(ares.rawClips, ares.model, titan.model, {
+      const sharedForTitan = retargetSharedClips(rawSourceClips(ares), ares.model, titan.model, {
         channels: { translate: true, rotate: true, scale: false },
         positionPolicy: ACTORS.titan?.retargetOptions?.positionPolicy || 'hips',
         sourceLabel: 'ares',
@@ -4163,14 +5778,16 @@ class PoseLab {
       titan.sharedFallback = Boolean(sharedForTitan.fallback);
       titan.retargetFailures = Number(sharedForTitan.failures || 0);
     }
+    await this.buildAutoRetargets();
+
     if (player && arcane) {
-      const guidedArmClips = buildPositionGuidedArmClips(player.rawClips, player.model, arcane.model, {
+      const guidedArmClips = buildPositionGuidedArmClips(rawSourceClips(player), player.model, arcane.model, {
         sourceLabel: 'player',
         targetLabel: 'arcane',
         positionGuidedArmClips: ACTORS.arcane.retargetOptions?.positionGuidedArmClips,
       });
       const guidedNames = new Set(guidedArmClips.map((clip) => clip.userData?.sourceName).filter(Boolean));
-      const armRetarget = buildMappedRotationClips(player.rawClips, player.model, arcane.model, {
+      const armRetarget = buildMappedRotationClips(rawSourceClips(player), player.model, arcane.model, {
         sourceLabel: 'player',
         targetLabel: 'arcane',
         directRotationMap: ACTORS.arcane.retargetOptions?.directRotationMap || {},
@@ -4182,7 +5799,7 @@ class PoseLab {
       armRetarget.failures = Number(armRetarget.failures || 0) + Number(guidedArmClips.failures || 0);
       armRetarget.fallback = armRetarget.length === 0;
       arcane.addCustomClips(armRetarget, 'mapped-arms:player->arcane', { translate: false, rotate: true, scale: false });
-      const torsoHip = buildTorsoToHipClips(player.rawClips, player.model, arcane.model, {
+      const torsoHip = buildTorsoToHipClips(rawSourceClips(player), player.model, arcane.model, {
         sourceLabel: 'player',
         targetLabel: 'arcane',
       });
@@ -4256,19 +5873,19 @@ class PoseLab {
     }
     const useDirectMap = !options.torsoToHips && Object.keys(target.info.retargetOptions?.directRotationMap || {}).length > 0;
     const retargeted = options.torsoToHips
-      ? buildTorsoToHipClips(source.rawClips, source.model, target.model, {
+      ? buildTorsoToHipClips(rawSourceClips(source), source.model, target.model, {
         sourceLabel: options.sourceKey,
         targetLabel: options.targetKey,
       })
       : useDirectMap
         ? (() => {
-          const guidedArmClips = buildPositionGuidedArmClips(source.rawClips, source.model, target.model, {
+          const guidedArmClips = buildPositionGuidedArmClips(rawSourceClips(source), source.model, target.model, {
             sourceLabel: options.sourceKey,
             targetLabel: options.targetKey,
             positionGuidedArmClips: target.info.retargetOptions?.positionGuidedArmClips,
           });
           const guidedNames = new Set(guidedArmClips.map((clip) => clip.userData?.sourceName).filter(Boolean));
-          const mapped = buildMappedRotationClips(source.rawClips, source.model, target.model, {
+          const mapped = buildMappedRotationClips(rawSourceClips(source), source.model, target.model, {
             sourceLabel: options.sourceKey,
             targetLabel: options.targetKey,
             directRotationMap: target.info.retargetOptions?.directRotationMap || {},
@@ -4281,7 +5898,7 @@ class PoseLab {
           mapped.fallback = mapped.length === 0;
           return mapped;
         })()
-        : retargetSharedClips(source.rawClips, source.model, target.model, {
+        : retargetSharedClips(rawSourceClips(source), source.model, target.model, {
           channels: options.channels,
           positionPolicy: options.positionPolicy,
           sourceLabel: options.sourceKey,
@@ -5153,7 +6770,7 @@ class PoseLab {
     }
     for (const button of UI.viewButtons) button.classList.toggle('active', button.dataset.viewMode === this.viewMode);
     document.body.classList.toggle('is-fpv', this.viewMode === 'firstPerson');
-    if (this.viewMode === 'firstPerson' && UI.panels.clips?.classList.contains('open')) this.setPanel('none');
+    if (this.viewMode === 'firstPerson' && this.activePanel !== 'none') this.setPanel('none');
     this.saveState();
     this.updateReadout();
   }
@@ -5209,15 +6826,39 @@ class PoseLab {
       }
     } else if (config.useSourceCameraMarker) {
       const anchor = worldPositionOf(anchorBone);
-      const handCenter = averageBoneWorldPosition(actor.model, config.targetHandBones || []);
-      const position = anchor.clone();
-      if (handCenter) position.y = handCenter.y + Number(config.handCameraYOffset ?? 0.095);
-      position.z += Number(config.cameraBackOffset ?? -0.22);
-      this.camera.position.copy(position);
-      this.camera.up.set(0, 1, 0);
-      const forward = axisVector(config.forwardAxis || 'z').multiplyScalar(Number(config.lookForward || 1.35));
-      const target = position.clone().add(forward).add(new THREE.Vector3(0, Number(config.lookVertical || 0), 0));
-      this.camera.lookAt(target);
+      const forward = axisVector(config.forwardAxis || 'z').normalize();
+      if (config.cameraMode === 'head-forward') {
+        const position = anchor.clone()
+          .add(forward.clone().multiplyScalar(Number(config.headForwardOffset ?? 0.16)))
+          .add(new THREE.Vector3(0, Number(config.headCameraYOffset ?? 0.02), 0));
+        const target = anchor.clone()
+          .add(forward.clone().multiplyScalar(Number(config.lookForward || 1.25)))
+          .add(new THREE.Vector3(0, Number(config.lookVertical || 0), 0));
+        this.camera.position.copy(position);
+        this.camera.up.set(0, 1, 0);
+        this.camera.lookAt(target);
+      } else {
+        const handCenter = averageBoneWorldPosition(actor.model, config.targetHandBones || []);
+        const position = anchor.clone();
+        if (config.lookAtHands && handCenter) {
+          position.copy(handCenter)
+            .add(forward.clone().multiplyScalar(-Number(config.cameraBackOffset ?? 0.55)))
+            .add(new THREE.Vector3(0, Number(config.handCameraYOffset ?? 0.18), 0));
+          const target = handCenter.clone()
+            .add(forward.clone().multiplyScalar(Number(config.lookForward || 0.45)))
+            .add(new THREE.Vector3(0, Number(config.lookVertical || 0), 0));
+          this.camera.position.copy(position);
+          this.camera.up.set(0, 1, 0);
+          this.camera.lookAt(target);
+        } else {
+          if (handCenter) position.y = handCenter.y + Number(config.handCameraYOffset ?? 0.095);
+          position.z += Number(config.cameraBackOffset ?? -0.22);
+          this.camera.position.copy(position);
+          this.camera.up.set(0, 1, 0);
+          const target = position.clone().add(forward.clone().multiplyScalar(Number(config.lookForward || 1.35))).add(new THREE.Vector3(0, Number(config.lookVertical || 0), 0));
+          this.camera.lookAt(target);
+        }
+      }
     } else {
       const localCamera = matrixFromGodotTransform(config.godotCameraTransform || config.arcaneCamera3DReference);
       const worldCamera = anchorBone.matrixWorld.clone().multiply(localCamera);
@@ -6988,19 +8629,19 @@ class PoseLab {
     let visible = [];
     let sf2DefaultCount = 0;
     if (query) {
-      visible = searchClipEntries(query, actor.clips, 12).map((entry) => ({ ...entry, key: clipKey(entry.clip) }));
-      if (UI.clipHint) UI.clipHint.textContent = 'Search results: ' + visible.length + ' / ' + entries.length;
+      visible = searchClipEntries(query, actor.clips).map((entry) => ({ ...entry, key: clipKey(entry.clip) }));
+      if (UI.clipHint) UI.clipHint.textContent = 'Filter: ' + visible.length + ' / ' + entries.length;
     } else {
       visible = defaultClipEntries(actor.clips, actor.recentClipKeys, active).map((entry) => ({ ...entry, key: clipKey(entry.clip) }));
       sf2DefaultCount = entries.filter((entry) => isSf2PoseClip(entry.clip)).length;
-      if (UI.clipHint) UI.clipHint.textContent = sf2DefaultCount ? 'Showing all ' + sf2DefaultCount + ' generated SF2 poseclips by default' : 'Recent clips: ' + visible.length + ' / ' + entries.length;
+      if (UI.clipHint) UI.clipHint.textContent = sf2DefaultCount ? 'All clips: ' + visible.length + ' / ' + entries.length + ' | SF2 ' + sf2DefaultCount : 'All clips: ' + visible.length + ' / ' + entries.length;
     }
     if (sf2DefaultCount) {
       const batch = document.createElement('button');
       batch.type = 'button';
       batch.className = 'empty-clip sf2-clip-label';
       batch.disabled = true;
-      batch.textContent = 'SF2 poseclips: ' + sf2DefaultCount + ' generated (default batch)';
+      batch.textContent = 'SF2 poseclips: ' + sf2DefaultCount + ' generated';
       UI.clipButtons.append(batch);
     }
     if (!visible.length) {
@@ -7100,7 +8741,7 @@ class PoseLab {
   }
 
   debugCommandNames() {
-    return ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'beacon', 'capture', 'qa'];
+    return ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'fpv', 'beacon', 'capture', 'qa'];
   }
 
   debugHelpText() {
@@ -7116,6 +8757,7 @@ class PoseLab {
       '  panel bones',
       '  pause',
       '  seek 0.25',
+      '  fpv 0 0.18 0.36 0.54',
       '  qa capture',
     ].join('\n');
   }
@@ -7197,6 +8839,99 @@ class PoseLab {
     };
   }
 
+  debugFirstPersonFrustum(sampleArgs = []) {
+    const actor = this.debugCurrentActor();
+    const clip = this.debugCurrentClip(actor);
+    if (!actor) return { ok: false, command: 'fpv', error: 'no active actor', snapshot: this.debugSnapshot() };
+    const config = actor.info?.firstPersonCamera;
+    if (!config) return { ok: false, command: 'fpv', error: 'active actor has no first-person camera', snapshot: this.debugSnapshot() };
+    if (!clip) return { ok: false, command: 'fpv', error: 'no active clip', snapshot: this.debugSnapshot() };
+
+    const previousViewMode = this.viewMode;
+    const previousTime = Number(actor.activeAction?.time || 0);
+    const previousPaused = Boolean(actor.activeAction?.paused);
+    const duration = Math.max(0.001, Number(clip.duration || 0.001));
+    const parsedTimes = sampleArgs
+      .map((value) => Number(value))
+      .filter((value) => Number.isFinite(value))
+      .map((value) => clampValue(value, 0, duration));
+    const sampleTimes = parsedTimes.length
+      ? parsedTimes
+      : [0, duration * 0.18, duration * 0.36, duration * 0.54, duration * 0.72, duration].map((value) => clampValue(value, 0, duration));
+    const boneNames = ['Head', 'Spine02', 'Spine01', 'Spine', 'RightHand', 'LeftHand', 'WeaponR', 'WeaponR_end'];
+    const samples = [];
+
+    this.setViewMode('firstPerson');
+    for (const time of sampleTimes) {
+      actor.seek(time);
+      this.updateFirstPersonCamera();
+      this.camera.updateMatrixWorld(true);
+      const cameraPosition = this.camera.position.clone();
+      const cameraForward = new THREE.Vector3();
+      this.camera.getWorldDirection(cameraForward).normalize();
+      const bones = {};
+      for (const name of boneNames) {
+        const bone = findNamedBone(actor.model, name);
+        if (!bone) {
+          bones[name] = { found: false };
+          continue;
+        }
+        const world = worldPositionOf(bone);
+        const cameraSpace = world.clone().applyMatrix4(this.camera.matrixWorldInverse);
+        const ndc = world.clone().project(this.camera);
+        const inFront = cameraSpace.z < -Number(this.camera.near || 0.001);
+        const inFrustum = inFront && ndc.x >= -1 && ndc.x <= 1 && ndc.y >= -1 && ndc.y <= 1 && ndc.z >= -1 && ndc.z <= 1;
+        bones[name] = {
+          found: true,
+          world: world.toArray().map((value) => Number(value.toFixed(4))),
+          cameraSpace: cameraSpace.toArray().map((value) => Number(value.toFixed(4))),
+          ndc: ndc.toArray().map((value) => Number(value.toFixed(4))),
+          distance: Number(world.distanceTo(cameraPosition).toFixed(4)),
+          inFront,
+          inFrustum,
+        };
+      }
+      samples.push({
+        time: Number(time.toFixed(5)),
+        normalizedTime: Number((time / duration).toFixed(4)),
+        camera: {
+          position: cameraPosition.toArray().map((value) => Number(value.toFixed(4))),
+          forward: cameraForward.toArray().map((value) => Number(value.toFixed(4))),
+          fov: Number(this.camera.fov || 0),
+          near: Number(this.camera.near || 0),
+        },
+        bones,
+      });
+    }
+
+    actor.seek(previousTime);
+    actor.pauseActive(previousPaused);
+    if (previousViewMode !== 'firstPerson') this.setViewMode(previousViewMode);
+    else this.updateFirstPersonCamera();
+
+    return {
+      ok: true,
+      command: 'fpv',
+      actor: this.selected || '',
+      clip: clip.name || '',
+      duration: Number(duration.toFixed(5)),
+      cameraConfig: {
+        cameraMode: config.cameraMode || '',
+        anchor: config.anchor || '',
+        fallbackAnchor: config.fallbackAnchor || '',
+        forwardAxis: config.forwardAxis || '',
+        headForwardOffset: Number(config.headForwardOffset ?? 0),
+        headCameraYOffset: Number(config.headCameraYOffset ?? 0),
+        lookForward: Number(config.lookForward ?? 0),
+        lookVertical: Number(config.lookVertical ?? 0),
+        fov: Number(config.fov || 0),
+        near: Number(config.near || 0),
+      },
+      samples,
+      snapshot: this.debugSnapshot(),
+    };
+  }
+
   debugEmitBeacon(stage = 'manual') {
     const snapshot = this.debugSnapshot();
     const actor = this.debugCurrentActor();
@@ -7208,6 +8943,7 @@ class PoseLab {
       origin: clip?.userData?.origin || '',
       sourceName: clip?.userData?.sourceName || '',
       frameMode: this.visualQa?.frameMode || '',
+      viewMode: this.viewMode || '',
     };
     if (this.visualQa?.enabled) postVisualQaBeacon(stage, meta);
     return { ok: true, command: 'beacon', stage, sent: Boolean(this.visualQa?.enabled), meta, snapshot };
@@ -7227,6 +8963,7 @@ class PoseLab {
       spriteFrame: '',
       poseclipTime: '',
       frameMode: this.visualQa?.frameMode || '',
+      viewMode: this.viewMode || '',
     };
     if (this.visualQa?.enabled) postVisualQaCapture(this.renderer.domElement, meta);
     return { ok: true, command: 'capture', stage, sent: Boolean(this.visualQa?.enabled), meta, snapshot };
@@ -7408,6 +9145,9 @@ class PoseLab {
         actor.seek(value / CRITIQUE_STEP_FPS);
         return respond({ message: 'frame ' + value });
       }
+      case 'fpv':
+      case 'firstperson':
+        return this.debugFirstPersonFrustum(spec.args);
       case 'beacon':
         return this.debugEmitBeacon(spec.args[0] || 'manual');
       case 'capture':
@@ -7538,6 +9278,7 @@ class PoseLab {
         origin: clip?.userData?.origin || '',
         sourceName: clip?.userData?.sourceName || '',
         frameMode: this.visualQa.frameMode || '',
+        viewMode: this.viewMode || '',
       });
     }
     if (!this.visualQa.capture) return;

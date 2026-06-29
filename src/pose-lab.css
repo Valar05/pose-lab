@@ -485,19 +485,7 @@ body.phone-controls.critique-mode .critique-actions button {
   font-size: 10px;
 }
 
-/* phone-controls-bare-player-1.0: critique mode should collapse to the transport rail. */
-body.phone-controls.critique-mode #actorTabs,
-body.phone-controls.critique-mode #viewTabs,
-body.phone-controls.critique-mode #panelTabs,
-body.phone-controls.critique-mode #cleanupPanel,
-body.phone-controls.critique-mode #bonePanel,
-body.phone-controls.critique-mode #retargetPanel,
-body.phone-controls.critique-mode #transformPanel,
-body.phone-controls.critique-mode #labReadout,
-body.phone-controls.critique-mode #diagnosticOverlay,
-body.phone-controls.critique-mode #labStatus {
-  display: none !important;
-}
+/* phone-controls-player-rail-1.1: critique mode keeps transport compact without hiding switch/view/close controls. */
 body.phone-controls.critique-mode #playerTransport {
   left: 8px;
   right: 8px;
@@ -697,4 +685,321 @@ body.phone-controls.critique-mode #touchPoseModeToggle {
   body.phone-controls.critique-mode #touchPoseMode {
     grid-column: 3 / 4;
   }
+}
+
+/* character-switch-rail-1.0: critique mode still needs an obvious actor switcher. */
+body.phone-controls.critique-mode #actorTabs {
+  display: flex !important;
+  position: fixed;
+  left: 104px;
+  right: 8px;
+  top: max(8px, env(safe-area-inset-top));
+  transform: none;
+  z-index: 14;
+  justify-content: flex-start;
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 4px;
+  padding: 3px;
+  background: rgba(3, 7, 10, 0.84);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.32);
+  pointer-events: auto;
+}
+body.phone-controls.critique-mode #actorTabs::-webkit-scrollbar {
+  display: none;
+}
+body.phone-controls.critique-mode #actorTabs button {
+  flex: 0 0 auto;
+  min-width: 68px;
+  min-height: 30px;
+  padding: 3px 8px;
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* clip-sheet-foreground-1.0: clips must not render behind the critique transport rail. */
+body.phone-controls.critique-mode.sheet-clips #clipPanel.open {
+  display: block !important;
+  position: fixed;
+  left: 8px;
+  right: 8px;
+  top: calc(max(74px, env(safe-area-inset-top)) + 34px);
+  bottom: calc(max(8px, env(safe-area-inset-bottom)) + min(42vh, 520px));
+  z-index: 16;
+  width: auto;
+  max-height: none;
+  overflow: auto;
+  background: rgba(4, 8, 11, 0.96);
+  border-color: rgba(214, 166, 66, 0.42);
+  box-shadow: 0 10px 32px rgba(0,0,0,0.48);
+}
+body.phone-controls.critique-mode.sheet-clips #clipButtons {
+  padding-bottom: 8px;
+}
+@media (orientation: landscape) {
+  body.phone-controls.critique-mode.sheet-clips #clipPanel.open {
+    top: calc(max(48px, env(safe-area-inset-top)) + 36px);
+    bottom: calc(max(6px, env(safe-area-inset-bottom)) + min(36vh, 320px));
+  }
+}
+
+/* view-mode-rail-1.0: FPV/Orbit must remain reachable in critique mode. */
+body.phone-controls.critique-mode #viewTabs {
+  display: flex !important;
+  position: fixed;
+  right: 8px;
+  top: max(8px, env(safe-area-inset-top));
+  bottom: auto;
+  z-index: 15;
+  gap: 4px;
+  padding: 3px;
+  background: rgba(3, 7, 10, 0.86);
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.32);
+  pointer-events: auto;
+}
+body.phone-controls.critique-mode #viewTabs button {
+  min-width: 44px;
+  min-height: 30px;
+  padding: 3px 8px;
+  font-size: 11px;
+  line-height: 1;
+}
+body.phone-controls.critique-mode #actorTabs {
+  right: 116px;
+}
+
+/* view-mode-rail-1.1: separate FPV/Orbit from the actor switcher hit area. */
+body.phone-controls.critique-mode #actorTabs {
+  left: 8px;
+  right: 8px;
+  padding-right: 68px;
+}
+body.phone-controls.critique-mode #viewTabs {
+  display: flex !important;
+  position: fixed;
+  flex-direction: column;
+  top: calc(max(8px, env(safe-area-inset-top)) + 38px);
+  right: 8px;
+  bottom: auto;
+  z-index: 17;
+  gap: 4px;
+  padding: 3px;
+  background: rgba(3, 7, 10, 0.9);
+  border: 1px solid rgba(255,255,255,0.22);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.34);
+  pointer-events: auto;
+}
+body.phone-controls.critique-mode #viewTabs button {
+  min-width: 54px;
+  min-height: 30px;
+  padding: 3px 7px;
+  font-size: 10px;
+}
+body.phone-controls.critique-mode #viewTabs button.active {
+  color: #17140d;
+  background: #d6a642;
+}
+
+/* critique-landscape-1.0: keep landscape usable for pose review. */
+@media (orientation: landscape) {
+  body.phone-controls.critique-mode #actorTabs {
+    left: 8px;
+    right: 74px;
+    top: max(8px, env(safe-area-inset-top));
+    min-height: 30px;
+    padding: 2px;
+    padding-right: 2px;
+    gap: 3px;
+    z-index: 18;
+  }
+  body.phone-controls.critique-mode #actorTabs button {
+    min-width: 72px;
+    max-width: 136px;
+    min-height: 28px;
+    padding: 3px 7px;
+    font-size: 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  body.phone-controls.critique-mode #viewTabs {
+    top: max(8px, env(safe-area-inset-top));
+    right: 8px;
+    flex-direction: column;
+    z-index: 19;
+  }
+  body.phone-controls.critique-mode #viewTabs button {
+    min-width: 56px;
+    min-height: 28px;
+    font-size: 10px;
+  }
+  body.phone-controls.critique-mode #playerTransport {
+    left: 8px;
+    right: 8px;
+    bottom: max(6px, env(safe-area-inset-bottom));
+    top: auto;
+    width: auto;
+    max-height: min(34vh, 210px);
+    overflow: hidden;
+    padding: 5px 6px;
+    gap: 4px;
+    z-index: 13;
+    background: rgba(4,8,11,0.86);
+  }
+  body.phone-controls.critique-mode .player-transport-head {
+    min-height: 18px;
+  }
+  body.phone-controls.critique-mode .player-transport-label,
+  body.phone-controls.critique-mode .player-transport-time {
+    font-size: 9px;
+    line-height: 1.1;
+  }
+  body.phone-controls.critique-mode #cleanupTimelineCanvas {
+    height: 44px;
+  }
+  body.phone-controls.critique-mode .cleanup-scrub {
+    height: 14px;
+    margin: 1px 0 0;
+  }
+  body.phone-controls.critique-mode .player-transport-row,
+  body.phone-controls.critique-mode .critique-transport-jump-row {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+  }
+  body.phone-controls.critique-mode .player-transport-row button,
+  body.phone-controls.critique-mode .critique-transport-jump-row button {
+    min-height: 27px;
+    padding: 2px 4px;
+    font-size: 10px;
+  }
+  body.phone-controls.critique-mode #critiqueDock {
+    max-height: 30px;
+    overflow: hidden;
+    padding: 4px 6px;
+  }
+  body.phone-controls.critique-mode #critiqueDock[open] {
+    max-height: min(42vh, 240px);
+    overflow: auto;
+  }
+  body.phone-controls.critique-mode #critiqueDock > summary {
+    min-height: 22px;
+    font-size: 10px;
+  }
+  body.phone-controls.critique-mode.sheet-clips #clipPanel.open {
+    top: calc(max(8px, env(safe-area-inset-top)) + 34px);
+    bottom: calc(max(6px, env(safe-area-inset-bottom)) + min(34vh, 210px) + 6px);
+    left: 8px;
+    right: 8px;
+    max-height: none;
+    z-index: 17;
+  }
+}
+
+
+/* mobile-readout-recovery-1.0: phone critique keeps switch/view/close controls reachable. */
+body.phone-controls.critique-mode #panelTabs {
+  display: grid !important;
+  position: fixed;
+  left: 50%;
+  right: auto;
+  bottom: max(8px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 20;
+  width: min(96vw, 620px);
+  grid-template-columns: repeat(7, minmax(42px, 1fr));
+  gap: 4px;
+  padding: 5px;
+  background: rgba(4,8,11,0.82);
+  border: 1px solid rgba(255,255,255,0.18);
+  pointer-events: auto;
+}
+body.phone-controls.critique-mode #panelTabs button {
+  min-height: 30px;
+  padding: 3px 5px;
+  font-size: 10px;
+  line-height: 1;
+}
+body.phone-controls.critique-mode #panelTabs button[data-panel="none"] {
+  color: #17140d;
+  background: #d6a642;
+}
+body.phone-controls.critique-mode #cleanupPanel.open,
+body.phone-controls.critique-mode #clipPanel.open,
+body.phone-controls.critique-mode #bonePanel.open,
+body.phone-controls.critique-mode #retargetPanel.open,
+body.phone-controls.critique-mode #transformPanel.open,
+body.phone-controls.critique-mode #labReadout.open {
+  display: block !important;
+  position: fixed;
+  left: 8px;
+  right: 8px;
+  top: auto;
+  bottom: calc(max(8px, env(safe-area-inset-bottom)) + 48px);
+  max-height: min(40vh, 360px);
+  z-index: 18;
+  overflow: auto;
+  background: rgba(4,8,11,0.96);
+  border-color: rgba(214,166,66,0.38);
+}
+body.phone-controls.critique-mode #labReadout.open { pointer-events: auto; }
+body.phone-controls.critique-mode:not(.has-open-panel) #cleanupPanel,
+body.phone-controls.critique-mode:not(.has-open-panel) #clipPanel,
+body.phone-controls.critique-mode:not(.has-open-panel) #bonePanel,
+body.phone-controls.critique-mode:not(.has-open-panel) #retargetPanel,
+body.phone-controls.critique-mode:not(.has-open-panel) #transformPanel,
+body.phone-controls.critique-mode:not(.has-open-panel) #labReadout {
+  display: none !important;
+}
+body.phone-controls.critique-mode #playerTransport {
+  bottom: calc(max(8px, env(safe-area-inset-bottom)) + 44px);
+  max-height: min(32vh, 220px);
+}
+body.phone-controls.critique-mode.has-open-panel #playerTransport {
+  display: none !important;
+}
+@media (orientation: landscape) {
+  body.phone-controls.critique-mode #panelTabs {
+    width: min(72vw, 560px);
+    left: 8px;
+    right: auto;
+    transform: none;
+  }
+  body.phone-controls.critique-mode #cleanupPanel.open,
+  body.phone-controls.critique-mode #clipPanel.open,
+  body.phone-controls.critique-mode #bonePanel.open,
+  body.phone-controls.critique-mode #retargetPanel.open,
+  body.phone-controls.critique-mode #transformPanel.open,
+  body.phone-controls.critique-mode #labReadout.open {
+    left: 8px;
+    right: auto;
+    width: min(46vw, 420px);
+    max-height: min(54vh, 320px);
+  }
+}
+
+
+/* fpv-unclutter-1.0: FPV review should show hands/weapon, not lab chrome. */
+body.is-fpv #labHeader,
+body.is-fpv #actorTabs,
+body.is-fpv #panelTabs,
+body.is-fpv #playerTransport,
+body.is-fpv #labStatus,
+body.is-fpv #diagnosticOverlay,
+body.is-fpv .lab-panel.open {
+  display: none !important;
+}
+body.is-fpv #viewTabs {
+  display: flex !important;
+  position: fixed;
+  right: 8px;
+  top: max(8px, env(safe-area-inset-top));
+  bottom: auto;
+  z-index: 30;
+  opacity: 0.42;
+}
+body.is-fpv #viewTabs:focus-within,
+body.is-fpv #viewTabs:hover {
+  opacity: 1;
 }

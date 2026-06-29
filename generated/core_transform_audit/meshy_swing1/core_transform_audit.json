@@ -1,0 +1,1892 @@
+{
+  "schema": "pose-lab-core-transform-audit-v1",
+  "source": "assets/models/ruined_air/Scavenger_new.fbx",
+  "target": "assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb",
+  "clip": "Armature|Swing1",
+  "sourceBoneCount": 119,
+  "targetBoneCount": 24,
+  "duplicateNames": [
+    {
+      "name": "Hips",
+      "count": 2
+    },
+    {
+      "name": "LeftUpLeg",
+      "count": 2
+    },
+    {
+      "name": "LeftLeg",
+      "count": 2
+    },
+    {
+      "name": "LeftFoot",
+      "count": 2
+    },
+    {
+      "name": "LeftToeBase",
+      "count": 2
+    },
+    {
+      "name": "LeftToeBase_end",
+      "count": 2
+    },
+    {
+      "name": "RightUpLeg",
+      "count": 2
+    },
+    {
+      "name": "RightLeg",
+      "count": 2
+    },
+    {
+      "name": "RightFoot",
+      "count": 2
+    },
+    {
+      "name": "RightToeBase",
+      "count": 2
+    },
+    {
+      "name": "RightToeBase_end",
+      "count": 2
+    },
+    {
+      "name": "Spine02",
+      "count": 2
+    },
+    {
+      "name": "Spine01",
+      "count": 2
+    },
+    {
+      "name": "Spine",
+      "count": 2
+    },
+    {
+      "name": "LeftShoulder",
+      "count": 2
+    },
+    {
+      "name": "LeftArm",
+      "count": 2
+    },
+    {
+      "name": "LeftForeArm",
+      "count": 2
+    },
+    {
+      "name": "LeftHand",
+      "count": 2
+    },
+    {
+      "name": "LeftHand007",
+      "count": 2
+    },
+    {
+      "name": "LeftHand008",
+      "count": 2
+    },
+    {
+      "name": "LeftHand009",
+      "count": 2
+    },
+    {
+      "name": "LeftHand010",
+      "count": 2
+    },
+    {
+      "name": "LeftHand012",
+      "count": 2
+    },
+    {
+      "name": "LeftHand011",
+      "count": 2
+    },
+    {
+      "name": "LeftHand004",
+      "count": 2
+    },
+    {
+      "name": "LeftHand005",
+      "count": 2
+    },
+    {
+      "name": "LeftHand006",
+      "count": 2
+    },
+    {
+      "name": "LeftHand001",
+      "count": 2
+    },
+    {
+      "name": "LeftHand002",
+      "count": 2
+    },
+    {
+      "name": "LeftHand003",
+      "count": 2
+    },
+    {
+      "name": "RightShoulder",
+      "count": 2
+    },
+    {
+      "name": "RightArm",
+      "count": 2
+    },
+    {
+      "name": "RightForeArm",
+      "count": 2
+    },
+    {
+      "name": "RightHand",
+      "count": 2
+    },
+    {
+      "name": "RightHand010",
+      "count": 2
+    },
+    {
+      "name": "RightHand012",
+      "count": 2
+    },
+    {
+      "name": "RightHand011",
+      "count": 2
+    },
+    {
+      "name": "RightHand007",
+      "count": 2
+    },
+    {
+      "name": "RightHand008",
+      "count": 2
+    },
+    {
+      "name": "RightHand009",
+      "count": 2
+    },
+    {
+      "name": "SwordR",
+      "count": 2
+    },
+    {
+      "name": "RightHand004",
+      "count": 2
+    },
+    {
+      "name": "RightHand005",
+      "count": 2
+    },
+    {
+      "name": "RightHand006",
+      "count": 2
+    },
+    {
+      "name": "RightHand001",
+      "count": 2
+    },
+    {
+      "name": "RightHand002",
+      "count": 2
+    },
+    {
+      "name": "RightHand003",
+      "count": 2
+    },
+    {
+      "name": "neck",
+      "count": 2
+    },
+    {
+      "name": "Head",
+      "count": 2
+    },
+    {
+      "name": "head_end",
+      "count": 2
+    },
+    {
+      "name": "head_end_end",
+      "count": 2
+    },
+    {
+      "name": "headfront",
+      "count": 2
+    },
+    {
+      "name": "headfront_end",
+      "count": 2
+    }
+  ],
+  "selectedBones": [
+    {
+      "name": "Hips",
+      "sourceName": "Hips",
+      "targetName": "Hips",
+      "sourceCandidateCount": 2,
+      "targetCandidateCount": 1,
+      "sourceInSkin": true,
+      "targetInSkin": true,
+      "sourceParent": "Armature",
+      "targetParent": "Armature",
+      "sourceMeaningfulChild": "LeftUpLeg",
+      "targetMeaningfulChild": "LeftUpLeg",
+      "sourceChildSameName": true,
+      "selectedChildSameName": false,
+      "sourceWorld": [
+        0.7326,
+        85.5893,
+        14.3355
+      ],
+      "targetWorld": [
+        0.0036,
+        0.9256,
+        0.0452
+      ],
+      "sourceTargetWorldRestAngle": 125.73,
+      "sourceChainDirection": [
+        0.773,
+        -0.6337,
+        -0.0303
+      ],
+      "targetChainDirection": [
+        0.7785,
+        -0.6276,
+        0.0061
+      ],
+      "sourceLocalQuaternion": [
+        0.029,
+        0.1568,
+        -0.759,
+        0.6312
+      ],
+      "targetLocalQuaternion": [
+        0.0371,
+        -0.005,
+        -0.005,
+        0.9993
+      ],
+      "clipTrackKeys": 2,
+      "sourceDeltaAngles": [
+        {
+          "time": 0,
+          "angle": 0
+        },
+        {
+          "time": 0.18,
+          "angle": 0
+        },
+        {
+          "time": 0.487,
+          "angle": 0
+        },
+        {
+          "time": 0.808,
+          "angle": 0
+        },
+        {
+          "time": 1,
+          "angle": 0
+        }
+      ]
+    },
+    {
+      "name": "Spine02",
+      "sourceName": "Spine02",
+      "targetName": "Spine02",
+      "sourceCandidateCount": 2,
+      "targetCandidateCount": 1,
+      "sourceInSkin": true,
+      "targetInSkin": true,
+      "sourceParent": "Hips",
+      "targetParent": "Hips",
+      "sourceMeaningfulChild": "Spine01",
+      "targetMeaningfulChild": "Spine01",
+      "sourceChildSameName": true,
+      "selectedChildSameName": false,
+      "sourceWorld": [
+        0.7327,
+        96.3707,
+        13.2649
+      ],
+      "targetWorld": [
+        0.003,
+        1.0436,
+        0.0385
+      ],
+      "sourceTargetWorldRestAngle": 2.47,
+      "sourceChainDirection": [
+        0,
+        0.9951,
+        -0.0988
+      ],
+      "targetChainDirection": [
+        -0.0051,
+        0.9984,
+        -0.0564
+      ],
+      "sourceLocalQuaternion": [
+        0.4022,
+        0.3932,
+        0.6679,
+        0.4874
+      ],
+      "targetLocalQuaternion": [
+        -0.0653,
+        0.0023,
+        0.0078,
+        0.9978
+      ],
+      "clipTrackKeys": 2,
+      "sourceDeltaAngles": [
+        {
+          "time": 0,
+          "angle": 0
+        },
+        {
+          "time": 0.18,
+          "angle": 0
+        },
+        {
+          "time": 0.487,
+          "angle": 0
+        },
+        {
+          "time": 0.808,
+          "angle": 0
+        },
+        {
+          "time": 1,
+          "angle": 0
+        }
+      ]
+    },
+    {
+      "name": "Spine01",
+      "sourceName": "Spine01",
+      "targetName": "Spine01",
+      "sourceCandidateCount": 2,
+      "targetCandidateCount": 1,
+      "sourceInSkin": true,
+      "targetInSkin": true,
+      "sourceParent": "Spine02",
+      "targetParent": "Spine02",
+      "sourceMeaningfulChild": "Spine",
+      "targetMeaningfulChild": "Spine",
+      "sourceChildSameName": true,
+      "selectedChildSameName": false,
+      "sourceWorld": [
+        0.7327,
+        107.1514,
+        12.1947
+      ],
+      "targetWorld": [
+        0.0024,
+        1.1617,
+        0.0318
+      ],
+      "sourceTargetWorldRestAngle": 2.47,
+      "sourceChainDirection": [
+        0,
+        0.9951,
+        -0.0988
+      ],
+      "targetChainDirection": [
+        -0.0051,
+        0.9984,
+        -0.0564
+      ],
+      "sourceLocalQuaternion": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "targetLocalQuaternion": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "clipTrackKeys": 2,
+      "sourceDeltaAngles": [
+        {
+          "time": 0,
+          "angle": 0
+        },
+        {
+          "time": 0.18,
+          "angle": 0
+        },
+        {
+          "time": 0.487,
+          "angle": 0
+        },
+        {
+          "time": 0.808,
+          "angle": 0
+        },
+        {
+          "time": 1,
+          "angle": 0
+        }
+      ]
+    },
+    {
+      "name": "Spine",
+      "sourceName": "Spine",
+      "targetName": "Spine",
+      "sourceCandidateCount": 2,
+      "targetCandidateCount": 1,
+      "sourceInSkin": true,
+      "targetInSkin": true,
+      "sourceParent": "Spine01",
+      "targetParent": "Spine01",
+      "sourceMeaningfulChild": "LeftShoulder",
+      "targetMeaningfulChild": "LeftShoulder",
+      "sourceChildSameName": true,
+      "selectedChildSameName": false,
+      "sourceWorld": [
+        0.7327,
+        117.9327,
+        11.1241
+      ],
+      "targetWorld": [
+        0.0018,
+        1.2798,
+        0.0252
+      ],
+      "sourceTargetWorldRestAngle": 17.5,
+      "sourceChainDirection": [
+        0.7648,
+        0.3829,
+        -0.5182
+      ],
+      "targetChainDirection": [
+        0.66,
+        0.7223,
+        -0.2065
+      ],
+      "sourceLocalQuaternion": [
+        -0.1939,
+        -0.0042,
+        0.0038,
+        0.981
+      ],
+      "targetLocalQuaternion": [
+        -0.0636,
+        -0.0004,
+        0.0007,
+        0.998
+      ],
+      "clipTrackKeys": 2,
+      "sourceDeltaAngles": [
+        {
+          "time": 0,
+          "angle": 0
+        },
+        {
+          "time": 0.18,
+          "angle": 0
+        },
+        {
+          "time": 0.487,
+          "angle": 0
+        },
+        {
+          "time": 0.808,
+          "angle": 0
+        },
+        {
+          "time": 1,
+          "angle": 0
+        }
+      ]
+    },
+    {
+      "name": "RightShoulder",
+      "sourceName": "RightShoulder",
+      "targetName": "RightShoulder",
+      "sourceCandidateCount": 2,
+      "targetCandidateCount": 1,
+      "sourceInSkin": true,
+      "targetInSkin": true,
+      "sourceParent": "Spine",
+      "targetParent": "Spine",
+      "sourceMeaningfulChild": "RightArm",
+      "targetMeaningfulChild": "RightArm",
+      "sourceChildSameName": true,
+      "selectedChildSameName": false,
+      "sourceWorld": [
+        -3.1548,
+        120.2059,
+        8.4224
+      ],
+      "targetWorld": [
+        -0.0411,
+        1.3194,
+        0.0117
+      ],
+      "sourceTargetWorldRestAngle": 22.91,
+      "sourceChainDirection": [
+        -0.9488,
+        -0.0001,
+        0.3158
+      ],
+      "targetChainDirection": [
+        -0.9969,
+        0,
+        -0.0785
+      ],
+      "sourceLocalQuaternion": [
+        0.6953,
+        -0.5014,
+        0.2966,
+        0.4208
+      ],
+      "targetLocalQuaternion": [
+        0.522,
+        -0.5647,
+        0.4663,
+        0.4373
+      ],
+      "clipTrackKeys": 40,
+      "sourceDeltaAngles": [
+        {
+          "time": 0,
+          "angle": 0
+        },
+        {
+          "time": 0.18,
+          "angle": 26.08
+        },
+        {
+          "time": 0.487,
+          "angle": 88.89
+        },
+        {
+          "time": 0.808,
+          "angle": 46.39
+        },
+        {
+          "time": 1,
+          "angle": 2.37
+        }
+      ]
+    },
+    {
+      "name": "RightArm",
+      "sourceName": "RightArm",
+      "targetName": "RightArm",
+      "sourceCandidateCount": 2,
+      "targetCandidateCount": 1,
+      "sourceInSkin": true,
+      "targetInSkin": true,
+      "sourceParent": "RightShoulder",
+      "targetParent": "RightShoulder",
+      "sourceMeaningfulChild": "RightForeArm",
+      "targetMeaningfulChild": "RightForeArm",
+      "sourceChildSameName": true,
+      "selectedChildSameName": false,
+      "sourceWorld": [
+        -18.1303,
+        120.2045,
+        13.4067
+      ],
+      "targetWorld": [
+        -0.2127,
+        1.3194,
+        -0.0019
+      ],
+      "sourceTargetWorldRestAngle": 79.86,
+      "sourceChainDirection": [
+        -0.5814,
+        -0.4699,
+        0.6642
+      ],
+      "targetChainDirection": [
+        -0.3012,
+        -0.9353,
+        -0.186
+      ],
+      "sourceLocalQuaternion": [
+        0.276,
+        0.1076,
+        -0.2077,
+        0.9323
+      ],
+      "targetLocalQuaternion": [
+        0.4975,
+        -0.5382,
+        -0.3082,
+        0.6064
+      ],
+      "clipTrackKeys": 42,
+      "sourceDeltaAngles": [
+        {
+          "time": 0,
+          "angle": 0
+        },
+        {
+          "time": 0.18,
+          "angle": 0.05
+        },
+        {
+          "time": 0.487,
+          "angle": 51.6
+        },
+        {
+          "time": 0.808,
+          "angle": 41.49
+        },
+        {
+          "time": 1,
+          "angle": 2.79
+        }
+      ]
+    },
+    {
+      "name": "RightForeArm",
+      "sourceName": "RightForeArm",
+      "targetName": "RightForeArm",
+      "sourceCandidateCount": 2,
+      "targetCandidateCount": 1,
+      "sourceInSkin": true,
+      "targetInSkin": true,
+      "sourceParent": "RightArm",
+      "targetParent": "RightArm",
+      "sourceMeaningfulChild": "RightHand",
+      "targetMeaningfulChild": "RightHand",
+      "sourceChildSameName": true,
+      "selectedChildSameName": false,
+      "sourceWorld": [
+        -32.2636,
+        108.7812,
+        29.5532
+      ],
+      "targetWorld": [
+        -0.2824,
+        1.1031,
+        -0.0449
+      ],
+      "sourceTargetWorldRestAngle": 114.14,
+      "sourceChainDirection": [
+        -0.2381,
+        0.5258,
+        0.8166
+      ],
+      "targetChainDirection": [
+        -0.4884,
+        -0.8465,
+        0.2119
+      ],
+      "sourceLocalQuaternion": [
+        -0.2964,
+        0.1729,
+        -0.4419,
+        0.8288
+      ],
+      "targetLocalQuaternion": [
+        -0.2237,
+        0.1016,
+        0.0164,
+        0.9692
+      ],
+      "clipTrackKeys": 37,
+      "sourceDeltaAngles": [
+        {
+          "time": 0,
+          "angle": 0
+        },
+        {
+          "time": 0.18,
+          "angle": 6.44
+        },
+        {
+          "time": 0.487,
+          "angle": 82.85
+        },
+        {
+          "time": 0.808,
+          "angle": 46.51
+        },
+        {
+          "time": 1,
+          "angle": 2.78
+        }
+      ]
+    },
+    {
+      "name": "RightHand",
+      "sourceName": "RightHand",
+      "targetName": "RightHand",
+      "sourceCandidateCount": 2,
+      "targetCandidateCount": 1,
+      "sourceInSkin": true,
+      "targetInSkin": true,
+      "sourceParent": "RightForeArm",
+      "targetParent": "RightForeArm",
+      "sourceMeaningfulChild": "RightHand010",
+      "targetMeaningfulChild": "",
+      "sourceChildSameName": true,
+      "selectedChildSameName": false,
+      "sourceWorld": [
+        -37.7882,
+        120.9788,
+        48.4964
+      ],
+      "targetWorld": [
+        -0.3924,
+        0.9124,
+        0.0029
+      ],
+      "sourceTargetWorldRestAngle": 135.91,
+      "sourceChainDirection": [
+        0.3182,
+        0.7973,
+        -0.5129
+      ],
+      "targetChainDirection": [
+        -0.4884,
+        -0.8465,
+        0.2119
+      ],
+      "sourceLocalQuaternion": [
+        0.0344,
+        0.3193,
+        -0.1769,
+        0.9304
+      ],
+      "targetLocalQuaternion": [
+        0.045,
+        -0.1364,
+        -0.1694,
+        0.975
+      ],
+      "clipTrackKeys": 41,
+      "sourceDeltaAngles": [
+        {
+          "time": 0,
+          "angle": 0
+        },
+        {
+          "time": 0.18,
+          "angle": 44.98
+        },
+        {
+          "time": 0.487,
+          "angle": 84.11
+        },
+        {
+          "time": 0.808,
+          "angle": 47.96
+        },
+        {
+          "time": 1,
+          "angle": 2.69
+        }
+      ]
+    },
+    {
+      "name": "LeftShoulder",
+      "sourceName": "LeftShoulder",
+      "targetName": "LeftShoulder",
+      "sourceCandidateCount": 2,
+      "targetCandidateCount": 1,
+      "sourceInSkin": true,
+      "targetInSkin": true,
+      "sourceParent": "Spine",
+      "targetParent": "Spine",
+      "sourceMeaningfulChild": "LeftArm",
+      "targetMeaningfulChild": "LeftArm",
+      "sourceChildSameName": true,
+      "selectedChildSameName": false,
+      "sourceWorld": [
+        4.5466,
+        119.8419,
+        8.5398
+      ],
+      "targetWorld": [
+        0.0447,
+        1.3268,
+        0.0117
+      ],
+      "sourceTargetWorldRestAngle": 5.14,
+      "sourceChainDirection": [
+        0.986,
+        0,
+        -0.167
+      ],
+      "targetChainDirection": [
+        0.997,
+        0,
+        -0.078
+      ],
+      "sourceLocalQuaternion": [
+        0.5533,
+        0.6549,
+        -0.3969,
+        0.328
+      ],
+      "targetLocalQuaternion": [
+        0.5221,
+        0.5646,
+        -0.4724,
+        0.4307
+      ],
+      "clipTrackKeys": 2,
+      "sourceDeltaAngles": [
+        {
+          "time": 0,
+          "angle": 0
+        },
+        {
+          "time": 0.18,
+          "angle": 0
+        },
+        {
+          "time": 0.487,
+          "angle": 0
+        },
+        {
+          "time": 0.808,
+          "angle": 0
+        },
+        {
+          "time": 1,
+          "angle": 0
+        }
+      ]
+    },
+    {
+      "name": "LeftArm",
+      "sourceName": "LeftArm",
+      "targetName": "LeftArm",
+      "sourceCandidateCount": 2,
+      "targetCandidateCount": 1,
+      "sourceInSkin": true,
+      "targetInSkin": true,
+      "sourceParent": "LeftShoulder",
+      "targetParent": "LeftShoulder",
+      "sourceMeaningfulChild": "LeftForeArm",
+      "targetMeaningfulChild": "LeftForeArm",
+      "sourceChildSameName": true,
+      "selectedChildSameName": false,
+      "sourceWorld": [
+        19.802,
+        119.8419,
+        5.9555
+      ],
+      "targetWorld": [
+        0.2164,
+        1.3268,
+        -0.0017
+      ],
+      "sourceTargetWorldRestAngle": 58.29,
+      "sourceChainDirection": [
+        0.3535,
+        -0.8733,
+        -0.3353
+      ],
+      "targetChainDirection": [
+        0.3294,
+        -0.928,
+        -0.1739
+      ],
+      "sourceLocalQuaternion": [
+        0.5456,
+        0.2376,
+        -0.0076,
+        0.8036
+      ],
+      "targetLocalQuaternion": [
+        0.4902,
+        0.5301,
+        0.2978,
+        0.6245
+      ],
+      "clipTrackKeys": 2,
+      "sourceDeltaAngles": [
+        {
+          "time": 0,
+          "angle": 0
+        },
+        {
+          "time": 0.18,
+          "angle": 0
+        },
+        {
+          "time": 0.487,
+          "angle": 0
+        },
+        {
+          "time": 0.808,
+          "angle": 0
+        },
+        {
+          "time": 1,
+          "angle": 0
+        }
+      ]
+    },
+    {
+      "name": "LeftForeArm",
+      "sourceName": "LeftForeArm",
+      "targetName": "LeftForeArm",
+      "sourceCandidateCount": 2,
+      "targetCandidateCount": 1,
+      "sourceInSkin": true,
+      "targetInSkin": true,
+      "sourceParent": "LeftArm",
+      "targetParent": "LeftArm",
+      "sourceMeaningfulChild": "LeftHand",
+      "targetMeaningfulChild": "LeftHand",
+      "sourceChildSameName": true,
+      "selectedChildSameName": false,
+      "sourceWorld": [
+        28.544,
+        98.2441,
+        -2.3372
+      ],
+      "targetWorld": [
+        0.2971,
+        1.0994,
+        -0.0443
+      ],
+      "sourceTargetWorldRestAngle": 55.93,
+      "sourceChainDirection": [
+        0.4402,
+        -0.8571,
+        0.2676
+      ],
+      "targetChainDirection": [
+        0.4761,
+        -0.8538,
+        0.2108
+      ],
+      "sourceLocalQuaternion": [
+        -0.0944,
+        -0.0685,
+        0.2897,
+        0.95
+      ],
+      "targetLocalQuaternion": [
+        -0.2092,
+        -0.0803,
+        0.0028,
+        0.9746
+      ],
+      "clipTrackKeys": 2,
+      "sourceDeltaAngles": [
+        {
+          "time": 0,
+          "angle": 0
+        },
+        {
+          "time": 0.18,
+          "angle": 0
+        },
+        {
+          "time": 0.487,
+          "angle": 0
+        },
+        {
+          "time": 0.808,
+          "angle": 0
+        },
+        {
+          "time": 1,
+          "angle": 0
+        }
+      ]
+    },
+    {
+      "name": "LeftHand",
+      "sourceName": "LeftHand",
+      "targetName": "LeftHand",
+      "sourceCandidateCount": 2,
+      "targetCandidateCount": 1,
+      "sourceInSkin": true,
+      "targetInSkin": true,
+      "sourceParent": "LeftForeArm",
+      "targetParent": "LeftForeArm",
+      "sourceMeaningfulChild": "LeftHand007",
+      "targetMeaningfulChild": "",
+      "sourceChildSameName": true,
+      "selectedChildSameName": false,
+      "sourceWorld": [
+        38.1192,
+        79.6011,
+        3.4837
+      ],
+      "targetWorld": [
+        0.4034,
+        0.9087,
+        0.0028
+      ],
+      "sourceTargetWorldRestAngle": 81.79,
+      "sourceChainDirection": [
+        0.3364,
+        -0.3442,
+        0.8766
+      ],
+      "targetChainDirection": [
+        0.4761,
+        -0.8538,
+        0.2108
+      ],
+      "sourceLocalQuaternion": [
+        0.1714,
+        -0.1157,
+        0.0993,
+        0.9733
+      ],
+      "targetLocalQuaternion": [
+        0.0176,
+        0.1168,
+        0.1558,
+        0.9807
+      ],
+      "clipTrackKeys": 2,
+      "sourceDeltaAngles": [
+        {
+          "time": 0,
+          "angle": 0
+        },
+        {
+          "time": 0.18,
+          "angle": 0
+        },
+        {
+          "time": 0.487,
+          "angle": 0
+        },
+        {
+          "time": 0.808,
+          "angle": 0
+        },
+        {
+          "time": 1,
+          "angle": 0
+        }
+      ]
+    }
+  ],
+  "clipTracks": [
+    {
+      "name": "LeftHand011.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand011.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand011.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightArm.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightArm.quaternion",
+      "type": "quaternion",
+      "keys": 42
+    },
+    {
+      "name": "RightArm.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "Spine.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "Spine.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "Spine.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftToeBase.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftToeBase.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftToeBase.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftFoot.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftFoot.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftFoot.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftShoulder.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftShoulder.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftShoulder.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightShoulder.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightShoulder.quaternion",
+      "type": "quaternion",
+      "keys": 40
+    },
+    {
+      "name": "RightShoulder.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftLeg.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftLeg.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftLeg.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightUpLeg.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightUpLeg.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightUpLeg.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand003.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand003.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightHand003.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "SwordR.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "SwordR.quaternion",
+      "type": "quaternion",
+      "keys": 28
+    },
+    {
+      "name": "SwordR.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand002.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand002.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightHand002.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "Head.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "Head.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "Head.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "headfront_end.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "headfront_end.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "headfront_end.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftToeBase_end.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftToeBase_end.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftToeBase_end.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "Hips.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "Hips.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "Hips.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "head_end_end.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "head_end_end.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "head_end_end.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftForeArm.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftForeArm.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftForeArm.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightFoot.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightFoot.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightFoot.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand002.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand002.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand002.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand003.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand003.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand003.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "headfront.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "headfront.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "headfront.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightToeBase_end.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightToeBase_end.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightToeBase_end.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand001.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand001.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand001.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand.quaternion",
+      "type": "quaternion",
+      "keys": 41
+    },
+    {
+      "name": "RightHand.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand006.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand006.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightHand006.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand005.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand005.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightHand005.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand010.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand010.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightHand010.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand012.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand012.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightHand012.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand011.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand011.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightHand011.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightLeg.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightLeg.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightLeg.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "Spine02.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "Spine02.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "Spine02.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand008.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand008.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand008.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand010.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand010.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand010.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftUpLeg.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftUpLeg.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftUpLeg.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand012.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand012.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand012.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand007.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand007.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand007.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightToeBase.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightToeBase.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightToeBase.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand004.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand004.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightHand004.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand009.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand009.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightHand009.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "head_end.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "head_end.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "head_end.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand005.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand005.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand005.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightForeArm.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightForeArm.quaternion",
+      "type": "quaternion",
+      "keys": 37
+    },
+    {
+      "name": "RightForeArm.scale",
+      "type": "vector",
+      "keys": 10
+    },
+    {
+      "name": "Armature.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "Armature.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "Armature.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand001.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand001.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightHand001.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand006.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand006.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand006.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftArm.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftArm.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftArm.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "Spine01.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "Spine01.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "Spine01.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand008.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand008.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightHand008.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand007.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "RightHand007.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "RightHand007.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand004.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand004.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand004.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand009.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand009.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "LeftHand009.scale",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "neck.position",
+      "type": "vector",
+      "keys": 2
+    },
+    {
+      "name": "neck.quaternion",
+      "type": "quaternion",
+      "keys": 2
+    },
+    {
+      "name": "neck.scale",
+      "type": "vector",
+      "keys": 2
+    }
+  ],
+  "conclusions": [
+    "Scavenger_new.fbx contains duplicate same-name source bones and more bones than the 24-bone Meshy target.",
+    "Retargeting must resolve driver bones from the skinned skeleton and ignore same-name wrapper/end children for chain basis."
+  ]
+}

@@ -28,10 +28,13 @@ for (const clip of sf2Clips) {
   if (/\[v\d+\]/i.test(clip.name)) throw new Error(`Generated clip still has failed-version label: ${clip.name}`);
 }
 for (const clip of normalClips) {
-  if (names.includes(clip.name)) throw new Error(`Default SF2 list should not be narrowed by recent normal clip: ${clip.name}`);
+  if (!names.includes(clip.name)) throw new Error(`Default clip list omitted normal clip: ${clip.name}`);
 }
-if (visible.length !== sf2Clips.length) {
-  throw new Error(`Expected exactly all SF2 clips by default, got ${visible.length} entries for ${sf2Clips.length} SF2 clips: ${names.join(', ')}`);
+if (visible.length !== sf2Clips.length + normalClips.length) {
+  throw new Error(`Expected all clips by default, got ${visible.length} entries for ${sf2Clips.length + normalClips.length} clips: ${names.join(', ')}`);
+}
+if (names[0] !== 'Jab') {
+  throw new Error(`Expected recent Jab first in all-clips list, got: ${names.slice(0, 5).join(', ')}`);
 }
 
 console.log('PASS test_clip_default_sf2');

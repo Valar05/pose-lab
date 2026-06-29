@@ -1,0 +1,765 @@
+{
+  "ok": true,
+  "failure": null,
+  "project": "pose-lab",
+  "url": "http://127.0.0.1:9992/pose-lab/pose-lab.html?actor=meshyCharacter&clip=AttackHorizontal&qaActor=meshyCharacter&qaClip=AttackHorizontal&qaView=orbit&mode=standard&beacon=1&capture=1&captureFrames=10&captureIntervalMs=350&visualQaExpectedBuild=meshy-infinite-brutality-mapped-retarget",
+  "outDir": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_ib_mc_horizontal",
+  "report": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_ib_mc_horizontal/visual_qa_report.json",
+  "sheet": {
+    "ok": true,
+    "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_ib_mc_horizontal/contact_sheet.jpg",
+    "code": 0,
+    "stdout": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_ib_mc_horizontal/contact_sheet.jpg",
+    "stderr": ""
+  },
+  "expectedBuild": "meshy-infinite-brutality-mapped-retarget",
+  "loadedBuild": "meshy-infinite-brutality-mapped-retarget",
+  "buildInfo": {
+    "runtimeBuild": "meshy-infinite-brutality-mapped-retarget",
+    "indexPath": "/storage/emulated/0/Documents/GodotProjects/pose-lab/pose-lab.html",
+    "cacheTokens": [
+      "pose-editor-40"
+    ]
+  },
+  "launch": {
+    "code": 0,
+    "signal": null,
+    "stdout": "Starting: Intent { act=android.intent.action.VIEW dat=http://127.0.0.1:9992/... }\n",
+    "stderr": ""
+  },
+  "wakeLock": {
+    "code": 0,
+    "signal": null,
+    "stdout": "",
+    "stderr": ""
+  },
+  "androidState": {
+    "dumpsysPower": {
+      "code": 0,
+      "denied": true,
+      "summary": [
+        "Permission Denial: can't dump PowerManagerService from from pid=1533, uid=10624 due to missing android.permission.DUMP permission"
+      ]
+    },
+    "cmdPowerWakeup": {
+      "code": 255,
+      "permitted": false,
+      "output": "Error: java.lang.SecurityException: Neither user 10624 nor current process has android.permission.DEVICE_POWER."
+    }
+  },
+  "readyBroadcast": {
+    "code": 0,
+    "signal": null,
+    "stdout": "Broadcasting: Intent { act=com.codex.pose_lab.READY_TO_VIEW (has extras) }\nBroadcast sent without waiting for result\n",
+    "stderr": ""
+  },
+  "beacons": [
+    {
+      "stage": "rendered",
+      "build": "meshy-infinite-brutality-mapped-retarget",
+      "actor": "meshyCharacter",
+      "clip": "standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "clipKey": "retarget:orc->meshyCharacter:IB-MC:standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "origin": "retarget:orc->meshyCharacter:IB-MC",
+      "sourceName": "standing_melee_attack_horizontal",
+      "frameMode": "",
+      "viewMode": "orbit"
+    }
+  ],
+  "captures": [
+    {
+      "build": "meshy-infinite-brutality-mapped-retarget",
+      "frame": "0",
+      "actor": "meshyCharacter",
+      "clip": "standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "clipKey": "retarget:orc->meshyCharacter:IB-MC:standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "origin": "retarget:orc->meshyCharacter:IB-MC",
+      "sourceName": "standing_melee_attack_horizontal",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "7186",
+      "bytes": 288134,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_ib_mc_horizontal/frame_000.png"
+    },
+    {
+      "build": "meshy-infinite-brutality-mapped-retarget",
+      "frame": "1",
+      "actor": "meshyCharacter",
+      "clip": "standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "clipKey": "retarget:orc->meshyCharacter:IB-MC:standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "origin": "retarget:orc->meshyCharacter:IB-MC",
+      "sourceName": "standing_melee_attack_horizontal",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "7539",
+      "bytes": 273868,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_ib_mc_horizontal/frame_001.png"
+    },
+    {
+      "build": "meshy-infinite-brutality-mapped-retarget",
+      "frame": "2",
+      "actor": "meshyCharacter",
+      "clip": "standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "clipKey": "retarget:orc->meshyCharacter:IB-MC:standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "origin": "retarget:orc->meshyCharacter:IB-MC",
+      "sourceName": "standing_melee_attack_horizontal",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "7903",
+      "bytes": 272501,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_ib_mc_horizontal/frame_002.png"
+    },
+    {
+      "build": "meshy-infinite-brutality-mapped-retarget",
+      "frame": "3",
+      "actor": "meshyCharacter",
+      "clip": "standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "clipKey": "retarget:orc->meshyCharacter:IB-MC:standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "origin": "retarget:orc->meshyCharacter:IB-MC",
+      "sourceName": "standing_melee_attack_horizontal",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "8254",
+      "bytes": 243580,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_ib_mc_horizontal/frame_003.png"
+    },
+    {
+      "build": "meshy-infinite-brutality-mapped-retarget",
+      "frame": "4",
+      "actor": "meshyCharacter",
+      "clip": "standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "clipKey": "retarget:orc->meshyCharacter:IB-MC:standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "origin": "retarget:orc->meshyCharacter:IB-MC",
+      "sourceName": "standing_melee_attack_horizontal",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "8604",
+      "bytes": 247812,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_ib_mc_horizontal/frame_004.png"
+    },
+    {
+      "build": "meshy-infinite-brutality-mapped-retarget",
+      "frame": "5",
+      "actor": "meshyCharacter",
+      "clip": "standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "clipKey": "retarget:orc->meshyCharacter:IB-MC:standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "origin": "retarget:orc->meshyCharacter:IB-MC",
+      "sourceName": "standing_melee_attack_horizontal",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "8956",
+      "bytes": 290801,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_ib_mc_horizontal/frame_005.png"
+    },
+    {
+      "build": "meshy-infinite-brutality-mapped-retarget",
+      "frame": "6",
+      "actor": "meshyCharacter",
+      "clip": "standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "clipKey": "retarget:orc->meshyCharacter:IB-MC:standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "origin": "retarget:orc->meshyCharacter:IB-MC",
+      "sourceName": "standing_melee_attack_horizontal",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "9306",
+      "bytes": 284669,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_ib_mc_horizontal/frame_006.png"
+    },
+    {
+      "build": "meshy-infinite-brutality-mapped-retarget",
+      "frame": "7",
+      "actor": "meshyCharacter",
+      "clip": "standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "clipKey": "retarget:orc->meshyCharacter:IB-MC:standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "origin": "retarget:orc->meshyCharacter:IB-MC",
+      "sourceName": "standing_melee_attack_horizontal",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "9673",
+      "bytes": 271634,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_ib_mc_horizontal/frame_007.png"
+    },
+    {
+      "build": "meshy-infinite-brutality-mapped-retarget",
+      "frame": "8",
+      "actor": "meshyCharacter",
+      "clip": "standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "clipKey": "retarget:orc->meshyCharacter:IB-MC:standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "origin": "retarget:orc->meshyCharacter:IB-MC",
+      "sourceName": "standing_melee_attack_horizontal",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "10023",
+      "bytes": 264264,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_ib_mc_horizontal/frame_008.png"
+    },
+    {
+      "build": "meshy-infinite-brutality-mapped-retarget",
+      "frame": "9",
+      "actor": "meshyCharacter",
+      "clip": "standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "clipKey": "retarget:orc->meshyCharacter:IB-MC:standing_melee_attack_horizontal -> meshyCharacter [IB-MC]",
+      "origin": "retarget:orc->meshyCharacter:IB-MC",
+      "sourceName": "standing_melee_attack_horizontal",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "10388",
+      "bytes": 233803,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_ib_mc_horizontal/frame_009.png"
+    }
+  ],
+  "captureComplete": true,
+  "requestedFrames": 10,
+  "newestScreenshots": [
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-184035.png",
+      "mtimeMs": 1782690035496.9993,
+      "mtime": "2026-06-28T23:40:35.497Z",
+      "bytes": 408659
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-183638.png",
+      "mtimeMs": 1782689798952.999,
+      "mtime": "2026-06-28T23:36:38.953Z",
+      "bytes": 444781
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-180238.png",
+      "mtimeMs": 1782687759304.9976,
+      "mtime": "2026-06-28T23:02:39.305Z",
+      "bytes": 496729
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-175121.png",
+      "mtimeMs": 1782687081824.9968,
+      "mtime": "2026-06-28T22:51:21.825Z",
+      "bytes": 419640
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-173905.png",
+      "mtimeMs": 1782686345388.9963,
+      "mtime": "2026-06-28T22:39:05.389Z",
+      "bytes": 397881
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-172708.png",
+      "mtimeMs": 1782685628748.9958,
+      "mtime": "2026-06-28T22:27:08.749Z",
+      "bytes": 776610
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-165507.png",
+      "mtimeMs": 1782683708097.2358,
+      "mtime": "2026-06-28T21:55:08.097Z",
+      "bytes": 409874
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-164940.png",
+      "mtimeMs": 1782683381097.2356,
+      "mtime": "2026-06-28T21:49:41.097Z",
+      "bytes": 330264
+    }
+  ],
+  "recentRequests": [
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/rig-profiles.js",
+      "query": "?v=pose-editor-40",
+      "t": 1782690855877
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/rig-profiles.gravity-fist.js",
+      "query": "?v=pose-editor-15",
+      "t": 1782690855888
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/startup-policy.mjs",
+      "query": "?v=pose-editor-22",
+      "t": 1782690855898
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/clip-search.js",
+      "query": "?v=pose-editor-22",
+      "t": 1782690855910
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/lab-mode.mjs",
+      "query": "?v=pose-editor-22",
+      "t": 1782690855917
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/pose-lab.js",
+      "query": "?v=pose-editor-40",
+      "t": 1782690855923
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/startup-policy.js",
+      "query": "?v=pose-editor-22",
+      "t": 1782690855938
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/standing_idle.fbx",
+      "query": "",
+      "t": 1782690856045
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_idle.fbx",
+      "query": "",
+      "t": 1782690856243
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_walk_forward.fbx",
+      "query": "",
+      "t": 1782690856263
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_walk_left.fbx",
+      "query": "",
+      "t": 1782690856279
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_walk_right.fbx",
+      "query": "",
+      "t": 1782690856293
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_run_forward.fbx",
+      "query": "",
+      "t": 1782690856316
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_jump.fbx",
+      "query": "",
+      "t": 1782690856330
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_melee_attack_horizontal_smooth.poseclip.json",
+      "query": "",
+      "t": 1782690856351
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_melee_attack_horizontal.fbx",
+      "query": "",
+      "t": 1782690856362
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_melee_attack_downward.fbx",
+      "query": "",
+      "t": 1782690856377
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_melee_combo_attack_v1.fbx",
+      "query": "",
+      "t": 1782690856397
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_react_large_gut.fbx",
+      "query": "",
+      "t": 1782690856422
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/big_hit_to_head_3.fbx",
+      "query": "",
+      "t": 1782690856443
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/head_hit_4.fbx",
+      "query": "",
+      "t": 1782690856457
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/head_hit_5.fbx",
+      "query": "",
+      "t": 1782690856591
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/hit_to_body_2.fbx",
+      "query": "",
+      "t": 1782690856702
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/kidney_hit_1.fbx",
+      "query": "",
+      "t": 1782690856715
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_dying.fbx",
+      "query": "",
+      "t": 1782690856728
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_idle.fbx",
+      "query": "",
+      "t": 1782690856748
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_jumping.fbx",
+      "query": "",
+      "t": 1782690856807
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_punch.fbx",
+      "query": "",
+      "t": 1782690856821
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_run.fbx",
+      "query": "",
+      "t": 1782690856833
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_walking.fbx",
+      "query": "",
+      "t": 1782690856950
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Scavenger_new.fbx",
+      "query": "",
+      "t": 1782690856969
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Steampunk_Wanderer_0819125239_texture.png",
+      "query": "",
+      "t": 1782690857220
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/texture_0.png",
+      "query": "",
+      "t": 1782690857239
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Animations/Animation_Idle_Step_Turn_Left_withSkin.fbx",
+      "query": "",
+      "t": 1782690857254
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Animations/Animation_Idle_Turn_Right_withSkin.fbx",
+      "query": "",
+      "t": 1782690857453
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Animations/Animation_Walking_withSkin.fbx",
+      "query": "",
+      "t": 1782690857654
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Animations/Animation_Walk_Backward_withSkin.fbx",
+      "query": "",
+      "t": 1782690857905
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb",
+      "query": "",
+      "t": 1782690858106
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb",
+      "query": "",
+      "t": 1782690858409
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Running_withSkin.glb",
+      "query": "",
+      "t": 1782690858766
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/meshy_character_sheet/static/Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb",
+      "query": "",
+      "t": 1782690859029
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/FPSPlayer.glb",
+      "query": "",
+      "t": 1782690859390
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture.png",
+      "query": "",
+      "t": 1782690859578
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture_normal.png",
+      "query": "",
+      "t": 1782690859595
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture_roughness.png",
+      "query": "",
+      "t": 1782690859603
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture_metallic.png",
+      "query": "",
+      "t": 1782690859609
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture_emission.png",
+      "query": "",
+      "t": 1782690859615
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Forgeborn.glb",
+      "query": "",
+      "t": 1782690859758
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Animation_Idle_Step_Turn_Left_withSkin.fbx",
+      "query": "",
+      "t": 1782690859978
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Animation_Idle_Turn_Right_withSkin.fbx",
+      "query": "",
+      "t": 1782690860188
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Animation_Walking_withSkin.fbx",
+      "query": "",
+      "t": 1782690860379
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Animation_Walk_Backward_withSkin.fbx",
+      "query": "",
+      "t": 1782690860638
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/gravity_fist/Ares.glb",
+      "query": "",
+      "t": 1782690860812
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_jab_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782690861180
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_cross_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782690861204
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_lefthook_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782690861226
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_leftuppercut_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782690861242
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_rightuppercut_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782690861259
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_headbutt_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782690861274
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_supermanpunch_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782690861294
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_lowbackkick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782690861311
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_frontkick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782690861336
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_backfist_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782690861356
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_spinninghighkick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782690861373
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_axekick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-finished-strike",
+      "t": 1782690861401
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_axlekick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782690861428
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/gravity_fist/SecurityTitan.glb",
+      "query": "",
+      "t": 1782690861463
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/data/gravity_fist_player_attacks.json",
+      "query": "",
+      "t": 1782690862255
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/data/gravity_fist_security_titan.json",
+      "query": "",
+      "t": 1782690862261
+    },
+    {
+      "method": "GET",
+      "path": "/__visual_qa_smoke",
+      "query": "?stage=rendered&build=meshy-infinite-brutality-mapped-retarget&actor=meshyCharacter&clip=standing_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&clipKey=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC%3Astanding_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&origin=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC&sourceName=standing_melee_attack_horizontal&frameMode=&viewMode=orbit",
+      "t": 1782690862533
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-infinite-brutality-mapped-retarget&frame=0&actor=meshyCharacter&clip=standing_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&clipKey=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC%3Astanding_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&origin=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC&sourceName=standing_melee_attack_horizontal&tag=&spriteFrame=&poseclipTime=&frameMode=&t=7186",
+      "t": 1782690862662
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-infinite-brutality-mapped-retarget&frame=1&actor=meshyCharacter&clip=standing_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&clipKey=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC%3Astanding_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&origin=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC&sourceName=standing_melee_attack_horizontal&tag=&spriteFrame=&poseclipTime=&frameMode=&t=7539",
+      "t": 1782690862954
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-infinite-brutality-mapped-retarget&frame=2&actor=meshyCharacter&clip=standing_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&clipKey=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC%3Astanding_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&origin=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC&sourceName=standing_melee_attack_horizontal&tag=&spriteFrame=&poseclipTime=&frameMode=&t=7903",
+      "t": 1782690863340
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-infinite-brutality-mapped-retarget&frame=3&actor=meshyCharacter&clip=standing_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&clipKey=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC%3Astanding_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&origin=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC&sourceName=standing_melee_attack_horizontal&tag=&spriteFrame=&poseclipTime=&frameMode=&t=8254",
+      "t": 1782690863758
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-infinite-brutality-mapped-retarget&frame=4&actor=meshyCharacter&clip=standing_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&clipKey=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC%3Astanding_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&origin=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC&sourceName=standing_melee_attack_horizontal&tag=&spriteFrame=&poseclipTime=&frameMode=&t=8604",
+      "t": 1782690864047
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-infinite-brutality-mapped-retarget&frame=5&actor=meshyCharacter&clip=standing_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&clipKey=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC%3Astanding_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&origin=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC&sourceName=standing_melee_attack_horizontal&tag=&spriteFrame=&poseclipTime=&frameMode=&t=8956",
+      "t": 1782690864540
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-infinite-brutality-mapped-retarget&frame=6&actor=meshyCharacter&clip=standing_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&clipKey=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC%3Astanding_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&origin=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC&sourceName=standing_melee_attack_horizontal&tag=&spriteFrame=&poseclipTime=&frameMode=&t=9306",
+      "t": 1782690864896
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-infinite-brutality-mapped-retarget&frame=7&actor=meshyCharacter&clip=standing_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&clipKey=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC%3Astanding_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&origin=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC&sourceName=standing_melee_attack_horizontal&tag=&spriteFrame=&poseclipTime=&frameMode=&t=9673",
+      "t": 1782690865176
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-infinite-brutality-mapped-retarget&frame=8&actor=meshyCharacter&clip=standing_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&clipKey=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC%3Astanding_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&origin=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC&sourceName=standing_melee_attack_horizontal&tag=&spriteFrame=&poseclipTime=&frameMode=&t=10023",
+      "t": 1782690865575
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-infinite-brutality-mapped-retarget&frame=9&actor=meshyCharacter&clip=standing_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&clipKey=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC%3Astanding_melee_attack_horizontal+-%3E+meshyCharacter+%5BIB-MC%5D&origin=retarget%3Aorc-%3EmeshyCharacter%3AIB-MC&sourceName=standing_melee_attack_horizontal&tag=&spriteFrame=&poseclipTime=&frameMode=&t=10388",
+      "t": 1782690865963
+    }
+  ]
+}

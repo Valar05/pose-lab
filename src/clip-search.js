@@ -24,7 +24,7 @@ export function clipLabel(clip) {
   const sourceName = String(clip?.userData?.sourceName || clip?.name || 'clip');
   if (clip?.userData?.sourceReduction) return String(clip?.name || sourceName);
   if (origin.startsWith('cleanup:')) return sourceName + ' [clean]';
-  if (origin.startsWith('mapped-arms:')) return sourceName + ' -> Arcane';
+  if (origin.startsWith('mapped-arms:')) return sourceName + ' -> ' + origin.split('->').pop();
   if (origin.startsWith('own:')) return sourceName;
   return String(clip?.name || sourceName);
 }
@@ -48,31 +48,29 @@ function defaultClipEntryKey(clip, fallback = '') {
   return clip ? String(clip.userData?.origin || 'own') + ':' + String(clip.name || fallback) : String(fallback || '');
 }
 
-export function defaultClipEntries(clips = [], recentKeys = [], activeKey = '', limit = 5) {
+export function defaultClipEntries(clips = [], recentKeys = [], activeKey = '') {
   const entries = searchableClipEntries(clips).map((entry) => ({
     ...entry,
     key: defaultClipEntryKey(entry.clip, entry.key),
   }));
-  const sf2Entries = entries.filter((entry) => isSf2PoseClip(entry.clip));
-  if (sf2Entries.length) {
-    const visible = [...sf2Entries];
-    const activeEntry = activeKey ? entries.find((entry) => entry.key === activeKey) : null;
-    if (activeEntry && !visible.some((entry) => entry.key === activeEntry.key)) visible.unshift(activeEntry);
-    return visible;
+  const rank = new Map();
+  let nextRank = 0;
+  if (activeKey) rank.set(activeKey, nextRank++);
+  for (const key of recentKeys || []) {
+    if (!rank.has(key)) rank.set(key, nextRank++);
   }
-  const recent = (recentKeys || []).map((key) => entries.find((entry) => entry.key === key)).filter(Boolean);
-  if (activeKey && !recent.some((entry) => entry.key === activeKey)) {
-    const activeEntry = entries.find((entry) => entry.key === activeKey);
-    if (activeEntry) recent.unshift(activeEntry);
-  }
-  const visible = recent.slice(0, limit);
-  return visible.length ? visible : entries.slice(0, limit);
+  return entries.sort((a, b) => {
+    const aRank = rank.has(a.key) ? rank.get(a.key) : Number.POSITIVE_INFINITY;
+    const bRank = rank.has(b.key) ? rank.get(b.key) : Number.POSITIVE_INFINITY;
+    if (aRank !== bRank) return aRank - bRank;
+    return a.label.localeCompare(b.label);
+  });
 }
 
-export function searchClipEntries(query, clips = [], limit = 12) {
+export function searchClipEntries(query, clips = []) {
   const trimmed = String(query || '').trim();
   const entries = searchableClipEntries(clips);
-  if (!trimmed) return entries.slice(0, limit);
+  if (!trimmed) return entries;
   return entries
     .map((entry) => ({
       ...entry,
@@ -83,6 +81,5 @@ export function searchClipEntries(query, clips = [], limit = 12) {
       ),
     }))
     .filter((entry) => Number.isFinite(entry.score))
-    .sort((a, b) => b.score - a.score || a.label.localeCompare(b.label))
-    .slice(0, limit);
+    .sort((a, b) => b.score - a.score || a.label.localeCompare(b.label));
 }

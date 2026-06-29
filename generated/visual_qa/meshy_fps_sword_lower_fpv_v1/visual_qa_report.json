@@ -1,0 +1,765 @@
+{
+  "ok": true,
+  "failure": null,
+  "project": "pose-lab",
+  "url": "http://127.0.0.1:10225/pose-lab/pose-lab.html?actor=meshyCharacter&clip=SwordAttack1&qaActor=meshyCharacter&qaClip=SwordAttack1&qaView=firstPerson&mode=standard&beacon=1&capture=1&captureFrames=10&captureIntervalMs=250&visualQaExpectedBuild=meshy-fps-sword-upper-body-retarget",
+  "outDir": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_fps_sword_lower_fpv_v1",
+  "report": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_fps_sword_lower_fpv_v1/visual_qa_report.json",
+  "sheet": {
+    "ok": true,
+    "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_fps_sword_lower_fpv_v1/contact_sheet.jpg",
+    "code": 0,
+    "stdout": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_fps_sword_lower_fpv_v1/contact_sheet.jpg",
+    "stderr": ""
+  },
+  "expectedBuild": "meshy-fps-sword-upper-body-retarget",
+  "loadedBuild": "meshy-fps-sword-upper-body-retarget",
+  "buildInfo": {
+    "runtimeBuild": "meshy-fps-sword-upper-body-retarget",
+    "indexPath": "/storage/emulated/0/Documents/GodotProjects/pose-lab/pose-lab.html",
+    "cacheTokens": [
+      "pose-editor-46"
+    ]
+  },
+  "launch": {
+    "code": 0,
+    "signal": null,
+    "stdout": "Starting: Intent { act=android.intent.action.VIEW dat=http://127.0.0.1:10225/... }\n",
+    "stderr": ""
+  },
+  "wakeLock": {
+    "code": 0,
+    "signal": null,
+    "stdout": "",
+    "stderr": ""
+  },
+  "androidState": {
+    "dumpsysPower": {
+      "code": 0,
+      "denied": true,
+      "summary": [
+        "Permission Denial: can't dump PowerManagerService from from pid=15782, uid=10624 due to missing android.permission.DUMP permission"
+      ]
+    },
+    "cmdPowerWakeup": {
+      "code": 255,
+      "permitted": false,
+      "output": "Error: java.lang.SecurityException: Neither user 10624 nor current process has android.permission.DEVICE_POWER."
+    }
+  },
+  "readyBroadcast": {
+    "code": 0,
+    "signal": null,
+    "stdout": "Broadcasting: Intent { act=com.codex.pose_lab.READY_TO_VIEW (has extras) }\nBroadcast sent without waiting for result\n",
+    "stderr": ""
+  },
+  "beacons": [
+    {
+      "stage": "rendered",
+      "build": "meshy-fps-sword-upper-body-retarget",
+      "actor": "meshyCharacter",
+      "clip": "OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "clipKey": "mapped-arms:player->meshyCharacter:OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "origin": "mapped-arms:player->meshyCharacter",
+      "sourceName": "OneHandAttack1",
+      "frameMode": "",
+      "viewMode": "firstPerson"
+    }
+  ],
+  "captures": [
+    {
+      "build": "meshy-fps-sword-upper-body-retarget",
+      "frame": "0",
+      "actor": "meshyCharacter",
+      "clip": "OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "clipKey": "mapped-arms:player->meshyCharacter:OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "origin": "mapped-arms:player->meshyCharacter",
+      "sourceName": "OneHandAttack1",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "7702",
+      "bytes": 61023,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_fps_sword_lower_fpv_v1/frame_000.png"
+    },
+    {
+      "build": "meshy-fps-sword-upper-body-retarget",
+      "frame": "1",
+      "actor": "meshyCharacter",
+      "clip": "OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "clipKey": "mapped-arms:player->meshyCharacter:OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "origin": "mapped-arms:player->meshyCharacter",
+      "sourceName": "OneHandAttack1",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "7966",
+      "bytes": 61023,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_fps_sword_lower_fpv_v1/frame_001.png"
+    },
+    {
+      "build": "meshy-fps-sword-upper-body-retarget",
+      "frame": "2",
+      "actor": "meshyCharacter",
+      "clip": "OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "clipKey": "mapped-arms:player->meshyCharacter:OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "origin": "mapped-arms:player->meshyCharacter",
+      "sourceName": "OneHandAttack1",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "8219",
+      "bytes": 61023,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_fps_sword_lower_fpv_v1/frame_002.png"
+    },
+    {
+      "build": "meshy-fps-sword-upper-body-retarget",
+      "frame": "3",
+      "actor": "meshyCharacter",
+      "clip": "OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "clipKey": "mapped-arms:player->meshyCharacter:OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "origin": "mapped-arms:player->meshyCharacter",
+      "sourceName": "OneHandAttack1",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "8472",
+      "bytes": 61023,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_fps_sword_lower_fpv_v1/frame_003.png"
+    },
+    {
+      "build": "meshy-fps-sword-upper-body-retarget",
+      "frame": "4",
+      "actor": "meshyCharacter",
+      "clip": "OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "clipKey": "mapped-arms:player->meshyCharacter:OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "origin": "mapped-arms:player->meshyCharacter",
+      "sourceName": "OneHandAttack1",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "8735",
+      "bytes": 61023,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_fps_sword_lower_fpv_v1/frame_004.png"
+    },
+    {
+      "build": "meshy-fps-sword-upper-body-retarget",
+      "frame": "5",
+      "actor": "meshyCharacter",
+      "clip": "OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "clipKey": "mapped-arms:player->meshyCharacter:OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "origin": "mapped-arms:player->meshyCharacter",
+      "sourceName": "OneHandAttack1",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "9002",
+      "bytes": 61023,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_fps_sword_lower_fpv_v1/frame_005.png"
+    },
+    {
+      "build": "meshy-fps-sword-upper-body-retarget",
+      "frame": "6",
+      "actor": "meshyCharacter",
+      "clip": "OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "clipKey": "mapped-arms:player->meshyCharacter:OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "origin": "mapped-arms:player->meshyCharacter",
+      "sourceName": "OneHandAttack1",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "9255",
+      "bytes": 61023,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_fps_sword_lower_fpv_v1/frame_006.png"
+    },
+    {
+      "build": "meshy-fps-sword-upper-body-retarget",
+      "frame": "7",
+      "actor": "meshyCharacter",
+      "clip": "OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "clipKey": "mapped-arms:player->meshyCharacter:OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "origin": "mapped-arms:player->meshyCharacter",
+      "sourceName": "OneHandAttack1",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "9520",
+      "bytes": 61023,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_fps_sword_lower_fpv_v1/frame_007.png"
+    },
+    {
+      "build": "meshy-fps-sword-upper-body-retarget",
+      "frame": "8",
+      "actor": "meshyCharacter",
+      "clip": "OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "clipKey": "mapped-arms:player->meshyCharacter:OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "origin": "mapped-arms:player->meshyCharacter",
+      "sourceName": "OneHandAttack1",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "9787",
+      "bytes": 61023,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_fps_sword_lower_fpv_v1/frame_008.png"
+    },
+    {
+      "build": "meshy-fps-sword-upper-body-retarget",
+      "frame": "9",
+      "actor": "meshyCharacter",
+      "clip": "OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "clipKey": "mapped-arms:player->meshyCharacter:OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]",
+      "origin": "mapped-arms:player->meshyCharacter",
+      "sourceName": "OneHandAttack1",
+      "tag": "",
+      "spriteFrame": "",
+      "poseclipTime": "",
+      "frameMode": "",
+      "t": "10053",
+      "bytes": 61023,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_fps_sword_lower_fpv_v1/frame_009.png"
+    }
+  ],
+  "captureComplete": true,
+  "requestedFrames": 10,
+  "newestScreenshots": [
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-193850.png",
+      "mtimeMs": 1782693530791.6064,
+      "mtime": "2026-06-29T00:38:50.792Z",
+      "bytes": 298631
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-191733.png",
+      "mtimeMs": 1782692253495.6055,
+      "mtime": "2026-06-29T00:17:33.496Z",
+      "bytes": 348222
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-185446.png",
+      "mtimeMs": 1782690886312.9998,
+      "mtime": "2026-06-28T23:54:46.313Z",
+      "bytes": 359326
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-184035.png",
+      "mtimeMs": 1782690035496.9993,
+      "mtime": "2026-06-28T23:40:35.497Z",
+      "bytes": 408659
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-183638.png",
+      "mtimeMs": 1782689798952.999,
+      "mtime": "2026-06-28T23:36:38.953Z",
+      "bytes": 444781
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-180238.png",
+      "mtimeMs": 1782687759304.9976,
+      "mtime": "2026-06-28T23:02:39.305Z",
+      "bytes": 496729
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-175121.png",
+      "mtimeMs": 1782687081824.9968,
+      "mtime": "2026-06-28T22:51:21.825Z",
+      "bytes": 419640
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-173905.png",
+      "mtimeMs": 1782686345388.9963,
+      "mtime": "2026-06-28T22:39:05.389Z",
+      "bytes": 397881
+    }
+  ],
+  "recentRequests": [
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/rig-profiles.js",
+      "query": "?v=pose-editor-46",
+      "t": 1782693623206
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/rig-profiles.gravity-fist.js",
+      "query": "?v=pose-editor-15",
+      "t": 1782693623213
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/startup-policy.mjs",
+      "query": "?v=pose-editor-22",
+      "t": 1782693623222
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/clip-search.js",
+      "query": "?v=pose-editor-23",
+      "t": 1782693623230
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/lab-mode.mjs",
+      "query": "?v=pose-editor-22",
+      "t": 1782693623246
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/pose-lab.js",
+      "query": "?v=pose-editor-46",
+      "t": 1782693623263
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/startup-policy.js",
+      "query": "?v=pose-editor-22",
+      "t": 1782693623277
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/standing_idle.fbx",
+      "query": "",
+      "t": 1782693623379
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_idle.fbx",
+      "query": "",
+      "t": 1782693623537
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_walk_forward.fbx",
+      "query": "",
+      "t": 1782693623557
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_walk_left.fbx",
+      "query": "",
+      "t": 1782693623571
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_walk_right.fbx",
+      "query": "",
+      "t": 1782693623588
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_run_forward.fbx",
+      "query": "",
+      "t": 1782693623609
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_jump.fbx",
+      "query": "",
+      "t": 1782693623623
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_melee_attack_horizontal_smooth.poseclip.json",
+      "query": "",
+      "t": 1782693623638
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_melee_attack_horizontal.fbx",
+      "query": "",
+      "t": 1782693623648
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_melee_attack_downward.fbx",
+      "query": "",
+      "t": 1782693623666
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_melee_combo_attack_v1.fbx",
+      "query": "",
+      "t": 1782693623684
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_react_large_gut.fbx",
+      "query": "",
+      "t": 1782693623715
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/big_hit_to_head_3.fbx",
+      "query": "",
+      "t": 1782693623728
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/head_hit_4.fbx",
+      "query": "",
+      "t": 1782693623740
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/head_hit_5.fbx",
+      "query": "",
+      "t": 1782693623844
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/hit_to_body_2.fbx",
+      "query": "",
+      "t": 1782693623950
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/kidney_hit_1.fbx",
+      "query": "",
+      "t": 1782693623971
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_dying.fbx",
+      "query": "",
+      "t": 1782693623986
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_idle.fbx",
+      "query": "",
+      "t": 1782693624011
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_jumping.fbx",
+      "query": "",
+      "t": 1782693624071
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_punch.fbx",
+      "query": "",
+      "t": 1782693624094
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_run.fbx",
+      "query": "",
+      "t": 1782693624119
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_walking.fbx",
+      "query": "",
+      "t": 1782693624239
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Scavenger_new.fbx",
+      "query": "",
+      "t": 1782693624257
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Steampunk_Wanderer_0819125239_texture.png",
+      "query": "",
+      "t": 1782693624514
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/texture_0.png",
+      "query": "",
+      "t": 1782693624515
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Animations/Animation_Idle_Step_Turn_Left_withSkin.fbx",
+      "query": "",
+      "t": 1782693624541
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Animations/Animation_Idle_Turn_Right_withSkin.fbx",
+      "query": "",
+      "t": 1782693624743
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Animations/Animation_Walking_withSkin.fbx",
+      "query": "",
+      "t": 1782693624930
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Animations/Animation_Walk_Backward_withSkin.fbx",
+      "query": "",
+      "t": 1782693625082
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb",
+      "query": "",
+      "t": 1782693625346
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb",
+      "query": "",
+      "t": 1782693625607
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Running_withSkin.glb",
+      "query": "",
+      "t": 1782693625998
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/meshy_character_sheet/static/Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb",
+      "query": "",
+      "t": 1782693626273
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/FPSPlayer.glb",
+      "query": "",
+      "t": 1782693626698
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture.png",
+      "query": "",
+      "t": 1782693626884
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture_normal.png",
+      "query": "",
+      "t": 1782693626900
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture_roughness.png",
+      "query": "",
+      "t": 1782693626904
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture_metallic.png",
+      "query": "",
+      "t": 1782693626908
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture_emission.png",
+      "query": "",
+      "t": 1782693626910
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Forgeborn.glb",
+      "query": "",
+      "t": 1782693627080
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Animation_Idle_Step_Turn_Left_withSkin.fbx",
+      "query": "",
+      "t": 1782693627272
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Animation_Idle_Turn_Right_withSkin.fbx",
+      "query": "",
+      "t": 1782693627497
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Animation_Walking_withSkin.fbx",
+      "query": "",
+      "t": 1782693627683
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Animation_Walk_Backward_withSkin.fbx",
+      "query": "",
+      "t": 1782693627950
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/gravity_fist/Ares.glb",
+      "query": "",
+      "t": 1782693628159
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_jab_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782693628532
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_cross_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782693628562
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_lefthook_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782693628595
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_leftuppercut_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782693628612
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_rightuppercut_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782693628624
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_headbutt_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782693628664
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_supermanpunch_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782693628691
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_lowbackkick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782693628710
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_frontkick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782693628745
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_backfist_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782693628771
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_spinninghighkick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782693628793
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_axekick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-finished-strike",
+      "t": 1782693628823
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_axlekick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782693628840
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/gravity_fist/SecurityTitan.glb",
+      "query": "",
+      "t": 1782693628865
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/data/gravity_fist_player_attacks.json",
+      "query": "",
+      "t": 1782693630184
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/data/gravity_fist_security_titan.json",
+      "query": "",
+      "t": 1782693630226
+    },
+    {
+      "method": "GET",
+      "path": "/__visual_qa_smoke",
+      "query": "?stage=rendered&build=meshy-fps-sword-upper-body-retarget&actor=meshyCharacter&clip=OneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&clipKey=mapped-arms%3Aplayer-%3EmeshyCharacter%3AOneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&origin=mapped-arms%3Aplayer-%3EmeshyCharacter&sourceName=OneHandAttack1&frameMode=&viewMode=firstPerson",
+      "t": 1782693630456
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-fps-sword-upper-body-retarget&frame=0&actor=meshyCharacter&clip=OneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&clipKey=mapped-arms%3Aplayer-%3EmeshyCharacter%3AOneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&origin=mapped-arms%3Aplayer-%3EmeshyCharacter&sourceName=OneHandAttack1&tag=&spriteFrame=&poseclipTime=&frameMode=&t=7702",
+      "t": 1782693630575
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-fps-sword-upper-body-retarget&frame=1&actor=meshyCharacter&clip=OneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&clipKey=mapped-arms%3Aplayer-%3EmeshyCharacter%3AOneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&origin=mapped-arms%3Aplayer-%3EmeshyCharacter&sourceName=OneHandAttack1&tag=&spriteFrame=&poseclipTime=&frameMode=&t=7966",
+      "t": 1782693630757
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-fps-sword-upper-body-retarget&frame=2&actor=meshyCharacter&clip=OneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&clipKey=mapped-arms%3Aplayer-%3EmeshyCharacter%3AOneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&origin=mapped-arms%3Aplayer-%3EmeshyCharacter&sourceName=OneHandAttack1&tag=&spriteFrame=&poseclipTime=&frameMode=&t=8219",
+      "t": 1782693631025
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-fps-sword-upper-body-retarget&frame=3&actor=meshyCharacter&clip=OneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&clipKey=mapped-arms%3Aplayer-%3EmeshyCharacter%3AOneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&origin=mapped-arms%3Aplayer-%3EmeshyCharacter&sourceName=OneHandAttack1&tag=&spriteFrame=&poseclipTime=&frameMode=&t=8472",
+      "t": 1782693631283
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-fps-sword-upper-body-retarget&frame=4&actor=meshyCharacter&clip=OneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&clipKey=mapped-arms%3Aplayer-%3EmeshyCharacter%3AOneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&origin=mapped-arms%3Aplayer-%3EmeshyCharacter&sourceName=OneHandAttack1&tag=&spriteFrame=&poseclipTime=&frameMode=&t=8735",
+      "t": 1782693631575
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-fps-sword-upper-body-retarget&frame=5&actor=meshyCharacter&clip=OneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&clipKey=mapped-arms%3Aplayer-%3EmeshyCharacter%3AOneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&origin=mapped-arms%3Aplayer-%3EmeshyCharacter&sourceName=OneHandAttack1&tag=&spriteFrame=&poseclipTime=&frameMode=&t=9002",
+      "t": 1782693631895
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-fps-sword-upper-body-retarget&frame=6&actor=meshyCharacter&clip=OneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&clipKey=mapped-arms%3Aplayer-%3EmeshyCharacter%3AOneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&origin=mapped-arms%3Aplayer-%3EmeshyCharacter&sourceName=OneHandAttack1&tag=&spriteFrame=&poseclipTime=&frameMode=&t=9255",
+      "t": 1782693632235
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-fps-sword-upper-body-retarget&frame=7&actor=meshyCharacter&clip=OneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&clipKey=mapped-arms%3Aplayer-%3EmeshyCharacter%3AOneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&origin=mapped-arms%3Aplayer-%3EmeshyCharacter&sourceName=OneHandAttack1&tag=&spriteFrame=&poseclipTime=&frameMode=&t=9520",
+      "t": 1782693632379
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-fps-sword-upper-body-retarget&frame=8&actor=meshyCharacter&clip=OneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&clipKey=mapped-arms%3Aplayer-%3EmeshyCharacter%3AOneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&origin=mapped-arms%3Aplayer-%3EmeshyCharacter&sourceName=OneHandAttack1&tag=&spriteFrame=&poseclipTime=&frameMode=&t=9787",
+      "t": 1782693632644
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=meshy-fps-sword-upper-body-retarget&frame=9&actor=meshyCharacter&clip=OneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&clipKey=mapped-arms%3Aplayer-%3EmeshyCharacter%3AOneHandAttack1+-%3E+meshyCharacter+%5BFPS-SWORD-UPPER%5D&origin=mapped-arms%3Aplayer-%3EmeshyCharacter&sourceName=OneHandAttack1&tag=&spriteFrame=&poseclipTime=&frameMode=&t=10053",
+      "t": 1782693632861
+    }
+  ]
+}

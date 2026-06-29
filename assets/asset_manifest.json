@@ -167,6 +167,97 @@
       "source": "Standalone pose-lab generated pose index target for Gravity Fist Security Titan.",
       "type": "generated_pose_index_json",
       "notes": "Repo-owned destination for automated keyed-frame pose descriptions and anchor frame summaries exported from the standalone pose lab."
+    },
+    {
+      "id": "ruined_air_player_scene_reference",
+      "path": "assets/source/ruined_air/scenes/Player.tscn",
+      "source": "../ruined_air/scenes/Player.tscn",
+      "type": "source_scene_reference",
+      "notes": "Canonical Ruined Air player scene. Proves visible Model uses res://models/Scavenger_new.fbx with PlayerBoneHandler.gd, FootIKRoot targets, SkeletonIK3D leg roots, SteamSaber material, glider attachment, and Camera3D under Head."
+    },
+    {
+      "id": "ruined_air_player_scripts_reference",
+      "path": "assets/source/ruined_air/{scripts/player.gd,models/PlayerBoneHandler.gd,scenes/foot_ik_root.gd}",
+      "source": "../ruined_air scripts and scene helpers copied verbatim for Pose Lab provenance.",
+      "type": "source_script_reference",
+      "notes": "player.gd owns touch attack dispatch and can request Armature|Swing0..Swing5. Parsed Scavenger_new.fbx exposes Armature|Swing1..Swing5 plus Armature|Stab, so Swing0 is a source-runtime caveat. PlayerBoneHandler.gd owns procedural chest look, body yaw chase, hip bob, cadence, planted foot phases, and SkeletonIK3D target movement. foot_ik_root.gd keeps foot targets scene-rooted while following player yaw."
+    },
+    {
+      "id": "ruined_air_scavenger_runtime_fbx",
+      "path": "assets/models/ruined_air/Scavenger_new.fbx",
+      "source": "../ruined_air/models/Scavenger_new.fbx",
+      "type": "runtime_fbx_skinned_model",
+      "notes": "Visible canonical Ruined Air full-body player rig copied into Pose Lab. Used by the Ruined Air actor preset for sabre and full-rig implementation research for Infinite Brutality."
+    },
+    {
+      "id": "ruined_air_legacy_character_output_fbx",
+      "path": "assets/models/ruined_air/Character_output.fbx",
+      "source": "../ruined_air/models/Character_output.fbx",
+      "type": "runtime_fbx_reference_model",
+      "notes": "Legacy Player.tscn Model_old asset copied for provenance. The current scene marks Model_old invisible but still points AnimationTree at its AnimationPlayer, so this remains useful when diagnosing animation-library drift."
+    },
+    {
+      "id": "ruined_air_locomotion_animation_fbx_set",
+      "path": "assets/models/ruined_air/Animations/Animation_*.fbx",
+      "source": "../ruined_air/models/Animations/Animation_*.fbx",
+      "type": "runtime_fbx_animation_set",
+      "notes": "Ruined Air native walking/backward/turn clips loaded as extra clips on the Ruined Air actor. The procedural walk pattern still comes from PlayerBoneHandler.gd, not these clips alone."
+    },
+    {
+      "id": "ruined_air_sabre_glider_materials",
+      "path": "assets/models/ruined_air/{Spiked_Glider_0821115929_texture.fbx,Steampunk_Saber_*.png,materials/SteamSaber.tres,textures/Steampunk_Wanderer_*.png}",
+      "source": "../ruined_air/models sabre, glider, scavenger texture, and material files copied with original filenames preserved.",
+      "type": "runtime_companion_asset_set",
+      "notes": "Companion visual assets for Ruined Air player inspection. The sabre attack identity is carried by parsed Scavenger_new.fbx clips Armature|Swing1..Swing5 plus Armature|Stab, with SteamSaber material/texture files preserved for visual reference."
+    },
+    {
+      "id": "meshy_character_sheet_biped_source_archive",
+      "path": "assets/source/meshy_character_sheet/Meshy_AI_Meshy_Character_Sheet_biped.zip",
+      "source": "/storage/emulated/0/Download/Meshy_AI_Meshy_Character_Sheet_biped.zip",
+      "type": "source_archive",
+      "notes": "Newest Meshy animated biped download preserved verbatim. Archive contains walking and running GLBs with skins."
+    },
+    {
+      "id": "meshy_character_sheet_animated_biped_glbs",
+      "path": "assets/models/meshy_character_sheet/animated/*.glb",
+      "source": "Extracted from assets/source/meshy_character_sheet/Meshy_AI_Meshy_Character_Sheet_biped.zip with filenames preserved.",
+      "type": "runtime_glb_animation_set",
+      "notes": "Animated Meshy biped GLBs. Inventory: walking clip Armature|walking_man|baselayer duration 1.067s, running clip Armature|running|baselayer duration 0.667s, each with char1 SkinnedMesh and 24 bones including Hips, legs, Spine02/01/Spine, arms, neck, Head."
+    },
+    {
+      "id": "meshy_character_sheet_static_pbr_glb",
+      "path": "assets/models/meshy_character_sheet/static/Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb",
+      "source": "/storage/emulated/0/Download/Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb",
+      "type": "runtime_glb_static_pbr_reference",
+      "notes": "Static full-PBR Meshy GLB copied for visual inspection and material source transfer. Inventory found one Mesh, Material_0, zero bones, and zero animations, so it is not an animation target; Pose Lab now clones its embedded PBR material onto the animated Meshy char1 skinned mesh at load time."
+    },
+    {
+      "id": "meshy_french_revolution_sabre_source_glb",
+      "path": "assets/source/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb",
+      "source": "/storage/emulated/0/Download/Meshy_AI_A_French_revolution_c_0628223518_texture.glb",
+      "type": "source_glb_static_weapon_prop",
+      "notes": "Newest downloaded Meshy sabre weapon source preserved verbatim. GLB inventory found one static mesh, one PBR material, embedded textures, zero skins, and zero animations."
+    },
+    {
+      "id": "meshy_french_revolution_sabre_runtime_glb",
+      "path": "assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb",
+      "source": "Copied from assets/source/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb with original filename preserved.",
+      "type": "runtime_glb_static_weapon_prop",
+      "notes": "Runtime gun-sword/sabre prop attached to Pose Lab synthetic WeaponGrip sockets. FPS Arms inherits the authored WeaponR socket; Meshy Character places WeaponGrip at the right hand and keys its orientation from FPS Weapon.R relative to Hand.R. Accessor bounds are min [-0.955609,-0.40501,-0.200351], max [0.95101,0.402693,0.198555]; profile scale 0.47493 maps the solved handle-to-tip span to the 0.85m virtual blade path used by retarget diagnostics."
+    },
+    {
+      "id": "meshy_character_sheet_fps_sword_upper_clip_binding",
+      "path": "src/rig-profiles.js#meshyCharacter",
+      "source": "Pose Lab Meshy Character actor profile uses the animated Meshy walking GLB plus running GLB and profile-driven auto-retarget from FPSPlayer.glb OneHand clips.",
+      "type": "runtime_actor_profile",
+      "notes": "Meshy Character keeps Meshy walk/run as direct clips. Sword work now accepts only the generated [FPS-SWORD-UPPER] OneHandReady upper-body clip sourced from FPSPlayer.glb. The generated ready clip preserves authored source key times for mapped Meshy upper-body rotation tracks, closes generated quaternion seams for the authored cyclic wrap, avoids IK replacement of arm tracks, solves WeaponGrip from the mapped FPS Weapon.R virtual blade frame instead of raw wrist-relative rotation, intentionally excludes hips/root/legs/feet/toes/head translation or full-body motion, Meshy FPV uses a head-centered forward camera for source parity, and the visible Meshy gun-sword is positioned at the right hand. OneHandReadied and OneHandAttack clips are deferred until the ready pose and weapon hold are visually sane."
+    },
+    {
+      "id": "meshy_character_sheet_static_material_transfer",
+      "path": "src/rig-profiles.js#meshyCharacter.materialSource",
+      "source": "assets/models/meshy_character_sheet/static/Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb embedded PBR material cloned at runtime onto assets/models/meshy_character_sheet/animated/* char1 skinned mesh.",
+      "type": "runtime_material_transfer",
+      "notes": "The static Meshy GLB remains non-deforming source/reference geometry. Pose Lab uses its embedded material/texture maps as the visual material source for the animated Meshy biped so animation stays on the rigged GLB while the richer static PBR surface is visible."
     }
   ]
 }

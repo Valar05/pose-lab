@@ -23,13 +23,17 @@ const clips = [
   { name: 'Jab', userData: { origin: 'own', sourceName: 'Jab' } },
   { name: 'Jab-Enemy', userData: { origin: 'shared-retarget', sourceName: 'Jab-Enemy' } },
   { name: sf2Clip.name, userData: { ...(sf2Clip.userData || {}), origin: 'own-extra:ares:' } },
+  ...Array.from({ length: 14 }, (_, index) => ({
+    name: `Jab-Generated-${index + 1}`,
+    userData: { origin: 'own', sourceName: `Jab-Generated-${index + 1}` },
+  })),
 ];
 
-const results = searchClipEntries('Jab', clips, 12);
+const results = searchClipEntries('Jab', clips);
 const names = results.map((entry) => entry.clip.name);
 
-if (results.length !== 3) {
-  throw new Error(`Expected 3 Jab search matches, got ${results.length}: ${names.join(', ')}`);
+if (results.length !== clips.length) {
+  throw new Error(`Expected every Jab search match, got ${results.length} / ${clips.length}: ${names.join(', ')}`);
 }
 
 if (!names.includes('Jab [sf2-eased]')) {

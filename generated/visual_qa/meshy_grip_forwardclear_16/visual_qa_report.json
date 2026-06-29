@@ -1,0 +1,860 @@
+{
+  "ok": true,
+  "failure": null,
+  "project": "pose-lab",
+  "url": "http://127.0.0.1:10078/pose-lab/pose-lab.html?mode=critique&actor=meshyCharacter&qaActor=meshyCharacter&clip=Swing1&qaClip=Swing1&qaFrameMode=read&cacheBust=pose-editor-38&run=forwardclear&beacon=1&capture=1&captureFrames=16&captureIntervalMs=220&visualQaExpectedBuild=source-grip-forward-fpv-retarget",
+  "outDir": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16",
+  "report": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/visual_qa_report.json",
+  "sheet": {
+    "ok": true,
+    "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/contact_sheet.jpg",
+    "code": 0,
+    "stdout": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/contact_sheet.jpg",
+    "stderr": ""
+  },
+  "expectedBuild": "source-grip-forward-fpv-retarget",
+  "loadedBuild": "source-grip-forward-fpv-retarget",
+  "buildInfo": {
+    "runtimeBuild": "source-grip-forward-fpv-retarget",
+    "indexPath": "/storage/emulated/0/Documents/GodotProjects/pose-lab/pose-lab.html",
+    "cacheTokens": [
+      "pose-editor-38"
+    ]
+  },
+  "launch": {
+    "code": 0,
+    "signal": null,
+    "stdout": "Starting: Intent { act=android.intent.action.VIEW dat=http://127.0.0.1:10078/... }\n",
+    "stderr": ""
+  },
+  "wakeLock": {
+    "code": 0,
+    "signal": null,
+    "stdout": "",
+    "stderr": ""
+  },
+  "androidState": {
+    "dumpsysPower": {
+      "code": 0,
+      "denied": true,
+      "summary": [
+        "Permission Denial: can't dump PowerManagerService from from pid=19367, uid=10624 due to missing android.permission.DUMP permission"
+      ]
+    },
+    "cmdPowerWakeup": {
+      "code": 255,
+      "permitted": false,
+      "output": "Error: java.lang.SecurityException: Neither user 10624 nor current process has android.permission.DEVICE_POWER."
+    }
+  },
+  "readyBroadcast": {
+    "code": 0,
+    "signal": null,
+    "stdout": "Broadcasting: Intent { act=com.codex.pose_lab.READY_TO_VIEW (has extras) }\nBroadcast sent without waiting for result\n",
+    "stderr": ""
+  },
+  "beacons": [
+    {
+      "stage": "rendered",
+      "build": "source-grip-forward-fpv-retarget",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "frameMode": "read"
+    }
+  ],
+  "captures": [
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "13",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "13",
+      "poseclipTime": "0.42302",
+      "frameMode": "read",
+      "t": "9647",
+      "bytes": 299564,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_013.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "14",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "14",
+      "poseclipTime": "0.45556",
+      "frameMode": "read",
+      "t": "9665",
+      "bytes": 299648,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_014.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "15",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "15",
+      "poseclipTime": "0.48810",
+      "frameMode": "read",
+      "t": "9687",
+      "bytes": 299687,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_015.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "0",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "start",
+      "spriteFrame": "0",
+      "poseclipTime": "0.00000",
+      "frameMode": "read",
+      "t": "9317",
+      "bytes": 306147,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_000.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "1",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "1",
+      "poseclipTime": "0.03254",
+      "frameMode": "read",
+      "t": "9360",
+      "bytes": 307715,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_001.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "2",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "2",
+      "poseclipTime": "0.06508",
+      "frameMode": "read",
+      "t": "9388",
+      "bytes": 309123,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_002.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "5",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "5",
+      "poseclipTime": "0.16270",
+      "frameMode": "read",
+      "t": "9464",
+      "bytes": 310872,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_005.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "6",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "6",
+      "poseclipTime": "0.19524",
+      "frameMode": "read",
+      "t": "9490",
+      "bytes": 312093,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_006.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "7",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "7",
+      "poseclipTime": "0.22778",
+      "frameMode": "read",
+      "t": "9509",
+      "bytes": 313029,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_007.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "3",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "3",
+      "poseclipTime": "0.09762",
+      "frameMode": "read",
+      "t": "9418",
+      "bytes": 310131,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_003.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "4",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "4",
+      "poseclipTime": "0.13016",
+      "frameMode": "read",
+      "t": "9442",
+      "bytes": 311070,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_004.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "8",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "8",
+      "poseclipTime": "0.26032",
+      "frameMode": "read",
+      "t": "9529",
+      "bytes": 313565,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_008.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "9",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "9",
+      "poseclipTime": "0.29286",
+      "frameMode": "read",
+      "t": "9563",
+      "bytes": 313989,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_009.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "10",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "10",
+      "poseclipTime": "0.32540",
+      "frameMode": "read",
+      "t": "9584",
+      "bytes": 312604,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_010.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "11",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "11",
+      "poseclipTime": "0.35794",
+      "frameMode": "read",
+      "t": "9605",
+      "bytes": 295775,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_011.png"
+    },
+    {
+      "build": "source-grip-forward-fpv-retarget",
+      "frame": "12",
+      "actor": "meshyCharacter",
+      "clip": "Armature|Swing1 -> meshyCharacter [GRIP]",
+      "clipKey": "retarget:ruinedAir->meshyCharacter:GRIP:Armature|Swing1 -> meshyCharacter [GRIP]",
+      "origin": "retarget:ruinedAir->meshyCharacter:GRIP",
+      "sourceName": "Armature|Swing1",
+      "tag": "frame",
+      "spriteFrame": "12",
+      "poseclipTime": "0.39048",
+      "frameMode": "read",
+      "t": "9627",
+      "bytes": 299052,
+      "path": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_grip_forwardclear_16/frame_012.png"
+    }
+  ],
+  "captureComplete": true,
+  "requestedFrames": 16,
+  "newestScreenshots": [
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-175121.png",
+      "mtimeMs": 1782687081824.9968,
+      "mtime": "2026-06-28T22:51:21.825Z",
+      "bytes": 419640
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-173905.png",
+      "mtimeMs": 1782686345388.9963,
+      "mtime": "2026-06-28T22:39:05.389Z",
+      "bytes": 397881
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-172708.png",
+      "mtimeMs": 1782685628748.9958,
+      "mtime": "2026-06-28T22:27:08.749Z",
+      "bytes": 776610
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-165507.png",
+      "mtimeMs": 1782683708097.2358,
+      "mtime": "2026-06-28T21:55:08.097Z",
+      "bytes": 409874
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-164940.png",
+      "mtimeMs": 1782683381097.2356,
+      "mtime": "2026-06-28T21:49:41.097Z",
+      "bytes": 330264
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-163903.png",
+      "mtimeMs": 1782682744913.235,
+      "mtime": "2026-06-28T21:39:04.913Z",
+      "bytes": 1592359
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-163548.png",
+      "mtimeMs": 1782682548977.235,
+      "mtime": "2026-06-28T21:35:48.977Z",
+      "bytes": 311189
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-163122.png",
+      "mtimeMs": 1782682282637.2349,
+      "mtime": "2026-06-28T21:31:22.637Z",
+      "bytes": 794758
+    }
+  ],
+  "recentRequests": [
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/pose-lab.js",
+      "query": "?v=pose-editor-38",
+      "t": 1782687617398
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/src/startup-policy.js",
+      "query": "?v=pose-editor-22",
+      "t": 1782687617435
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/standing_idle.fbx",
+      "query": "",
+      "t": 1782687617558
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_idle.fbx",
+      "query": "",
+      "t": 1782687617900
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_walk_forward.fbx",
+      "query": "",
+      "t": 1782687617946
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_walk_left.fbx",
+      "query": "",
+      "t": 1782687618016
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_walk_right.fbx",
+      "query": "",
+      "t": 1782687618030
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_run_forward.fbx",
+      "query": "",
+      "t": 1782687618070
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_jump.fbx",
+      "query": "",
+      "t": 1782687618093
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_melee_attack_horizontal_smooth.poseclip.json",
+      "query": "",
+      "t": 1782687618121
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_melee_attack_horizontal.fbx",
+      "query": "",
+      "t": 1782687618137
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_melee_attack_downward.fbx",
+      "query": "",
+      "t": 1782687618156
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_melee_combo_attack_v1.fbx",
+      "query": "",
+      "t": 1782687618185
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/pro_melee_axe/standing_react_large_gut.fbx",
+      "query": "",
+      "t": 1782687618227
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/big_hit_to_head_3.fbx",
+      "query": "",
+      "t": 1782687618270
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/head_hit_4.fbx",
+      "query": "",
+      "t": 1782687618292
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/head_hit_5.fbx",
+      "query": "",
+      "t": 1782687618610
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/hit_to_body_2.fbx",
+      "query": "",
+      "t": 1782687618829
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/kidney_hit_1.fbx",
+      "query": "",
+      "t": 1782687618877
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_dying.fbx",
+      "query": "",
+      "t": 1782687618901
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_idle.fbx",
+      "query": "",
+      "t": 1782687618932
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_jumping.fbx",
+      "query": "",
+      "t": 1782687619006
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_punch.fbx",
+      "query": "",
+      "t": 1782687619026
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_run.fbx",
+      "query": "",
+      "t": 1782687619043
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/orc_berserker/imported/mutant_walking.fbx",
+      "query": "",
+      "t": 1782687619189
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Scavenger_new.fbx",
+      "query": "",
+      "t": 1782687619231
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Steampunk_Wanderer_0819125239_texture.png",
+      "query": "",
+      "t": 1782687619647
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/texture_0.png",
+      "query": "",
+      "t": 1782687619652
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Animations/Animation_Idle_Step_Turn_Left_withSkin.fbx",
+      "query": "",
+      "t": 1782687619683
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Animations/Animation_Idle_Turn_Right_withSkin.fbx",
+      "query": "",
+      "t": 1782687619931
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Animations/Animation_Walking_withSkin.fbx",
+      "query": "",
+      "t": 1782687620161
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/ruined_air/Animations/Animation_Walk_Backward_withSkin.fbx",
+      "query": "",
+      "t": 1782687620388
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb",
+      "query": "",
+      "t": 1782687620644
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Running_withSkin.glb",
+      "query": "",
+      "t": 1782687621018
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/meshy_character_sheet/static/Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb",
+      "query": "",
+      "t": 1782687621423
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/FPSPlayer.glb",
+      "query": "",
+      "t": 1782687622140
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture.png",
+      "query": "",
+      "t": 1782687622327
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture_normal.png",
+      "query": "",
+      "t": 1782687622368
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture_roughness.png",
+      "query": "",
+      "t": 1782687622372
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture_metallic.png",
+      "query": "",
+      "t": 1782687622376
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/fpsplayer_meshy/Meshy_AI__0615041256_texture_emission.png",
+      "query": "",
+      "t": 1782687622386
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Forgeborn.glb",
+      "query": "",
+      "t": 1782687622542
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Animation_Idle_Step_Turn_Left_withSkin.fbx",
+      "query": "",
+      "t": 1782687622805
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Animation_Idle_Turn_Right_withSkin.fbx",
+      "query": "",
+      "t": 1782687623053
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Animation_Walking_withSkin.fbx",
+      "query": "",
+      "t": 1782687623315
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/arcane/Animation_Walk_Backward_withSkin.fbx",
+      "query": "",
+      "t": 1782687623526
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/gravity_fist/Ares.glb",
+      "query": "",
+      "t": 1782687623725
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_jab_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782687624100
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_cross_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782687624123
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_lefthook_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782687624161
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_leftuppercut_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782687624178
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_rightuppercut_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782687624198
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_headbutt_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782687624220
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_supermanpunch_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782687624250
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_lowbackkick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782687624280
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_frontkick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782687624299
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_backfist_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782687624331
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_spinninghighkick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782687624364
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_axekick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-finished-strike",
+      "t": 1782687624396
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/pose_indexes/ares_axlekick_sf2.poseclip.json",
+      "query": "?v=sf2-axe-contact-pose-sourcepull",
+      "t": 1782687624419
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/models/gravity_fist/SecurityTitan.glb",
+      "query": "",
+      "t": 1782687624454
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/data/gravity_fist_player_attacks.json",
+      "query": "",
+      "t": 1782687625653
+    },
+    {
+      "method": "GET",
+      "path": "/pose-lab/assets/data/gravity_fist_security_titan.json",
+      "query": "",
+      "t": 1782687625671
+    },
+    {
+      "method": "GET",
+      "path": "/__visual_qa_smoke",
+      "query": "?stage=rendered&build=source-grip-forward-fpv-retarget&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&frameMode=read",
+      "t": 1782687625837
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=13&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=13&poseclipTime=0.42302&frameMode=read&t=9647",
+      "t": 1782687630699
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=14&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=14&poseclipTime=0.45556&frameMode=read&t=9665",
+      "t": 1782687630767
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=15&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=15&poseclipTime=0.48810&frameMode=read&t=9687",
+      "t": 1782687631717
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=0&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=start&spriteFrame=0&poseclipTime=0.00000&frameMode=read&t=9317",
+      "t": 1782687632431
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=1&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=1&poseclipTime=0.03254&frameMode=read&t=9360",
+      "t": 1782687632487
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=2&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=2&poseclipTime=0.06508&frameMode=read&t=9388",
+      "t": 1782687632588
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=5&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=5&poseclipTime=0.16270&frameMode=read&t=9464",
+      "t": 1782687635111
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=6&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=6&poseclipTime=0.19524&frameMode=read&t=9490",
+      "t": 1782687637283
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=7&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=7&poseclipTime=0.22778&frameMode=read&t=9509",
+      "t": 1782687638167
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=3&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=3&poseclipTime=0.09762&frameMode=read&t=9418",
+      "t": 1782687638971
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=4&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=4&poseclipTime=0.13016&frameMode=read&t=9442",
+      "t": 1782687638990
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=8&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=8&poseclipTime=0.26032&frameMode=read&t=9529",
+      "t": 1782687639096
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=9&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=9&poseclipTime=0.29286&frameMode=read&t=9563",
+      "t": 1782687639115
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=10&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=10&poseclipTime=0.32540&frameMode=read&t=9584",
+      "t": 1782687639133
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=11&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=11&poseclipTime=0.35794&frameMode=read&t=9605",
+      "t": 1782687639158
+    },
+    {
+      "method": "POST",
+      "path": "/__visual_qa_capture",
+      "query": "?build=source-grip-forward-fpv-retarget&frame=12&actor=meshyCharacter&clip=Armature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&clipKey=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP%3AArmature%7CSwing1+-%3E+meshyCharacter+%5BGRIP%5D&origin=retarget%3AruinedAir-%3EmeshyCharacter%3AGRIP&sourceName=Armature%7CSwing1&tag=frame&spriteFrame=12&poseclipTime=0.39048&frameMode=read&t=9627",
+      "t": 1782687639178
+    }
+  ]
+}

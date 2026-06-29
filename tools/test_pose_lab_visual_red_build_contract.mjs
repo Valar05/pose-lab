@@ -42,13 +42,8 @@ if (fs.existsSync(evidencePath)) {
   assert(evidence.runtimeBuild === expectedRuntimeBuild, `visual evidence runtimeBuild should match LAB_BUILD ${expectedRuntimeBuild}`);
   assert(typeof evidence.visualRead === 'string' && evidence.visualRead.length >= 20, 'visual evidence should include a concrete visualRead');
 
-  if (evidence.liveVisualQa?.status === 'blocked') {
-    assert(evidence.captureKind === 'visual-qa-blocked', 'blocked visual evidence should use captureKind visual-qa-blocked');
-    assert(typeof evidence.liveVisualQa.reason === 'string' && evidence.liveVisualQa.reason.length >= 20, 'blocked visual QA should include a concrete reason');
-    assert(typeof evidence.liveVisualQa.reportPath === 'string' && fs.existsSync(evidence.liveVisualQa.reportPath), 'blocked visual QA should point at the failed report');
-    const blockedReport = JSON.parse(fs.readFileSync(evidence.liveVisualQa.reportPath, 'utf8'));
-    assert(blockedReport.ok === false, 'blocked visual QA report should be red');
-    assert(blockedReport.failure?.code === 'no-browser-requests', 'blocked visual QA report should identify no-browser-requests');
+  if (evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked') {
+      assert(false, 'missing fresh visual evidence: capture Meshy Character SwordReady [FPS-SWORD-UPPER] on the current cache token, attached Meshy sabre, upper-body-only FPS OneHandReady source, and no lower-body/root/full-body generated motion');
   } else {
     assert(['android-screenshot', 'visual-qa-capture'].includes(evidence.captureKind), 'visual evidence should record a supported capture kind');
     assert(typeof evidence.capturePath === 'string' && fs.existsSync(evidence.capturePath), 'visual evidence should point at an existing capture image');
@@ -64,6 +59,12 @@ if (fs.existsSync(evidencePath)) {
     for (const key of ['moduleLoaded', 'actorRendered', 'clipActive', 'basicControlsVisible', 'uiRendered']) {
       assert(visual[key] === true, `visual assertion must be true: ${key}`);
     }
+    for (const key of ['meshyFpsSwordActorUpright', 'meshyFpsSwordNotCollapsed', 'landscapeCritiqueUsable', 'rightHandDisplacedFromIdle', 'upperBodySwordMotionReadable', 'lowerBodyNotAuthoredBySwordClip', 'realMeshySabreRequested', 'weaponRSocketImplemented']) {
+      assert(visual[key] === true, `visual assertion must be true: ${key}`);
+    }
+    assert(evidence.actorKey === 'meshyCharacter', 'visual evidence should cover Meshy Character');
+    assert(String(evidence.clipName || '').includes('OneHandReady'), 'visual evidence should cover FPS OneHandReady');
+    assert(String(evidence.clipName || '').includes('[FPS-SWORD-UPPER]'), 'visual evidence should cover the accepted [FPS-SWORD-UPPER] clip');
     assert(evidence.motionEvidencePending === false, 'usable-app evidence should include live visual capture, not defer motion evidence');
   }
 }

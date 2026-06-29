@@ -1,0 +1,14 @@
+[gd_resource type="StandardMaterial3D" load_steps=5 format=3 uid="uid://b16neyt4rmj3k"]
+
+[ext_resource type="Texture2D" uid="uid://cble1h3xqsb12" path="res://models/Steampunk_Saber_0821151217_texture.png" id="1_0u4ya"]
+[ext_resource type="Texture2D" uid="uid://cns4xgprosd" path="res://models/Steampunk_Saber_0821151217_texture_metallic.png" id="2_3buvt"]
+[ext_resource type="Texture2D" uid="uid://d12cpbnkh6t5b" path="res://models/Steampunk_Saber_0821151217_texture_normal.png" id="3_kisvb"]
+[ext_resource type="Texture2D" uid="uid://ct8jcjoefmoue" path="res://models/Steampunk_Saber_0821151217_texture_roughness.png" id="4_b04cm"]
+
+[resource]
+albedo_texture = ExtResource("1_0u4ya")
+metallic = 1.0
+metallic_texture = ExtResource("2_3buvt")
+roughness_texture = ExtResource("4_b04cm")
+normal_enabled = true
+normal_texture = ExtResource("3_kisvb")

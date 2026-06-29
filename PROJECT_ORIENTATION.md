@@ -14,6 +14,14 @@ This is a standalone browser Pose Lab seeded from the newer `gravity-fist-threej
 - `assets/source/FPSPlayer.blend`: copied source blend for provenance.
 - `assets/models/arcane/Forgeborn.glb`: Arcane Manifold full-body player rig copied from THECAULDRON.
 - `assets/models/arcane/Animation_*.fbx`: Arcane Manifold native leg/turn animation clips loaded onto the full rig.
+- `assets/models/ruined_air/Scavenger_new.fbx`: Ruined Air canonical visible full-body player rig with sabre clips.
+- `assets/models/ruined_air/Animations/Animation_*.fbx`: Ruined Air native walk/back/turn clips loaded onto the Ruined Air actor.
+- `assets/source/ruined_air/`: copied Ruined Air player scene and controller scripts for provenance and procedural-walk mining.
+- `assets/models/meshy_character_sheet/animated/`: animated Meshy biped GLBs used by the `Meshy Character` actor.
+- `Meshy Character` now prefers FPS Arms sword upper-body `[FPS-SWORD-UPPER]` clips converted from `FPSPlayer.glb` `OneHand*` authored keyframes onto the Meshy rig using `fps-upper-key-convert`. These clips preserve source key times, close generated quaternion seams so the authored cyclic wrap stays smooth, use IK only as a bounded source-key correction layer at those source keys, solve `WeaponGrip` from the mapped `Weapon.R` virtual blade frame instead of raw wrist-relative rotation, intentionally exclude hips/root/legs/feet/head, and do not bake locomotion or invented full-body motion; Meshy FPV uses a head-centered forward camera for parity with FPS Arms.
+- `assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb`: static PBR Meshy gun-sword/sabre prop attached to `WeaponGrip`; FPS Arms inherits `WeaponGrip` from authored `WeaponR`, while Meshy Character positions the synthetic socket on `RightHand` and drives its orientation from `Weapon.R` relative to `Hand.R`.
+- `assets/models/meshy_character_sheet/static/`: static full-PBR Meshy GLB used by the `Meshy Static PBR` reference actor and as the material source copied onto the animated Meshy `char1` skinned mesh at runtime.
+- `assets/source/meshy_character_sheet/`: original Meshy download zip and extracted animated GLBs for provenance.
 - `assets/source/arcane/Player.tscn`: Arcane Manifold scene reference for active player model and AnimationPlayer wiring.
 - `assets/asset_manifest.json`: asset source and processing notes.
 
@@ -114,3 +122,7 @@ Debian/Termux Blender exists at `/usr/bin/blender` version 4.3.2 and can inspect
 See [docs/MOTIVATED_MODE.md](/storage/emulated/0/Documents/GodotProjects/pose-lab/docs/MOTIVATED_MODE.md:1) for the saved contract and the before-stopping checklist.
 
 The same contract now includes an Initiative Audit: check, document, and test the cheap follow-up work before you stop.
+
+## Meshy FPS Sword Retarget Note
+
+The accepted Meshy sword path is currently `[FPS-SWORD-UPPER]` `OneHandReady` only: FPSPlayer `OneHandReady` converted as an upper-body ready pose from authored source keyframes. The active ready path preserves direct source-key rotation tracks for mapped Meshy upper-body bones while allowing bounded IK correction at those same authored key times; it must not replace tracks, drop keys, or synthesize new frames. Weapon orientation must use the measured frame-solve path: `Weapon.R` virtual blade tip and up axis mapped from `ShoulderCenter` into Meshy `Spine02`, then written to `WeaponGrip`. Attacks and `OneHandReadied` are deliberately deferred until the ready pose and weapon hold are visually sane. The failed `[IB-MC]` Orc full-body path and the earlier Ruined Air/Scavenger-generated Meshy paths (`[RA-FULL]`, `[GRIP]`, `[CORE]`, `[SABRE]`) are red builds for this goal because they invent or preserve the wrong motion source. Meshy native walk/run clips remain direct clips, the real Meshy gun-sword/sabre stays attached at `WeaponGrip`, and Meshy FPV should anchor at the head with a forward offset rather than following the hands.

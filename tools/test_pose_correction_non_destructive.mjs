@@ -63,7 +63,7 @@ assert(cleanupSave.includes('critique: this.critiqueStateSnapshot(actor, clip)')
 assert(cleanupExport.includes('const payloadClip = serializeAnimationClip(clip);'), 'clip export should be explicit cleanup/export flow, not pose correction writeback');
 assert(cleanupExport.includes('critique: this.critiqueStateSnapshot(actor, clip)'), 'exported clips should carry critique state as metadata');
 assert(!js.includes('activeClip().tracks =') && !js.includes('clip.tracks = correction') && !js.includes('clip.tracks.push(correction'), 'pose correction code must not directly overwrite source clip tracks');
-assert(html.includes('pose-editor-22'), 'cache token should force browser reload for FK axis inference fix');
+assert(html.includes('pose-editor-99'), 'cache token should force browser reload for FK axis inference fix');
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({ checked: ['non-destructive-pose-corrections', 'learning-context', 'no-source-clip-overwrite'] }, null, 2));

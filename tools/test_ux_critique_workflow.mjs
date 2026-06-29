@@ -39,18 +39,20 @@ assert(js.includes('critiqueToggleCompare()'), 'critique drawer should support c
 assert(js.includes('critiqueCompareState = null'), 'compare state should be tracked and cleared');
 assert(js.includes('panelElementName(panel)'), 'sheet state should map to underlying panels');
 assert(css.includes('phone-controls-1.0'), 'phone-control CSS block should be present');
-assert(css.includes('phone-controls-bare-player-1.0'), 'bare-player CSS block should be present');
+assert(css.includes('mobile-readout-recovery-1.0'), 'mobile readout recovery CSS block should be present');
 assert(css.includes('body.phone-controls.critique-mode #playerTransport'), 'transport rail should be positioned by phone CSS');
 assert(css.includes('body.phone-controls.critique-mode #cleanupTimelineCanvas'), 'critique timeline should remain visible');
 assert(css.includes('body.phone-controls.critique-mode #critiqueDock'), 'critique drawer should be styled as a collapse window');
-assert(css.includes(`body.phone-controls.critique-mode .player-transport-row {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-}`), 'critique transport should keep Clips on the main rail instead of wrapping to a second line');
+assert(css.includes('body.phone-controls.critique-mode .player-transport-row') && css.includes('grid-template-columns: repeat(4, minmax(0, 1fr));'), 'critique transport should keep Clips on the main rail instead of wrapping to a second line');
 assert(css.includes(`body.phone-controls.critique-mode #poseEditDock:not([open]) {
   display: none !important;
 }`), 'pose editor should stay hidden until explicitly opened');
-assert(css.includes('body.phone-controls.critique-mode #cleanupPanel') && css.includes('display: none !important;'), 'cleanup wall should be hidden in critique mode');
-assert(css.includes('body.phone-controls.critique-mode #actorTabs') && css.includes('display: none !important;'), 'actor tabs should be hidden in critique mode');
+assert(css.includes('body.phone-controls.critique-mode #cleanupPanel.open') && css.includes('body.phone-controls.critique-mode:not(.has-open-panel) #cleanupPanel'), 'cleanup/readout sheets should open on demand and close fully when no panel is active');
+assert(css.includes('body.phone-controls.critique-mode #actorTabs') && css.includes('display: flex !important;'), 'actor tabs should remain visible in critique mode');
+assert(!css.includes('body.phone-controls.critique-mode #actorTabs,\nbody.phone-controls.critique-mode #viewTabs,\nbody.phone-controls.critique-mode #panelTabs'), 'old bare-player hide selector should not remain');
+assert(css.includes('body.phone-controls.critique-mode #viewTabs') && css.includes('display: flex !important;'), 'Orbit/FPV controls should remain visible in critique mode');
+assert(css.includes('body.phone-controls.critique-mode #panelTabs') && css.includes('display: grid !important;'), 'tool dock with Hide should remain visible in critique mode');
+assert(css.includes('button[data-panel="none"]'), 'Hide button should have an explicit mobile close affordance');
 assert(!css.includes('body.critique-mode #cleanupPanel { display: block !important; max-height: calc(100vh - 132px); }'), 'old full-screen cleanup force-open rule should not remain');
 assert(js.includes('primeExclusiveAccordionState()'), 'startup should prime the accordion state');
 assert(js.includes('details.open = false;'), 'critique startup should close stale accordion state');

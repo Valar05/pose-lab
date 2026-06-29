@@ -1,0 +1,15 @@
+{
+  "schema": "pose-lab-meshy-fps-weapon-basis-audit-v1",
+  "source": "assets/models/FPSPlayer.glb",
+  "target": "assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb",
+  "clip": "OneHandReady",
+  "sourceKeyCount": 31,
+  "method": "map WeaponR virtual tip and up axis from ShoulderCenter frame to Meshy Spine02 frame",
+  "selectedRuntimeMode": "frame-solved WeaponGrip basis",
+  "metrics": {
+    "rawAvgBladeErrorDeg": 60.225,
+    "rawMaxBladeErrorDeg": 62.123,
+    "solvedAvgBladeErrorDeg": 0,
+    "solvedMaxBladeErrorDeg": 0
+  }
+}

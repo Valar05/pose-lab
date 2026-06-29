@@ -1,0 +1,103 @@
+{
+  "ok": false,
+  "failure": {
+    "code": "no-browser-requests",
+    "message": "Launcher returned success but the browser never requested the local URL."
+  },
+  "project": "pose-lab",
+  "url": "http://127.0.0.1:10448/pose-lab/pose-lab.html?mode=critique&actor=meshyCharacter&qaActor=meshyCharacter&qaClip=Armature%7CSwing1&qaFrameMode=read&beacon=1&capture=1&captureFrames=3&captureIntervalMs=250&visualQaExpectedBuild=clean-sf2",
+  "outDir": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_rd_swing1",
+  "report": "/storage/emulated/0/Documents/GodotProjects/pose-lab/generated/visual_qa/meshy_rd_swing1/visual_qa_report.json",
+  "sheet": null,
+  "expectedBuild": "clean-sf2",
+  "loadedBuild": "",
+  "buildInfo": {
+    "runtimeBuild": "clean-sf2",
+    "indexPath": "/storage/emulated/0/Documents/GodotProjects/pose-lab/pose-lab.html",
+    "cacheTokens": [
+      "pose-editor-25"
+    ]
+  },
+  "launch": {
+    "code": 0,
+    "signal": null,
+    "stdout": "Starting: Intent { act=android.intent.action.VIEW dat=http://127.0.0.1:10448/... }\n",
+    "stderr": ""
+  },
+  "wakeLock": {
+    "code": 0,
+    "signal": null,
+    "stdout": "",
+    "stderr": ""
+  },
+  "androidState": {
+    "dumpsysPower": {
+      "code": 0,
+      "denied": true,
+      "summary": [
+        "Permission Denial: can't dump PowerManagerService from from pid=26061, uid=10624 due to missing android.permission.DUMP permission"
+      ]
+    },
+    "cmdPowerWakeup": {
+      "code": 255,
+      "permitted": false,
+      "output": "Error: java.lang.SecurityException: Neither user 10624 nor current process has android.permission.DEVICE_POWER."
+    }
+  },
+  "readyBroadcast": null,
+  "beacons": [],
+  "captures": [],
+  "captureComplete": false,
+  "requestedFrames": 3,
+  "newestScreenshots": [
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-134719.png",
+      "mtimeMs": 1782672439593.2273,
+      "mtime": "2026-06-28T18:47:19.593Z",
+      "bytes": 214753
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-134712.png",
+      "mtimeMs": 1782672433237.2273,
+      "mtime": "2026-06-28T18:47:13.237Z",
+      "bytes": 263425
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-134343.png",
+      "mtimeMs": 1782672224577.2273,
+      "mtime": "2026-06-28T18:43:44.577Z",
+      "bytes": 1521162
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-133318.png",
+      "mtimeMs": 1782671598453.2268,
+      "mtime": "2026-06-28T18:33:18.453Z",
+      "bytes": 200268
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-132954.png",
+      "mtimeMs": 1782671395669.2266,
+      "mtime": "2026-06-28T18:29:55.669Z",
+      "bytes": 1452871
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-132543.png",
+      "mtimeMs": 1782671143665.2263,
+      "mtime": "2026-06-28T18:25:43.665Z",
+      "bytes": 305394
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-132253.png",
+      "mtimeMs": 1782670973897.2263,
+      "mtime": "2026-06-28T18:22:53.897Z",
+      "bytes": 177531
+    },
+    {
+      "path": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260628-131938.png",
+      "mtimeMs": 1782670778553.226,
+      "mtime": "2026-06-28T18:19:38.553Z",
+      "bytes": 544324
+    }
+  ],
+  "recentRequests": []
+}

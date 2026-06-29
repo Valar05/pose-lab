@@ -25,7 +25,7 @@ assert(poseLabHtml.includes('Correct Pose'), 'critique drawer should expose the 
 assert(poseLabHtml.includes('New Key'), 'critique drawer should expose the key promotion action');
 assert(poseLabHtml.includes('Critique</button>'), 'critique drawer should expose the critique save action');
 assert(critiqueHtml.includes('pose-lab.html?mode=critique&actor=ares'), 'critique redirect should open Ares critique mode');
-assert(critiqueHtml.includes('cacheBust=pose-editor-22'), 'critique redirect should bypass stale browser cache');
+assert(critiqueHtml.includes('cacheBust=pose-editor-99'), 'critique redirect should bypass stale browser cache');
 assert(poseLabHtml.includes('http-equiv="Cache-Control"'), 'pose-lab entry should discourage stale browser HTML cache');
 assert(critiqueHtml.includes('http-equiv="Cache-Control"'), 'critique alias should discourage stale browser HTML cache');
 assert(poseLabJs.includes("const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';"), 'status prefix should distinguish critique mode');

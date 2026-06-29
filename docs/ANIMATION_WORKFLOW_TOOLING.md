@@ -43,6 +43,22 @@ python3 tools/build_critique_packet.py --poseclip assets/pose_indexes/ares_axeki
 
 Builds a render manifest, stickframe PNGs, and critique packet using `tools/render_poseclip_stickframes.py`. Critique packets default to 30 fps so the tagged frames line up with the slower human read used for review. Use `--frames step` when you want a compact per-frame strip with labels like `f012` instead of phase chunks, and use `--video` when a timed GIF/MP4 is needed.
 
+## Offline Weapon Stick Parity
+
+```sh
+node tools/weapon_retarget_stick_debug.mjs --preset fpsPlayer
+```
+
+Use this before touching the live Pose Lab viewport when comparing FPS Arms saber motion to Meshy Character. The `fpsPlayer` preset loads `assets/models/FPSPlayer.glb`, samples `OneHandAttack1`, uses the solved `WeaponR` virtual saber tip, and writes `generated/weapon_retarget_debug/fps_onehand_attack1/weapon_retarget_stick_sheet.png` plus JSON metrics including grip travel, blade sweep, shoulder-frame blade direction error, and shoulder-frame grip error. Treat the source-derived offline path as a diagnostic, not the live runtime algorithm; the accepted Meshy runtime path is currently `fps-upper-key-convert` for `OneHandReady` only, preserving authored FPS key times, closing generated quaternion seams for the authored cyclic wrap, using bounded IK correction on mapped source rotation tracks without replacing them, and solving `WeaponGrip` from the mapped `Weapon.R` virtual blade frame.
+
+## FPS Weapon Basis Audit
+
+```sh
+node tools/meshy_fps_weapon_basis_audit.mjs
+```
+
+Use this when Meshy saber rotation looks sideways or rolled. It compares the rejected raw wrist-relative `Weapon.R` orientation against the accepted frame-solved weapon basis at the 31 authored `OneHandReady` source keys. The audit writes `generated/weapon_retarget_debug/fps_weapon_basis_audit.json`; the current red-build failure measured raw blade direction around 125 degrees off on average on the attack path, so runtime now maps the `Weapon.R` virtual blade tip and up axis from FPS `ShoulderCenter` into Meshy `Spine02` before writing `WeaponGrip`.
+
 
 ## Troubleshooting Loop
 
@@ -163,7 +179,7 @@ Checks that generated SF2 clips have cache origins, clean labels, visual evidenc
 python3 tools/overwrite_pose_data.py --target assets/pose_indexes/ares_axekick_sf2.poseclip.json --source /path/to/new.poseclip.json --kind poseclip
 ```
 
-Use this instead of `apply_patch` when replacing pose data on Android shared storage. The writer validates the JSON schema, restricts writes to project-owned pose/generated roots, writes atomically, and creates a timestamped backup under `generated/pose_overwrites/backups/`. Use `--dry-run` to validate without writing and `--allow-new` only when intentionally creating a new pose artifact.
+Use `apply_patch` for normal manual repo edits. For intentional bulk pose-data replacement, this writer remains available as a validation/backup tool: it validates the JSON schema, restricts writes to project-owned pose/generated roots, writes atomically, and creates a timestamped backup under `generated/pose_overwrites/backups/`. Use `--dry-run` to validate without writing and `--allow-new` only when intentionally creating a new pose artifact.
 
 ## Ganondorf Steering Reference
 
@@ -180,6 +196,8 @@ Key navigation wraps: next key from the final authored key jumps to the first, a
 ```sh
 node tools/test_poseclip_workflow_tools.mjs
 node tools/test_poseclip_stickframe_render.mjs
+node tools/test_weapon_retarget_stick_debug.mjs
+node tools/test_weapon_retarget_fps_meshy_stick_debug.mjs
 node tools/test_pose_data_overwrite.mjs
 node tools/test_openai_critique_runner.mjs
 node tools/test_codex_critique_runner.mjs

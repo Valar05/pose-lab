@@ -32,8 +32,8 @@ for (const needle of [
   'write_codex_rules_from_source.sh',
   'sh /storage/emulated/0/Documents/GodotProjects/tools/write_codex_rules_from_source.sh',
   '~/.codex/rules/default.rules',
-  'workspace-write-operator',
-  'sandbox-sensitive location',
+  'Use `apply_patch` for manual repo edits',
+  'workspace-write-operator` editing workaround is deprecated',
 ]) {
   assert(doc.includes(needle), `MOTIVATED_MODE.md should include ${needle}`);
 }
