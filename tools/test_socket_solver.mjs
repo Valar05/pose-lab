@@ -48,10 +48,12 @@ for (const key of ['averageCorrection', 'maxDeviation', 'standardDeviation']) {
 assert(Number.isFinite(data.summary?.before?.averagePickedGripError), 'summary missing before average picked grip error');
 assert(Number.isFinite(data.summary?.after?.averagePickedGripError), 'summary missing after average picked grip error');
 assert(candidate.diagnosticOnly === true && candidate.productionBehaviorModified === false, 'candidate must be diagnostic-only');
+assert(candidate.manualPlacementLock?.locked === true, 'manual placement lock should be embedded in socket candidate output');
+assert(candidate.promotable === false, 'socket solver must not mark manual placement overrides as promotable');
+assert(candidate.productionSnippet === null, 'socket solver must not emit production snippets for locked manual placement fields');
 assert(Array.isArray(candidate.averageSocketLocalCorrection) && candidate.averageSocketLocalCorrection.length === 3, 'candidate should include average socket local correction');
 assert(Array.isArray(candidate.currentModelLocalOffset) && candidate.currentModelLocalOffset.length === 3, 'candidate should include current modelLocalOffset');
 assert(Array.isArray(candidate.candidateModelLocalOffset) && candidate.candidateModelLocalOffset.length === 3, 'candidate should include candidate modelLocalOffset');
-assert(candidate.productionSnippet === null || candidate.productionSnippet.includes('modelLocalOffset'), 'production snippet should only mention modelLocalOffset');
 assert(candidate.rotationAdjustmentReportedOnly?.requiredByEvidence === false, 'solver should not propose socket rotation');
 
 assert(data.source?.attachmentSnapshots?.fps?.attachment?.gripLocalPosition?.join(',') === '0.67888,-0.07803,-0.06249', 'FPS snapshot should preserve the semantic/manual hilt candidate');

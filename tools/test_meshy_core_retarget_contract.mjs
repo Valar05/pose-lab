@@ -4,6 +4,7 @@ import path from 'node:path';
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const js = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
 const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
+const socketSolver = fs.readFileSync(path.join(projectRoot, 'tools', 'socket_solver.mjs'), 'utf8');
 const html = fs.readFileSync(path.join(projectRoot, 'pose-lab.html'), 'utf8');
 const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
@@ -25,6 +26,9 @@ assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-
 assert(!profiles.includes('defaultRestClip') && !js.includes('applyDefaultModelRestClip') && !js.includes('this.applyDefaultModelRestClips();'), 'accepted CAL--120 RestProbe must remain a generated clip, not mutate actor modelRestPose');
 assert(!profiles.includes('...[-150') && !profiles.includes('FPS-REST-ARMS-CAL-120') && !profiles.includes('FPS-REST-ARMS-CAL-90') && !profiles.includes('FPS-REST-ARMS-CAL--90'), 'Meshy should not expose rejected positive or sweep hand-roll calibration clips after accepting CAL--120');
 assert(profiles.includes("clipNames: [\n          'OneHandReady',\n        ]"), 'Meshy keeps the old FPS OneHandReady generator only as an unpromoted source path during recovery');
+assert(profiles.includes('modelLocalOffset: [-0.18003, -0.0236, -0.13396]') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy manual weapon placement must remain locked as repository truth');
+assert(profiles.includes('modelLocalOffset: [0.06126, -0.07096, -0.00135]') && profiles.includes('gripLocalPosition: [0.67888, -0.07803, -0.06249]'), 'FPS manual weapon placement must remain locked as repository truth');
+assert(socketSolver.includes('MANUAL_PLACEMENT_LOCK') && socketSolver.includes('promotable: false') && socketSolver.includes('productionSnippet: null'), 'socket diagnostics must not be able to promote or print production manual-placement overrides');
 for (const deferred of ['OneHandReadied -> meshyCharacter', 'OneHandAttack1 -> meshyCharacter', 'OneHandAttack5 -> meshyCharacter', 'OneHandAirForwardAttack -> meshyCharacter']) {
   assert(!profiles.includes(deferred), `Meshy should defer generated attack/readied clip: ${deferred}`);
 }

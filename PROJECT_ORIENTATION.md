@@ -140,3 +140,5 @@ Promotion requires `tools/promote_pose_candidate.mjs` with fresh visual evidence
 ## Manual Placement Authority
 
 Never overwrite manually placed weapon/model attachment values from solver output, semantic landmark output, socket metrics, or diagnostic reports unless the user explicitly asks to promote that exact placement and confirms the promotion separately. Diagnostics may produce candidate artifacts, but `src/rig-profiles.js` remains manual-placement truth until that separate confirmation happens.
+
+This is enforced by `node tools/test_manual_weapon_placement_lock.mjs`. The socket solver must remain diagnostic-only: it may report a candidate offset for analysis, but it must not mark that offset promotable or emit a production snippet for `src/rig-profiles.js`.

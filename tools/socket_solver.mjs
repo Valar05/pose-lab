@@ -12,6 +12,11 @@ const STABILITY = {
   standardDeviation: 0.01,
   promotionError: 0.08,
 };
+const MANUAL_PLACEMENT_LOCK = {
+  locked: true,
+  reason: 'Manual weapon placement is repository truth. Socket solver output is diagnostic-only and must not overwrite src/rig-profiles.js.',
+  unlockPolicy: 'Only a separately confirmed user request for an exact placement may change production weapon placement values.',
+};
 
 function parseArgs(argv) {
   const args = { out: defaultOut, maxRenderFrames: 9 };
@@ -243,23 +248,20 @@ function main() {
   const afterGood = summary.after.averagePickedGripError <= STABILITY.promotionError && summary.after.maxPickedGripError <= STABILITY.promotionError;
   const currentOffset = vec(blade.attachmentSnapshots?.meshy?.proxy?.modelLocalOffset || [0, 0, 0]);
   const candidateOffset = point(add(currentOffset, correction));
+  const solverWouldBePromotable = Boolean(stable && afterGood);
   const candidate = {
     diagnosticOnly: true,
     productionBehaviorModified: false,
-    promotable: Boolean(stable && afterGood),
-    stopReason: stable ? (afterGood ? 'stable socket correction; candidate may be promoted later' : 'stable correction but predicted grip error remains above threshold') : 'socket correction is not stable across authored keys',
+    manualPlacementLock: MANUAL_PLACEMENT_LOCK,
+    promotable: false,
+    solverWouldBePromotable,
+    stopReason: MANUAL_PLACEMENT_LOCK.reason,
     correctionSpace: 'Meshy actor/model local space applied as weaponProxy.modelLocalOffset delta',
     currentModelLocalOffset: point(currentOffset),
     averageSocketLocalCorrection: point(correction),
     candidateModelLocalOffset: candidateOffset,
     stabilityThresholds: STABILITY,
-    productionSnippet: stable && afterGood
-      ? [
-          'weaponProxy: {',
-          `  modelLocalOffset: [${candidateOffset.join(', ')}],`,
-          '}',
-        ].join('\n')
-      : null,
+    productionSnippet: null,
     rotationAdjustmentReportedOnly: {
       requiredByEvidence: false,
       note: 'This solver only evaluates socket position. Socket rotation is not applied or proposed.',
