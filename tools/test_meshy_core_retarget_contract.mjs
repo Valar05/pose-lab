@@ -28,7 +28,7 @@ assert(!profiles.includes('...[-150') && !profiles.includes('FPS-REST-ARMS-CAL-1
 assert(profiles.includes("clipNames: [\n          'OneHandReady',\n        ]"), 'Meshy keeps the old FPS OneHandReady generator only as an unpromoted source path during recovery');
 assert(profiles.includes('modelLocalOffset: [-0.18003, -0.0236, -0.13396]') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy manual weapon placement must remain locked as repository truth');
 assert(profiles.includes('modelLocalOffset: [0.06126, -0.07096, -0.00135]') && profiles.includes('gripLocalPosition: [0.67888, -0.07803, -0.06249]'), 'FPS manual weapon placement must remain locked as repository truth');
-assert(socketSolver.includes('MANUAL_PLACEMENT_LOCK') && socketSolver.includes('promotable: false') && socketSolver.includes('productionSnippet: null'), 'socket diagnostics must not be able to promote or print production manual-placement overrides');
+assert(socketSolver.includes('MANUAL_PLACEMENT_LOCK') && socketSolver.includes('promotable: false') && socketSolver.includes('productionSnippet: null') && socketSolver.includes('candidateModelLocalOffset: null'), 'socket diagnostics must not be able to promote or print production manual-placement overrides');
 for (const deferred of ['OneHandReadied -> meshyCharacter', 'OneHandAttack1 -> meshyCharacter', 'OneHandAttack5 -> meshyCharacter', 'OneHandAirForwardAttack -> meshyCharacter']) {
   assert(!profiles.includes(deferred), `Meshy should defer generated attack/readied clip: ${deferred}`);
 }

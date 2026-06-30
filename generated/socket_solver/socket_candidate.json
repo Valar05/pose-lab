@@ -1,8 +1,14 @@
 {
   "diagnosticOnly": true,
   "productionBehaviorModified": false,
-  "promotable": true,
-  "stopReason": "stable socket correction; candidate may be promoted later",
+  "manualPlacementLock": {
+    "locked": true,
+    "reason": "Manual weapon placement is repository truth. Socket solver output is diagnostic-only and must not overwrite src/rig-profiles.js.",
+    "unlockPolicy": "Only a separately confirmed user request for an exact placement may change production weapon placement values."
+  },
+  "promotable": false,
+  "solverWouldBePromotable": true,
+  "stopReason": "Manual weapon placement is repository truth. Socket solver output is diagnostic-only and must not overwrite src/rig-profiles.js.",
   "correctionSpace": "Meshy actor/model local space applied as weaponProxy.modelLocalOffset delta",
   "currentModelLocalOffset": [
     -0.18003,
@@ -14,17 +20,14 @@
     -0.05055,
     0.36693
   ],
-  "candidateModelLocalOffset": [
-    0.21119,
-    -0.07415,
-    0.23297
-  ],
+  "candidateModelLocalOffset": null,
+  "replacementModelLocalOffsetOmitted": true,
   "stabilityThresholds": {
     "maxDeviation": 0.025,
     "standardDeviation": 0.01,
     "promotionError": 0.08
   },
-  "productionSnippet": "weaponProxy: {\n  modelLocalOffset: [0.21119, -0.07415, 0.23297],\n}",
+  "productionSnippet": null,
   "rotationAdjustmentReportedOnly": {
     "requiredByEvidence": false,
     "note": "This solver only evaluates socket position. Socket rotation is not applied or proposed."

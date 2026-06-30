@@ -206,9 +206,10 @@ function writeSummary(outDir, payload) {
     `- Before average pickedGripError: ${s.before.averagePickedGripError}`,
     `- After average pickedGripError: ${s.after.averagePickedGripError}`,
     '',
-    '## Candidate',
+    '## Manual Placement Lock',
     `- Current modelLocalOffset: ${JSON.stringify(payload.candidate.currentModelLocalOffset)}`,
-    `- Candidate modelLocalOffset: ${JSON.stringify(payload.candidate.candidateModelLocalOffset)}`,
+    '- Replacement modelLocalOffset: omitted by policy',
+    `- Policy: ${payload.candidate.manualPlacementLock.reason}`,
     '',
     'Diagnostic-only. This does not modify grip landmarks, tip landmarks, weapon basis, FK, roll, arm animation, startup clips, aliases, or production retarget logic.',
     '',
@@ -247,7 +248,6 @@ function main() {
   const stable = summary.maxDeviation <= STABILITY.maxDeviation && summary.standardDeviation <= STABILITY.standardDeviation;
   const afterGood = summary.after.averagePickedGripError <= STABILITY.promotionError && summary.after.maxPickedGripError <= STABILITY.promotionError;
   const currentOffset = vec(blade.attachmentSnapshots?.meshy?.proxy?.modelLocalOffset || [0, 0, 0]);
-  const candidateOffset = point(add(currentOffset, correction));
   const solverWouldBePromotable = Boolean(stable && afterGood);
   const candidate = {
     diagnosticOnly: true,
@@ -259,7 +259,8 @@ function main() {
     correctionSpace: 'Meshy actor/model local space applied as weaponProxy.modelLocalOffset delta',
     currentModelLocalOffset: point(currentOffset),
     averageSocketLocalCorrection: point(correction),
-    candidateModelLocalOffset: candidateOffset,
+    candidateModelLocalOffset: null,
+    replacementModelLocalOffsetOmitted: true,
     stabilityThresholds: STABILITY,
     productionSnippet: null,
     rotationAdjustmentReportedOnly: {
@@ -306,7 +307,7 @@ function main() {
     diagnosticSummary: path.relative(projectRoot, path.join(args.out, 'diagnostic_summary.md')),
     summary,
     promotable: candidate.promotable,
-    candidateModelLocalOffset: candidate.candidateModelLocalOffset,
+    candidateModelLocalOffset: null,
     averageSocketLocalCorrection: candidate.averageSocketLocalCorrection,
   }, null, 2));
 }

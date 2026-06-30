@@ -34,6 +34,7 @@ assert(agents.includes('Never overwrite manually placed weapon/model attachment 
 assert(socketSolver.includes('MANUAL_PLACEMENT_LOCK'), 'socket solver should carry an explicit manual placement lock');
 assert(socketSolver.includes('promotable: false'), 'socket solver should never mark manual placement candidates as promotable');
 assert(socketSolver.includes('productionSnippet: null'), 'socket solver should never emit production snippets for manual placement fields');
+assert(socketSolver.includes('candidateModelLocalOffset: null'), 'socket solver should not output production-shaped replacement socket offsets');
 assert(!socketSolver.includes('candidate may be promoted later'), 'socket solver should not invite promotion of metric-derived socket output');
 
 if (failures.length) throw new Error(failures.join('\n'));

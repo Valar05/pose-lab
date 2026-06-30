@@ -1,6 +1,6 @@
 {
   "schema": "pose-lab-weapon-grip-socket-solver-v1",
-  "generatedAt": "2026-06-30T15:28:18.234Z",
+  "generatedAt": "2026-06-30T17:47:17.404Z",
   "diagnosticOnly": true,
   "productionBehaviorModified": false,
   "source": {
@@ -44,9 +44,9 @@
             109.315
           ],
           "gripLocalPosition": [
-            0.59555,
-            -0.02351,
-            -0.06508
+            0.67888,
+            -0.07803,
+            -0.06249
           ],
           "tipLocalPosition": [
             -0.95561,
@@ -87,9 +87,9 @@
             -55.145
           ],
           "gripLocalPosition": [
-            0.66607,
-            -0.03924,
-            -0.07431
+            0.6535,
+            -0.02302,
+            -0.07317
           ],
           "tipLocalPosition": [
             -0.95561,
@@ -120,8 +120,14 @@
   "candidate": {
     "diagnosticOnly": true,
     "productionBehaviorModified": false,
-    "promotable": true,
-    "stopReason": "stable socket correction; candidate may be promoted later",
+    "manualPlacementLock": {
+      "locked": true,
+      "reason": "Manual weapon placement is repository truth. Socket solver output is diagnostic-only and must not overwrite src/rig-profiles.js.",
+      "unlockPolicy": "Only a separately confirmed user request for an exact placement may change production weapon placement values."
+    },
+    "promotable": false,
+    "solverWouldBePromotable": true,
+    "stopReason": "Manual weapon placement is repository truth. Socket solver output is diagnostic-only and must not overwrite src/rig-profiles.js.",
     "correctionSpace": "Meshy actor/model local space applied as weaponProxy.modelLocalOffset delta",
     "currentModelLocalOffset": [
       -0.18003,
@@ -133,17 +139,14 @@
       -0.05055,
       0.36693
     ],
-    "candidateModelLocalOffset": [
-      0.21119,
-      -0.07415,
-      0.23297
-    ],
+    "candidateModelLocalOffset": null,
+    "replacementModelLocalOffsetOmitted": true,
     "stabilityThresholds": {
       "maxDeviation": 0.025,
       "standardDeviation": 0.01,
       "promotionError": 0.08
     },
-    "productionSnippet": "weaponProxy: {\n  modelLocalOffset: [0.21119, -0.07415, 0.23297],\n}",
+    "productionSnippet": null,
     "rotationAdjustmentReportedOnly": {
       "requiredByEvidence": false,
       "note": "This solver only evaluates socket position. Socket rotation is not applied or proposed."
@@ -2169,65 +2172,6 @@
       "afterPickedGripError": 0.00479
     },
     {
-      "index": 3,
-      "time": 0.125,
-      "projectedGripTargetWorld": [
-        -0.18249,
-        1.17622,
-        0.39608
-      ],
-      "currentSocketWorld": [
-        -0.57614,
-        1.22411,
-        0.03127
-      ],
-      "currentGripWorld": [
-        -0.57614,
-        1.22411,
-        0.03127
-      ],
-      "socketToProjectedTarget": [
-        0.39365,
-        -0.04789,
-        0.36481
-      ],
-      "attachmentGripToProjectedTarget": [
-        0.39365,
-        -0.04789,
-        0.36481
-      ],
-      "attachmentGripToSocket": [
-        0,
-        0,
-        0
-      ],
-      "socketParentLocalCorrection": [
-        0.39365,
-        -0.04789,
-        0.36481
-      ],
-      "before": {
-        "socketError": 0.53883,
-        "pickedGripError": 0.53883,
-        "hiltLandmarkError": 0.53883
-      },
-      "predictedWithExactCorrection": {
-        "gripWorld": [
-          -0.18249,
-          1.17622,
-          0.39608
-        ],
-        "pickedGripError": 0
-      },
-      "predictedGripWorld": [
-        -0.18492,
-        1.17356,
-        0.3982
-      ],
-      "beforePickedGripError": 0.53883,
-      "afterPickedGripError": 0.00418
-    },
-    {
       "index": 6,
       "time": 0.25,
       "projectedGripTargetWorld": [
@@ -2285,65 +2229,6 @@
       ],
       "beforePickedGripError": 0.5388,
       "afterPickedGripError": 0.0024
-    },
-    {
-      "index": 9,
-      "time": 0.375,
-      "projectedGripTargetWorld": [
-        -0.18445,
-        1.17137,
-        0.39579
-      ],
-      "currentSocketWorld": [
-        -0.57558,
-        1.22199,
-        0.02875
-      ],
-      "currentGripWorld": [
-        -0.57558,
-        1.22199,
-        0.02875
-      ],
-      "socketToProjectedTarget": [
-        0.39113,
-        -0.05062,
-        0.36704
-      ],
-      "attachmentGripToProjectedTarget": [
-        0.39113,
-        -0.05062,
-        0.36704
-      ],
-      "attachmentGripToSocket": [
-        0,
-        0,
-        0
-      ],
-      "socketParentLocalCorrection": [
-        0.39113,
-        -0.05062,
-        0.36704
-      ],
-      "before": {
-        "socketError": 0.53876,
-        "pickedGripError": 0.53876,
-        "hiltLandmarkError": 0.53876
-      },
-      "predictedWithExactCorrection": {
-        "gripWorld": [
-          -0.18445,
-          1.17137,
-          0.39579
-        ],
-        "pickedGripError": 0
-      },
-      "predictedGripWorld": [
-        -0.18436,
-        1.17144,
-        0.39568
-      ],
-      "beforePickedGripError": 0.53876,
-      "afterPickedGripError": 0.00016
     },
     {
       "index": 12,
@@ -2405,65 +2290,6 @@
       "afterPickedGripError": 0.00272
     },
     {
-      "index": 15,
-      "time": 0.625,
-      "projectedGripTargetWorld": [
-        -0.18637,
-        1.16648,
-        0.39539
-      ],
-      "currentSocketWorld": [
-        -0.57499,
-        1.21992,
-        0.0262
-      ],
-      "currentGripWorld": [
-        -0.57499,
-        1.21992,
-        0.0262
-      ],
-      "socketToProjectedTarget": [
-        0.38862,
-        -0.05344,
-        0.36919
-      ],
-      "attachmentGripToProjectedTarget": [
-        0.38862,
-        -0.05344,
-        0.36919
-      ],
-      "attachmentGripToSocket": [
-        0,
-        0,
-        0
-      ],
-      "socketParentLocalCorrection": [
-        0.38862,
-        -0.05344,
-        0.36919
-      ],
-      "before": {
-        "socketError": 0.53869,
-        "pickedGripError": 0.53869,
-        "hiltLandmarkError": 0.53869
-      },
-      "predictedWithExactCorrection": {
-        "gripWorld": [
-          -0.18637,
-          1.16648,
-          0.39539
-        ],
-        "pickedGripError": 0
-      },
-      "predictedGripWorld": [
-        -0.18377,
-        1.16937,
-        0.39313
-      ],
-      "beforePickedGripError": 0.53869,
-      "afterPickedGripError": 0.0045
-    },
-    {
       "index": 18,
       "time": 0.75,
       "projectedGripTargetWorld": [
@@ -2523,65 +2349,6 @@
       "afterPickedGripError": 0.0051
     },
     {
-      "index": 21,
-      "time": 0.875,
-      "projectedGripTargetWorld": [
-        -0.18604,
-        1.16734,
-        0.39547
-      ],
-      "currentSocketWorld": [
-        -0.57509,
-        1.22028,
-        0.02665
-      ],
-      "currentGripWorld": [
-        -0.57509,
-        1.22028,
-        0.02665
-      ],
-      "socketToProjectedTarget": [
-        0.38905,
-        -0.05294,
-        0.36882
-      ],
-      "attachmentGripToProjectedTarget": [
-        0.38905,
-        -0.05294,
-        0.36882
-      ],
-      "attachmentGripToSocket": [
-        0,
-        0,
-        0
-      ],
-      "socketParentLocalCorrection": [
-        0.38905,
-        -0.05294,
-        0.36882
-      ],
-      "before": {
-        "socketError": 0.5387,
-        "pickedGripError": 0.5387,
-        "hiltLandmarkError": 0.5387
-      },
-      "predictedWithExactCorrection": {
-        "gripWorld": [
-          -0.18604,
-          1.16734,
-          0.39547
-        ],
-        "pickedGripError": 0
-      },
-      "predictedGripWorld": [
-        -0.18387,
-        1.16973,
-        0.39358
-      ],
-      "beforePickedGripError": 0.5387,
-      "afterPickedGripError": 0.00374
-    },
-    {
       "index": 24,
       "time": 1,
       "projectedGripTargetWorld": [
@@ -2639,65 +2406,6 @@
       ],
       "beforePickedGripError": 0.53876,
       "afterPickedGripError": 0.00016
-    },
-    {
-      "index": 27,
-      "time": 1.125,
-      "projectedGripTargetWorld": [
-        -0.18283,
-        1.17538,
-        0.39604
-      ],
-      "currentSocketWorld": [
-        -0.57604,
-        1.22374,
-        0.03083
-      ],
-      "currentGripWorld": [
-        -0.57604,
-        1.22374,
-        0.03083
-      ],
-      "socketToProjectedTarget": [
-        0.39321,
-        -0.04836,
-        0.36521
-      ],
-      "attachmentGripToProjectedTarget": [
-        0.39321,
-        -0.04836,
-        0.36521
-      ],
-      "attachmentGripToSocket": [
-        0,
-        0,
-        0
-      ],
-      "socketParentLocalCorrection": [
-        0.39321,
-        -0.04836,
-        0.36521
-      ],
-      "before": {
-        "socketError": 0.53882,
-        "pickedGripError": 0.53882,
-        "hiltLandmarkError": 0.53882
-      },
-      "predictedWithExactCorrection": {
-        "gripWorld": [
-          -0.18283,
-          1.17538,
-          0.39604
-        ],
-        "pickedGripError": 0
-      },
-      "predictedGripWorld": [
-        -0.18482,
-        1.17319,
-        0.39776
-      ],
-      "beforePickedGripError": 0.53882,
-      "afterPickedGripError": 0.00342
     },
     {
       "index": 30,

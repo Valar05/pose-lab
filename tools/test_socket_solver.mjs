@@ -53,7 +53,7 @@ assert(candidate.promotable === false, 'socket solver must not mark manual place
 assert(candidate.productionSnippet === null, 'socket solver must not emit production snippets for locked manual placement fields');
 assert(Array.isArray(candidate.averageSocketLocalCorrection) && candidate.averageSocketLocalCorrection.length === 3, 'candidate should include average socket local correction');
 assert(Array.isArray(candidate.currentModelLocalOffset) && candidate.currentModelLocalOffset.length === 3, 'candidate should include current modelLocalOffset');
-assert(Array.isArray(candidate.candidateModelLocalOffset) && candidate.candidateModelLocalOffset.length === 3, 'candidate should include candidate modelLocalOffset');
+assert(candidate.candidateModelLocalOffset === null && candidate.replacementModelLocalOffsetOmitted === true, 'solver must omit production-shaped replacement modelLocalOffset values');
 assert(candidate.rotationAdjustmentReportedOnly?.requiredByEvidence === false, 'solver should not propose socket rotation');
 
 assert(data.source?.attachmentSnapshots?.fps?.attachment?.gripLocalPosition?.join(',') === '0.67888,-0.07803,-0.06249', 'FPS snapshot should preserve the semantic/manual hilt candidate');

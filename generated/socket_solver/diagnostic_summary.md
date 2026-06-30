@@ -1,8 +1,8 @@
 # WeaponGrip Socket Solver
 
-Generated: 2026-06-30T15:28:18.234Z
-Promotable: true
-Stop reason: stable socket correction; candidate may be promoted later
+Generated: 2026-06-30T17:47:17.404Z
+Promotable: false
+Stop reason: Manual weapon placement is repository truth. Socket solver output is diagnostic-only and must not overwrite src/rig-profiles.js.
 
 ## Correction
 - Average socket-local correction: [0.39122,-0.05055,0.36693]
@@ -11,8 +11,9 @@ Stop reason: stable socket correction; candidate may be promoted later
 - Before average pickedGripError: 0.53876
 - After average pickedGripError: 0.00325
 
-## Candidate
+## Manual Placement Lock
 - Current modelLocalOffset: [-0.18003,-0.0236,-0.13396]
-- Candidate modelLocalOffset: [0.21119,-0.07415,0.23297]
+- Replacement modelLocalOffset: omitted by policy
+- Policy: Manual weapon placement is repository truth. Socket solver output is diagnostic-only and must not overwrite src/rig-profiles.js.
 
 Diagnostic-only. This does not modify grip landmarks, tip landmarks, weapon basis, FK, roll, arm animation, startup clips, aliases, or production retarget logic.
