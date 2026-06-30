@@ -59,6 +59,39 @@ node tools/meshy_fps_weapon_basis_audit.mjs
 
 Use this when Meshy saber rotation looks sideways or rolled. It compares the rejected raw wrist-relative `Weapon.R` orientation against the accepted frame-solved weapon basis at the 31 authored `OneHandReady` source keys. The audit writes `generated/weapon_retarget_debug/fps_weapon_basis_audit.json`; the current red-build failure measured raw blade direction around 125 degrees off on average on the attack path, so runtime now maps the `Weapon.R` virtual blade tip and up axis from FPS `ShoulderCenter` into Meshy `Spine02` before writing `WeaponGrip`.
 
+## Meshy Promotion Gate
+
+```sh
+node tools/pose_lab_workflow_status.mjs
+node tools/promote_pose_candidate.mjs --candidate CANDIDATE.json --evidence VISUAL.json --metrics METRICS.json
+```
+
+Meshy/FPS ready, saber, and retarget experiments are candidate-only by default. The status command reports the protected accepted baseline, current cache token, latest evidence freshness, dirty protected files, and unpromoted candidate directories. The promotion command rejects blocked/stale visual evidence, missing metric assertions, actor/clip mismatches, and weapon candidates that do not prove grip, hilt, and blade-axis sanity.
+
+Do not wire a candidate to `startupClip`, `SwordReady`, `RestProbe`, or `visibleClipPatterns` manually. If a change needs to become user-facing, produce fresh visual evidence and metric evidence, then run the promotion gate. Source-string tests can support the change, but they cannot promote it.
+
+## Deep Ocean 2026-06-30: Meshy Saber Placement Pain
+
+### Knowledge Capture
+
+- The accepted Meshy/FPS animation baseline remains `0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]`. Do not promote `OneHandReady`, attack clips, or retarget candidates by name-only edits.
+- Saber placement must be tuned as a visible 3D attachment problem, not by repeated blind edits to `modelLocalOffset`, `gripLocalPosition`, or Euler values.
+- The real Meshy saber attachment has two distinct anchors: the synthetic socket (`WeaponGrip`) and the model-local grip landmark (`gripLocalPosition`). If the visible hand does not match the hilt/finger grip center, first expose a gizmo or landmark picker instead of guessing offsets.
+- Cache tokens are part of visual truth in this browser lab. After changing runtime JS/CSS/profile imports, bump the `pose-editor-*` token before asking for screenshot feedback.
+- The `Weapon` panel now provides a viewport 3D gizmo. It can drag the model-space socket offset, rotate the attachment, and save a `rig-profiles.js` snippet through `localStorage`/clipboard.
+
+### Friction Audit
+
+- Missing tool: there was no in-viewport weapon transform gizmo, so small visual placement changes took many text-edit/screenshot loops.
+- Missing test: earlier tests proved strings existed, not that the operator had a real visual control loop. `tools/test_weapon_gizmo_controls.mjs` now protects the panel, drag hooks, live profile mutation, and save payload.
+- Missing documentation: the difference between socket position, grip landmark, model offset, and attachment rotation was implicit in `src/pose-lab.js`; future runs should treat these as separate controls.
+- Missing automation: there is still no screenshot-to-landmark picker that lets the user tap the finger grip center and hilt center to solve the offset automatically.
+- Wasted time pattern: when the user is asking for visible alignment and the next correction is spatial, stop after one failed numeric edit and build a direct manipulation control.
+
+### Build Next
+
+- Build a `Pick Grip Center` mode for the Weapon panel: tap the visible hand/finger grip center and the visible saber hilt center in the viewport, then solve `modelLocalOffset` or `gripLocalPosition` directly from those two picked points. This should produce the same saved snippet as the gizmo and a metric readout of remaining screen-space error.
+
 
 ## Troubleshooting Loop
 
@@ -205,9 +238,10 @@ node tools/test_attack_smash_steering.mjs
 node tools/test_ux_critique_workflow.mjs
 node tools/test_pose_correction_editor.mjs
 node tools/test_bone_touch_selection.mjs
+node tools/test_pose_lab_no_bad_promotions.mjs
 ```
 
-The workflow test exercises scoring, anticipation discovery, phase extraction, timing variants, version comparison, packet building, overlay planning, and cache audit. The stickframe test validates render manifests, evidence slots, PNG generation, and critique packet links. The OpenAI critique test validates packet assembly, frame selection, request preview generation, and batch dry-run wiring without spending API credits.
+The workflow test exercises scoring, anticipation discovery, phase extraction, timing variants, version comparison, packet building, overlay planning, and cache audit. The stickframe test validates render manifests, evidence slots, PNG generation, and critique packet links. The OpenAI critique test validates packet assembly, frame selection, request preview generation, and batch dry-run wiring without spending API credits. The no-bad-promotions test protects the accepted Meshy/FPS baseline, rejects stale visual evidence, and verifies that only a fresh candidate with matching metric evidence can pass the gate.
 
 ## Motivated Mode
 

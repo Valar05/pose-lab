@@ -3,13 +3,14 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
-import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-99';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-99';
-import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-99';
-import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-99';
-import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-99';
+import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-120';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-120';
+import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-120';
+import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-120';
+import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-120';
 
 const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget';
+const LAB_CACHE_TOKEN = 'pose-editor-120';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
@@ -22,7 +23,7 @@ const POSE_HISTORY_KEY = 'pose-lab:pose-history:v1';
 const POSE_HISTORY_LIMIT = 80;
 const CRITIQUE_STEP_FPS = 30;
 const CRITIQUE_LIVE_FPS = 60;
-const PHONE_SHEET_PANELS = ['clips', 'pose', 'edit', 'bones', 'advanced', 'view'];
+const PHONE_SHEET_PANELS = ['clips', 'pose', 'edit', 'bones', 'weapon', 'advanced', 'view'];
 const CLEANUP_SHEET_PANELS = new Set(['pose', 'edit', 'advanced', 'cleanup']);
 const TOUCH_POSE_DRAG_THRESHOLD = 8;
 const TOUCH_POSE_FK_MIN_RADIUS = 12;
@@ -63,6 +64,11 @@ function debugBridgeConfig() {
     timeoutMs: Math.max(2000, Number(params.get('debugBridgeTimeoutMs') || 15000)),
     pollMs: Math.max(100, Number(params.get('debugBridgePollMs') || 250)),
   };
+}
+
+function weaponDebugForceVisible() {
+  const params = new URLSearchParams(window.location.search || '');
+  return params.get('weaponDebug') === '1' || params.get('weaponDebug') === 'true';
 }
 
 function splitDebugCommand(input) {
@@ -288,6 +294,7 @@ const UI = {
     clips: document.getElementById('clipPanel'),
     cleanup: document.getElementById('cleanupPanel'),
     bones: document.getElementById('bonePanel'),
+    weapon: document.getElementById('weaponPanel'),
     retarget: document.getElementById('retargetPanel'),
     transform: document.getElementById('transformPanel'),
     info: document.getElementById('labReadout'),
@@ -314,6 +321,11 @@ const UI = {
   resetBoneEdit: document.getElementById('resetBoneEdit'),
   resetAllBoneEdits: document.getElementById('resetAllBoneEdits'),
   boneStatus: document.getElementById('boneStatus'),
+  weaponGizmoToggle: document.getElementById('weaponGizmoToggle'),
+  weaponGizmoTranslate: document.getElementById('weaponGizmoTranslate'),
+  weaponGizmoRotate: document.getElementById('weaponGizmoRotate'),
+  weaponGizmoSave: document.getElementById('weaponGizmoSave'),
+  weaponGizmoStatus: document.getElementById('weaponGizmoStatus'),
   sourceActor: document.getElementById('sourceActor'),
   targetActor: document.getElementById('targetActor'),
   useTranslate: document.getElementById('useTranslate'),
@@ -3869,12 +3881,15 @@ class PoseActor {
     }
     if (!proxy.leftHand || !proxy.rightHand) return;
     this.model.updateMatrixWorld(true);
-    const rightWorld = worldPositionOf(proxy.rightHand);
+    const rightWorld = Array.isArray(proxy.config.handLocalOffset)
+      ? proxy.rightHand.localToWorld(new THREE.Vector3().fromArray(proxy.config.handLocalOffset))
+      : worldPositionOf(proxy.rightHand);
     const leftWorld = worldPositionOf(proxy.leftHand);
     const socketWorld = (proxy.config.positionMode || 'two-hand-center') === 'right-hand'
       ? rightWorld.clone()
       : rightWorld.clone().add(leftWorld).multiplyScalar(0.5);
     const local = this.model.worldToLocal(socketWorld);
+    if (Array.isArray(proxy.config.modelLocalOffset)) local.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
     if (Array.isArray(proxy.config.gripOffset)) local.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
     proxy.root.position.copy(local);
     if (!animatedSocketRotation) {
@@ -3888,15 +3903,6 @@ class PoseActor {
     const socket = this.weaponProxy.root;
     for (const child of socket.children.filter((entry) => entry.userData?.weaponFallback)) socket.remove(child);
     weaponRoot.name = config.name || socket.name + '-model';
-    weaponRoot.scale.setScalar(Number(config.scale ?? 1));
-    if (Array.isArray(config.rotationDeg)) weaponRoot.rotation.set(...config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
-    if (Array.isArray(config.position)) weaponRoot.position.fromArray(config.position);
-    if (Array.isArray(config.gripLocalPosition)) {
-      const localGrip = new THREE.Vector3().fromArray(config.gripLocalPosition);
-      localGrip.multiplyScalar(Number(config.scale ?? 1));
-      localGrip.applyQuaternion(weaponRoot.quaternion);
-      weaponRoot.position.sub(localGrip);
-    }
     weaponRoot.traverse((node) => {
       if (!node?.isMesh) return;
       node.frustumCulled = false;
@@ -3924,8 +3930,41 @@ class PoseActor {
     });
     this.weaponProxy.model = weaponRoot;
     this.weaponProxy.tipMarker = tip;
+    this.weaponProxy.attachmentConfig = config;
+    this.updateWeaponAttachmentTransform();
     this.updateWeaponSocketTransform();
     return this.weaponProxy;
+  }
+
+  updateWeaponAttachmentTransform(config = this.weaponProxy?.attachmentConfig) {
+    const proxy = this.weaponProxy;
+    const weaponRoot = proxy?.model;
+    const tip = proxy?.tipMarker;
+    if (!weaponRoot || !config) return null;
+    weaponRoot.scale.setScalar(Number(config.scale ?? 1));
+    if (Array.isArray(config.rotationDeg)) weaponRoot.rotation.set(...config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
+    if (Array.isArray(config.position)) weaponRoot.position.fromArray(config.position);
+    else weaponRoot.position.set(0, 0, 0);
+    if (Array.isArray(config.gripLocalPosition)) {
+      const localGrip = new THREE.Vector3().fromArray(config.gripLocalPosition);
+      localGrip.multiplyScalar(Number(config.scale ?? 1));
+      localGrip.applyQuaternion(weaponRoot.quaternion);
+      weaponRoot.position.sub(localGrip);
+    }
+    if (tip) {
+      if (Array.isArray(config.tipLocalPosition)) {
+        const localTip = new THREE.Vector3().fromArray(config.tipLocalPosition);
+        localTip.multiplyScalar(Number(config.scale ?? 1));
+        localTip.applyQuaternion(weaponRoot.quaternion);
+        localTip.add(weaponRoot.position);
+        tip.position.copy(localTip);
+      } else {
+        tip.position.fromArray(config.tipOffset || this.info.weaponProxy?.tipOffset || [0, 0, 0.85]);
+      }
+      const rest = this.boneRest.get(tip.name);
+      if (rest) rest.position.copy(tip.position);
+    }
+    return proxy;
   }
 
   updateWeaponArc(clip, active) {
@@ -3949,7 +3988,7 @@ class PoseActor {
     this.updateWeaponSocketTransform();
     const clip = this.activeAction?._clip;
     const patterns = this.weaponProxy.config.visibleClipPatterns || ['\\[FPS-SWORD-UPPER\\]', 'OneHand'];
-    const active = Boolean(clip?.userData?.weaponPathIk || patterns.some((pattern) => new RegExp(pattern).test(clip?.name || '')));
+    const active = Boolean(weaponDebugForceVisible() || clip?.userData?.weaponPathIk || patterns.some((pattern) => new RegExp(pattern).test(clip?.name || '')));
     this.weaponProxy.root.visible = active;
     this.updateWeaponArc(clip, active);
   }
@@ -4715,6 +4754,11 @@ class PoseLab {
     this.selected = 'player';
     this.viewMode = 'orbit';
     this.activePanel = this.labMode === 'critique' ? 'none' : 'clips';
+    this.weaponGizmoEnabled = false;
+    this.weaponGizmoMode = 'translate';
+    this.weaponGizmo = null;
+    this.weaponGizmoDrag = null;
+    this.weaponGizmoStatusText = 'weapon gizmo idle';
     this.isRestoringState = false;
     this.stateSaveTimer = null;
     this.savedState = this.visualQa?.enabled ? {} : this.readSavedState();
@@ -4988,6 +5032,217 @@ class PoseLab {
     const axes = new THREE.AxesHelper(1.4);
     axes.position.set(-3.2, 0.03, 1.55);
     this.scene.add(axes);
+    this.createWeaponGizmo();
+  }
+
+  createWeaponGizmo() {
+    const group = new THREE.Group();
+    group.name = 'WeaponPlacementGizmo';
+    group.visible = false;
+    group.renderOrder = 50;
+    const pickables = [];
+    const axes = [
+      { axis: 'x', index: 0, color: 0xff4b4b, dir: new THREE.Vector3(1, 0, 0) },
+      { axis: 'y', index: 1, color: 0x42e66f, dir: new THREE.Vector3(0, 1, 0) },
+      { axis: 'z', index: 2, color: 0x4d8dff, dir: new THREE.Vector3(0, 0, 1) },
+    ];
+    for (const spec of axes) {
+      const arrow = new THREE.ArrowHelper(spec.dir, new THREE.Vector3(), 0.34, spec.color, 0.09, 0.04);
+      arrow.name = 'WeaponMove_' + spec.axis.toUpperCase();
+      arrow.traverse((node) => {
+        node.userData.weaponGizmo = { type: 'translate', axis: spec.axis, index: spec.index };
+        if (node.isLine || node.isMesh) {
+          node.renderOrder = 60;
+          pickables.push(node);
+        }
+      });
+      group.add(arrow);
+      const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(0.23, 0.006, 8, 64),
+        new THREE.MeshBasicMaterial({ color: spec.color, transparent: true, opacity: 0.82, depthTest: false })
+      );
+      ring.name = 'WeaponRotate_' + spec.axis.toUpperCase();
+      if (spec.axis === 'x') ring.rotation.y = Math.PI / 2;
+      if (spec.axis === 'y') ring.rotation.x = Math.PI / 2;
+      ring.userData.weaponGizmo = { type: 'rotate', axis: spec.axis, index: spec.index };
+      ring.renderOrder = 61;
+      pickables.push(ring);
+      group.add(ring);
+    }
+    this.weaponGizmo = { group, pickables };
+    this.scene.add(group);
+  }
+
+  selectedWeaponActor() {
+    const actor = this.actors.get(this.selected);
+    return actor?.weaponProxy?.root ? actor : null;
+  }
+
+  weaponTuningValues(actor = this.selectedWeaponActor()) {
+    const proxy = actor?.weaponProxy;
+    const attachment = actor?.info?.weaponAttachment || proxy?.attachmentConfig || {};
+    const config = proxy?.config || {};
+    return {
+      actor: actor?.key || this.selected || '',
+      modelLocalOffset: [...(config.modelLocalOffset || [0, 0, 0])].map((value) => Number(Number(value || 0).toFixed(5))),
+      handLocalOffset: [...(config.handLocalOffset || [0, 0, 0])].map((value) => Number(Number(value || 0).toFixed(5))),
+      gripOffset: [...(config.gripOffset || [0, 0, 0])].map((value) => Number(Number(value || 0).toFixed(5))),
+      rotationDeg: [...(attachment.rotationDeg || [0, 0, 0])].map((value) => Number(Number(value || 0).toFixed(5))),
+      gripLocalPosition: [...(attachment.gripLocalPosition || [0, 0, 0])].map((value) => Number(Number(value || 0).toFixed(5))),
+      scale: Number(Number(attachment.scale ?? 1).toFixed(5)),
+    };
+  }
+
+  weaponTuningSnippet(values = this.weaponTuningValues()) {
+    return [
+      'weaponProxy: {',
+      '  handLocalOffset: [' + values.handLocalOffset.join(', ') + '],',
+      '  modelLocalOffset: [' + values.modelLocalOffset.join(', ') + '],',
+      '  gripOffset: [' + values.gripOffset.join(', ') + '],',
+      '},',
+      'weaponAttachment: {',
+      '  scale: ' + values.scale + ',',
+      '  rotationDeg: [' + values.rotationDeg.join(', ') + '],',
+      '  gripLocalPosition: [' + values.gripLocalPosition.join(', ') + '],',
+      '}',
+    ].join('\n');
+  }
+
+  updateWeaponGizmoStatus(message = '') {
+    const values = this.weaponTuningValues();
+    const text = (message ? message + '\n' : '') + this.weaponTuningSnippet(values);
+    this.weaponGizmoStatusText = text;
+    if (UI.weaponGizmoStatus) UI.weaponGizmoStatus.textContent = text;
+  }
+
+  setWeaponGizmoEnabled(enabled = !this.weaponGizmoEnabled) {
+    this.weaponGizmoEnabled = Boolean(enabled);
+    if (UI.weaponGizmoToggle) UI.weaponGizmoToggle.textContent = this.weaponGizmoEnabled ? 'Hide Gizmo' : 'Show Gizmo';
+    this.updateWeaponGizmoStatus(this.weaponGizmoEnabled ? 'gizmo enabled' : 'gizmo hidden');
+  }
+
+  setWeaponGizmoMode(mode) {
+    this.weaponGizmoMode = mode === 'rotate' ? 'rotate' : 'translate';
+    if (UI.weaponGizmoTranslate) UI.weaponGizmoTranslate.classList.toggle('active', this.weaponGizmoMode === 'translate');
+    if (UI.weaponGizmoRotate) UI.weaponGizmoRotate.classList.toggle('active', this.weaponGizmoMode === 'rotate');
+    this.updateWeaponGizmoStatus('mode=' + this.weaponGizmoMode);
+  }
+
+  updateWeaponGizmo() {
+    const group = this.weaponGizmo?.group;
+    if (!group) return;
+    const actor = this.selectedWeaponActor();
+    const visible = Boolean(this.weaponGizmoEnabled && actor?.weaponProxy?.root && this.viewMode === 'orbit');
+    group.visible = visible;
+    if (!visible) return;
+    actor.model.updateMatrixWorld(true);
+    actor.weaponProxy.root.updateMatrixWorld(true);
+    group.position.copy(worldPositionOf(actor.weaponProxy.root));
+    group.quaternion.copy(worldQuaternionOf(actor.model));
+    const distance = group.position.distanceTo(this.camera.position);
+    group.scale.setScalar(Math.max(0.65, Math.min(1.65, distance * 0.22)));
+  }
+
+  beginWeaponGizmoDrag(event) {
+    if (!this.weaponGizmoEnabled || !this.weaponGizmo?.pickables?.length || this.viewMode !== 'orbit') return false;
+    const actor = this.selectedWeaponActor();
+    if (!actor) return false;
+    const rect = UI.canvas.getBoundingClientRect();
+    this.pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
+    this.pointer.y = -(((event.clientY - rect.top) / Math.max(1, rect.height)) * 2 - 1);
+    this.raycaster.setFromCamera(this.pointer, this.camera);
+    const hits = this.raycaster.intersectObjects(this.weaponGizmo.pickables, false);
+    const hit = hits.find((entry) => entry.object?.userData?.weaponGizmo);
+    if (!hit) return false;
+    const spec = hit.object.userData.weaponGizmo;
+    const mode = spec.type === 'rotate' || this.weaponGizmoMode === 'rotate' ? 'rotate' : 'translate';
+    const axisLocal = new THREE.Vector3(spec.axis === 'x' ? 1 : 0, spec.axis === 'y' ? 1 : 0, spec.axis === 'z' ? 1 : 0);
+    const actorQuat = worldQuaternionOf(actor.model);
+    const axisWorld = axisLocal.clone().applyQuaternion(actorQuat).normalize();
+    const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
+      this.camera.position.clone().sub(hit.point).normalize(),
+      hit.point
+    );
+    const startPoint = new THREE.Vector3();
+    this.raycaster.ray.intersectPlane(plane, startPoint);
+    const attachment = actor.info.weaponAttachment || {};
+    const proxyConfig = actor.weaponProxy.config || {};
+    this.weaponGizmoDrag = {
+      mode,
+      axis: spec.axis,
+      index: spec.index,
+      actorKey: actor.key,
+      plane,
+      startPoint,
+      axisWorld,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startModelOffset: [...(proxyConfig.modelLocalOffset || [0, 0, 0])],
+      startRotationDeg: [...(attachment.rotationDeg || [0, 0, 0])],
+    };
+    this.controls.enabled = false;
+    UI.canvas.setPointerCapture?.(event.pointerId);
+    event.preventDefault();
+    event.stopPropagation();
+    return true;
+  }
+
+  updateWeaponGizmoDrag(event) {
+    const drag = this.weaponGizmoDrag;
+    if (!drag) return false;
+    const actor = this.actors.get(drag.actorKey);
+    const proxy = actor?.weaponProxy;
+    if (!actor || !proxy?.root) return false;
+    if (drag.mode === 'translate') {
+      const rect = UI.canvas.getBoundingClientRect();
+      this.pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
+      this.pointer.y = -(((event.clientY - rect.top) / Math.max(1, rect.height)) * 2 - 1);
+      this.raycaster.setFromCamera(this.pointer, this.camera);
+      const point = new THREE.Vector3();
+      if (this.raycaster.ray.intersectPlane(drag.plane, point)) {
+        const amount = point.sub(drag.startPoint).dot(drag.axisWorld);
+        const next = [...drag.startModelOffset];
+        next[drag.index] = Number((Number(next[drag.index] || 0) + amount).toFixed(5));
+        proxy.config.modelLocalOffset = next;
+      }
+    } else {
+      const pixelDelta = (event.clientX - drag.startClientX) + (event.clientY - drag.startClientY);
+      const next = [...drag.startRotationDeg];
+      next[drag.index] = Number((Number(next[drag.index] || 0) + pixelDelta * 0.35).toFixed(3));
+      if (actor.info.weaponAttachment) actor.info.weaponAttachment.rotationDeg = next;
+      if (proxy.attachmentConfig) proxy.attachmentConfig.rotationDeg = next;
+    }
+    actor.updateWeaponAttachmentTransform?.();
+    actor.updateWeaponSocketTransform();
+    this.updateWeaponGizmo();
+    this.updateWeaponGizmoStatus('drag ' + drag.mode + ' ' + drag.axis.toUpperCase());
+    event.preventDefault();
+    event.stopPropagation();
+    return true;
+  }
+
+  finishWeaponGizmoDrag(event) {
+    if (!this.weaponGizmoDrag) return false;
+    this.weaponGizmoDrag = null;
+    this.controls.enabled = this.viewMode === 'orbit';
+    if (event?.pointerId != null) UI.canvas.releasePointerCapture?.(event.pointerId);
+    this.updateWeaponGizmoStatus('drag complete');
+    return true;
+  }
+
+  saveWeaponGizmoTuning() {
+    const values = this.weaponTuningValues();
+    const payload = {
+      schema: 'pose-lab-weapon-gizmo-tuning-v1',
+      cacheToken: LAB_CACHE_TOKEN,
+      savedAt: new Date().toISOString(),
+      values,
+      snippet: this.weaponTuningSnippet(values),
+    };
+    localStorage.setItem('poseLab.weaponGizmoTuning', JSON.stringify(payload, null, 2));
+    navigator.clipboard?.writeText(payload.snippet).catch(() => {});
+    this.updateWeaponGizmoStatus('saved to localStorage + clipboard\n' + payload.snippet);
+    return payload;
   }
 
   setupUi() {
@@ -5070,6 +5325,10 @@ class PoseLab {
     window.addEventListener('pointermove', (event) => this.updateTouchPoseDockDrag(event));
     window.addEventListener('pointerup', (event) => this.finishTouchPoseDockDrag(event));
     window.addEventListener('pointercancel', (event) => this.finishTouchPoseDockDrag(event));
+    UI.weaponGizmoToggle?.addEventListener('click', () => this.setWeaponGizmoEnabled());
+    UI.weaponGizmoTranslate?.addEventListener('click', () => { this.setWeaponGizmoEnabled(true); this.setWeaponGizmoMode('translate'); });
+    UI.weaponGizmoRotate?.addEventListener('click', () => { this.setWeaponGizmoEnabled(true); this.setWeaponGizmoMode('rotate'); });
+    UI.weaponGizmoSave?.addEventListener('click', () => this.saveWeaponGizmoTuning());
     UI.critiqueSaveNote?.addEventListener('click', () => { this.critiquePersistCurrentNote('saved note'); this.saveActiveCleanupDraft('manual'); });
     UI.critiqueClearNote?.addEventListener('click', () => this.critiquePersistCurrentNote('cleared note'));
     UI.critiqueCopyNote?.addEventListener('click', () => this.critiqueCopyCurrentNote());
@@ -5154,12 +5413,25 @@ class PoseLab {
     });
     UI.canvas.addEventListener('pointerdown', (event) => {
       this.pointerDown = { x: event.clientX, y: event.clientY };
+      if (this.beginWeaponGizmoDrag(event)) return;
       this.handleTouchPosePointerDown(event);
     });
-    UI.canvas.addEventListener('pointermove', (event) => this.handleTouchPosePointerMove(event));
-    UI.canvas.addEventListener('pointerup', (event) => this.handleTouchPosePointerUp(event));
-    UI.canvas.addEventListener('pointercancel', (event) => this.handleTouchPosePointerCancel(event));
-    UI.canvas.addEventListener('lostpointercapture', (event) => this.handleTouchPosePointerCancel(event));
+    UI.canvas.addEventListener('pointermove', (event) => {
+      if (this.updateWeaponGizmoDrag(event)) return;
+      this.handleTouchPosePointerMove(event);
+    });
+    UI.canvas.addEventListener('pointerup', (event) => {
+      if (this.finishWeaponGizmoDrag(event)) return;
+      this.handleTouchPosePointerUp(event);
+    });
+    UI.canvas.addEventListener('pointercancel', (event) => {
+      if (this.finishWeaponGizmoDrag(event)) return;
+      this.handleTouchPosePointerCancel(event);
+    });
+    UI.canvas.addEventListener('lostpointercapture', (event) => {
+      if (this.finishWeaponGizmoDrag(event)) return;
+      this.handleTouchPosePointerCancel(event);
+    });
     window.addEventListener('blur', (event) => this.cancelAllTouchPoseGestures(event, true));
     document.addEventListener('visibilitychange', (event) => {
       if (document.hidden) this.cancelAllTouchPoseGestures(event, true);
@@ -8607,6 +8879,12 @@ class PoseLab {
     document.body.dataset.sheet = nextPanel;
     document.body.classList.toggle('panel-open-info', elementPanel === 'info');
     document.body.classList.toggle('has-open-panel', nextPanel !== 'none');
+    if (nextPanel === 'weapon') {
+      this.setWeaponGizmoEnabled(true);
+      this.updateWeaponGizmoStatus('weapon panel open');
+    } else if (this.weaponGizmoDrag) {
+      this.finishWeaponGizmoDrag();
+    }
     if (elementPanel === 'cleanup') this.updateCleanupUi();
     if (nextPanel === 'pose' || this.labMode === 'critique') this.updateCritiqueDock(true);
     this.saveState();
@@ -8741,7 +9019,7 @@ class PoseLab {
   }
 
   debugCommandNames() {
-    return ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'fpv', 'beacon', 'capture', 'qa'];
+    return ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'weapon', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'fpv', 'beacon', 'capture', 'qa'];
   }
 
   debugHelpText() {
@@ -8753,6 +9031,7 @@ class PoseLab {
       '  actor orc',
       '  clip standing_melee_attack_horizontal [smooth]',
       '  bone mixamorig:LeftHand',
+      '  weapon',
       '  view firstPerson',
       '  panel bones',
       '  pause',
@@ -8775,6 +9054,71 @@ class PoseLab {
       readout: actor?.readout?.() || '',
       diagnostic: actor?.diagnosticLine?.() || '',
     };
+  }
+
+  debugWeaponState() {
+    const actor = this.debugCurrentActor();
+    const clip = this.debugCurrentClip(actor);
+    const proxy = actor?.weaponProxy;
+    if (!actor || !proxy?.root) return { ok: false, command: 'weapon', error: 'active actor has no weapon proxy', snapshot: this.debugSnapshot() };
+    actor.model.updateMatrixWorld(true);
+    proxy.root.updateMatrixWorld(true);
+    proxy.model?.updateMatrixWorld(true);
+    proxy.tipMarker?.updateMatrixWorld(true);
+    const roundVec = (vec) => vec.toArray().map((value) => Number(value.toFixed(5)));
+    const angleDeg = (a, b) => Number(THREE.MathUtils.radToDeg(a.angleTo(b)).toFixed(2));
+    const hilt = worldPositionOf(proxy.root);
+    const tip = proxy.tipMarker ? worldPositionOf(proxy.tipMarker) : hilt.clone().add(worldDirectionOf(proxy.root, [0, 0, 1]).multiplyScalar(Number(proxy.config?.length || 0.85)));
+    const bladeAxis = tip.clone().sub(hilt);
+    if (bladeAxis.lengthSq() > 1e-9) bladeAxis.normalize();
+    const socketForward = worldDirectionOf(proxy.root, [0, 0, 1]);
+    const socketUp = worldDirectionOf(proxy.root, [0, 1, 0]);
+    const basketFront = proxy.model ? worldDirectionOf(proxy.model, [0, 0, 1]) : socketUp.clone();
+    const torso = findBoneCanonical(actor.model, 'Spine02') || findBoneCanonical(actor.model, 'ShoulderCenter') || findBoneCanonical(actor.model, 'Spine') || actor.model;
+    const torsoWorld = worldPositionOf(torso);
+    const desiredBasketFront = hilt.clone().sub(torsoWorld);
+    if (desiredBasketFront.lengthSq() > 1e-9) desiredBasketFront.normalize();
+    else desiredBasketFront.set(-1, 0, 0);
+    const hand = proxy.rightHand || findBoneCanonical(actor.model, proxy.config?.handBone || 'RightHand');
+    const handWorld = hand ? worldPositionOf(hand) : null;
+    const source = {
+      schema: 'pose-lab-live-weapon-state-v1',
+      build: LAB_BUILD,
+      cacheToken: LAB_CACHE_TOKEN,
+      actor: this.selected || '',
+      actorLabel: actor.info?.label || '',
+      clip: clip?.name || '',
+      clipTime: Number(actor?.activeAction?.time || 0),
+      socketBone: proxy.root.name || '',
+      sourceSocketBone: proxy.sourceSocketBone || '',
+      handBone: proxy.handBone || '',
+      modelName: proxy.model?.name || '',
+      tipMarker: proxy.tipMarker?.name || '',
+      hilt: roundVec(hilt),
+      tip: roundVec(tip),
+      bladeLength: Number(hilt.distanceTo(tip).toFixed(5)),
+      bladeAxis: roundVec(bladeAxis),
+      socketForward: roundVec(socketForward),
+      socketUp: roundVec(socketUp),
+      basketFront: roundVec(basketFront),
+      desiredBasketFront: roundVec(desiredBasketFront),
+      basketFrontErrorDeg: angleDeg(basketFront, desiredBasketFront),
+      socketForwardToBladeErrorDeg: angleDeg(socketForward, bladeAxis),
+      hiltToHandDistance: handWorld ? Number(hilt.distanceTo(handWorld).toFixed(5)) : null,
+      visible: Boolean(proxy.root.visible),
+      modelVisible: proxy.model ? Boolean(proxy.model.visible) : false,
+      weaponDebugForceVisible: weaponDebugForceVisible(),
+      config: {
+        positionMode: proxy.config?.positionMode || '',
+        handLocalOffset: proxy.config?.handLocalOffset || null,
+        modelLocalOffset: proxy.config?.modelLocalOffset || null,
+        rotationDeg: actor.info?.weaponAttachment?.rotationDeg || null,
+        gripLocalPosition: actor.info?.weaponAttachment?.gripLocalPosition || null,
+        tipLocalPosition: actor.info?.weaponAttachment?.tipLocalPosition || null,
+        scale: actor.info?.weaponAttachment?.scale ?? null,
+      },
+    };
+    return { ok: true, command: 'weapon', weapon: source, snapshot: this.debugSnapshot() };
   }
 
   debugSnapshot() {
@@ -8991,6 +9335,8 @@ class PoseLab {
         const readout = this.debugReadout(actor);
         return { ok: true, command: spec.name, text: readout.diagnostic, snapshot: this.debugSnapshot() };
       }
+      case 'weapon':
+        return this.debugWeaponState();
       case 'actor': {
         const target = String(spec.args[0] || '').trim();
         if (!target) return { ok: false, command: spec.name, error: 'actor name required', snapshot: this.debugSnapshot() };
@@ -9339,6 +9685,7 @@ class PoseLab {
     this.updateCritiqueTransportUi();
     this.updateCritiqueDock(true);
     this.updateFirstPersonCamera();
+    this.updateWeaponGizmo();
     if (this.controls.enabled) this.controls.update();
     this.renderer.render(this.scene, this.camera);
     this.handleVisualQaFrame();

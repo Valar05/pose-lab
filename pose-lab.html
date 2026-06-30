@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Pose Critique</title>
-  <link rel="stylesheet" href="src/pose-lab.css?v=pose-editor-99">
+  <link rel="stylesheet" href="src/pose-lab.css?v=pose-editor-120">
   <script type="importmap">
     {
       "imports": {
@@ -114,6 +114,7 @@
       <button type="button" data-panel="pose">Pose</button>
       <button type="button" data-panel="edit">Edit</button>
       <button type="button" data-panel="bones">Bones</button>
+      <button type="button" data-panel="weapon">Weapon</button>
       <button type="button" data-panel="advanced">More</button>
       <button type="button" data-panel="view">View</button>
       <button type="button" data-panel="none">Hide</button>
@@ -242,6 +243,16 @@
       </div>
       <pre id="boneStatus">select a bone</pre>
     </section>
+    <section id="weaponPanel" class="lab-panel" aria-label="Weapon placement controls">
+      <div class="panel-title">Weapon Gizmo</div>
+      <div class="button-row three-buttons">
+        <button id="weaponGizmoToggle" type="button">Show Gizmo</button>
+        <button id="weaponGizmoTranslate" type="button">Move</button>
+        <button id="weaponGizmoRotate" type="button">Rotate</button>
+        <button id="weaponGizmoSave" type="button">Save</button>
+      </div>
+      <pre id="weaponGizmoStatus">weapon gizmo idle</pre>
+    </section>
     <section id="retargetPanel" class="lab-panel" aria-label="Retarget controls">
       <div class="panel-title">Retarget</div>
       <label>Source <select id="sourceActor"></select></label>
@@ -307,12 +318,12 @@
         './vendor/three/examples/jsm/loaders/FBXLoader.js',
         './vendor/three/examples/jsm/controls/OrbitControls.js',
         './vendor/three/examples/jsm/utils/SkeletonUtils.js',
-        './src/godot-rest-poses.js?v=pose-editor-99',
-        './src/rig-profiles.js?v=pose-editor-99',
-        './src/startup-policy.mjs?v=pose-editor-99',
-        './src/clip-search.js?v=pose-editor-99',
-        './src/lab-mode.mjs?v=pose-editor-99',
-        './src/pose-lab.js?v=pose-editor-99',
+        './src/godot-rest-poses.js?v=pose-editor-120',
+        './src/rig-profiles.js?v=pose-editor-120',
+        './src/startup-policy.mjs?v=pose-editor-120',
+        './src/clip-search.js?v=pose-editor-120',
+        './src/lab-mode.mjs?v=pose-editor-120',
+        './src/pose-lab.js?v=pose-editor-120',
       ];
       show('Booting module...');
       window.addEventListener('error', (event) => {

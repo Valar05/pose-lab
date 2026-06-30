@@ -17,7 +17,8 @@ assert(profiles.includes("retargetMode: 'fps-upper-key-convert'"), 'Meshy profil
 assert(profiles.includes("channels: { translate: false, rotate: true, scale: false }"), 'Meshy FPS sword clips should be rotate-only');
 assert(!profiles.includes("sampleFps: 30"), 'Meshy accepted FPS sword path must not use uniform sampled retarget frames');
 assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy profile should generate FPS-SWORD-UPPER clips');
-assert(profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Meshy aliases should prefer the FPS OneHandReady sword clip');
+assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]'"), 'Meshy aliases should prefer the accepted T-pose calibration during recovery');
+assert(!profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Meshy aliases must not promote rejected FPS OneHandReady retarget during recovery');
 assert(!profiles.includes("SwordAttack1: ['OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Meshy should defer FPS OneHandAttack1 until ready pose is accepted');
 for (const rejected of ['Hips', 'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg', 'LeftFoot', 'RightFoot', 'LeftToeBase', 'RightToeBase', 'Head']) {
   assert(!profiles.includes(`to: '${rejected}'`), `Meshy FPS sword retarget must not target lower/root/head bone ${rejected}`);

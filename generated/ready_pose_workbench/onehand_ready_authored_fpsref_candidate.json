@@ -1,0 +1,176 @@
+{
+  "schema": "pose-lab-upper-body-ready-overlay-plan-v1",
+  "name": "OneHandReady -> meshyCharacter [READY-AUTHORED-FPSREF]",
+  "status": "candidate-only",
+  "sourceClip": "OneHandReady",
+  "targetRestClip": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+  "upperBodyOnly": true,
+  "excluded": [
+    "hips",
+    "root",
+    "legs",
+    "feet",
+    "toes",
+    "head",
+    "weapon orientation",
+    "locomotion"
+  ],
+  "frames": [
+    {
+      "time": 0.041667,
+      "pose": {
+        "rightElbow": [
+          -0.27254,
+          0.02392,
+          -0.05148
+        ],
+        "rightHand": [
+          -0.26945,
+          0.08641,
+          0.23365
+        ],
+        "leftElbow": [
+          0.288,
+          0.04278,
+          0.03148
+        ],
+        "leftHand": [
+          0.16688,
+          0.07216,
+          0.29545
+        ]
+      },
+      "metrics": {
+        "rightHandHeightFromRest": 0.21343,
+        "leftHandHeightFromRest": 0.20694,
+        "rightOutwardFromRest": -0.12692,
+        "leftOutwardFromRest": -0.23256
+      }
+    },
+    {
+      "time": 0.333333,
+      "pose": {
+        "rightElbow": [
+          -0.27144,
+          0.02341,
+          -0.05389
+        ],
+        "rightHand": [
+          -0.26932,
+          0.08429,
+          0.2316
+        ],
+        "leftElbow": [
+          0.28911,
+          0.04501,
+          0.03176
+        ],
+        "leftHand": [
+          0.1618,
+          0.08103,
+          0.29197
+        ]
+      },
+      "metrics": {
+        "rightHandHeightFromRest": 0.21131,
+        "leftHandHeightFromRest": 0.21581,
+        "rightOutwardFromRest": -0.12705,
+        "leftOutwardFromRest": -0.23764
+      }
+    },
+    {
+      "time": 0.666667,
+      "pose": {
+        "rightElbow": [
+          -0.26987,
+          0.02278,
+          -0.05725
+        ],
+        "rightHand": [
+          -0.26911,
+          0.08138,
+          0.22872
+        ],
+        "leftElbow": [
+          0.2893,
+          0.04541,
+          0.03181
+        ],
+        "leftHand": [
+          0.16085,
+          0.08256,
+          0.2913
+        ]
+      },
+      "metrics": {
+        "rightHandHeightFromRest": 0.2084,
+        "leftHandHeightFromRest": 0.21734,
+        "rightOutwardFromRest": -0.12726,
+        "leftOutwardFromRest": -0.23859
+      }
+    },
+    {
+      "time": 0.958333,
+      "pose": {
+        "rightElbow": [
+          -0.27082,
+          0.02315,
+          -0.05523
+        ],
+        "rightHand": [
+          -0.26924,
+          0.08312,
+          0.23045
+        ],
+        "leftElbow": [
+          0.28846,
+          0.0437,
+          0.0316
+        ],
+        "leftHand": [
+          0.16484,
+          0.07588,
+          0.29408
+        ]
+      },
+      "metrics": {
+        "rightHandHeightFromRest": 0.21014,
+        "leftHandHeightFromRest": 0.21066,
+        "rightOutwardFromRest": -0.12713,
+        "leftOutwardFromRest": -0.2346
+      }
+    },
+    {
+      "time": 1.25,
+      "pose": {
+        "rightElbow": [
+          -0.27256,
+          0.02392,
+          -0.05144
+        ],
+        "rightHand": [
+          -0.26945,
+          0.08645,
+          0.23368
+        ],
+        "leftElbow": [
+          0.28797,
+          0.04273,
+          0.03147
+        ],
+        "leftHand": [
+          0.16698,
+          0.07198,
+          0.29552
+        ]
+      },
+      "metrics": {
+        "rightHandHeightFromRest": 0.21347,
+        "leftHandHeightFromRest": 0.20676,
+        "rightOutwardFromRest": -0.12692,
+        "leftOutwardFromRest": -0.23246
+      }
+    }
+  ],
+  "note": "This is an authoring plan, not a runtime clip. Convert these chest-local targets into keyed Meshy arm rotations only after passing visual review."
+}

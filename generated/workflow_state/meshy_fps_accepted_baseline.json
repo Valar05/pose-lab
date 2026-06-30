@@ -1,0 +1,49 @@
+{
+  "schema": "pose-lab-accepted-baseline-v1",
+  "name": "meshy-fps-rest-arms-roll-minus-120",
+  "actorKey": "meshyCharacter",
+  "actorLabel": "Meshy Character",
+  "acceptedClip": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+  "acceptedClipKey": "0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120",
+  "acceptedAtCommit": "43ca3f1",
+  "selectionSurfaces": {
+    "startupClip": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+    "swordReadyAliases": [
+      "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+      "0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120",
+      "0T-Pose"
+    ],
+    "restProbeAliases": [
+      "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+      "0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120",
+      "0T-Pose"
+    ],
+    "weaponVisibleClipPatterns": [
+      "\\[FPS-REST-ARMS"
+    ]
+  },
+  "acceptedEvidence": {
+    "kind": "user-verified-baseline",
+    "note": "Recovered stable Meshy/FPS T-pose calibration. Later OneHandReady, IK/FK, and saber transform attempts are candidate-only until promoted through the gate."
+  },
+  "promotionRules": {
+    "defaultLane": "candidate",
+    "requiresFreshVisualEvidence": true,
+    "requiresMetricEvidence": true,
+    "rejectBlockedEvidence": true,
+    "rejectStaleCacheToken": true,
+    "candidateOnlyUntilPromoted": true
+  },
+  "protectedSurfaces": [
+    "Meshy Character startupClip",
+    "Meshy Character SwordReady alias",
+    "Meshy Character RestProbe alias",
+    "Meshy Character weaponProxy.visibleClipPatterns"
+  ],
+  "doNotPromoteWithoutGate": [
+    "OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]",
+    "OneHandReady -> meshyCharacter [FPS-JOINT-FK]",
+    "OneHandReady -> meshyCharacter [FPS-VISUAL-IK]",
+    "Armature|Swing1 -> meshyCharacter"
+  ]
+}

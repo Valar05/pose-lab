@@ -29,6 +29,11 @@ for (const snippet of [
   "case 'actor':",
   "case 'clip':",
   "case 'bone':",
+  "case 'weapon':",
+  'debugWeaponState()',
+  "schema: 'pose-lab-live-weapon-state-v1'",
+  'basketFrontErrorDeg',
+  'socketForwardToBladeErrorDeg',
   "case 'view':",
   "case 'panel':",
   "case 'play':",
@@ -57,7 +62,7 @@ for (const snippet of [
   assert(source.includes(snippet), `missing debug CLI snippet: ${snippet}`);
 }
 
-for (const command of ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'fpv', 'beacon', 'capture', 'qa']) {
+for (const command of ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'weapon', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'fpv', 'beacon', 'capture', 'qa']) {
   assert(source.includes(`'${command}'`), `missing command name in source: ${command}`);
 }
 

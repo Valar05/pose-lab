@@ -10,9 +10,10 @@ function assert(condition, message) { if (!condition) failures.push(message); }
 assert(js.includes("const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget'"), 'runtime build should identify the FPS sword upper-body pivot');
 assert(js.includes("canonicalBoneName(sourceName).replace(/^mixamorig/, '')"), 'chain-up basis should still normalize Mixamo prefixes without breaking FPS names');
 assert(js.includes("const customOriginPrefix = spec.originPrefix ||"), 'auto retarget specs should be able to preserve mapped-arms origin identity');
-assert(profiles.includes("startupClip: { name: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]' }"), 'Meshy startup should use FPS OneHandReady upper-body clip');
+assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }"), 'Meshy startup should use the accepted T-pose calibration until ready passes artifact review');
+assert(!profiles.includes("startupClip: { name: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]' }"), 'Meshy startup must not use rejected FPS OneHandReady retarget during recovery');
 assert(profiles.includes("sourceKey: 'player'"), 'Meshy should source sword retargets from FPS Arms');
-assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy sword clips should use FPS-SWORD-UPPER tag');
+assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy FPS-SWORD-UPPER remains available only as an unpromoted diagnostic generator');
 assert(profiles.includes("clipNames: [\n          'OneHandReady',\n        ]"), 'Meshy should retarget only FPS OneHandReady in this slice');
 for (const deferred of ['OneHandReadied -> meshyCharacter', 'OneHandAttack1 -> meshyCharacter', 'OneHandAttack2 -> meshyCharacter', 'OneHandAttack3 -> meshyCharacter', 'OneHandAttack4 -> meshyCharacter', 'OneHandAttack5 -> meshyCharacter', 'OneHandAirForwardAttack -> meshyCharacter']) {
   assert(!profiles.includes(deferred), `Meshy should defer generated attack/readied clip: ${deferred}`);

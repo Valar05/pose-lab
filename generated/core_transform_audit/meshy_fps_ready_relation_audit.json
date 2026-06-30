@@ -1,0 +1,380 @@
+{
+  "schema": "pose-lab-meshy-fps-ready-relation-audit-v1",
+  "sourceClip": "OneHandReady",
+  "sourceRest": "FPSPlayer.glb 0T-Pose",
+  "targetRest": "Meshy calibrated FPS-REST-ARMS-CAL--120",
+  "method": "source 0T-to-ready hand local delta scaled by arm length and applied to calibrated Meshy rest hand local",
+  "sourceScaleOverride": null,
+  "metrics": {
+    "sampleCount": 62,
+    "sideSampleCounts": {
+      "right": 31,
+      "left": 31
+    },
+    "avgReadyLocalError": 0.3267,
+    "maxReadyLocalError": 0.3806,
+    "reachClampSamples": 62
+  },
+  "samples": [
+    {
+      "side": "right",
+      "time": 0,
+      "sourceRestLocal": [
+        -0.6052,
+        0.1356,
+        0.0091
+      ],
+      "sourceReadyLocal": [
+        0.3082,
+        -0.0452,
+        0.2062
+      ],
+      "targetRestLocal": [
+        -67.0132,
+        27.2077,
+        -1.5716
+      ],
+      "desiredReadyLocal": [
+        -66.705,
+        27.1625,
+        -1.3654
+      ],
+      "solvedReadyLocal": [
+        -66.9803,
+        27.1656,
+        -1.3555
+      ],
+      "localError": 0.2756
+    },
+    {
+      "side": "right",
+      "time": 0.0417,
+      "sourceRestLocal": [
+        -0.6052,
+        0.1356,
+        0.0091
+      ],
+      "sourceReadyLocal": [
+        0.3082,
+        -0.0452,
+        0.2062
+      ],
+      "targetRestLocal": [
+        -67.0132,
+        27.2077,
+        -1.5716
+      ],
+      "desiredReadyLocal": [
+        -66.705,
+        27.1625,
+        -1.3655
+      ],
+      "solvedReadyLocal": [
+        -66.9804,
+        27.1655,
+        -1.3555
+      ],
+      "localError": 0.2756
+    },
+    {
+      "side": "right",
+      "time": 0.0833,
+      "sourceRestLocal": [
+        -0.6052,
+        0.1356,
+        0.0091
+      ],
+      "sourceReadyLocal": [
+        0.3082,
+        -0.0453,
+        0.2061
+      ],
+      "targetRestLocal": [
+        -67.0132,
+        27.2077,
+        -1.5716
+      ],
+      "desiredReadyLocal": [
+        -66.705,
+        27.1624,
+        -1.3655
+      ],
+      "solvedReadyLocal": [
+        -66.9804,
+        27.1654,
+        -1.3556
+      ],
+      "localError": 0.2756
+    },
+    {
+      "side": "right",
+      "time": 0.125,
+      "sourceRestLocal": [
+        -0.6052,
+        0.1356,
+        0.0091
+      ],
+      "sourceReadyLocal": [
+        0.3082,
+        -0.0455,
+        0.2059
+      ],
+      "targetRestLocal": [
+        -67.0132,
+        27.2077,
+        -1.5716
+      ],
+      "desiredReadyLocal": [
+        -66.705,
+        27.1622,
+        -1.3657
+      ],
+      "solvedReadyLocal": [
+        -66.9804,
+        27.1653,
+        -1.3558
+      ],
+      "localError": 0.2756
+    },
+    {
+      "side": "right",
+      "time": 0.1667,
+      "sourceRestLocal": [
+        -0.6052,
+        0.1356,
+        0.0091
+      ],
+      "sourceReadyLocal": [
+        0.3082,
+        -0.0457,
+        0.2057
+      ],
+      "targetRestLocal": [
+        -67.0132,
+        27.2077,
+        -1.5716
+      ],
+      "desiredReadyLocal": [
+        -66.7049,
+        27.162,
+        -1.3659
+      ],
+      "solvedReadyLocal": [
+        -66.9804,
+        27.165,
+        -1.356
+      ],
+      "localError": 0.2757
+    },
+    {
+      "side": "right",
+      "time": 0.2083,
+      "sourceRestLocal": [
+        -0.6052,
+        0.1356,
+        0.0091
+      ],
+      "sourceReadyLocal": [
+        0.3083,
+        -0.046,
+        0.2054
+      ],
+      "targetRestLocal": [
+        -67.0132,
+        27.2077,
+        -1.5716
+      ],
+      "desiredReadyLocal": [
+        -66.7049,
+        27.1617,
+        -1.3662
+      ],
+      "solvedReadyLocal": [
+        -66.9804,
+        27.1647,
+        -1.3563
+      ],
+      "localError": 0.2757
+    },
+    {
+      "side": "left",
+      "time": 0,
+      "sourceRestLocal": [
+        0.6052,
+        0.1356,
+        0.0091
+      ],
+      "sourceReadyLocal": [
+        -0.4126,
+        -0.06,
+        0.2697
+      ],
+      "targetRestLocal": [
+        68.2039,
+        27.6155,
+        -1.7641
+      ],
+      "desiredReadyLocal": [
+        67.7912,
+        27.5555,
+        -1.4943
+      ],
+      "solvedReadyLocal": [
+        68.1654,
+        27.5566,
+        -1.4816
+      ],
+      "localError": 0.3744
+    },
+    {
+      "side": "left",
+      "time": 0.0417,
+      "sourceRestLocal": [
+        0.6052,
+        0.1356,
+        0.0091
+      ],
+      "sourceReadyLocal": [
+        -0.4127,
+        -0.0598,
+        0.2697
+      ],
+      "targetRestLocal": [
+        68.2039,
+        27.6155,
+        -1.7641
+      ],
+      "desiredReadyLocal": [
+        67.7912,
+        27.5557,
+        -1.4944
+      ],
+      "solvedReadyLocal": [
+        68.1654,
+        27.5568,
+        -1.4816
+      ],
+      "localError": 0.3745
+    },
+    {
+      "side": "left",
+      "time": 0.0833,
+      "sourceRestLocal": [
+        0.6052,
+        0.1356,
+        0.0091
+      ],
+      "sourceReadyLocal": [
+        -0.413,
+        -0.0592,
+        0.2695
+      ],
+      "targetRestLocal": [
+        68.2039,
+        27.6155,
+        -1.7641
+      ],
+      "desiredReadyLocal": [
+        67.7909,
+        27.5562,
+        -1.4946
+      ],
+      "solvedReadyLocal": [
+        68.1654,
+        27.5574,
+        -1.4818
+      ],
+      "localError": 0.3747
+    },
+    {
+      "side": "left",
+      "time": 0.125,
+      "sourceRestLocal": [
+        0.6052,
+        0.1356,
+        0.0091
+      ],
+      "sourceReadyLocal": [
+        -0.4135,
+        -0.0584,
+        0.2692
+      ],
+      "targetRestLocal": [
+        68.2039,
+        27.6155,
+        -1.7641
+      ],
+      "desiredReadyLocal": [
+        67.7904,
+        27.5571,
+        -1.4949
+      ],
+      "solvedReadyLocal": [
+        68.1654,
+        27.5582,
+        -1.4821
+      ],
+      "localError": 0.3752
+    },
+    {
+      "side": "left",
+      "time": 0.1667,
+      "sourceRestLocal": [
+        0.6052,
+        0.1356,
+        0.0091
+      ],
+      "sourceReadyLocal": [
+        -0.4141,
+        -0.0572,
+        0.2687
+      ],
+      "targetRestLocal": [
+        68.2039,
+        27.6155,
+        -1.7641
+      ],
+      "desiredReadyLocal": [
+        67.7897,
+        27.5583,
+        -1.4954
+      ],
+      "solvedReadyLocal": [
+        68.1653,
+        27.5594,
+        -1.4826
+      ],
+      "localError": 0.3758
+    },
+    {
+      "side": "left",
+      "time": 0.2083,
+      "sourceRestLocal": [
+        0.6052,
+        0.1356,
+        0.0091
+      ],
+      "sourceReadyLocal": [
+        -0.4149,
+        -0.0558,
+        0.2682
+      ],
+      "targetRestLocal": [
+        68.2039,
+        27.6155,
+        -1.7641
+      ],
+      "desiredReadyLocal": [
+        67.789,
+        27.5597,
+        -1.4959
+      ],
+      "solvedReadyLocal": [
+        68.1653,
+        27.5608,
+        -1.4831
+      ],
+      "localError": 0.3766
+    }
+  ]
+}

@@ -1,0 +1,183 @@
+{
+  "schema": "pose-lab-meshy-ready-workbench-v1",
+  "generatedAt": "2026-06-30T00:56:46.666Z",
+  "status": "candidate-only",
+  "promotable": false,
+  "sourceActor": "FPS Arms",
+  "sourceClip": "OneHandReady",
+  "sourceAsset": "assets/models/FPSPlayer.glb",
+  "targetActor": "Meshy Character",
+  "targetRestClip": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+  "targetAsset": "assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb",
+  "method": "upper-body authored overlay workbench; source reference only, not an accepted runtime clip",
+  "excluded": [
+    "hips",
+    "root",
+    "legs",
+    "feet",
+    "toes",
+    "head",
+    "weapon orientation",
+    "locomotion"
+  ],
+  "sourceKeyCount": 31,
+  "sampleCount": 5,
+  "targetRestPose": {
+    "rightElbow": [
+      -0.28555,
+      0.0655,
+      -0.07835
+    ],
+    "rightHand": [
+      -0.39637,
+      -0.12702,
+      -0.04086
+    ],
+    "leftElbow": [
+      0.2939,
+      0.05883,
+      -0.08114
+    ],
+    "leftHand": [
+      0.39944,
+      -0.13478,
+      -0.04547
+    ]
+  },
+  "samples": [
+    {
+      "time": 0.041667,
+      "source": {
+        "rightElbow": [
+          -0.27254,
+          0.02392,
+          -0.05148
+        ],
+        "rightHand": [
+          -0.26945,
+          0.08641,
+          0.23365
+        ],
+        "leftElbow": [
+          0.288,
+          0.04278,
+          0.03148
+        ],
+        "leftHand": [
+          0.16688,
+          0.07216,
+          0.29545
+        ]
+      }
+    },
+    {
+      "time": 0.333333,
+      "source": {
+        "rightElbow": [
+          -0.27144,
+          0.02341,
+          -0.05389
+        ],
+        "rightHand": [
+          -0.26932,
+          0.08429,
+          0.2316
+        ],
+        "leftElbow": [
+          0.28911,
+          0.04501,
+          0.03176
+        ],
+        "leftHand": [
+          0.1618,
+          0.08103,
+          0.29197
+        ]
+      }
+    },
+    {
+      "time": 0.666667,
+      "source": {
+        "rightElbow": [
+          -0.26987,
+          0.02278,
+          -0.05725
+        ],
+        "rightHand": [
+          -0.26911,
+          0.08138,
+          0.22872
+        ],
+        "leftElbow": [
+          0.2893,
+          0.04541,
+          0.03181
+        ],
+        "leftHand": [
+          0.16085,
+          0.08256,
+          0.2913
+        ]
+      }
+    },
+    {
+      "time": 0.958333,
+      "source": {
+        "rightElbow": [
+          -0.27082,
+          0.02315,
+          -0.05523
+        ],
+        "rightHand": [
+          -0.26924,
+          0.08312,
+          0.23045
+        ],
+        "leftElbow": [
+          0.28846,
+          0.0437,
+          0.0316
+        ],
+        "leftHand": [
+          0.16484,
+          0.07588,
+          0.29408
+        ]
+      }
+    },
+    {
+      "time": 1.25,
+      "source": {
+        "rightElbow": [
+          -0.27256,
+          0.02392,
+          -0.05144
+        ],
+        "rightHand": [
+          -0.26945,
+          0.08645,
+          0.23368
+        ],
+        "leftElbow": [
+          0.28797,
+          0.04273,
+          0.03147
+        ],
+        "leftHand": [
+          0.16698,
+          0.07198,
+          0.29552
+        ]
+      }
+    }
+  ],
+  "acceptance": {
+    "requiresFreshVisualEvidence": true,
+    "requiresMetricImprovement": true,
+    "swordIgnored": true,
+    "mayPromoteToStartup": false
+  },
+  "outputs": {
+    "candidate": "generated/ready_pose_workbench/onehand_ready_authored_fpsref_candidate.json"
+  }
+}

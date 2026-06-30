@@ -125,4 +125,14 @@ The same contract now includes an Initiative Audit: check, document, and test th
 
 ## Meshy FPS Sword Retarget Note
 
-The accepted Meshy sword path is currently `[FPS-SWORD-UPPER]` `OneHandReady` only: FPSPlayer `OneHandReady` converted as an upper-body ready pose from authored source keyframes. The active ready path preserves direct source-key rotation tracks for mapped Meshy upper-body bones while allowing bounded IK correction at those same authored key times; it must not replace tracks, drop keys, or synthesize new frames. Weapon orientation must use the measured frame-solve path: `Weapon.R` virtual blade tip and up axis mapped from `ShoulderCenter` into Meshy `Spine02`, then written to `WeaponGrip`. Attacks and `OneHandReadied` are deliberately deferred until the ready pose and weapon hold are visually sane. The failed `[IB-MC]` Orc full-body path and the earlier Ruined Air/Scavenger-generated Meshy paths (`[RA-FULL]`, `[GRIP]`, `[CORE]`, `[SABRE]`) are red builds for this goal because they invent or preserve the wrong motion source. Meshy native walk/run clips remain direct clips, the real Meshy gun-sword/sabre stays attached at `WeaponGrip`, and Meshy FPV should anchor at the head with a forward offset rather than following the hands.
+The accepted Meshy/FPS result is currently only the `[FPS-REST-ARMS roll -120]` `0T-Pose` calibration. The previous `[FPS-SWORD-UPPER]` `OneHandReady` path and later FK/IK candidates are not accepted ready poses and must not be promoted to startup, aliases, or default clip visibility without a fresh visual/metric artifact. Use `node tools/meshy_ready_pose_workbench.mjs` to produce a candidate-only FPS reference artifact before attempting a new `OneHandReady` overlay. The next ready attempt should be an upper-body authored overlay from FPS reference frames, not another stacked resolver; sword orientation is ignored until the arm pose is visually sane. Meshy native walk/run clips remain direct clips, the real Meshy gun-sword/sabre stays attached at `WeaponGrip`, and Meshy FPV should anchor at the head with a forward offset rather than following the hands.
+
+## Meshy Promotion Gate
+
+Meshy/FPS experiments now default to the candidate lane. Before editing startup clips, aliases, visible clip patterns, or claiming a candidate is accepted, run:
+
+```sh
+node tools/pose_lab_workflow_status.mjs
+```
+
+Promotion requires `tools/promote_pose_candidate.mjs` with fresh visual evidence and metric evidence. The accepted baseline is recorded in `generated/workflow_state/meshy_fps_accepted_baseline.json`; blocked or stale evidence must fail. String/source tests are only support checks and must not be treated as visual acceptance.

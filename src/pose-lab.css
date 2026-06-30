@@ -9,14 +9,14 @@
 #loadState { justify-self: end; max-width: 34vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #d7f6ff; font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 #actorTabs { position: absolute; left: 50%; top: calc(max(52px, env(safe-area-inset-top) + 52px)); transform: translateX(-50%); z-index: 6; display: flex; gap: 6px; padding: 3px; background: rgba(3,7,10,0.7); border: 1px solid rgba(255,255,255,0.14); }
 #viewTabs { position: absolute; right: 8px; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 118px); z-index: 8; display: flex; gap: 4px; padding: 3px; background: rgba(3,7,10,0.82); border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
-#actorTabs button, #viewTabs button, #panelTabs button, #clipButtons button, #transformPanel button, #retargetPanel button, #bonePanel button, #cleanupPanel button { min-height: 36px; border: 1px solid rgba(255,255,255,0.22); color: #f8f1dd; background: rgba(16,22,28,0.9); font: inherit; font-weight: 850; }
+#actorTabs button, #viewTabs button, #panelTabs button, #clipButtons button, #transformPanel button, #retargetPanel button, #bonePanel button, #weaponPanel button, #cleanupPanel button { min-height: 36px; border: 1px solid rgba(255,255,255,0.22); color: #f8f1dd; background: rgba(16,22,28,0.9); font: inherit; font-weight: 850; }
 #actorTabs button { min-width: 72px; }
 #viewTabs button { min-width: 42px; min-height: 32px; font-size: 11px; }
 #actorTabs button.active, #viewTabs button.active, #panelTabs button.active, #clipButtons button.active { color: #17140d; background: #d6a642; }
 #actorTabs button.unloaded { color: #9fb3bb; border-color: rgba(255,255,255,0.12); }
 #actorTabs button.loading { color: #d7f6ff; }
 #actorTabs button.failed { color: #ffb2a3; border-color: rgba(255,120,90,0.5); }
-#panelTabs { position: absolute; left: 50%; bottom: max(10px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 7; display: grid; grid-template-columns: repeat(7, minmax(44px, 1fr)); gap: 5px; width: min(96vw, 600px); padding: 6px; background: rgba(4,8,11,0.78); border: 1px solid rgba(255,255,255,0.16); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
+#panelTabs { position: absolute; left: 50%; bottom: max(10px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 7; display: grid; grid-template-columns: repeat(8, minmax(44px, 1fr)); gap: 5px; width: min(98vw, 680px); padding: 6px; background: rgba(4,8,11,0.78); border: 1px solid rgba(255,255,255,0.16); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
 .lab-panel { position: absolute; left: 10px; right: 10px; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 58px); z-index: 6; display: none; padding: 9px; background: rgba(4,8,11,0.86); border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 8px 24px rgba(0,0,0,0.38); }
 .player-transport { position: absolute; left: 10px; right: 10px; top: calc(max(94px, env(safe-area-inset-top) + 94px)); z-index: 7; display: grid; gap: 6px; padding: 7px 8px; background: rgba(4,8,11,0.88); border: 1px solid rgba(214,166,66,0.26); box-shadow: 0 6px 20px rgba(0,0,0,0.32); pointer-events: auto; }
 .player-transport-label { color: #d7f6ff; font: 10px/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -108,6 +108,8 @@
 #bonePanel input { accent-color: #d6a642; }
 .bone-xform-grid label { grid-template-columns: 66px 1fr 46px; }
 #boneStatus { min-height: 46px; margin: 8px 0 0; color: #d7f6ff; font: 11px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+#weaponPanel { max-height: min(44vh, 390px); overflow: auto; }
+#weaponGizmoStatus { min-height: 92px; margin: 8px 0 0; color: #d7f6ff; font: 10px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; user-select: text; }
 .button-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
 .three-buttons { grid-template-columns: repeat(2, 1fr); }
 #labStatus { position: absolute; left: 50%; top: calc(max(92px, env(safe-area-inset-top) + 92px)); transform: translateX(-50%); z-index: 5; width: min(78vw, 520px); min-height: 26px; padding: 5px 8px; color: #f4ddac; background: rgba(4,8,11,0.55); border: 1px solid rgba(255,255,255,0.13); font-size: 11px; font-weight: 850; text-align: center; pointer-events: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -144,7 +146,7 @@ body.is-fpv:not(.panel-open-info) #labReadout { display: none; }
   #viewTabs button { min-width: 44px; min-height: 30px; font-size: 11px; }
   #labStatus { top: calc(max(72px, env(safe-area-inset-top) + 72px)); width: min(46vw, 430px); min-height: 20px; padding: 3px 6px; font-size: 9px; opacity: 0.72; }
   body.is-fpv:not(.has-open-panel) #labStatus { opacity: 0.36; }
-  #panelTabs { left: 8px; bottom: max(6px, env(safe-area-inset-bottom)); transform: none; width: min(58vw, 470px); grid-template-columns: repeat(7, minmax(42px, 1fr)); gap: 3px; padding: 4px; }
+  #panelTabs { left: 8px; bottom: max(6px, env(safe-area-inset-bottom)); transform: none; width: min(64vw, 540px); grid-template-columns: repeat(8, minmax(42px, 1fr)); gap: 3px; padding: 4px; }
   #panelTabs button { min-height: 30px; font-size: 11px; padding: 3px 5px; }
   .lab-panel { right: 8px; left: auto; bottom: calc(max(6px, env(safe-area-inset-bottom)) + 42px); width: min(34vw, 340px); padding: 7px; }
   #clipPanel { top: calc(max(74px, env(safe-area-inset-top) + 74px)); bottom: calc(max(6px, env(safe-area-inset-bottom)) + 42px); max-height: none; }
@@ -304,6 +306,7 @@ body.phone-controls.critique-mode .lab-panel {
 }
 body.phone-controls.critique-mode #cleanupPanel,
 body.phone-controls.critique-mode #bonePanel,
+body.phone-controls.critique-mode #weaponPanel,
 body.phone-controls.critique-mode #retargetPanel,
 body.phone-controls.critique-mode #transformPanel,
 body.phone-controls.critique-mode #labReadout {
@@ -318,6 +321,7 @@ body.phone-controls.critique-mode #poseEditDock:not([open]) {
 body.phone-controls.critique-mode #cleanupPanel.open,
 body.phone-controls.critique-mode #clipPanel.open,
 body.phone-controls.critique-mode #bonePanel.open,
+body.phone-controls.critique-mode #weaponPanel.open,
 body.phone-controls.critique-mode #retargetPanel.open,
 body.phone-controls.critique-mode #transformPanel.open,
 body.phone-controls.critique-mode #labReadout.open {
@@ -327,7 +331,8 @@ body.phone-controls.critique-mode.sheet-clips #clipPanel { max-height: min(45vh,
 body.phone-controls.critique-mode.sheet-pose #cleanupPanel { max-height: min(36vh, 340px); }
 body.phone-controls.critique-mode.sheet-edit #cleanupPanel { max-height: min(43vh, 410px); }
 body.phone-controls.critique-mode.sheet-advanced #cleanupPanel { max-height: min(50vh, 470px); }
-body.phone-controls.critique-mode.sheet-bones #bonePanel { max-height: min(43vh, 410px); }
+body.phone-controls.critique-mode.sheet-bones #bonePanel,
+body.phone-controls.critique-mode.sheet-weapon #weaponPanel { max-height: min(43vh, 410px); }
 body.phone-controls.critique-mode.sheet-view #labReadout { max-height: min(38vh, 360px); pointer-events: auto; }
 body.phone-controls.critique-mode #cleanupPanel > * { display: none !important; }
 body.phone-controls.critique-mode.sheet-pose #cleanupPanel > .panel-title,
@@ -379,6 +384,7 @@ body.phone-controls.critique-mode .button-row { gap: 5px; }
 body.phone-controls.critique-mode #cleanupPanel button,
 body.phone-controls.critique-mode #clipPanel button,
 body.phone-controls.critique-mode #bonePanel button { min-height: 30px; font-size: 10px; }
+body.phone-controls.critique-mode #weaponPanel button { min-height: 30px; font-size: 10px; }
 body.phone-controls.critique-mode .critique-transport-mode-row button,
 body.phone-controls.critique-mode .critique-transport-row button,
 body.phone-controls.critique-mode .critique-frame-buttons button { min-height: 26px; font-size: 9px; }
@@ -928,6 +934,7 @@ body.phone-controls.critique-mode #panelTabs button[data-panel="none"] {
 body.phone-controls.critique-mode #cleanupPanel.open,
 body.phone-controls.critique-mode #clipPanel.open,
 body.phone-controls.critique-mode #bonePanel.open,
+body.phone-controls.critique-mode #weaponPanel.open,
 body.phone-controls.critique-mode #retargetPanel.open,
 body.phone-controls.critique-mode #transformPanel.open,
 body.phone-controls.critique-mode #labReadout.open {
@@ -947,6 +954,7 @@ body.phone-controls.critique-mode #labReadout.open { pointer-events: auto; }
 body.phone-controls.critique-mode:not(.has-open-panel) #cleanupPanel,
 body.phone-controls.critique-mode:not(.has-open-panel) #clipPanel,
 body.phone-controls.critique-mode:not(.has-open-panel) #bonePanel,
+body.phone-controls.critique-mode:not(.has-open-panel) #weaponPanel,
 body.phone-controls.critique-mode:not(.has-open-panel) #retargetPanel,
 body.phone-controls.critique-mode:not(.has-open-panel) #transformPanel,
 body.phone-controls.critique-mode:not(.has-open-panel) #labReadout {
@@ -969,6 +977,7 @@ body.phone-controls.critique-mode.has-open-panel #playerTransport {
   body.phone-controls.critique-mode #cleanupPanel.open,
   body.phone-controls.critique-mode #clipPanel.open,
   body.phone-controls.critique-mode #bonePanel.open,
+  body.phone-controls.critique-mode #weaponPanel.open,
   body.phone-controls.critique-mode #retargetPanel.open,
   body.phone-controls.critique-mode #transformPanel.open,
   body.phone-controls.critique-mode #labReadout.open {

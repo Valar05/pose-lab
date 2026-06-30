@@ -43,7 +43,7 @@ if (fs.existsSync(evidencePath)) {
   assert(typeof evidence.visualRead === 'string' && evidence.visualRead.length >= 20, 'visual evidence should include a concrete visualRead');
 
   if (evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked') {
-      assert(false, 'missing fresh visual evidence: capture Meshy Character SwordReady [FPS-SWORD-UPPER] on the current cache token, attached Meshy sabre, upper-body-only FPS OneHandReady source, and no lower-body/root/full-body generated motion');
+      assert(false, 'missing fresh visual evidence: capture Meshy Character accepted T-pose calibration on the current cache token before promoting any OneHandReady candidate');
   } else {
     assert(['android-screenshot', 'visual-qa-capture'].includes(evidence.captureKind), 'visual evidence should record a supported capture kind');
     assert(typeof evidence.capturePath === 'string' && fs.existsSync(evidence.capturePath), 'visual evidence should point at an existing capture image');
@@ -63,8 +63,8 @@ if (fs.existsSync(evidencePath)) {
       assert(visual[key] === true, `visual assertion must be true: ${key}`);
     }
     assert(evidence.actorKey === 'meshyCharacter', 'visual evidence should cover Meshy Character');
-    assert(String(evidence.clipName || '').includes('OneHandReady'), 'visual evidence should cover FPS OneHandReady');
-    assert(String(evidence.clipName || '').includes('[FPS-SWORD-UPPER]'), 'visual evidence should cover the accepted [FPS-SWORD-UPPER] clip');
+    assert(String(evidence.clipName || '').includes('0T-Pose'), 'visual evidence should cover accepted FPS/Meshy T-pose calibration');
+    assert(String(evidence.clipName || '').includes('[FPS-REST-ARMS'), 'visual evidence should cover the accepted [FPS-REST-ARMS] calibration clip');
     assert(evidence.motionEvidencePending === false, 'usable-app evidence should include live visual capture, not defer motion evidence');
   }
 }
