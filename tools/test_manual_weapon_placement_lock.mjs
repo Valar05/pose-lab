@@ -27,9 +27,11 @@ for (const [label, literal] of lockedProductionLiterals) {
   assert(profiles.includes(literal), `${label} manual placement literal changed or was removed`);
 }
 
-assert(orientation.includes('Manual Placement Authority'), 'orientation should document manual placement authority');
-assert(orientation.includes('Never overwrite manually placed weapon/model attachment values'), 'orientation should forbid diagnostic overwrite of manual placement');
-assert(agents.includes('Never overwrite manually placed weapon/model attachment values'), 'AGENTS should forbid diagnostic overwrite of manual placement');
+assert(orientation.includes('Manual Fix Authority'), 'orientation should document general manual fix authority');
+assert(orientation.includes('Any manual fix authored by the user is the golden standard'), 'orientation should define manual fixes as golden standard');
+assert(orientation.includes('manual animation, pose, socket, camera, UI, material, asset, and runtime fixes outrank diagnostics'), 'orientation should generalize beyond weapon placement');
+assert(agents.includes('Any manual fix authored by the user is the golden standard'), 'AGENTS should define manual fixes as golden standard');
+assert(agents.includes('Never overwrite manual animation, pose, socket, camera, UI, material, asset, runtime, or weapon/model attachment fixes'), 'AGENTS should forbid diagnostic overwrite of any manual fix');
 
 assert(socketSolver.includes('MANUAL_PLACEMENT_LOCK'), 'socket solver should carry an explicit manual placement lock');
 assert(socketSolver.includes('promotable: false'), 'socket solver should never mark manual placement candidates as promotable');

@@ -137,8 +137,8 @@ node tools/pose_lab_workflow_status.mjs
 
 Promotion requires `tools/promote_pose_candidate.mjs` with fresh visual evidence and metric evidence. The accepted baseline is recorded in `generated/workflow_state/meshy_fps_accepted_baseline.json`; blocked or stale evidence must fail. String/source tests are only support checks and must not be treated as visual acceptance.
 
-## Manual Placement Authority
+## Manual Fix Authority
 
-Never overwrite manually placed weapon/model attachment values from solver output, semantic landmark output, socket metrics, or diagnostic reports unless the user explicitly asks to promote that exact placement and confirms the promotion separately. Diagnostics may produce candidate artifacts, but `src/rig-profiles.js` remains manual-placement truth until that separate confirmation happens.
+Any manual fix authored by the user is the golden standard. Do not overwrite it from solver output, generated candidates, retarget diagnostics, semantic landmark output, metric reports, tests, cleanup scripts, or automated promotion unless the user explicitly asks to replace that exact manual fix and confirms the replacement separately. Diagnostics may produce candidate artifacts, but manual repo values remain production truth until that separate confirmation happens.
 
-This is enforced by `node tools/test_manual_weapon_placement_lock.mjs`. The socket solver must remain diagnostic-only: it may report a candidate offset for analysis, but it must not mark that offset promotable or emit a production snippet for `src/rig-profiles.js`.
+This is enforced by `node tools/test_manual_weapon_placement_lock.mjs`. The current concrete locked surface is weapon placement, but the rule is general: manual animation, pose, socket, camera, UI, material, asset, and runtime fixes outrank diagnostics. The socket solver must remain diagnostic-only: it may report an error/correction for analysis, but it must not mark that correction promotable or emit a production snippet for `src/rig-profiles.js`.
