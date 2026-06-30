@@ -967,6 +967,9 @@ body.phone-controls.critique-mode #playerTransport {
 body.phone-controls.critique-mode.has-open-panel #playerTransport {
   display: none !important;
 }
+body.phone-controls:not(.critique-mode) #playerTransport {
+  display: none !important;
+}
 @media (orientation: landscape) {
   body.phone-controls.critique-mode #panelTabs {
     width: min(72vw, 560px);

@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Pose Critique</title>
-  <link rel="stylesheet" href="src/pose-lab.css?v=pose-editor-124">
+  <link rel="stylesheet" href="src/pose-lab.css?v=pose-editor-128">
   <script type="importmap">
     {
       "imports": {
@@ -252,6 +252,14 @@
         <button id="weaponGizmoScale" type="button">Scale</button>
         <button id="weaponGizmoSave" type="button">Save</button>
       </div>
+      <div class="panel-title">Semantic Landmarks</div>
+      <div class="button-row three-buttons">
+        <button id="semanticLandmarkToggle" type="button">Enable</button>
+        <button id="semanticLandmarkPickHilt" type="button">Pick Hilt</button>
+        <button id="semanticLandmarkPickTip" type="button">Pick Tip</button>
+        <button id="semanticLandmarkClear" type="button">Clear</button>
+        <button id="semanticLandmarkExport" type="button">Export Candidate</button>
+      </div>
       <pre id="weaponGizmoStatus">weapon gestures idle</pre>
     </section>
     <section id="retargetPanel" class="lab-panel" aria-label="Retarget controls">
@@ -319,12 +327,12 @@
         './vendor/three/examples/jsm/loaders/FBXLoader.js',
         './vendor/three/examples/jsm/controls/OrbitControls.js',
         './vendor/three/examples/jsm/utils/SkeletonUtils.js',
-        './src/godot-rest-poses.js?v=pose-editor-124',
-        './src/rig-profiles.js?v=pose-editor-124',
-        './src/startup-policy.mjs?v=pose-editor-124',
-        './src/clip-search.js?v=pose-editor-124',
-        './src/lab-mode.mjs?v=pose-editor-124',
-        './src/pose-lab.js?v=pose-editor-124',
+        './src/godot-rest-poses.js?v=pose-editor-128',
+        './src/rig-profiles.js?v=pose-editor-128',
+        './src/startup-policy.mjs?v=pose-editor-128',
+        './src/clip-search.js?v=pose-editor-128',
+        './src/lab-mode.mjs?v=pose-editor-128',
+        './src/pose-lab.js?v=pose-editor-128',
       ];
       show('Booting module...');
       window.addEventListener('error', (event) => {

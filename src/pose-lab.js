@@ -3,14 +3,14 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
-import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-124';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-124';
-import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-124';
-import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-124';
-import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-124';
+import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-128';
+import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
+import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
+import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-128';
 
 const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget';
-const LAB_CACHE_TOKEN = 'pose-editor-124';
+const LAB_CACHE_TOKEN = 'pose-editor-128';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
@@ -20,6 +20,7 @@ const CLEANUP_DRAFTS_KEY = 'pose-lab:cleanup-drafts:v1';
 const CRITIQUE_NOTES_KEY = 'pose-lab:critique-notes:v1';
 const POSE_CORRECTIONS_KEY = 'pose-lab:pose-corrections:v1';
 const POSE_HISTORY_KEY = 'pose-lab:pose-history:v1';
+const SEMANTIC_LANDMARK_KEY = 'pose-lab:semantic-weapon-landmark-candidate:v1';
 const POSE_HISTORY_LIMIT = 80;
 const CRITIQUE_STEP_FPS = 30;
 const CRITIQUE_LIVE_FPS = 60;
@@ -326,6 +327,11 @@ const UI = {
   weaponGizmoRotate: document.getElementById('weaponGizmoRotate'),
   weaponGizmoScale: document.getElementById('weaponGizmoScale'),
   weaponGizmoSave: document.getElementById('weaponGizmoSave'),
+  semanticLandmarkToggle: document.getElementById('semanticLandmarkToggle'),
+  semanticLandmarkPickHilt: document.getElementById('semanticLandmarkPickHilt'),
+  semanticLandmarkPickTip: document.getElementById('semanticLandmarkPickTip'),
+  semanticLandmarkClear: document.getElementById('semanticLandmarkClear'),
+  semanticLandmarkExport: document.getElementById('semanticLandmarkExport'),
   weaponGizmoStatus: document.getElementById('weaponGizmoStatus'),
   sourceActor: document.getElementById('sourceActor'),
   targetActor: document.getElementById('targetActor'),
@@ -4763,6 +4769,11 @@ class PoseLab {
     this.weaponGesturePointers = new Map();
     this.weaponMultiTouchGesture = null;
     this.weaponGizmoStatusText = 'weapon gestures idle';
+    this.semanticLandmarkEnabled = false;
+    this.semanticLandmarkPickTarget = 'hilt';
+    this.semanticLandmarkCandidate = { actorKey: '', hilt: null, tip: null };
+    this.semanticLandmarkGroup = null;
+    this.semanticLandmarkObjects = null;
     this.isRestoringState = false;
     this.stateSaveTimer = null;
     this.savedState = this.visualQa?.enabled ? {} : this.readSavedState();
@@ -5374,6 +5385,268 @@ class PoseLab {
     return payload;
   }
 
+  semanticLandmarkRoundVector(vec) {
+    return vec.toArray().map((value) => Number(Number(value || 0).toFixed(5)));
+  }
+
+  ensureSemanticLandmarkOverlay() {
+    if (this.semanticLandmarkGroup) return this.semanticLandmarkGroup;
+    const group = new THREE.Group();
+    group.name = 'semantic-weapon-landmark-candidate-overlay';
+    const sphere = (name, color, radius = 0.028) => {
+      const mesh = new THREE.Mesh(
+        new THREE.SphereGeometry(radius, 16, 8),
+        new THREE.MeshBasicMaterial({ color, depthTest: false, depthWrite: false })
+      );
+      mesh.name = name;
+      mesh.renderOrder = 50;
+      group.add(mesh);
+      return mesh;
+    };
+    const line = (name, color) => {
+      const item = new THREE.Line(
+        new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]),
+        new THREE.LineBasicMaterial({ color, depthTest: false, depthWrite: false })
+      );
+      item.name = name;
+      item.renderOrder = 49;
+      group.add(item);
+      return item;
+    };
+    this.semanticLandmarkObjects = {
+      configuredHilt: sphere('configured-hilt-marker', 0x22d3ee, 0.024),
+      configuredTip: sphere('configured-tip-marker', 0xfb923c, 0.024),
+      pickedHilt: sphere('picked-hilt-marker', 0x38bdf8, 0.035),
+      pickedTip: sphere('picked-tip-marker', 0xf97316, 0.035),
+      hiltDelta: line('semantic-hilt-delta', 0x38bdf8),
+      tipDelta: line('semantic-tip-delta', 0xf97316),
+    };
+    this.scene.add(group);
+    this.semanticLandmarkGroup = group;
+    return group;
+  }
+
+  setSemanticLandmarkEnabled(enabled = !this.semanticLandmarkEnabled) {
+    this.semanticLandmarkEnabled = Boolean(enabled);
+    this.ensureSemanticLandmarkOverlay();
+    this.semanticLandmarkGroup.visible = this.semanticLandmarkEnabled;
+    if (UI.semanticLandmarkToggle) UI.semanticLandmarkToggle.textContent = this.semanticLandmarkEnabled ? 'Disable' : 'Enable';
+    this.updateSemanticLandmarkButtons();
+    this.updateSemanticLandmarkOverlay();
+    this.updateWeaponGizmoStatus(this.semanticLandmarkEnabled
+      ? 'semantic landmarks enabled: pick visible hilt or tip on the weapon mesh'
+      : 'semantic landmarks disabled');
+  }
+
+  setSemanticLandmarkPickTarget(target = 'hilt') {
+    this.semanticLandmarkPickTarget = target === 'tip' ? 'tip' : 'hilt';
+    this.setSemanticLandmarkEnabled(true);
+    this.updateSemanticLandmarkButtons();
+    this.updateWeaponGizmoStatus('semantic pick target=' + this.semanticLandmarkPickTarget);
+  }
+
+  updateSemanticLandmarkButtons() {
+    UI.semanticLandmarkPickHilt?.classList.toggle('active', this.semanticLandmarkEnabled && this.semanticLandmarkPickTarget === 'hilt');
+    UI.semanticLandmarkPickTip?.classList.toggle('active', this.semanticLandmarkEnabled && this.semanticLandmarkPickTarget === 'tip');
+  }
+
+  currentSemanticCandidate(actor = this.selectedWeaponActor()) {
+    if (this.semanticLandmarkCandidate.actorKey !== actor?.key) {
+      this.semanticLandmarkCandidate = { actorKey: actor?.key || '', hilt: null, tip: null };
+    }
+    return this.semanticLandmarkCandidate;
+  }
+
+  semanticConfiguredLandmarks(actor = this.selectedWeaponActor()) {
+    const proxy = actor?.weaponProxy;
+    if (!proxy?.root) return null;
+    actor.model.updateMatrixWorld(true);
+    proxy.root.updateMatrixWorld(true);
+    proxy.model?.updateMatrixWorld(true);
+    proxy.tipMarker?.updateMatrixWorld(true);
+    const hilt = worldPositionOf(proxy.root);
+    const tip = proxy.tipMarker ? worldPositionOf(proxy.tipMarker) : hilt.clone().add(worldDirectionOf(proxy.root, [0, 0, 1]).multiplyScalar(Number(proxy.config?.length || 0.85)));
+    return { hilt, tip };
+  }
+
+  setSemanticObjectWorld(object, world) {
+    if (!object || !world) return;
+    object.position.copy(world);
+    object.visible = true;
+  }
+
+  setSemanticLine(line, a, b) {
+    if (!line || !a || !b) return;
+    line.geometry.setFromPoints([a, b]);
+    line.visible = true;
+  }
+
+  updateSemanticLandmarkOverlay() {
+    if (!this.semanticLandmarkEnabled || !this.semanticLandmarkGroup || !this.semanticLandmarkObjects) return;
+    const actor = this.selectedWeaponActor();
+    const configured = this.semanticConfiguredLandmarks(actor);
+    const candidate = this.currentSemanticCandidate(actor);
+    this.semanticLandmarkGroup.visible = Boolean(actor && configured);
+    if (!actor || !configured) return;
+    const { configuredHilt, configuredTip, pickedHilt, pickedTip, hiltDelta, tipDelta } = this.semanticLandmarkObjects;
+    this.setSemanticObjectWorld(configuredHilt, configured.hilt);
+    this.setSemanticObjectWorld(configuredTip, configured.tip);
+    pickedHilt.visible = Boolean(candidate.hilt);
+    pickedTip.visible = Boolean(candidate.tip);
+    hiltDelta.visible = false;
+    tipDelta.visible = false;
+    if (candidate.hilt?.world) {
+      const hilt = new THREE.Vector3().fromArray(candidate.hilt.world);
+      this.setSemanticObjectWorld(pickedHilt, hilt);
+      this.setSemanticLine(hiltDelta, configured.hilt, hilt);
+    }
+    if (candidate.tip?.world) {
+      const tip = new THREE.Vector3().fromArray(candidate.tip.world);
+      this.setSemanticObjectWorld(pickedTip, tip);
+      this.setSemanticLine(tipDelta, configured.tip, tip);
+    }
+  }
+
+  semanticLandmarkPickMeshes(actor = this.selectedWeaponActor()) {
+    const root = actor?.weaponProxy?.model;
+    if (!root) return [];
+    const meshes = [];
+    root.traverse((node) => {
+      if (node.isMesh && !node.userData?.weaponFallback) meshes.push(node);
+    });
+    return meshes;
+  }
+
+  pickSemanticWeaponLandmark(event) {
+    if (!this.semanticLandmarkEnabled) return false;
+    const actor = this.selectedWeaponActor();
+    const proxy = actor?.weaponProxy;
+    if (!actor || !proxy?.model) return false;
+    const meshes = this.semanticLandmarkPickMeshes(actor);
+    if (!meshes.length) {
+      this.updateWeaponGizmoStatus('semantic landmarks: no attached weapon mesh to pick');
+      return false;
+    }
+    const rect = UI.canvas.getBoundingClientRect();
+    this.pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
+    this.pointer.y = -(((event.clientY - rect.top) / Math.max(1, rect.height)) * 2 - 1);
+    this.raycaster.setFromCamera(this.pointer, this.camera);
+    const hit = this.raycaster.intersectObjects(meshes, false)[0];
+    if (!hit) {
+      this.updateWeaponGizmoStatus('semantic landmarks: tap the visible weapon mesh for ' + this.semanticLandmarkPickTarget);
+      return true;
+    }
+    proxy.model.updateMatrixWorld(true);
+    const local = proxy.model.worldToLocal(hit.point.clone());
+    const configured = this.semanticConfiguredLandmarks(actor);
+    const target = this.semanticLandmarkPickTarget;
+    const configuredWorld = configured?.[target] || hit.point;
+    const candidate = this.currentSemanticCandidate(actor);
+    candidate[target] = {
+      local: this.semanticLandmarkRoundVector(local),
+      world: this.semanticLandmarkRoundVector(hit.point),
+      mesh: hit.object?.name || '',
+      faceIndex: Number.isFinite(hit.faceIndex) ? hit.faceIndex : null,
+      deltaFromConfigured: Number(hit.point.distanceTo(configuredWorld).toFixed(5)),
+      pickedAt: new Date().toISOString(),
+    };
+    candidate.actorKey = actor.key;
+    this.semanticLandmarkCandidate = candidate;
+    this.semanticLandmarkPickTarget = target === 'hilt' ? 'tip' : 'hilt';
+    this.updateSemanticLandmarkButtons();
+    this.updateSemanticLandmarkOverlay();
+    this.updateWeaponGizmoStatus('picked semantic ' + target + ' candidate\n' + this.semanticLandmarkCandidateSnippet());
+    event.preventDefault?.();
+    event.stopPropagation?.();
+    return true;
+  }
+
+  clearSemanticLandmarkCandidate() {
+    const actor = this.selectedWeaponActor();
+    this.semanticLandmarkCandidate = { actorKey: actor?.key || '', hilt: null, tip: null };
+    this.updateSemanticLandmarkOverlay();
+    this.updateWeaponGizmoStatus('semantic landmark candidate cleared');
+  }
+
+  semanticLandmarkCandidatePayload() {
+    const actor = this.selectedWeaponActor();
+    const proxy = actor?.weaponProxy;
+    const attachment = actor?.info?.weaponAttachment || proxy?.attachmentConfig || {};
+    const clip = actor?.activeAction?._clip || null;
+    const candidate = this.currentSemanticCandidate(actor);
+    const configured = this.semanticConfiguredLandmarks(actor);
+    return {
+      schema: 'pose-lab-semantic-weapon-landmark-candidate-v1',
+      cacheToken: LAB_CACHE_TOKEN,
+      exportedAt: new Date().toISOString(),
+      candidateOnly: true,
+      productionBehaviorModified: false,
+      actor: actor?.key || this.selected || '',
+      actorLabel: actor?.info?.label || '',
+      clip: clip?.name || '',
+      clipTime: Number(Number(actor?.activeAction?.time || 0).toFixed(5)),
+      weaponModel: proxy?.model?.name || '',
+      existing: {
+        gripLocalPosition: [...(attachment.gripLocalPosition || [0, 0, 0])].map((value) => Number(Number(value || 0).toFixed(5))),
+        tipLocalPosition: [...(attachment.tipLocalPosition || [0, 0, 0.85])].map((value) => Number(Number(value || 0).toFixed(5))),
+        configuredHiltWorld: configured ? this.semanticLandmarkRoundVector(configured.hilt) : null,
+        configuredTipWorld: configured ? this.semanticLandmarkRoundVector(configured.tip) : null,
+      },
+      candidate: {
+        complete: Boolean(candidate.hilt?.local && candidate.tip?.local),
+        gripLocalPosition: candidate.hilt?.local || null,
+        tipLocalPosition: candidate.tip?.local || null,
+        hilt: candidate.hilt,
+        tip: candidate.tip,
+      },
+    };
+  }
+
+  semanticLandmarkCandidateSnippet(payload = this.semanticLandmarkCandidatePayload()) {
+    const lines = [
+      'semantic landmark candidate only',
+      'weaponAttachment: {',
+    ];
+    if (payload.candidate.gripLocalPosition) lines.push('  gripLocalPosition: [' + payload.candidate.gripLocalPosition.join(', ') + '],');
+    else lines.push('  gripLocalPosition: null,');
+    if (payload.candidate.tipLocalPosition) lines.push('  tipLocalPosition: [' + payload.candidate.tipLocalPosition.join(', ') + '],');
+    else lines.push('  tipLocalPosition: null,');
+    lines.push('}');
+    return lines.join('\n');
+  }
+
+  exportSemanticLandmarkCandidate() {
+    const payload = this.semanticLandmarkCandidatePayload();
+    payload.snippet = this.semanticLandmarkCandidateSnippet(payload);
+    localStorage.setItem(SEMANTIC_LANDMARK_KEY, JSON.stringify(payload, null, 2));
+    navigator.clipboard?.writeText(payload.snippet).catch(() => {});
+    this.updateSemanticLandmarkOverlay();
+    this.updateWeaponGizmoStatus('semantic candidate saved to localStorage + clipboard\n' + payload.snippet);
+    return payload;
+  }
+
+  forceSelectedWeaponVisibleForTooling() {
+    const actor = this.selectedWeaponActor();
+    const proxy = actor?.weaponProxy;
+    const selectedRealWeapon = Boolean(actor && actor.key === this.selected && proxy?.model && actor.info?.weaponAttachment?.url);
+    const forceVisible = Boolean(actor && proxy?.root && (
+      selectedRealWeapon
+      ||
+      this.semanticLandmarkEnabled
+      || this.weaponGizmoEnabled
+      || this.activePanel === 'weapon'
+      || document.body?.dataset?.sheet === 'weapon'
+    ));
+    if (!proxy?.root) return false;
+    if (forceVisible) {
+      proxy.root.visible = true;
+      if (proxy.model) proxy.model.visible = true;
+      return true;
+    }
+    actor.updateWeaponProxyVisibility?.();
+    return false;
+  }
+
   setupUi() {
     this.renderActorTabs();
     for (const button of UI.viewButtons) button.addEventListener('click', () => this.setViewMode(button.dataset.viewMode || 'orbit'));
@@ -5459,6 +5732,11 @@ class PoseLab {
     UI.weaponGizmoRotate?.addEventListener('click', () => { this.setWeaponGizmoEnabled(true); this.setWeaponGizmoMode('rotate'); });
     UI.weaponGizmoScale?.addEventListener('click', () => { this.setWeaponGizmoEnabled(true); this.setWeaponGizmoMode('scale'); });
     UI.weaponGizmoSave?.addEventListener('click', () => this.saveWeaponGizmoTuning());
+    UI.semanticLandmarkToggle?.addEventListener('click', () => this.setSemanticLandmarkEnabled());
+    UI.semanticLandmarkPickHilt?.addEventListener('click', () => this.setSemanticLandmarkPickTarget('hilt'));
+    UI.semanticLandmarkPickTip?.addEventListener('click', () => this.setSemanticLandmarkPickTarget('tip'));
+    UI.semanticLandmarkClear?.addEventListener('click', () => this.clearSemanticLandmarkCandidate());
+    UI.semanticLandmarkExport?.addEventListener('click', () => this.exportSemanticLandmarkCandidate());
     UI.critiqueSaveNote?.addEventListener('click', () => { this.critiquePersistCurrentNote('saved note'); this.saveActiveCleanupDraft('manual'); });
     UI.critiqueClearNote?.addEventListener('click', () => this.critiquePersistCurrentNote('cleared note'));
     UI.critiqueCopyNote?.addEventListener('click', () => this.critiqueCopyCurrentNote());
@@ -5543,6 +5821,7 @@ class PoseLab {
     });
     UI.canvas.addEventListener('pointerdown', (event) => {
       this.pointerDown = { x: event.clientX, y: event.clientY };
+      if (this.pickSemanticWeaponLandmark(event)) return;
       if (this.beginWeaponGizmoDrag(event)) return;
       this.handleTouchPosePointerDown(event);
     });
@@ -9816,6 +10095,8 @@ class PoseLab {
     this.updateCritiqueDock(true);
     this.updateFirstPersonCamera();
     this.updateWeaponGizmo();
+    this.forceSelectedWeaponVisibleForTooling();
+    this.updateSemanticLandmarkOverlay();
     if (this.controls.enabled) this.controls.update();
     this.renderer.render(this.scene, this.camera);
     this.handleVisualQaFrame();
