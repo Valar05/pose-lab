@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Pose Critique</title>
-  <link rel="stylesheet" href="src/pose-lab.css?v=pose-editor-120">
+  <link rel="stylesheet" href="src/pose-lab.css?v=pose-editor-124">
   <script type="importmap">
     {
       "imports": {
@@ -244,14 +244,15 @@
       <pre id="boneStatus">select a bone</pre>
     </section>
     <section id="weaponPanel" class="lab-panel" aria-label="Weapon placement controls">
-      <div class="panel-title">Weapon Gizmo</div>
+      <div class="panel-title">Weapon Gestures</div>
       <div class="button-row three-buttons">
-        <button id="weaponGizmoToggle" type="button">Show Gizmo</button>
+        <button id="weaponGizmoToggle" type="button">Enable</button>
         <button id="weaponGizmoTranslate" type="button">Move</button>
         <button id="weaponGizmoRotate" type="button">Rotate</button>
+        <button id="weaponGizmoScale" type="button">Scale</button>
         <button id="weaponGizmoSave" type="button">Save</button>
       </div>
-      <pre id="weaponGizmoStatus">weapon gizmo idle</pre>
+      <pre id="weaponGizmoStatus">weapon gestures idle</pre>
     </section>
     <section id="retargetPanel" class="lab-panel" aria-label="Retarget controls">
       <div class="panel-title">Retarget</div>
@@ -318,12 +319,12 @@
         './vendor/three/examples/jsm/loaders/FBXLoader.js',
         './vendor/three/examples/jsm/controls/OrbitControls.js',
         './vendor/three/examples/jsm/utils/SkeletonUtils.js',
-        './src/godot-rest-poses.js?v=pose-editor-120',
-        './src/rig-profiles.js?v=pose-editor-120',
-        './src/startup-policy.mjs?v=pose-editor-120',
-        './src/clip-search.js?v=pose-editor-120',
-        './src/lab-mode.mjs?v=pose-editor-120',
-        './src/pose-lab.js?v=pose-editor-120',
+        './src/godot-rest-poses.js?v=pose-editor-124',
+        './src/rig-profiles.js?v=pose-editor-124',
+        './src/startup-policy.mjs?v=pose-editor-124',
+        './src/clip-search.js?v=pose-editor-124',
+        './src/lab-mode.mjs?v=pose-editor-124',
+        './src/pose-lab.js?v=pose-editor-124',
       ];
       show('Booting module...');
       window.addEventListener('error', (event) => {

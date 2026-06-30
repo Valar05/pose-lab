@@ -3,14 +3,14 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
-import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-120';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-120';
-import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-120';
-import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-120';
-import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-120';
+import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-124';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-124';
+import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-124';
+import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-124';
+import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-124';
 
 const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget';
-const LAB_CACHE_TOKEN = 'pose-editor-120';
+const LAB_CACHE_TOKEN = 'pose-editor-124';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
@@ -324,6 +324,7 @@ const UI = {
   weaponGizmoToggle: document.getElementById('weaponGizmoToggle'),
   weaponGizmoTranslate: document.getElementById('weaponGizmoTranslate'),
   weaponGizmoRotate: document.getElementById('weaponGizmoRotate'),
+  weaponGizmoScale: document.getElementById('weaponGizmoScale'),
   weaponGizmoSave: document.getElementById('weaponGizmoSave'),
   weaponGizmoStatus: document.getElementById('weaponGizmoStatus'),
   sourceActor: document.getElementById('sourceActor'),
@@ -3875,8 +3876,9 @@ class PoseActor {
     if (!proxy?.root) return;
     const animatedSocketRotation = clipHasQuaternionTrackForBone(this.activeAction?._clip, proxy.root.name);
     if (proxy.sourceSocket) {
-      if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.fromArray(proxy.config.gripOffset);
-      else proxy.root.position.set(0, 0, 0);
+      proxy.root.position.set(0, 0, 0);
+      if (Array.isArray(proxy.config.modelLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
+      if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
       return;
     }
     if (!proxy.leftHand || !proxy.rightHand) return;
@@ -4758,7 +4760,9 @@ class PoseLab {
     this.weaponGizmoMode = 'translate';
     this.weaponGizmo = null;
     this.weaponGizmoDrag = null;
-    this.weaponGizmoStatusText = 'weapon gizmo idle';
+    this.weaponGesturePointers = new Map();
+    this.weaponMultiTouchGesture = null;
+    this.weaponGizmoStatusText = 'weapon gestures idle';
     this.isRestoringState = false;
     this.stateSaveTimer = null;
     this.savedState = this.visualQa?.enabled ? {} : this.readSavedState();
@@ -5036,41 +5040,7 @@ class PoseLab {
   }
 
   createWeaponGizmo() {
-    const group = new THREE.Group();
-    group.name = 'WeaponPlacementGizmo';
-    group.visible = false;
-    group.renderOrder = 50;
-    const pickables = [];
-    const axes = [
-      { axis: 'x', index: 0, color: 0xff4b4b, dir: new THREE.Vector3(1, 0, 0) },
-      { axis: 'y', index: 1, color: 0x42e66f, dir: new THREE.Vector3(0, 1, 0) },
-      { axis: 'z', index: 2, color: 0x4d8dff, dir: new THREE.Vector3(0, 0, 1) },
-    ];
-    for (const spec of axes) {
-      const arrow = new THREE.ArrowHelper(spec.dir, new THREE.Vector3(), 0.34, spec.color, 0.09, 0.04);
-      arrow.name = 'WeaponMove_' + spec.axis.toUpperCase();
-      arrow.traverse((node) => {
-        node.userData.weaponGizmo = { type: 'translate', axis: spec.axis, index: spec.index };
-        if (node.isLine || node.isMesh) {
-          node.renderOrder = 60;
-          pickables.push(node);
-        }
-      });
-      group.add(arrow);
-      const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(0.23, 0.006, 8, 64),
-        new THREE.MeshBasicMaterial({ color: spec.color, transparent: true, opacity: 0.82, depthTest: false })
-      );
-      ring.name = 'WeaponRotate_' + spec.axis.toUpperCase();
-      if (spec.axis === 'x') ring.rotation.y = Math.PI / 2;
-      if (spec.axis === 'y') ring.rotation.x = Math.PI / 2;
-      ring.userData.weaponGizmo = { type: 'rotate', axis: spec.axis, index: spec.index };
-      ring.renderOrder = 61;
-      pickables.push(ring);
-      group.add(ring);
-    }
-    this.weaponGizmo = { group, pickables };
-    this.scene.add(group);
+    this.weaponGizmo = { group: null, pickables: [] };
   }
 
   selectedWeaponActor() {
@@ -5089,6 +5059,7 @@ class PoseLab {
       gripOffset: [...(config.gripOffset || [0, 0, 0])].map((value) => Number(Number(value || 0).toFixed(5))),
       rotationDeg: [...(attachment.rotationDeg || [0, 0, 0])].map((value) => Number(Number(value || 0).toFixed(5))),
       gripLocalPosition: [...(attachment.gripLocalPosition || [0, 0, 0])].map((value) => Number(Number(value || 0).toFixed(5))),
+      tipLocalPosition: [...(attachment.tipLocalPosition || [0, 0, 0.85])].map((value) => Number(Number(value || 0).toFixed(5))),
       scale: Number(Number(attachment.scale ?? 1).toFixed(5)),
     };
   }
@@ -5104,6 +5075,7 @@ class PoseLab {
       '  scale: ' + values.scale + ',',
       '  rotationDeg: [' + values.rotationDeg.join(', ') + '],',
       '  gripLocalPosition: [' + values.gripLocalPosition.join(', ') + '],',
+      '  tipLocalPosition: [' + values.tipLocalPosition.join(', ') + '],',
       '}',
     ].join('\n');
   }
@@ -5117,116 +5089,273 @@ class PoseLab {
 
   setWeaponGizmoEnabled(enabled = !this.weaponGizmoEnabled) {
     this.weaponGizmoEnabled = Boolean(enabled);
-    if (UI.weaponGizmoToggle) UI.weaponGizmoToggle.textContent = this.weaponGizmoEnabled ? 'Hide Gizmo' : 'Show Gizmo';
-    this.updateWeaponGizmoStatus(this.weaponGizmoEnabled ? 'gizmo enabled' : 'gizmo hidden');
+    if (UI.weaponGizmoToggle) UI.weaponGizmoToggle.textContent = this.weaponGizmoEnabled ? 'Disable' : 'Enable';
+    if (!this.weaponGizmoEnabled) this.cancelWeaponGesture();
+    this.updateWeaponGizmoStatus(this.weaponGizmoEnabled ? 'weapon gestures enabled: Move, Rotate, and Scale are separate modes' : 'weapon gestures disabled');
   }
 
   setWeaponGizmoMode(mode) {
-    this.weaponGizmoMode = mode === 'rotate' ? 'rotate' : 'translate';
+    this.cancelWeaponGesture();
+    this.weaponGizmoMode = mode === 'rotate' ? 'rotate' : (mode === 'scale' ? 'scale' : 'translate');
     if (UI.weaponGizmoTranslate) UI.weaponGizmoTranslate.classList.toggle('active', this.weaponGizmoMode === 'translate');
     if (UI.weaponGizmoRotate) UI.weaponGizmoRotate.classList.toggle('active', this.weaponGizmoMode === 'rotate');
+    if (UI.weaponGizmoScale) UI.weaponGizmoScale.classList.toggle('active', this.weaponGizmoMode === 'scale');
     this.updateWeaponGizmoStatus('mode=' + this.weaponGizmoMode);
   }
 
   updateWeaponGizmo() {
-    const group = this.weaponGizmo?.group;
-    if (!group) return;
-    const actor = this.selectedWeaponActor();
-    const visible = Boolean(this.weaponGizmoEnabled && actor?.weaponProxy?.root && this.viewMode === 'orbit');
-    group.visible = visible;
-    if (!visible) return;
+    return;
+  }
+
+  weaponGizmoScreenHit(event, actor = this.selectedWeaponActor()) {
+    if (!actor?.weaponProxy?.root || !UI.canvas) return false;
+    if (this.activePanel === 'weapon' || document.body?.dataset?.sheet === 'weapon') return true;
+    const rect = UI.canvas.getBoundingClientRect();
+    const screen = screenPointForWorld(worldPositionOf(actor.weaponProxy.root), this.camera, rect);
+    return Math.hypot(event.clientX - screen.x, event.clientY - screen.y) <= 160;
+  }
+
+  trackWeaponGesturePointer(event) {
+    if (event?.pointerId === undefined) return;
+    this.weaponGesturePointers.set(event.pointerId, { id: event.pointerId, x: event.clientX, y: event.clientY });
+  }
+
+  updateTrackedWeaponGesturePointer(event) {
+    if (event?.pointerId === undefined || !this.weaponGesturePointers.has(event.pointerId)) return false;
+    this.weaponGesturePointers.set(event.pointerId, { id: event.pointerId, x: event.clientX, y: event.clientY });
+    return true;
+  }
+
+  activeWeaponGesturePointList() {
+    return [...this.weaponGesturePointers.values()].sort((a, b) => a.id - b.id);
+  }
+
+  applyWeaponGestureUpdate(actor) {
+    actor?.updateWeaponAttachmentTransform?.();
+    actor?.updateWeaponSocketTransform?.();
+    this.updateWeaponGizmoStatus('gesture ' + this.weaponGizmoMode);
+  }
+
+  weaponGestureCameraBasis() {
+    const right = new THREE.Vector3();
+    const up = new THREE.Vector3();
+    const forward = new THREE.Vector3();
+    this.camera.matrixWorld.extractBasis(right, up, new THREE.Vector3());
+    this.camera.getWorldDirection(forward);
+    return { right: right.normalize(), up: up.normalize(), forward: forward.normalize() };
+  }
+
+  weaponAttachmentLocalQuaternion(actor = this.selectedWeaponActor()) {
+    const rotationDeg = actor?.info?.weaponAttachment?.rotationDeg || actor?.weaponProxy?.attachmentConfig?.rotationDeg || [0, 0, 0];
+    return new THREE.Quaternion().setFromEuler(new THREE.Euler(
+      THREE.MathUtils.degToRad(Number(rotationDeg[0] || 0)),
+      THREE.MathUtils.degToRad(Number(rotationDeg[1] || 0)),
+      THREE.MathUtils.degToRad(Number(rotationDeg[2] || 0)),
+      'XYZ'
+    )).normalize();
+  }
+
+  weaponGestureRotationSnapshot(actor = this.selectedWeaponActor()) {
+    if (!actor?.weaponProxy?.root) return null;
     actor.model.updateMatrixWorld(true);
     actor.weaponProxy.root.updateMatrixWorld(true);
-    group.position.copy(worldPositionOf(actor.weaponProxy.root));
-    group.quaternion.copy(worldQuaternionOf(actor.model));
-    const distance = group.position.distanceTo(this.camera.position);
-    group.scale.setScalar(Math.max(0.65, Math.min(1.65, distance * 0.22)));
+    const socketWorldQuat = worldQuaternionOf(actor.weaponProxy.root);
+    const startLocalQuat = this.weaponAttachmentLocalQuaternion(actor);
+    const startWorldQuat = socketWorldQuat.clone().multiply(startLocalQuat).normalize();
+    const { right, up, forward } = this.weaponGestureCameraBasis();
+    return {
+      startLocalQuat: startLocalQuat.toArray(),
+      startSocketWorldQuat: socketWorldQuat.toArray(),
+      startWorldQuat: startWorldQuat.toArray(),
+      cameraRight: right.toArray(),
+      cameraUp: up.toArray(),
+      cameraForward: forward.toArray(),
+    };
+  }
+
+  setWeaponAttachmentLocalQuaternion(actor, localQuat) {
+    const proxy = actor?.weaponProxy;
+    if (!actor || !proxy || !localQuat) return null;
+    const euler = new THREE.Euler().setFromQuaternion(localQuat.normalize(), 'XYZ');
+    const next = [
+      Number(THREE.MathUtils.radToDeg(euler.x).toFixed(3)),
+      Number(THREE.MathUtils.radToDeg(euler.y).toFixed(3)),
+      Number(THREE.MathUtils.radToDeg(euler.z).toFixed(3)),
+    ];
+    if (actor.info.weaponAttachment) actor.info.weaponAttachment.rotationDeg = next;
+    if (proxy.attachmentConfig) proxy.attachmentConfig.rotationDeg = next;
+    return next;
+  }
+
+  applyWeaponScreenRotation(actor, snapshot, deltaWorldQuat) {
+    if (!actor?.weaponProxy?.root || !snapshot || !deltaWorldQuat) return null;
+    const socketWorldQuat = new THREE.Quaternion().fromArray(snapshot.startSocketWorldQuat).normalize();
+    const startWorldQuat = new THREE.Quaternion().fromArray(snapshot.startWorldQuat).normalize();
+    const nextWorldQuat = deltaWorldQuat.clone().multiply(startWorldQuat).normalize();
+    const nextLocalQuat = socketWorldQuat.invert().multiply(nextWorldQuat).normalize();
+    return this.setWeaponAttachmentLocalQuaternion(actor, nextLocalQuat);
+  }
+
+  setWeaponAttachmentScale(actor, scale) {
+    const proxy = actor?.weaponProxy;
+    if (!actor || !proxy) return null;
+    const nextScale = Number(Math.max(0.02, Math.min(4, Number(scale || 1))).toFixed(5));
+    if (actor.info.weaponAttachment) actor.info.weaponAttachment.scale = nextScale;
+    if (proxy.attachmentConfig) proxy.attachmentConfig.scale = nextScale;
+    return nextScale;
+  }
+
+  weaponMoveOffsetFrame(actor = this.selectedWeaponActor()) {
+    const proxy = actor?.weaponProxy;
+    const frame = proxy?.root?.parent || actor?.model || null;
+    return frame ? { object: frame, name: frame.name || 'weapon-parent' } : null;
+  }
+
+  weaponWorldDeltaToOffsetFrame(actor, worldDelta) {
+    const frame = this.weaponMoveOffsetFrame(actor);
+    if (!frame?.object || !worldDelta) return worldDelta?.clone?.() || new THREE.Vector3();
+    frame.object.updateMatrixWorld(true);
+    return worldDelta.clone().applyQuaternion(worldQuaternionOf(frame.object).invert());
+  }
+
+  beginWeaponMultiTouchGesture(event = null) {
+    const points = this.activeWeaponGesturePointList();
+    if (points.length < 2) return false;
+    const actor = this.selectedWeaponActor();
+    if (!actor?.weaponProxy?.root) return false;
+    const start = this.multiTouchMetrics(points);
+    if (!start) return false;
+    const attachment = actor.info.weaponAttachment || {};
+    const rotationSnapshot = this.weaponGizmoMode === 'rotate' ? this.weaponGestureRotationSnapshot(actor) : null;
+    this.weaponGizmoDrag = null;
+    this.weaponMultiTouchGesture = {
+      actorKey: actor.key,
+      mode: this.weaponGizmoMode,
+      pointerIds: points.slice(0, 2).map((point) => point.id),
+      start,
+      rotationSnapshot,
+      startScale: Number(attachment.scale ?? 1),
+    };
+    this.controls.enabled = false;
+    for (const point of points.slice(0, 2)) UI.canvas.setPointerCapture?.(point.id);
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    return true;
+  }
+
+  updateWeaponMultiTouchGesture(event = null) {
+    const gesture = this.weaponMultiTouchGesture;
+    if (!gesture) return false;
+    const actor = this.actors.get(gesture.actorKey);
+    const proxy = actor?.weaponProxy;
+    if (!actor || !proxy?.root) return false;
+    const current = this.multiTouchMetrics(this.activeWeaponGesturePointList());
+    if (!current) return false;
+    const mode = gesture.mode || this.weaponGizmoMode;
+    if (mode === 'rotate') {
+      const twist = wrapRadians(current.angle - gesture.start.angle);
+      const axis = new THREE.Vector3().fromArray(gesture.rotationSnapshot?.cameraForward || [0, 0, 1]).normalize();
+      const delta = new THREE.Quaternion().setFromAxisAngle(axis, twist);
+      this.applyWeaponScreenRotation(actor, gesture.rotationSnapshot, delta);
+      this.applyWeaponGestureUpdate(actor);
+      this.updateWeaponGizmoStatus('two-finger rotate ' + THREE.MathUtils.radToDeg(twist).toFixed(1) + ' deg');
+    } else if (mode === 'scale') {
+      const pinch = current.distance / Math.max(1, gesture.start.distance);
+      const nextScale = this.setWeaponAttachmentScale(actor, Number(gesture.startScale || 1) * pinch);
+      this.applyWeaponGestureUpdate(actor);
+      this.updateWeaponGizmoStatus('two-finger scale ' + Number(nextScale || 1).toFixed(3));
+    } else {
+      this.updateWeaponGizmoStatus('two-finger inactive in Move mode');
+    }
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    return true;
   }
 
   beginWeaponGizmoDrag(event) {
-    if (!this.weaponGizmoEnabled || !this.weaponGizmo?.pickables?.length || this.viewMode !== 'orbit') return false;
+    if (!this.weaponGizmoEnabled || this.viewMode !== 'orbit') return false;
     const actor = this.selectedWeaponActor();
     if (!actor) return false;
-    const rect = UI.canvas.getBoundingClientRect();
-    this.pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
-    this.pointer.y = -(((event.clientY - rect.top) / Math.max(1, rect.height)) * 2 - 1);
-    this.raycaster.setFromCamera(this.pointer, this.camera);
-    const hits = this.raycaster.intersectObjects(this.weaponGizmo.pickables, false);
-    const hit = hits.find((entry) => entry.object?.userData?.weaponGizmo);
-    if (!hit) return false;
-    const spec = hit.object.userData.weaponGizmo;
-    const mode = spec.type === 'rotate' || this.weaponGizmoMode === 'rotate' ? 'rotate' : 'translate';
-    const axisLocal = new THREE.Vector3(spec.axis === 'x' ? 1 : 0, spec.axis === 'y' ? 1 : 0, spec.axis === 'z' ? 1 : 0);
-    const actorQuat = worldQuaternionOf(actor.model);
-    const axisWorld = axisLocal.clone().applyQuaternion(actorQuat).normalize();
-    const plane = new THREE.Plane().setFromNormalAndCoplanarPoint(
-      this.camera.position.clone().sub(hit.point).normalize(),
-      hit.point
-    );
-    const startPoint = new THREE.Vector3();
-    this.raycaster.ray.intersectPlane(plane, startPoint);
+    if (!this.weaponGizmoScreenHit(event, actor)) return false;
+    this.trackWeaponGesturePointer(event);
+    UI.canvas.setPointerCapture?.(event.pointerId);
+    if (this.activeWeaponGesturePointList().length >= 2) return this.beginWeaponMultiTouchGesture(event);
     const attachment = actor.info.weaponAttachment || {};
     const proxyConfig = actor.weaponProxy.config || {};
+    const rotationSnapshot = this.weaponGizmoMode === 'rotate' ? this.weaponGestureRotationSnapshot(actor) : null;
     this.weaponGizmoDrag = {
-      mode,
-      axis: spec.axis,
-      index: spec.index,
+      mode: this.weaponGizmoMode,
+      pointerId: event.pointerId,
       actorKey: actor.key,
-      plane,
-      startPoint,
-      axisWorld,
       startClientX: event.clientX,
       startClientY: event.clientY,
       startModelOffset: [...(proxyConfig.modelLocalOffset || [0, 0, 0])],
-      startRotationDeg: [...(attachment.rotationDeg || [0, 0, 0])],
+      rotationSnapshot,
+      startScale: Number(attachment.scale ?? 1),
     };
     this.controls.enabled = false;
-    UI.canvas.setPointerCapture?.(event.pointerId);
     event.preventDefault();
     event.stopPropagation();
     return true;
   }
 
   updateWeaponGizmoDrag(event) {
+    if (this.updateTrackedWeaponGesturePointer(event) && this.weaponMultiTouchGesture) return this.updateWeaponMultiTouchGesture(event);
     const drag = this.weaponGizmoDrag;
-    if (!drag) return false;
+    if (!drag || (drag.pointerId !== undefined && event.pointerId !== drag.pointerId)) return false;
     const actor = this.actors.get(drag.actorKey);
     const proxy = actor?.weaponProxy;
     if (!actor || !proxy?.root) return false;
+    const dx = event.clientX - drag.startClientX;
+    const dy = event.clientY - drag.startClientY;
     if (drag.mode === 'translate') {
-      const rect = UI.canvas.getBoundingClientRect();
-      this.pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
-      this.pointer.y = -(((event.clientY - rect.top) / Math.max(1, rect.height)) * 2 - 1);
-      this.raycaster.setFromCamera(this.pointer, this.camera);
-      const point = new THREE.Vector3();
-      if (this.raycaster.ray.intersectPlane(drag.plane, point)) {
-        const amount = point.sub(drag.startPoint).dot(drag.axisWorld);
-        const next = [...drag.startModelOffset];
-        next[drag.index] = Number((Number(next[drag.index] || 0) + amount).toFixed(5));
-        proxy.config.modelLocalOffset = next;
-      }
+      const world = this.screenPlaneWorldDelta(dx, dy, 0.0028);
+      const offsetLocal = this.weaponWorldDeltaToOffsetFrame(actor, world);
+      const next = [...drag.startModelOffset];
+      next[0] = Number((Number(next[0] || 0) + offsetLocal.x).toFixed(5));
+      next[1] = Number((Number(next[1] || 0) + offsetLocal.y).toFixed(5));
+      next[2] = Number((Number(next[2] || 0) + offsetLocal.z).toFixed(5));
+      proxy.config.modelLocalOffset = next;
+    } else if (drag.mode === 'scale') {
+      this.setWeaponAttachmentScale(actor, Number(drag.startScale || 1) * Math.exp(-dy * 0.006));
     } else {
-      const pixelDelta = (event.clientX - drag.startClientX) + (event.clientY - drag.startClientY);
-      const next = [...drag.startRotationDeg];
-      next[drag.index] = Number((Number(next[drag.index] || 0) + pixelDelta * 0.35).toFixed(3));
-      if (actor.info.weaponAttachment) actor.info.weaponAttachment.rotationDeg = next;
-      if (proxy.attachmentConfig) proxy.attachmentConfig.rotationDeg = next;
+      const snapshot = drag.rotationSnapshot;
+      const cameraRight = new THREE.Vector3().fromArray(snapshot?.cameraRight || [1, 0, 0]).normalize();
+      const cameraUp = new THREE.Vector3().fromArray(snapshot?.cameraUp || [0, 1, 0]).normalize();
+      const horizontal = new THREE.Quaternion().setFromAxisAngle(cameraUp, dx * 0.006);
+      const vertical = new THREE.Quaternion().setFromAxisAngle(cameraRight, dy * 0.006);
+      this.applyWeaponScreenRotation(actor, snapshot, horizontal.multiply(vertical).normalize());
     }
-    actor.updateWeaponAttachmentTransform?.();
-    actor.updateWeaponSocketTransform();
-    this.updateWeaponGizmo();
-    this.updateWeaponGizmoStatus('drag ' + drag.mode + ' ' + drag.axis.toUpperCase());
+    this.applyWeaponGestureUpdate(actor);
+    this.updateWeaponGizmoStatus('one-finger ' + drag.mode);
     event.preventDefault();
     event.stopPropagation();
     return true;
   }
 
   finishWeaponGizmoDrag(event) {
-    if (!this.weaponGizmoDrag) return false;
+    const hadGesture = Boolean(this.weaponGizmoDrag || this.weaponMultiTouchGesture || (event?.pointerId !== undefined && this.weaponGesturePointers.has(event.pointerId)));
+    if (!hadGesture) return false;
+    if (event?.pointerId !== undefined) this.weaponGesturePointers.delete(event.pointerId);
+    if (this.weaponMultiTouchGesture || this.weaponGesturePointers.size < 1) {
+      for (const pointId of [...this.weaponGesturePointers.keys()]) UI.canvas.releasePointerCapture?.(pointId);
+      this.weaponGesturePointers.clear();
+      this.weaponMultiTouchGesture = null;
+    }
     this.weaponGizmoDrag = null;
     this.controls.enabled = this.viewMode === 'orbit';
     if (event?.pointerId != null) UI.canvas.releasePointerCapture?.(event.pointerId);
-    this.updateWeaponGizmoStatus('drag complete');
+    this.updateWeaponGizmoStatus('gesture complete');
+    return true;
+  }
+
+  cancelWeaponGesture() {
+    if (!this.weaponGizmoDrag && !this.weaponMultiTouchGesture && !this.weaponGesturePointers?.size) return false;
+    for (const pointId of [...this.weaponGesturePointers.keys()]) UI.canvas.releasePointerCapture?.(pointId);
+    this.weaponGesturePointers.clear();
+    this.weaponMultiTouchGesture = null;
+    this.weaponGizmoDrag = null;
+    this.controls.enabled = this.viewMode === 'orbit';
     return true;
   }
 
@@ -5328,6 +5457,7 @@ class PoseLab {
     UI.weaponGizmoToggle?.addEventListener('click', () => this.setWeaponGizmoEnabled());
     UI.weaponGizmoTranslate?.addEventListener('click', () => { this.setWeaponGizmoEnabled(true); this.setWeaponGizmoMode('translate'); });
     UI.weaponGizmoRotate?.addEventListener('click', () => { this.setWeaponGizmoEnabled(true); this.setWeaponGizmoMode('rotate'); });
+    UI.weaponGizmoScale?.addEventListener('click', () => { this.setWeaponGizmoEnabled(true); this.setWeaponGizmoMode('scale'); });
     UI.weaponGizmoSave?.addEventListener('click', () => this.saveWeaponGizmoTuning());
     UI.critiqueSaveNote?.addEventListener('click', () => { this.critiquePersistCurrentNote('saved note'); this.saveActiveCleanupDraft('manual'); });
     UI.critiqueClearNote?.addEventListener('click', () => this.critiquePersistCurrentNote('cleared note'));
