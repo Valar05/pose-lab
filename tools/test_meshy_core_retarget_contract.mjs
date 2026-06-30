@@ -7,6 +7,7 @@ const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'
 const html = fs.readFileSync(path.join(projectRoot, 'pose-lab.html'), 'utf8');
 const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
+const cacheToken = js.match(/const LAB_CACHE_TOKEN = '([^']+)'/)?.[1];
 
 assert(js.includes('function collectSkinnedSkeletonBoneSet'), 'runtime should prefer bones from skinned skeletons when duplicate names exist');
 assert(js.includes('function meaningfulBoneChild'), 'runtime should ignore same-name wrapper children for chain basis');
@@ -35,8 +36,9 @@ assert(profiles.includes("{ from: 'Forearm.R', to: 'RightForeArm', strength: 1.0
 assert(!profiles.includes("clipTag: 'IB-MC'") && !profiles.includes("clipTag: 'RA-FULL'") && !profiles.includes("clipTag: 'GRIP'") && !profiles.includes("clipTag: 'CORE'"), 'Meshy should not generate rejected full-body or Scavenger clips');
 assert(!profiles.includes("sourceKey: 'orc'") && !profiles.includes("sourceKey: 'ruinedAir'"), 'Meshy should not auto-retarget from Orc or Ruined Air after the FPS sword pivot');
 assert(!profiles.includes('Armature|Swing1 -> meshyCharacter'), 'Meshy aliases should not preserve rejected Swing1 generated clips');
-assert(html.includes('./src/rig-profiles.js?v=pose-editor-115'), 'HTML should load current rig profile token');
-assert(html.includes('./src/pose-lab.js?v=pose-editor-115'), 'HTML should load current runtime token');
+assert(cacheToken, 'runtime should declare a lab cache token');
+assert(html.includes(`./src/rig-profiles.js?v=${cacheToken}`), 'HTML should load current rig profile token');
+assert(html.includes(`./src/pose-lab.js?v=${cacheToken}`), 'HTML should load current runtime token');
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({ checked: ['fps-sword-upper-core-retarget-contract', 'rejected-full-body-retargets-removed'] }, null, 2));

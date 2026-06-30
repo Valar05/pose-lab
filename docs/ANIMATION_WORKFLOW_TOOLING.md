@@ -59,6 +59,16 @@ node tools/meshy_fps_weapon_basis_audit.mjs
 
 Use this when Meshy saber rotation looks sideways or rolled. It compares the rejected raw wrist-relative `Weapon.R` orientation against the accepted frame-solved weapon basis at the 31 authored `OneHandReady` source keys. The audit writes `generated/weapon_retarget_debug/fps_weapon_basis_audit.json`; the current red-build failure measured raw blade direction around 125 degrees off on average on the attack path, so runtime now maps the `Weapon.R` virtual blade tip and up axis from FPS `ShoulderCenter` into Meshy `Spine02` before writing `WeaponGrip`.
 
+## Meshy Projection Workspace
+
+```sh
+node tools/meshy_projection_workspace.mjs --out generated/projection_workspace/onehand_ready --max-render-frames 7
+```
+
+Use this before changing Meshy/FPS `OneHandReady` retarget code. It is a diagnostic laboratory only: it samples the authored FPS source keys, projects scoped FPS landmarks through the accepted `0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]` bridge, reconstructs FK position targets, optionally overlays IK, measures sword grip/blade-tip divergence, and measures roll error around the solved bone-forward axis. The output is `projection_workspace.json` plus `projection_workspace.png`; neither file is promotion evidence by itself, and this tool must not edit `startupClip`, aliases, `visibleClipPatterns`, or production retarget settings.
+
+Independent layers can be toggled with `--enable projected-pins,fk,ik,sword,basis,roll`. The roll layer must remain removable. Sword landmarks are projected as observations (`WeaponGrip` and blade tip), not as arm solvers: use the arm solution to explain the sword, not the sword to force the arm.
+
 ## Meshy Promotion Gate
 
 ```sh
