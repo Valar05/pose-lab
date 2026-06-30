@@ -40,12 +40,12 @@ Keep a durable tmux-backed Pose Lab server listening on port `8798` before handi
 
 ```sh
 mkdir -p /storage/emulated/0/Documents/GodotProjects/pose-lab/generated/server_logs
-tmux new-session -d -s pose-lab-server-8798 "while true; do echo \"[\$(date -Is)] starting python http.server 8798 cwd=/storage/emulated/0/Documents/GodotProjects\"; cd /storage/emulated/0/Documents/GodotProjects && python -u -m http.server 8798; code=\$?; echo \"[\$(date -Is)] server exited code=\$code; restarting in 2s\"; sleep 2; done >> /storage/emulated/0/Documents/GodotProjects/pose-lab/generated/server_logs/pose-lab-server-8798.log 2>&1"
+tmux new-session -d -s pose-lab-server-8798 "while true; do echo \"[\$(date -Is)] starting no-cache Pose Lab server 8798 cwd=/storage/emulated/0/Documents/GodotProjects\"; cd /storage/emulated/0/Documents/GodotProjects/pose-lab && python -u tools/no_cache_http_server.py --port 8798 --directory /storage/emulated/0/Documents/GodotProjects; code=\$?; echo \"[\$(date -Is)] server exited code=\$code; restarting in 2s\"; sleep 2; done >> /storage/emulated/0/Documents/GodotProjects/pose-lab/generated/server_logs/pose-lab-server-8798.log 2>&1"
 curl -I --max-time 5 http://127.0.0.1:8798/pose-lab/pose-lab.html
 tail -80 /storage/emulated/0/Documents/GodotProjects/pose-lab/generated/server_logs/pose-lab-server-8798.log
 ```
 
-If the session already exists, do not restart it unnecessarily; verify the tmux session, HTTP response, and log tail. The durable URL is `http://127.0.0.1:8798/pose-lab/pose-lab.html`; request and crash logs are in `generated/server_logs/pose-lab-server-8798.log`.
+If the session already exists, do not restart it unnecessarily unless a visual red build shows stale cached output. Verify the tmux session, HTTP response, no-cache headers, and log tail. The durable URL is `http://127.0.0.1:8798/pose-lab/pose-lab.html`; request and crash logs are in `generated/server_logs/pose-lab-server-8798.log`.
 
 ## Troubleshooting Order
 
