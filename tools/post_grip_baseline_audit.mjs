@@ -9,6 +9,12 @@ const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 const defaultOut = path.join(projectRoot, 'generated', 'post_grip_baseline');
 const previousPath = path.join(projectRoot, 'generated', 'blade_vector_workspace', 'blade_vector_workspace.json');
 const METRICS = [
+  ['averageSocketError', 'Average socket error', 'distance'],
+  ['maxSocketError', 'Maximum socket error', 'distance'],
+  ['averagePickedGripError', 'Average picked grip error', 'distance'],
+  ['maxPickedGripError', 'Maximum picked grip error', 'distance'],
+  ['averageHiltLandmarkError', 'Average hilt landmark error', 'distance'],
+  ['maxHiltLandmarkError', 'Maximum hilt landmark error', 'distance'],
   ['averageHiltError', 'Average hilt error', 'distance'],
   ['maxHiltError', 'Maximum hilt error', 'distance'],
   ['averageBladeDirectionErrorDeg', 'Average blade direction error', 'deg'],
@@ -65,7 +71,8 @@ function recomputeDominant(summary = {}) {
   const total = Object.values(counts).reduce((sum, count) => sum + Number(count || 0), 0);
   const top = Object.entries(counts).sort((a, b) => Number(b[1]) - Number(a[1]))[0];
   if (top && total > 0 && Number(top[1]) >= total * 0.5) return normalizeClass(top[0]);
-  if (summary.averageHiltError > HILT_SMALL) return 'attachment placement';
+  const placementTruth = Number(summary.averagePickedGripError ?? summary.averageHiltError ?? 0);
+  if (placementTruth > HILT_SMALL) return 'attachment placement';
   if (summary.averageBladeDirectionErrorDeg >= 12) return 'blade direction / attachment basis';
   if (Math.abs((summary.averageBladeLengthRatio || 1) - 1) >= 0.08) return 'blade length';
   if (summary.averageTipError > TIP_HIGH_AVG || summary.maxTipError > TIP_HIGH_MAX) return 'blade landmark';
@@ -263,15 +270,28 @@ async function writeTipAudit(current, outDir, required) {
 
 function comparisonRows(previous, current) {
   return METRICS.map(([key, label, unit]) => {
-    const previousValue = Number(previous.summary?.[key] || 0);
-    const currentValue = Number(current.summary?.[key] || 0);
+    const previousValue = Number(metricValue(previous.summary || {}, key));
+    const currentValue = Number(metricValue(current.summary || {}, key));
     const delta = round(currentValue - previousValue, unit === 'deg' ? 3 : 5);
     return { key, label, unit, previous: previousValue, current: currentValue, delta, status: metricStatus(delta, unit) };
   });
 }
 
+function metricValue(summary, key) {
+  if (summary[key] != null) return summary[key];
+  if (key === 'averageSocketError') return summary.averageSocketGripError;
+  if (key === 'maxSocketError') return summary.maxSocketGripError;
+  if (key === 'averagePickedGripError') return summary.averageHiltError;
+  if (key === 'maxPickedGripError') return summary.maxHiltError;
+  if (key === 'averageHiltLandmarkError') return summary.averageHiltError;
+  if (key === 'maxHiltLandmarkError') return summary.maxHiltError;
+  return 0;
+}
+
 function writeComparison(outDir, previous, current, rows, className, tipAudit, recommendation) {
-  const hiltGain = improvement(previous.summary.averageHiltError, current.summary.averageHiltError);
+  const previousPlacement = metricValue(previous.summary, 'averagePickedGripError');
+  const currentPlacement = metricValue(current.summary, 'averagePickedGripError');
+  const hiltGain = improvement(previousPlacement, currentPlacement);
   const lines = [
     '# Post-Grip Blade Baseline Comparison',
     '',
@@ -289,7 +309,7 @@ function writeComparison(outDir, previous, current, rows, className, tipAudit, r
     `- Current raw classification counts: ${JSON.stringify(current.summary.classificationCounts || {})}`,
     `- Grip placement materially improved: ${hiltGain.material}`,
     `- Hilt improvement: ${hiltGain.absolute} absolute, ${round(hiltGain.relative * 100, 2)}% relative`,
-    `- Grip picks solved placement issue: ${current.summary.averageHiltError <= HILT_SMALL ? 'yes' : 'no'}`,
+    `- Grip picks solved placement issue: ${currentPlacement <= HILT_SMALL ? 'yes' : 'no'}`,
     `- Tip landmark audit required: ${tipAudit.investigationRequired}`,
     `- Configured tip on physical blade endpoint: ${tipAudit.configuredPointOnPhysicalBladeEndpoint}`,
     `- Next production target: ${recommendation}`,
@@ -312,7 +332,9 @@ async function main() {
   const currentPath = path.join(args.out, 'blade_vector_workspace.json');
   const current = JSON.parse(fs.readFileSync(currentPath, 'utf8'));
   const rows = comparisonRows(previous, current);
-  const hiltGain = improvement(previous.summary.averageHiltError, current.summary.averageHiltError);
+  const previousPlacement = metricValue(previous.summary, 'averagePickedGripError');
+  const currentPlacement = metricValue(current.summary, 'averagePickedGripError');
+  const hiltGain = improvement(previousPlacement, currentPlacement);
   const tipStillHigh = current.summary.averageTipError > TIP_HIGH_AVG || current.summary.maxTipError > TIP_HIGH_MAX;
   const tipAuditRequired = hiltGain.material && tipStillHigh;
   const className = recomputeDominant(current.summary);
@@ -333,7 +355,7 @@ async function main() {
     currentSummary: current.summary,
     comparisonRows: rows,
     dominantFailure: className,
-    gripPicksSolvedPlacement: current.summary.averageHiltError <= HILT_SMALL,
+    gripPicksSolvedPlacement: currentPlacement <= HILT_SMALL,
     nextProductionTarget: recommendation,
   };
   console.log(JSON.stringify(result, null, 2));

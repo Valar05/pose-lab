@@ -1,11 +1,17 @@
 # Post-Grip Blade Baseline Comparison
 
-Generated: 2026-06-30T15:11:36.407Z
+Generated: 2026-06-30T15:18:09.221Z
 Previous baseline: generated/blade_vector_workspace/blade_vector_workspace.json
 Current baseline: generated/post_grip_baseline/blade_vector_workspace.json
 
 | Metric | Previous | Current | Delta | Status |
 | --- | ---: | ---: | ---: | --- |
+| Average socket error | 0.53876 | 0.53876 | 0 | unchanged |
+| Maximum socket error | 0.53884 | 0.53884 | 0 | unchanged |
+| Average picked grip error | 0.53876 | 0.53876 | 0 | unchanged |
+| Maximum picked grip error | 0.53884 | 0.53884 | 0 | unchanged |
+| Average hilt landmark error | 0.53876 | 0.53876 | 0 | unchanged |
+| Maximum hilt landmark error | 0.53884 | 0.53884 | 0 | unchanged |
 | Average hilt error | 0.53876 | 0.53876 | 0 | unchanged |
 | Maximum hilt error | 0.53884 | 0.53884 | 0 | unchanged |
 | Average blade direction error | 44.029 | 36.918 | -7.111 | improved |

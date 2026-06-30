@@ -37,11 +37,12 @@ assert(data.attachmentSnapshots?.meshy?.attachment?.gripLocalPosition?.join(',')
 assert(data.attachmentSnapshots?.fps?.attachment?.tipLocalPosition?.join(',') === '-0.95561,0.1368,0', 'FPS tip landmark should remain unchanged');
 assert(data.attachmentSnapshots?.meshy?.attachment?.tipLocalPosition?.join(',') === '-0.95561,0.1368,0', 'Meshy tip landmark should remain unchanged');
 
-for (const key of ['averageHiltError', 'maxHiltError', 'averageBladeDirectionErrorDeg', 'maxBladeDirectionErrorDeg', 'averageBladeLengthRatio', 'averageTipError', 'maxTipError']) {
+for (const key of ['averageSocketError', 'maxSocketError', 'averagePickedGripError', 'maxPickedGripError', 'averageHiltLandmarkError', 'maxHiltLandmarkError', 'averageHiltError', 'maxHiltError', 'averageBladeDirectionErrorDeg', 'maxBladeDirectionErrorDeg', 'averageBladeLengthRatio', 'averageTipError', 'maxTipError']) {
   assert(Number.isFinite(result.currentSummary?.[key]), `current summary missing ${key}`);
   assert(result.comparisonRows.some((row) => row.key === key), `comparison rows missing ${key}`);
 }
 assert(comparison.includes('| Metric | Previous | Current | Delta | Status |'), 'comparison report should include before/after table');
+assert(comparison.includes('Average socket error') && comparison.includes('Average picked grip error') && comparison.includes('Average hilt landmark error'), 'comparison should separate socket, picked grip, and hilt landmark errors');
 assert(comparison.includes('Previous dominant class') && comparison.includes('Current dominant class'), 'comparison should include reclassification');
 assert(['attachment placement', 'blade direction / attachment basis', 'blade landmark', 'blade length', 'animated socket divergence', 'mixed', 'blade landmark or blade length'].includes(result.dominantFailure), `unexpected dominant failure ${result.dominantFailure}`);
 assert(['tip landmark', 'blade basis', 'blade length', 'animated socket rotation', 'attachment placement', 'mixed / inspect per-frame evidence'].includes(result.nextProductionTarget), `unexpected next target ${result.nextProductionTarget}`);

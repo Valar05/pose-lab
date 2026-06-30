@@ -361,13 +361,15 @@ function parseWeaponConfig(actorKey, nextKey) {
 function weaponEndpointsFromSocket(THREE, socket, config) {
   const qLocal = eulerQuat(THREE, config.attachment.rotationDeg);
   const socketQ = socket.quaternion.clone().normalize();
-  const hilt = socket.position.clone();
+  const socketPosition = socket.position.clone();
   const gripLocal = new THREE.Vector3().fromArray(config.attachment.gripLocalPosition).multiplyScalar(config.attachment.scale).applyQuaternion(qLocal);
   const tipLocal = new THREE.Vector3().fromArray(config.attachment.tipLocalPosition).multiplyScalar(config.attachment.scale).applyQuaternion(qLocal);
-  const modelOrigin = hilt.clone().sub(gripLocal.clone().applyQuaternion(socketQ));
+  const modelOrigin = socketPosition.clone().sub(gripLocal.clone().applyQuaternion(socketQ));
+  const hilt = modelOrigin.clone().add(gripLocal.clone().applyQuaternion(socketQ));
   const tip = modelOrigin.clone().add(tipLocal.clone().applyQuaternion(socketQ));
   const vector = tip.clone().sub(hilt);
   return {
+    socket: socketPosition,
     hilt,
     tip,
     vector,
@@ -413,7 +415,7 @@ function projectWeaponEndpoints(THREE, endpoints, sourceFrame, targetFrame, scal
 }
 
 function classifyFrame(row, restGood = false, index = 0) {
-  const hiltSmall = row.hiltDistance <= THRESHOLDS.hiltSmall;
+  const hiltSmall = row.pickedGripError <= THRESHOLDS.hiltSmall;
   const directionLarge = row.bladeDirectionAngleDeg >= THRESHOLDS.directionLargeDeg;
   const directionSmall = row.bladeDirectionAngleDeg <= THRESHOLDS.directionSmallDeg;
   const lengthMismatch = Math.abs(row.bladeLengthRatio - 1) >= THRESHOLDS.lengthRatioMismatch;
@@ -431,8 +433,14 @@ function aggregate(rows) {
   const [topClass, topCount] = sorted[0] || ['mixed', 0];
   const dominantClass = topCount >= rows.length * 0.5 ? topClass : 'mixed';
   return {
-    averageSocketGripError: round(avg(rows.map((row) => row.socketGripDistance))),
-    maxSocketGripError: round(max(rows.map((row) => row.socketGripDistance))),
+    averageSocketError: round(avg(rows.map((row) => row.socketError))),
+    maxSocketError: round(max(rows.map((row) => row.socketError))),
+    averageSocketGripError: round(avg(rows.map((row) => row.socketError))),
+    maxSocketGripError: round(max(rows.map((row) => row.socketError))),
+    averagePickedGripError: round(avg(rows.map((row) => row.pickedGripError))),
+    maxPickedGripError: round(max(rows.map((row) => row.pickedGripError))),
+    averageHiltLandmarkError: round(avg(rows.map((row) => row.hiltLandmarkError))),
+    maxHiltLandmarkError: round(max(rows.map((row) => row.hiltLandmarkError))),
     averageHiltError: round(avg(rows.map((row) => row.hiltDistance))),
     maxHiltError: round(max(rows.map((row) => row.hiltDistance))),
     averageBladeDirectionErrorDeg: round(avg(rows.map((row) => row.bladeDirectionAngleDeg)), 3),
@@ -502,7 +510,7 @@ for fi,frame in enumerate(frames):
     dot(frame.get('meshyHilt'),panel,view,b,(239,68,68),6)
     dot(frame.get('meshyTip'),panel,view,b,(252,165,165),5)
     d.text((panel[0]+6,panel[3]-48),f"angle={frame.get('bladeDirectionAngleDeg')} len fps/m={frame.get('fpsBladeLength')}/{frame.get('meshyBladeLength')}",fill=(248,220,160),font=small)
-    d.text((panel[0]+6,panel[3]-31),f"hilt={frame.get('hiltDistance')} tip={frame.get('tipDistance')} {frame.get('classification')}",fill=(248,220,160),font=small)
+    d.text((panel[0]+6,panel[3]-31),f"socket={frame.get('socketError')} grip={frame.get('pickedGripError')} tip={frame.get('tipDistance')} {frame.get('classification')}",fill=(248,220,160),font=small)
 out=Path(sys.argv[2]); out.parent.mkdir(parents=True,exist_ok=True); img.save(out)
 `);
   execFileSync('python3', [renderer, dataPath, pngPath], { stdio: 'pipe' });
@@ -519,8 +527,9 @@ function writeSummary(outDir, payload) {
     `Recommendation: ${s.recommendation}`,
     '',
     '## Aggregate Metrics',
-    `- Average socket/grip error: ${s.averageSocketGripError}`,
-    `- Average attachment hilt error: ${s.averageHiltError}`,
+    `- Average socket error: ${s.averageSocketError}`,
+    `- Average picked grip error: ${s.averagePickedGripError}`,
+    `- Average hilt landmark error: ${s.averageHiltLandmarkError}`,
     `- Average blade direction error: ${s.averageBladeDirectionErrorDeg} deg`,
     `- Average blade length ratio: ${s.averageBladeLengthRatio}`,
     `- Average tip error: ${s.averageTipError}`,
@@ -582,7 +591,10 @@ async function main() {
     baseRows.push({
       index,
       time,
+      socketError: round(meshySocket.position.distanceTo(fpsSocketProjected)),
       socketGripDistance: round(meshySocket.position.distanceTo(fpsSocketProjected)),
+      pickedGripError: round(meshyWeapon.hilt.distanceTo(fpsProjected.hilt)),
+      hiltLandmarkError: round(meshyWeapon.hilt.distanceTo(fpsProjected.hilt)),
       hiltDistance: round(meshyWeapon.hilt.distanceTo(fpsProjected.hilt)),
       fpsBladeLength: round(fpsProjected.length),
       meshyBladeLength: round(meshyWeapon.length),
@@ -600,7 +612,7 @@ async function main() {
     });
   }
   const rest = baseRows[0] || {};
-  const restGood = rest.hiltDistance <= THRESHOLDS.hiltSmall
+  const restGood = rest.pickedGripError <= THRESHOLDS.hiltSmall
     && rest.bladeDirectionAngleDeg <= THRESHOLDS.directionSmallDeg
     && Math.abs((rest.bladeLengthRatio || 1) - 1) < THRESHOLDS.lengthRatioMismatch;
   const rows = baseRows.map((row, index) => ({ ...row, classification: classifyFrame(row, restGood, index) }));
@@ -616,8 +628,9 @@ async function main() {
     dominantClass: summary.dominantClass,
     thresholds: THRESHOLDS,
     findings: [
-      `Average socket/grip error is ${summary.averageSocketGripError}; this separates arm socket alignment from actual attachment hilt landmark alignment.`,
-      `Average hilt error is ${summary.averageHiltError}; hilt placement is ${summary.averageHiltError <= THRESHOLDS.hiltSmall ? 'inside' : 'outside'} the small-error threshold ${THRESHOLDS.hiltSmall}.`,
+      `Average socket error is ${summary.averageSocketError}; this keeps WeaponGrip/socket alignment separate from rendered grip landmark alignment.`,
+      `Average picked grip error is ${summary.averagePickedGripError}; placement classification uses this rendered attachment grip landmark metric.`,
+      `Average hilt landmark error is ${summary.averageHiltLandmarkError}; hilt placement is ${summary.averagePickedGripError <= THRESHOLDS.hiltSmall ? 'inside' : 'outside'} the small-error threshold ${THRESHOLDS.hiltSmall}.`,
       `Average blade direction error is ${summary.averageBladeDirectionErrorDeg} deg; this ${summary.averageBladeDirectionErrorDeg >= THRESHOLDS.directionLargeDeg ? 'exceeds' : 'does not exceed'} the large-direction threshold ${THRESHOLDS.directionLargeDeg} deg.`,
       `Average blade length ratio is ${summary.averageBladeLengthRatio}; length is ${Math.abs(summary.averageBladeLengthRatio - 1) >= THRESHOLDS.lengthRatioMismatch ? 'meaningfully mismatched' : 'within tolerance'} by the ${THRESHOLDS.lengthRatioMismatch} ratio threshold.`,
       `Dominant class is ${summary.dominantClass}, so the single next production fix is: ${summary.recommendation}`,

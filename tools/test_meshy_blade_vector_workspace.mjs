@@ -30,13 +30,13 @@ assert(data.coordinateBridge?.policy?.includes('no IK, no roll, no retarget muta
 assert(data.sourceKeyCount === 31, `OneHandReady authored key count should be 31, got ${data.sourceKeyCount}`);
 assert(data.reports?.perFrame?.length === data.sourceKeyCount, 'per-frame report should include every authored key');
 for (const frame of data.reports.perFrame) {
-  for (const key of ['socketGripDistance', 'hiltDistance', 'fpsBladeLength', 'meshyBladeLength', 'bladeLengthRatio', 'bladeDirectionAngleDeg', 'tipDistance']) {
+  for (const key of ['socketError', 'socketGripDistance', 'pickedGripError', 'hiltLandmarkError', 'hiltDistance', 'fpsBladeLength', 'meshyBladeLength', 'bladeLengthRatio', 'bladeDirectionAngleDeg', 'tipDistance']) {
     assert(Number.isFinite(frame[key]), `frame ${frame.index} missing finite ${key}`);
   }
   assert(typeof frame.classification === 'string' && frame.classification.length > 0, `frame ${frame.index} missing classification`);
   assert(Array.isArray(frame.fpsHilt) && Array.isArray(frame.fpsTip) && Array.isArray(frame.meshyHilt) && Array.isArray(frame.meshyTip), `frame ${frame.index} missing render vectors`);
 }
-for (const key of ['averageSocketGripError', 'averageHiltError', 'averageBladeDirectionErrorDeg', 'averageBladeLengthRatio', 'averageTipError']) {
+for (const key of ['averageSocketError', 'averageSocketGripError', 'averagePickedGripError', 'averageHiltLandmarkError', 'averageHiltError', 'averageBladeDirectionErrorDeg', 'averageBladeLengthRatio', 'averageTipError']) {
   assert(Number.isFinite(data.summary?.[key]), `summary missing finite ${key}`);
 }
 assert(data.summary?.dominantClass, 'summary should include dominant failure class');
