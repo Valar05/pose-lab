@@ -136,3 +136,7 @@ node tools/pose_lab_workflow_status.mjs
 ```
 
 Promotion requires `tools/promote_pose_candidate.mjs` with fresh visual evidence and metric evidence. The accepted baseline is recorded in `generated/workflow_state/meshy_fps_accepted_baseline.json`; blocked or stale evidence must fail. String/source tests are only support checks and must not be treated as visual acceptance.
+
+## Manual Placement Authority
+
+Never overwrite manually placed weapon/model attachment values from solver output, semantic landmark output, socket metrics, or diagnostic reports unless the user explicitly asks to promote that exact placement and confirms the promotion separately. Diagnostics may produce candidate artifacts, but `src/rig-profiles.js` remains manual-placement truth until that separate confirmation happens.

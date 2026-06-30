@@ -54,13 +54,13 @@ assert(Array.isArray(candidate.candidateModelLocalOffset) && candidate.candidate
 assert(candidate.productionSnippet === null || candidate.productionSnippet.includes('modelLocalOffset'), 'production snippet should only mention modelLocalOffset');
 assert(candidate.rotationAdjustmentReportedOnly?.requiredByEvidence === false, 'solver should not propose socket rotation');
 
-assert(data.source?.attachmentSnapshots?.fps?.attachment?.gripLocalPosition?.join(',') === '0.59555,-0.02351,-0.06508', 'FPS snapshot should preserve accepted grip pick');
-assert(data.source?.attachmentSnapshots?.meshy?.attachment?.gripLocalPosition?.join(',') === '0.66607,-0.03924,-0.07431', 'Meshy snapshot should preserve accepted grip pick');
+assert(data.source?.attachmentSnapshots?.fps?.attachment?.gripLocalPosition?.join(',') === '0.67888,-0.07803,-0.06249', 'FPS snapshot should preserve the semantic/manual hilt candidate');
+assert(data.source?.attachmentSnapshots?.meshy?.attachment?.gripLocalPosition?.join(',') === '0.6535,-0.02302,-0.07317', 'Meshy snapshot should preserve the semantic/manual hilt candidate');
 assert(data.source?.attachmentSnapshots?.fps?.attachment?.tipLocalPosition?.join(',') === '-0.95561,0.1368,0', 'FPS tip landmark should remain unchanged');
 assert(data.source?.attachmentSnapshots?.meshy?.attachment?.tipLocalPosition?.join(',') === '-0.95561,0.1368,0', 'Meshy tip landmark should remain unchanged');
 
-assert(profiles.includes('gripLocalPosition: [0.59555, -0.02351, -0.06508]'), 'solver must not revert FPS grip pick');
-assert(profiles.includes('gripLocalPosition: [0.66607, -0.03924, -0.07431]'), 'solver must not revert Meshy grip pick');
+assert(profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'solver must not replace the Meshy manual/semantic grip placement');
+assert(profiles.includes('gripLocalPosition: [0.67888, -0.07803, -0.06249]'), 'solver must not replace the FPS manual/semantic grip placement');
 assert(!profiles.includes('pose-lab-weapon-grip-socket-solver-v1'), 'solver schema must not be wired into production profiles');
 assert(!profiles.includes('socket_solver'), 'solver must not edit production startup/aliases/visibility');
 assert(!tool.includes("writeFileSync(path.join(projectRoot, 'src'") && !tool.includes('writeFileSync(path.join(projectRoot, "src"'), 'solver must not write production profile source');

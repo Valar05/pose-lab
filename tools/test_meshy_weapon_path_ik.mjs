@@ -15,7 +15,7 @@ assert(js.includes('updateWeaponProxyVisibility()'), 'weapon socket visibility s
 assert(js.includes('visibleClipPatterns') && js.includes("patterns.some((pattern) => new RegExp(pattern).test(clip?.name || ''))"), 'weapon should be visible on accepted configured sword clips');
 assert(js.includes('function weaponDebugForceVisible()') && js.includes("params.get('weaponDebug') === '1'"), 'saber-only visual debugging should be able to force the real weapon visible without widening protected clip patterns');
 assert(profiles.includes("weaponAttachment: {") && profiles.includes("socketBone: 'WeaponGrip'") && profiles.includes("leftHandBone: 'LeftHand'"), 'Meshy profile should attach the real Meshy sabre to the centered WeaponGrip');
-assert(profiles.includes('Saber handle-centered attachment for Meshy Character') && profiles.includes('gripLocalPosition: [0.78, -0.3, 0]'), 'Meshy Character should glue the visible saber handle/finger grip center to the hand');
+assert(profiles.includes('Saber handle-centered attachment for Meshy Character') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy Character should preserve the semantic/manual saber hilt candidate');
 assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy saber should rotate from the hand origin without shifting the socket');
 assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]') && profiles.includes('modelLocalOffset: [-0.18003, -0.0236, -0.13396]') && profiles.includes('rotationDeg: [90, 0, -55.145]'), 'Meshy saber should use the saved 3D gizmo socket position and rotation');
 assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy FPS-SWORD-UPPER remains available as an unpromoted weapon diagnostic');

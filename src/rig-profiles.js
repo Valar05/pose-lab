@@ -289,14 +289,14 @@ const BASE_RIG_PROFILES = {
       scale: 0.47493,
       position: [0, 0, 0],
       rotationDeg: [90, 0, -55.145],
-      gripLocalPosition: [0.66607, -0.03924, -0.07431],
+      gripLocalPosition: [0.6535, -0.02302, -0.07317],
       tipLocalPosition: [-0.95561, 0.1368, 0],
       sourceBounds: {
         min: [-0.955609, -0.40501, -0.200351],
         max: [0.95101, 0.402693, 0.198555],
       },
       sourceAttachment: {
-        basis: 'Saber handle-centered attachment for Meshy Character: gripLocalPosition pins the operator-picked visible narrow handle/finger-grip center to WeaponGrip, rotationDeg keeps the tip forward while rolling the rifle-shaped guard toward model right, handLocalOffset moves toward the palm, and modelLocalOffset applies explicit model-space down/back/out placement.',
+        basis: 'Saber handle-centered attachment for Meshy Character: gripLocalPosition pins the semantic landmark hilt candidate to WeaponGrip, rotationDeg keeps the tip forward while rolling the rifle-shaped guard toward model right, handLocalOffset moves toward the palm, and modelLocalOffset applies explicit model-space down/back/out placement.',
       },
     },
     extraClipUrls: [
@@ -535,13 +535,13 @@ const BASE_RIG_PROFILES = {
       scale: 0.323,
       position: [0, 0, 0],
       rotationDeg: [178.343, 4.512, 109.315],
-      gripLocalPosition: [0.59555, -0.02351, -0.06508],
+      gripLocalPosition: [0.67888, -0.07803, -0.06249],
       tipLocalPosition: [-0.95561, 0.1368, 0],
       sourceAttachment: {
         asset: 'assets/models/FPSPlayer.glb',
         node: 'placeholderWeapon',
         parentBone: 'WeaponR',
-        basis: 'Saber handle solved attachment: gripLocalPosition is the operator-picked visible narrow handle center, and rotation/scale align the handle-to-tip vector to the measured FPS placeholderWeapon tip vector [0.00854, 0.57786, 0.00995].',
+        basis: 'Saber handle solved attachment: gripLocalPosition is the semantic landmark hilt candidate, and rotation/scale align the handle-to-tip vector to the measured FPS placeholderWeapon tip vector [0.00854, 0.57786, 0.00995].',
       },
     },
     ownClipOptions: { positionPolicy: 'all', lockHipRotation: false },

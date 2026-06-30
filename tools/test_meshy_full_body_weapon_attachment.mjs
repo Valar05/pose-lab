@@ -14,8 +14,8 @@ assert(profiles.includes("weaponAttachment: {"), 'Meshy profile should define a 
 assert(profiles.includes("url: 'assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb'"), 'weapon attachment should use the downloaded Meshy sabre runtime GLB');
 assert(profiles.includes("socketBone: 'WeaponGrip'") && profiles.includes("tipMarker: 'WeaponGrip_end'"), 'weapon attachment should expose the centered WeaponGrip and WeaponGrip_end');
 assert(profiles.includes('scale: 0.47493') && profiles.includes('rotationDeg: [90, 0, -55.145]'), 'Meshy weapon attachment should use the saved 3D gizmo rotation');
-assert(profiles.includes('gripLocalPosition: [0.66607, -0.03924, -0.07431]') && profiles.includes('tipLocalPosition: [-0.95561, 0.1368, 0]'), 'Meshy weapon attachment should pin the operator-picked visible handle/finger grip center to the hand and track the real blade tip');
-assert(profiles.includes('gripLocalPosition: [0.59555, -0.02351, -0.06508]'), 'FPS weapon attachment should pin the operator-picked visible handle center');
+assert(profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]') && profiles.includes('tipLocalPosition: [-0.95561, 0.1368, 0]'), 'Meshy weapon attachment should preserve the semantic landmark hilt candidate and track the real blade tip');
+assert(profiles.includes('gripLocalPosition: [0.67888, -0.07803, -0.06249]'), 'FPS weapon attachment should preserve the semantic landmark hilt candidate');
 assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]'), 'Meshy weapon socket should move from wrist bone origin toward visual hand mesh and palm center');
 assert(profiles.includes('modelLocalOffset: [-0.18003, -0.0236, -0.13396]'), 'Meshy weapon socket should use the saved 3D gizmo model-space placement');
 assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy weapon socket should rotate from the hand origin without shifting the socket');

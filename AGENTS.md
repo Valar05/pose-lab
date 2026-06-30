@@ -14,3 +14,5 @@ python3 -m json.tool assets/asset_manifest.json >/dev/null
 ```
 
 Do not remove the Gravity Fist-derived bone/retarget panels unless replacing them with an equal or better standalone workflow.
+
+Never overwrite manually placed weapon/model attachment values from diagnostic, semantic-landmark, socket-solver, or retarget metric output unless the user explicitly asks to promote that exact placement and confirms the promotion separately.
