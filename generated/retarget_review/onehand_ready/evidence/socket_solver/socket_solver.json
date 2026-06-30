@@ -1,0 +1,2644 @@
+{
+  "schema": "pose-lab-weapon-grip-socket-solver-v1",
+  "generatedAt": "2026-06-30T16:09:25.800Z",
+  "diagnosticOnly": true,
+  "productionBehaviorModified": false,
+  "source": {
+    "bladeWorkspaceSchema": "pose-lab-meshy-blade-vector-workspace-v1",
+    "sourceKeyCount": 31,
+    "coordinateBridge": {
+      "targetBaseline": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+      "policy": "project FPS hilt/tip through calibrated T-pose frame; fixed FK arm projection; no IK, no roll, no retarget mutation",
+      "scale": 0.929843
+    },
+    "attachmentSnapshots": {
+      "fps": {
+        "actorKey": "player",
+        "proxy": {
+          "handLocalOffset": [
+            0,
+            0,
+            0
+          ],
+          "modelLocalOffset": [
+            0.06126,
+            -0.07096,
+            -0.00135
+          ],
+          "gripOffset": [
+            0,
+            0,
+            0
+          ],
+          "tipOffset": [
+            0,
+            0,
+            0.85
+          ]
+        },
+        "attachment": {
+          "scale": 0.323,
+          "rotationDeg": [
+            178.343,
+            4.512,
+            109.315
+          ],
+          "gripLocalPosition": [
+            0.67888,
+            -0.07803,
+            -0.06249
+          ],
+          "tipLocalPosition": [
+            -0.95561,
+            0.1368,
+            0
+          ]
+        }
+      },
+      "meshy": {
+        "actorKey": "meshyCharacter",
+        "proxy": {
+          "handLocalOffset": [
+            0.095,
+            0.035,
+            -0.01
+          ],
+          "modelLocalOffset": [
+            -0.18003,
+            -0.0236,
+            -0.13396
+          ],
+          "gripOffset": [
+            0,
+            0,
+            0
+          ],
+          "tipOffset": [
+            0,
+            0,
+            0.85
+          ]
+        },
+        "attachment": {
+          "scale": 0.47493,
+          "rotationDeg": [
+            90,
+            0,
+            -55.145
+          ],
+          "gripLocalPosition": [
+            0.6535,
+            -0.02302,
+            -0.07317
+          ],
+          "tipLocalPosition": [
+            -0.95561,
+            0.1368,
+            0
+          ]
+        }
+      }
+    }
+  },
+  "summary": {
+    "averageCorrection": [
+      0.39122,
+      -0.05055,
+      0.36693
+    ],
+    "maxDeviation": 0.0051,
+    "standardDeviation": 0.00153,
+    "before": {
+      "averagePickedGripError": 0.53876,
+      "maxPickedGripError": 0.53884
+    },
+    "after": {
+      "averagePickedGripError": 0.00325,
+      "maxPickedGripError": 0.0051
+    }
+  },
+  "candidate": {
+    "diagnosticOnly": true,
+    "productionBehaviorModified": false,
+    "promotable": true,
+    "stopReason": "stable socket correction; candidate may be promoted later",
+    "correctionSpace": "Meshy actor/model local space applied as weaponProxy.modelLocalOffset delta",
+    "currentModelLocalOffset": [
+      -0.18003,
+      -0.0236,
+      -0.13396
+    ],
+    "averageSocketLocalCorrection": [
+      0.39122,
+      -0.05055,
+      0.36693
+    ],
+    "candidateModelLocalOffset": [
+      0.21119,
+      -0.07415,
+      0.23297
+    ],
+    "stabilityThresholds": {
+      "maxDeviation": 0.025,
+      "standardDeviation": 0.01,
+      "promotionError": 0.08
+    },
+    "productionSnippet": "weaponProxy: {\n  modelLocalOffset: [0.21119, -0.07415, 0.23297],\n}",
+    "rotationAdjustmentReportedOnly": {
+      "requiredByEvidence": false,
+      "note": "This solver only evaluates socket position. Socket rotation is not applied or proposed."
+    }
+  },
+  "reports": {
+    "perFrame": [
+      {
+        "index": 0,
+        "time": 0,
+        "projectedGripTargetWorld": [
+          -0.18221,
+          1.17691,
+          0.39611
+        ],
+        "currentSocketWorld": [
+          -0.57621,
+          1.22442,
+          0.03163
+        ],
+        "currentGripWorld": [
+          -0.57621,
+          1.22442,
+          0.03163
+        ],
+        "socketToProjectedTarget": [
+          0.394,
+          -0.04751,
+          0.36448
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.394,
+          -0.04751,
+          0.36448
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.394,
+          -0.04751,
+          0.36448
+        ],
+        "before": {
+          "socketError": 0.53884,
+          "pickedGripError": 0.53884,
+          "hiltLandmarkError": 0.53884
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18221,
+            1.17691,
+            0.39611
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 1,
+        "time": 0.041667,
+        "projectedGripTargetWorld": [
+          -0.18224,
+          1.17683,
+          0.39611
+        ],
+        "currentSocketWorld": [
+          -0.57621,
+          1.22438,
+          0.03159
+        ],
+        "currentGripWorld": [
+          -0.57621,
+          1.22438,
+          0.03159
+        ],
+        "socketToProjectedTarget": [
+          0.39397,
+          -0.04755,
+          0.36452
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39397,
+          -0.04755,
+          0.36452
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39397,
+          -0.04755,
+          0.36452
+        ],
+        "before": {
+          "socketError": 0.53884,
+          "pickedGripError": 0.53884,
+          "hiltLandmarkError": 0.53884
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18224,
+            1.17683,
+            0.39611
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 2,
+        "time": 0.083333,
+        "projectedGripTargetWorld": [
+          -0.18233,
+          1.1766,
+          0.3961
+        ],
+        "currentSocketWorld": [
+          -0.57618,
+          1.22428,
+          0.03147
+        ],
+        "currentGripWorld": [
+          -0.57618,
+          1.22428,
+          0.03147
+        ],
+        "socketToProjectedTarget": [
+          0.39385,
+          -0.04768,
+          0.36463
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39385,
+          -0.04768,
+          0.36463
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39385,
+          -0.04768,
+          0.36463
+        ],
+        "before": {
+          "socketError": 0.53883,
+          "pickedGripError": 0.53883,
+          "hiltLandmarkError": 0.53883
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18233,
+            1.1766,
+            0.3961
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 3,
+        "time": 0.125,
+        "projectedGripTargetWorld": [
+          -0.18249,
+          1.17622,
+          0.39608
+        ],
+        "currentSocketWorld": [
+          -0.57614,
+          1.22411,
+          0.03127
+        ],
+        "currentGripWorld": [
+          -0.57614,
+          1.22411,
+          0.03127
+        ],
+        "socketToProjectedTarget": [
+          0.39365,
+          -0.04789,
+          0.36481
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39365,
+          -0.04789,
+          0.36481
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39365,
+          -0.04789,
+          0.36481
+        ],
+        "before": {
+          "socketError": 0.53883,
+          "pickedGripError": 0.53883,
+          "hiltLandmarkError": 0.53883
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18249,
+            1.17622,
+            0.39608
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 4,
+        "time": 0.166667,
+        "projectedGripTargetWorld": [
+          -0.1827,
+          1.1757,
+          0.39605
+        ],
+        "currentSocketWorld": [
+          -0.57608,
+          1.22388,
+          0.031
+        ],
+        "currentGripWorld": [
+          -0.57608,
+          1.22388,
+          0.031
+        ],
+        "socketToProjectedTarget": [
+          0.39338,
+          -0.04818,
+          0.36505
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39338,
+          -0.04818,
+          0.36505
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39338,
+          -0.04818,
+          0.36505
+        ],
+        "before": {
+          "socketError": 0.53882,
+          "pickedGripError": 0.53882,
+          "hiltLandmarkError": 0.53882
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.1827,
+            1.1757,
+            0.39605
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 5,
+        "time": 0.208333,
+        "projectedGripTargetWorld": [
+          -0.18298,
+          1.17503,
+          0.39602
+        ],
+        "currentSocketWorld": [
+          -0.576,
+          1.22359,
+          0.03065
+        ],
+        "currentGripWorld": [
+          -0.576,
+          1.22359,
+          0.03065
+        ],
+        "socketToProjectedTarget": [
+          0.39302,
+          -0.04856,
+          0.36537
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39302,
+          -0.04856,
+          0.36537
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39302,
+          -0.04856,
+          0.36537
+        ],
+        "before": {
+          "socketError": 0.53881,
+          "pickedGripError": 0.53881,
+          "hiltLandmarkError": 0.53881
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18298,
+            1.17503,
+            0.39602
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 6,
+        "time": 0.25,
+        "projectedGripTargetWorld": [
+          -0.1833,
+          1.17424,
+          0.39597
+        ],
+        "currentSocketWorld": [
+          -0.57591,
+          1.22324,
+          0.03024
+        ],
+        "currentGripWorld": [
+          -0.57591,
+          1.22324,
+          0.03024
+        ],
+        "socketToProjectedTarget": [
+          0.39261,
+          -0.049,
+          0.36573
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39261,
+          -0.049,
+          0.36573
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39261,
+          -0.049,
+          0.36573
+        ],
+        "before": {
+          "socketError": 0.5388,
+          "pickedGripError": 0.5388,
+          "hiltLandmarkError": 0.5388
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.1833,
+            1.17424,
+            0.39597
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 7,
+        "time": 0.291667,
+        "projectedGripTargetWorld": [
+          -0.18366,
+          1.17334,
+          0.39592
+        ],
+        "currentSocketWorld": [
+          -0.57581,
+          1.22285,
+          0.02977
+        ],
+        "currentGripWorld": [
+          -0.57581,
+          1.22285,
+          0.02977
+        ],
+        "socketToProjectedTarget": [
+          0.39215,
+          -0.04951,
+          0.36615
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39215,
+          -0.04951,
+          0.36615
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39215,
+          -0.04951,
+          0.36615
+        ],
+        "before": {
+          "socketError": 0.53879,
+          "pickedGripError": 0.53879,
+          "hiltLandmarkError": 0.53879
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18366,
+            1.17334,
+            0.39592
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 8,
+        "time": 0.333333,
+        "projectedGripTargetWorld": [
+          -0.18405,
+          1.17237,
+          0.39586
+        ],
+        "currentSocketWorld": [
+          -0.5757,
+          1.22243,
+          0.02927
+        ],
+        "currentGripWorld": [
+          -0.5757,
+          1.22243,
+          0.02927
+        ],
+        "socketToProjectedTarget": [
+          0.39165,
+          -0.05006,
+          0.36659
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39165,
+          -0.05006,
+          0.36659
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39165,
+          -0.05006,
+          0.36659
+        ],
+        "before": {
+          "socketError": 0.53878,
+          "pickedGripError": 0.53878,
+          "hiltLandmarkError": 0.53878
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18405,
+            1.17237,
+            0.39586
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 9,
+        "time": 0.375,
+        "projectedGripTargetWorld": [
+          -0.18445,
+          1.17137,
+          0.39579
+        ],
+        "currentSocketWorld": [
+          -0.57558,
+          1.22199,
+          0.02875
+        ],
+        "currentGripWorld": [
+          -0.57558,
+          1.22199,
+          0.02875
+        ],
+        "socketToProjectedTarget": [
+          0.39113,
+          -0.05062,
+          0.36704
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39113,
+          -0.05062,
+          0.36704
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39113,
+          -0.05062,
+          0.36704
+        ],
+        "before": {
+          "socketError": 0.53876,
+          "pickedGripError": 0.53876,
+          "hiltLandmarkError": 0.53876
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18445,
+            1.17137,
+            0.39579
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 10,
+        "time": 0.416667,
+        "projectedGripTargetWorld": [
+          -0.18485,
+          1.17036,
+          0.39571
+        ],
+        "currentSocketWorld": [
+          -0.57546,
+          1.22156,
+          0.02822
+        ],
+        "currentGripWorld": [
+          -0.57546,
+          1.22156,
+          0.02822
+        ],
+        "socketToProjectedTarget": [
+          0.39061,
+          -0.0512,
+          0.36749
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39061,
+          -0.0512,
+          0.36749
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39061,
+          -0.0512,
+          0.36749
+        ],
+        "before": {
+          "socketError": 0.53875,
+          "pickedGripError": 0.53875,
+          "hiltLandmarkError": 0.53875
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18485,
+            1.17036,
+            0.39571
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 11,
+        "time": 0.458333,
+        "projectedGripTargetWorld": [
+          -0.18523,
+          1.16939,
+          0.39564
+        ],
+        "currentSocketWorld": [
+          -0.57534,
+          1.22115,
+          0.02772
+        ],
+        "currentGripWorld": [
+          -0.57534,
+          1.22115,
+          0.02772
+        ],
+        "socketToProjectedTarget": [
+          0.39011,
+          -0.05176,
+          0.36792
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39011,
+          -0.05176,
+          0.36792
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39011,
+          -0.05176,
+          0.36792
+        ],
+        "before": {
+          "socketError": 0.53873,
+          "pickedGripError": 0.53873,
+          "hiltLandmarkError": 0.53873
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18523,
+            1.16939,
+            0.39564
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 12,
+        "time": 0.5,
+        "projectedGripTargetWorld": [
+          -0.18559,
+          1.16849,
+          0.39557
+        ],
+        "currentSocketWorld": [
+          -0.57523,
+          1.22076,
+          0.02725
+        ],
+        "currentGripWorld": [
+          -0.57523,
+          1.22076,
+          0.02725
+        ],
+        "socketToProjectedTarget": [
+          0.38964,
+          -0.05227,
+          0.36832
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.38964,
+          -0.05227,
+          0.36832
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.38964,
+          -0.05227,
+          0.36832
+        ],
+        "before": {
+          "socketError": 0.53872,
+          "pickedGripError": 0.53872,
+          "hiltLandmarkError": 0.53872
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18559,
+            1.16849,
+            0.39557
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 13,
+        "time": 0.541667,
+        "projectedGripTargetWorld": [
+          -0.1859,
+          1.16769,
+          0.3955
+        ],
+        "currentSocketWorld": [
+          -0.57514,
+          1.22043,
+          0.02683
+        ],
+        "currentGripWorld": [
+          -0.57514,
+          1.22043,
+          0.02683
+        ],
+        "socketToProjectedTarget": [
+          0.38924,
+          -0.05274,
+          0.36867
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.38924,
+          -0.05274,
+          0.36867
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.38924,
+          -0.05274,
+          0.36867
+        ],
+        "before": {
+          "socketError": 0.53871,
+          "pickedGripError": 0.53871,
+          "hiltLandmarkError": 0.53871
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.1859,
+            1.16769,
+            0.3955
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 14,
+        "time": 0.583333,
+        "projectedGripTargetWorld": [
+          -0.18616,
+          1.16701,
+          0.39544
+        ],
+        "currentSocketWorld": [
+          -0.57506,
+          1.22014,
+          0.02648
+        ],
+        "currentGripWorld": [
+          -0.57506,
+          1.22014,
+          0.02648
+        ],
+        "socketToProjectedTarget": [
+          0.3889,
+          -0.05313,
+          0.36896
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.3889,
+          -0.05313,
+          0.36896
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.3889,
+          -0.05313,
+          0.36896
+        ],
+        "before": {
+          "socketError": 0.5387,
+          "pickedGripError": 0.5387,
+          "hiltLandmarkError": 0.5387
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18616,
+            1.16701,
+            0.39544
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 15,
+        "time": 0.625,
+        "projectedGripTargetWorld": [
+          -0.18637,
+          1.16648,
+          0.39539
+        ],
+        "currentSocketWorld": [
+          -0.57499,
+          1.21992,
+          0.0262
+        ],
+        "currentGripWorld": [
+          -0.57499,
+          1.21992,
+          0.0262
+        ],
+        "socketToProjectedTarget": [
+          0.38862,
+          -0.05344,
+          0.36919
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.38862,
+          -0.05344,
+          0.36919
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.38862,
+          -0.05344,
+          0.36919
+        ],
+        "before": {
+          "socketError": 0.53869,
+          "pickedGripError": 0.53869,
+          "hiltLandmarkError": 0.53869
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18637,
+            1.16648,
+            0.39539
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 16,
+        "time": 0.666667,
+        "projectedGripTargetWorld": [
+          -0.18652,
+          1.16609,
+          0.39536
+        ],
+        "currentSocketWorld": [
+          -0.57494,
+          1.21976,
+          0.026
+        ],
+        "currentGripWorld": [
+          -0.57494,
+          1.21976,
+          0.026
+        ],
+        "socketToProjectedTarget": [
+          0.38842,
+          -0.05367,
+          0.36936
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.38842,
+          -0.05367,
+          0.36936
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.38842,
+          -0.05367,
+          0.36936
+        ],
+        "before": {
+          "socketError": 0.53868,
+          "pickedGripError": 0.53868,
+          "hiltLandmarkError": 0.53868
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18652,
+            1.16609,
+            0.39536
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 17,
+        "time": 0.708333,
+        "projectedGripTargetWorld": [
+          -0.18661,
+          1.16586,
+          0.39534
+        ],
+        "currentSocketWorld": [
+          -0.57491,
+          1.21966,
+          0.02589
+        ],
+        "currentGripWorld": [
+          -0.57491,
+          1.21966,
+          0.02589
+        ],
+        "socketToProjectedTarget": [
+          0.3883,
+          -0.0538,
+          0.36945
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.3883,
+          -0.0538,
+          0.36945
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.3883,
+          -0.0538,
+          0.36945
+        ],
+        "before": {
+          "socketError": 0.53868,
+          "pickedGripError": 0.53868,
+          "hiltLandmarkError": 0.53868
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18661,
+            1.16586,
+            0.39534
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 18,
+        "time": 0.75,
+        "projectedGripTargetWorld": [
+          -0.18663,
+          1.16579,
+          0.39533
+        ],
+        "currentSocketWorld": [
+          -0.5749,
+          1.21963,
+          0.02585
+        ],
+        "currentGripWorld": [
+          -0.5749,
+          1.21963,
+          0.02585
+        ],
+        "socketToProjectedTarget": [
+          0.38827,
+          -0.05384,
+          0.36948
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.38827,
+          -0.05384,
+          0.36948
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.38827,
+          -0.05384,
+          0.36948
+        ],
+        "before": {
+          "socketError": 0.53868,
+          "pickedGripError": 0.53868,
+          "hiltLandmarkError": 0.53868
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18663,
+            1.16579,
+            0.39533
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 19,
+        "time": 0.791667,
+        "projectedGripTargetWorld": [
+          -0.18657,
+          1.16596,
+          0.39535
+        ],
+        "currentSocketWorld": [
+          -0.57493,
+          1.2197,
+          0.02594
+        ],
+        "currentGripWorld": [
+          -0.57493,
+          1.2197,
+          0.02594
+        ],
+        "socketToProjectedTarget": [
+          0.38836,
+          -0.05374,
+          0.36941
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.38836,
+          -0.05374,
+          0.36941
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.38836,
+          -0.05374,
+          0.36941
+        ],
+        "before": {
+          "socketError": 0.53868,
+          "pickedGripError": 0.53868,
+          "hiltLandmarkError": 0.53868
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18657,
+            1.16596,
+            0.39535
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 20,
+        "time": 0.833333,
+        "projectedGripTargetWorld": [
+          -0.18637,
+          1.16648,
+          0.39539
+        ],
+        "currentSocketWorld": [
+          -0.57499,
+          1.21992,
+          0.0262
+        ],
+        "currentGripWorld": [
+          -0.57499,
+          1.21992,
+          0.0262
+        ],
+        "socketToProjectedTarget": [
+          0.38862,
+          -0.05344,
+          0.36919
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.38862,
+          -0.05344,
+          0.36919
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.38862,
+          -0.05344,
+          0.36919
+        ],
+        "before": {
+          "socketError": 0.53869,
+          "pickedGripError": 0.53869,
+          "hiltLandmarkError": 0.53869
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18637,
+            1.16648,
+            0.39539
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 21,
+        "time": 0.875,
+        "projectedGripTargetWorld": [
+          -0.18604,
+          1.16734,
+          0.39547
+        ],
+        "currentSocketWorld": [
+          -0.57509,
+          1.22028,
+          0.02665
+        ],
+        "currentGripWorld": [
+          -0.57509,
+          1.22028,
+          0.02665
+        ],
+        "socketToProjectedTarget": [
+          0.38905,
+          -0.05294,
+          0.36882
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.38905,
+          -0.05294,
+          0.36882
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.38905,
+          -0.05294,
+          0.36882
+        ],
+        "before": {
+          "socketError": 0.5387,
+          "pickedGripError": 0.5387,
+          "hiltLandmarkError": 0.5387
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18604,
+            1.16734,
+            0.39547
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 22,
+        "time": 0.916667,
+        "projectedGripTargetWorld": [
+          -0.18559,
+          1.16849,
+          0.39557
+        ],
+        "currentSocketWorld": [
+          -0.57523,
+          1.22076,
+          0.02725
+        ],
+        "currentGripWorld": [
+          -0.57523,
+          1.22076,
+          0.02725
+        ],
+        "socketToProjectedTarget": [
+          0.38964,
+          -0.05227,
+          0.36832
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.38964,
+          -0.05227,
+          0.36832
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.38964,
+          -0.05227,
+          0.36832
+        ],
+        "before": {
+          "socketError": 0.53872,
+          "pickedGripError": 0.53872,
+          "hiltLandmarkError": 0.53872
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18559,
+            1.16849,
+            0.39557
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 23,
+        "time": 0.958333,
+        "projectedGripTargetWorld": [
+          -0.18504,
+          1.16987,
+          0.39568
+        ],
+        "currentSocketWorld": [
+          -0.5754,
+          1.22135,
+          0.02797
+        ],
+        "currentGripWorld": [
+          -0.5754,
+          1.22135,
+          0.02797
+        ],
+        "socketToProjectedTarget": [
+          0.39036,
+          -0.05148,
+          0.36771
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39036,
+          -0.05148,
+          0.36771
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39036,
+          -0.05148,
+          0.36771
+        ],
+        "before": {
+          "socketError": 0.53874,
+          "pickedGripError": 0.53874,
+          "hiltLandmarkError": 0.53874
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18504,
+            1.16987,
+            0.39568
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 24,
+        "time": 1,
+        "projectedGripTargetWorld": [
+          -0.18445,
+          1.17137,
+          0.39579
+        ],
+        "currentSocketWorld": [
+          -0.57558,
+          1.22199,
+          0.02875
+        ],
+        "currentGripWorld": [
+          -0.57558,
+          1.22199,
+          0.02875
+        ],
+        "socketToProjectedTarget": [
+          0.39113,
+          -0.05062,
+          0.36704
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39113,
+          -0.05062,
+          0.36704
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39113,
+          -0.05062,
+          0.36704
+        ],
+        "before": {
+          "socketError": 0.53876,
+          "pickedGripError": 0.53876,
+          "hiltLandmarkError": 0.53876
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18445,
+            1.17137,
+            0.39579
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 25,
+        "time": 1.041667,
+        "projectedGripTargetWorld": [
+          -0.18385,
+          1.17286,
+          0.39589
+        ],
+        "currentSocketWorld": [
+          -0.57575,
+          1.22264,
+          0.02953
+        ],
+        "currentGripWorld": [
+          -0.57575,
+          1.22264,
+          0.02953
+        ],
+        "socketToProjectedTarget": [
+          0.3919,
+          -0.04978,
+          0.36636
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.3919,
+          -0.04978,
+          0.36636
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.3919,
+          -0.04978,
+          0.36636
+        ],
+        "before": {
+          "socketError": 0.53878,
+          "pickedGripError": 0.53878,
+          "hiltLandmarkError": 0.53878
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18385,
+            1.17286,
+            0.39589
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 26,
+        "time": 1.083333,
+        "projectedGripTargetWorld": [
+          -0.1833,
+          1.17424,
+          0.39597
+        ],
+        "currentSocketWorld": [
+          -0.57591,
+          1.22324,
+          0.03024
+        ],
+        "currentGripWorld": [
+          -0.57591,
+          1.22324,
+          0.03024
+        ],
+        "socketToProjectedTarget": [
+          0.39261,
+          -0.049,
+          0.36573
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39261,
+          -0.049,
+          0.36573
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39261,
+          -0.049,
+          0.36573
+        ],
+        "before": {
+          "socketError": 0.5388,
+          "pickedGripError": 0.5388,
+          "hiltLandmarkError": 0.5388
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.1833,
+            1.17424,
+            0.39597
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 27,
+        "time": 1.125,
+        "projectedGripTargetWorld": [
+          -0.18283,
+          1.17538,
+          0.39604
+        ],
+        "currentSocketWorld": [
+          -0.57604,
+          1.22374,
+          0.03083
+        ],
+        "currentGripWorld": [
+          -0.57604,
+          1.22374,
+          0.03083
+        ],
+        "socketToProjectedTarget": [
+          0.39321,
+          -0.04836,
+          0.36521
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39321,
+          -0.04836,
+          0.36521
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39321,
+          -0.04836,
+          0.36521
+        ],
+        "before": {
+          "socketError": 0.53882,
+          "pickedGripError": 0.53882,
+          "hiltLandmarkError": 0.53882
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18283,
+            1.17538,
+            0.39604
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 28,
+        "time": 1.166667,
+        "projectedGripTargetWorld": [
+          -0.18249,
+          1.17622,
+          0.39608
+        ],
+        "currentSocketWorld": [
+          -0.57614,
+          1.22411,
+          0.03127
+        ],
+        "currentGripWorld": [
+          -0.57614,
+          1.22411,
+          0.03127
+        ],
+        "socketToProjectedTarget": [
+          0.39365,
+          -0.04789,
+          0.36481
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39365,
+          -0.04789,
+          0.36481
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39365,
+          -0.04789,
+          0.36481
+        ],
+        "before": {
+          "socketError": 0.53883,
+          "pickedGripError": 0.53883,
+          "hiltLandmarkError": 0.53883
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18249,
+            1.17622,
+            0.39608
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 29,
+        "time": 1.208333,
+        "projectedGripTargetWorld": [
+          -0.18228,
+          1.17674,
+          0.39611
+        ],
+        "currentSocketWorld": [
+          -0.5762,
+          1.22434,
+          0.03154
+        ],
+        "currentGripWorld": [
+          -0.5762,
+          1.22434,
+          0.03154
+        ],
+        "socketToProjectedTarget": [
+          0.39392,
+          -0.0476,
+          0.36457
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.39392,
+          -0.0476,
+          0.36457
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.39392,
+          -0.0476,
+          0.36457
+        ],
+        "before": {
+          "socketError": 0.53884,
+          "pickedGripError": 0.53884,
+          "hiltLandmarkError": 0.53884
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18228,
+            1.17674,
+            0.39611
+          ],
+          "pickedGripError": 0
+        }
+      },
+      {
+        "index": 30,
+        "time": 1.25,
+        "projectedGripTargetWorld": [
+          -0.18221,
+          1.17691,
+          0.39611
+        ],
+        "currentSocketWorld": [
+          -0.57621,
+          1.22442,
+          0.03163
+        ],
+        "currentGripWorld": [
+          -0.57621,
+          1.22442,
+          0.03163
+        ],
+        "socketToProjectedTarget": [
+          0.394,
+          -0.04751,
+          0.36448
+        ],
+        "attachmentGripToProjectedTarget": [
+          0.394,
+          -0.04751,
+          0.36448
+        ],
+        "attachmentGripToSocket": [
+          0,
+          0,
+          0
+        ],
+        "socketParentLocalCorrection": [
+          0.394,
+          -0.04751,
+          0.36448
+        ],
+        "before": {
+          "socketError": 0.53884,
+          "pickedGripError": 0.53884,
+          "hiltLandmarkError": 0.53884
+        },
+        "predictedWithExactCorrection": {
+          "gripWorld": [
+            -0.18221,
+            1.17691,
+            0.39611
+          ],
+          "pickedGripError": 0
+        }
+      }
+    ],
+    "predictedWithAverageCorrection": [
+      {
+        "index": 0,
+        "time": 0,
+        "predictedGripWorld": [
+          -0.18499,
+          1.17387,
+          0.39856
+        ],
+        "beforePickedGripError": 0.53884,
+        "afterPickedGripError": 0.00479
+      },
+      {
+        "index": 1,
+        "time": 0.041667,
+        "predictedGripWorld": [
+          -0.18499,
+          1.17383,
+          0.39852
+        ],
+        "beforePickedGripError": 0.53884,
+        "afterPickedGripError": 0.00473
+      },
+      {
+        "index": 2,
+        "time": 0.083333,
+        "predictedGripWorld": [
+          -0.18496,
+          1.17373,
+          0.3984
+        ],
+        "beforePickedGripError": 0.53883,
+        "afterPickedGripError": 0.00452
+      },
+      {
+        "index": 3,
+        "time": 0.125,
+        "predictedGripWorld": [
+          -0.18492,
+          1.17356,
+          0.3982
+        ],
+        "beforePickedGripError": 0.53883,
+        "afterPickedGripError": 0.00418
+      },
+      {
+        "index": 4,
+        "time": 0.166667,
+        "predictedGripWorld": [
+          -0.18486,
+          1.17333,
+          0.39793
+        ],
+        "beforePickedGripError": 0.53882,
+        "afterPickedGripError": 0.00372
+      },
+      {
+        "index": 5,
+        "time": 0.208333,
+        "predictedGripWorld": [
+          -0.18478,
+          1.17304,
+          0.39758
+        ],
+        "beforePickedGripError": 0.53881,
+        "afterPickedGripError": 0.0031
+      },
+      {
+        "index": 6,
+        "time": 0.25,
+        "predictedGripWorld": [
+          -0.18469,
+          1.17269,
+          0.39717
+        ],
+        "beforePickedGripError": 0.5388,
+        "afterPickedGripError": 0.0024
+      },
+      {
+        "index": 7,
+        "time": 0.291667,
+        "predictedGripWorld": [
+          -0.18459,
+          1.1723,
+          0.3967
+        ],
+        "beforePickedGripError": 0.53879,
+        "afterPickedGripError": 0.0016
+      },
+      {
+        "index": 8,
+        "time": 0.333333,
+        "predictedGripWorld": [
+          -0.18448,
+          1.17188,
+          0.3962
+        ],
+        "beforePickedGripError": 0.53878,
+        "afterPickedGripError": 0.00074
+      },
+      {
+        "index": 9,
+        "time": 0.375,
+        "predictedGripWorld": [
+          -0.18436,
+          1.17144,
+          0.39568
+        ],
+        "beforePickedGripError": 0.53876,
+        "afterPickedGripError": 0.00016
+      },
+      {
+        "index": 10,
+        "time": 0.416667,
+        "predictedGripWorld": [
+          -0.18424,
+          1.17101,
+          0.39515
+        ],
+        "beforePickedGripError": 0.53875,
+        "afterPickedGripError": 0.00105
+      },
+      {
+        "index": 11,
+        "time": 0.458333,
+        "predictedGripWorld": [
+          -0.18412,
+          1.1706,
+          0.39465
+        ],
+        "beforePickedGripError": 0.53873,
+        "afterPickedGripError": 0.00192
+      },
+      {
+        "index": 12,
+        "time": 0.5,
+        "predictedGripWorld": [
+          -0.18401,
+          1.17021,
+          0.39418
+        ],
+        "beforePickedGripError": 0.53872,
+        "afterPickedGripError": 0.00272
+      },
+      {
+        "index": 13,
+        "time": 0.541667,
+        "predictedGripWorld": [
+          -0.18392,
+          1.16988,
+          0.39376
+        ],
+        "beforePickedGripError": 0.53871,
+        "afterPickedGripError": 0.00343
+      },
+      {
+        "index": 14,
+        "time": 0.583333,
+        "predictedGripWorld": [
+          -0.18384,
+          1.16959,
+          0.39341
+        ],
+        "beforePickedGripError": 0.5387,
+        "afterPickedGripError": 0.00402
+      },
+      {
+        "index": 15,
+        "time": 0.625,
+        "predictedGripWorld": [
+          -0.18377,
+          1.16937,
+          0.39313
+        ],
+        "beforePickedGripError": 0.53869,
+        "afterPickedGripError": 0.0045
+      },
+      {
+        "index": 16,
+        "time": 0.666667,
+        "predictedGripWorld": [
+          -0.18372,
+          1.16921,
+          0.39293
+        ],
+        "beforePickedGripError": 0.53868,
+        "afterPickedGripError": 0.00485
+      },
+      {
+        "index": 17,
+        "time": 0.708333,
+        "predictedGripWorld": [
+          -0.18369,
+          1.16911,
+          0.39282
+        ],
+        "beforePickedGripError": 0.53868,
+        "afterPickedGripError": 0.00504
+      },
+      {
+        "index": 18,
+        "time": 0.75,
+        "predictedGripWorld": [
+          -0.18368,
+          1.16908,
+          0.39278
+        ],
+        "beforePickedGripError": 0.53868,
+        "afterPickedGripError": 0.0051
+      },
+      {
+        "index": 19,
+        "time": 0.791667,
+        "predictedGripWorld": [
+          -0.18371,
+          1.16915,
+          0.39287
+        ],
+        "beforePickedGripError": 0.53868,
+        "afterPickedGripError": 0.00495
+      },
+      {
+        "index": 20,
+        "time": 0.833333,
+        "predictedGripWorld": [
+          -0.18377,
+          1.16937,
+          0.39313
+        ],
+        "beforePickedGripError": 0.53869,
+        "afterPickedGripError": 0.0045
+      },
+      {
+        "index": 21,
+        "time": 0.875,
+        "predictedGripWorld": [
+          -0.18387,
+          1.16973,
+          0.39358
+        ],
+        "beforePickedGripError": 0.5387,
+        "afterPickedGripError": 0.00374
+      },
+      {
+        "index": 22,
+        "time": 0.916667,
+        "predictedGripWorld": [
+          -0.18401,
+          1.17021,
+          0.39418
+        ],
+        "beforePickedGripError": 0.53872,
+        "afterPickedGripError": 0.00272
+      },
+      {
+        "index": 23,
+        "time": 0.958333,
+        "predictedGripWorld": [
+          -0.18418,
+          1.1708,
+          0.3949
+        ],
+        "beforePickedGripError": 0.53874,
+        "afterPickedGripError": 0.00149
+      },
+      {
+        "index": 24,
+        "time": 1,
+        "predictedGripWorld": [
+          -0.18436,
+          1.17144,
+          0.39568
+        ],
+        "beforePickedGripError": 0.53876,
+        "afterPickedGripError": 0.00016
+      },
+      {
+        "index": 25,
+        "time": 1.041667,
+        "predictedGripWorld": [
+          -0.18453,
+          1.17209,
+          0.39646
+        ],
+        "beforePickedGripError": 0.53878,
+        "afterPickedGripError": 0.00117
+      },
+      {
+        "index": 26,
+        "time": 1.083333,
+        "predictedGripWorld": [
+          -0.18469,
+          1.17269,
+          0.39717
+        ],
+        "beforePickedGripError": 0.5388,
+        "afterPickedGripError": 0.0024
+      },
+      {
+        "index": 27,
+        "time": 1.125,
+        "predictedGripWorld": [
+          -0.18482,
+          1.17319,
+          0.39776
+        ],
+        "beforePickedGripError": 0.53882,
+        "afterPickedGripError": 0.00342
+      },
+      {
+        "index": 28,
+        "time": 1.166667,
+        "predictedGripWorld": [
+          -0.18492,
+          1.17356,
+          0.3982
+        ],
+        "beforePickedGripError": 0.53883,
+        "afterPickedGripError": 0.00418
+      },
+      {
+        "index": 29,
+        "time": 1.208333,
+        "predictedGripWorld": [
+          -0.18498,
+          1.17379,
+          0.39847
+        ],
+        "beforePickedGripError": 0.53884,
+        "afterPickedGripError": 0.00464
+      },
+      {
+        "index": 30,
+        "time": 1.25,
+        "predictedGripWorld": [
+          -0.18499,
+          1.17387,
+          0.39856
+        ],
+        "beforePickedGripError": 0.53884,
+        "afterPickedGripError": 0.00479
+      }
+    ]
+  },
+  "renderFrames": [
+    {
+      "index": 0,
+      "time": 0,
+      "projectedGripTargetWorld": [
+        -0.18221,
+        1.17691,
+        0.39611
+      ],
+      "currentSocketWorld": [
+        -0.57621,
+        1.22442,
+        0.03163
+      ],
+      "currentGripWorld": [
+        -0.57621,
+        1.22442,
+        0.03163
+      ],
+      "socketToProjectedTarget": [
+        0.394,
+        -0.04751,
+        0.36448
+      ],
+      "attachmentGripToProjectedTarget": [
+        0.394,
+        -0.04751,
+        0.36448
+      ],
+      "attachmentGripToSocket": [
+        0,
+        0,
+        0
+      ],
+      "socketParentLocalCorrection": [
+        0.394,
+        -0.04751,
+        0.36448
+      ],
+      "before": {
+        "socketError": 0.53884,
+        "pickedGripError": 0.53884,
+        "hiltLandmarkError": 0.53884
+      },
+      "predictedWithExactCorrection": {
+        "gripWorld": [
+          -0.18221,
+          1.17691,
+          0.39611
+        ],
+        "pickedGripError": 0
+      },
+      "predictedGripWorld": [
+        -0.18499,
+        1.17387,
+        0.39856
+      ],
+      "beforePickedGripError": 0.53884,
+      "afterPickedGripError": 0.00479
+    },
+    {
+      "index": 4,
+      "time": 0.166667,
+      "projectedGripTargetWorld": [
+        -0.1827,
+        1.1757,
+        0.39605
+      ],
+      "currentSocketWorld": [
+        -0.57608,
+        1.22388,
+        0.031
+      ],
+      "currentGripWorld": [
+        -0.57608,
+        1.22388,
+        0.031
+      ],
+      "socketToProjectedTarget": [
+        0.39338,
+        -0.04818,
+        0.36505
+      ],
+      "attachmentGripToProjectedTarget": [
+        0.39338,
+        -0.04818,
+        0.36505
+      ],
+      "attachmentGripToSocket": [
+        0,
+        0,
+        0
+      ],
+      "socketParentLocalCorrection": [
+        0.39338,
+        -0.04818,
+        0.36505
+      ],
+      "before": {
+        "socketError": 0.53882,
+        "pickedGripError": 0.53882,
+        "hiltLandmarkError": 0.53882
+      },
+      "predictedWithExactCorrection": {
+        "gripWorld": [
+          -0.1827,
+          1.1757,
+          0.39605
+        ],
+        "pickedGripError": 0
+      },
+      "predictedGripWorld": [
+        -0.18486,
+        1.17333,
+        0.39793
+      ],
+      "beforePickedGripError": 0.53882,
+      "afterPickedGripError": 0.00372
+    },
+    {
+      "index": 8,
+      "time": 0.333333,
+      "projectedGripTargetWorld": [
+        -0.18405,
+        1.17237,
+        0.39586
+      ],
+      "currentSocketWorld": [
+        -0.5757,
+        1.22243,
+        0.02927
+      ],
+      "currentGripWorld": [
+        -0.5757,
+        1.22243,
+        0.02927
+      ],
+      "socketToProjectedTarget": [
+        0.39165,
+        -0.05006,
+        0.36659
+      ],
+      "attachmentGripToProjectedTarget": [
+        0.39165,
+        -0.05006,
+        0.36659
+      ],
+      "attachmentGripToSocket": [
+        0,
+        0,
+        0
+      ],
+      "socketParentLocalCorrection": [
+        0.39165,
+        -0.05006,
+        0.36659
+      ],
+      "before": {
+        "socketError": 0.53878,
+        "pickedGripError": 0.53878,
+        "hiltLandmarkError": 0.53878
+      },
+      "predictedWithExactCorrection": {
+        "gripWorld": [
+          -0.18405,
+          1.17237,
+          0.39586
+        ],
+        "pickedGripError": 0
+      },
+      "predictedGripWorld": [
+        -0.18448,
+        1.17188,
+        0.3962
+      ],
+      "beforePickedGripError": 0.53878,
+      "afterPickedGripError": 0.00074
+    },
+    {
+      "index": 12,
+      "time": 0.5,
+      "projectedGripTargetWorld": [
+        -0.18559,
+        1.16849,
+        0.39557
+      ],
+      "currentSocketWorld": [
+        -0.57523,
+        1.22076,
+        0.02725
+      ],
+      "currentGripWorld": [
+        -0.57523,
+        1.22076,
+        0.02725
+      ],
+      "socketToProjectedTarget": [
+        0.38964,
+        -0.05227,
+        0.36832
+      ],
+      "attachmentGripToProjectedTarget": [
+        0.38964,
+        -0.05227,
+        0.36832
+      ],
+      "attachmentGripToSocket": [
+        0,
+        0,
+        0
+      ],
+      "socketParentLocalCorrection": [
+        0.38964,
+        -0.05227,
+        0.36832
+      ],
+      "before": {
+        "socketError": 0.53872,
+        "pickedGripError": 0.53872,
+        "hiltLandmarkError": 0.53872
+      },
+      "predictedWithExactCorrection": {
+        "gripWorld": [
+          -0.18559,
+          1.16849,
+          0.39557
+        ],
+        "pickedGripError": 0
+      },
+      "predictedGripWorld": [
+        -0.18401,
+        1.17021,
+        0.39418
+      ],
+      "beforePickedGripError": 0.53872,
+      "afterPickedGripError": 0.00272
+    },
+    {
+      "index": 16,
+      "time": 0.666667,
+      "projectedGripTargetWorld": [
+        -0.18652,
+        1.16609,
+        0.39536
+      ],
+      "currentSocketWorld": [
+        -0.57494,
+        1.21976,
+        0.026
+      ],
+      "currentGripWorld": [
+        -0.57494,
+        1.21976,
+        0.026
+      ],
+      "socketToProjectedTarget": [
+        0.38842,
+        -0.05367,
+        0.36936
+      ],
+      "attachmentGripToProjectedTarget": [
+        0.38842,
+        -0.05367,
+        0.36936
+      ],
+      "attachmentGripToSocket": [
+        0,
+        0,
+        0
+      ],
+      "socketParentLocalCorrection": [
+        0.38842,
+        -0.05367,
+        0.36936
+      ],
+      "before": {
+        "socketError": 0.53868,
+        "pickedGripError": 0.53868,
+        "hiltLandmarkError": 0.53868
+      },
+      "predictedWithExactCorrection": {
+        "gripWorld": [
+          -0.18652,
+          1.16609,
+          0.39536
+        ],
+        "pickedGripError": 0
+      },
+      "predictedGripWorld": [
+        -0.18372,
+        1.16921,
+        0.39293
+      ],
+      "beforePickedGripError": 0.53868,
+      "afterPickedGripError": 0.00485
+    },
+    {
+      "index": 20,
+      "time": 0.833333,
+      "projectedGripTargetWorld": [
+        -0.18637,
+        1.16648,
+        0.39539
+      ],
+      "currentSocketWorld": [
+        -0.57499,
+        1.21992,
+        0.0262
+      ],
+      "currentGripWorld": [
+        -0.57499,
+        1.21992,
+        0.0262
+      ],
+      "socketToProjectedTarget": [
+        0.38862,
+        -0.05344,
+        0.36919
+      ],
+      "attachmentGripToProjectedTarget": [
+        0.38862,
+        -0.05344,
+        0.36919
+      ],
+      "attachmentGripToSocket": [
+        0,
+        0,
+        0
+      ],
+      "socketParentLocalCorrection": [
+        0.38862,
+        -0.05344,
+        0.36919
+      ],
+      "before": {
+        "socketError": 0.53869,
+        "pickedGripError": 0.53869,
+        "hiltLandmarkError": 0.53869
+      },
+      "predictedWithExactCorrection": {
+        "gripWorld": [
+          -0.18637,
+          1.16648,
+          0.39539
+        ],
+        "pickedGripError": 0
+      },
+      "predictedGripWorld": [
+        -0.18377,
+        1.16937,
+        0.39313
+      ],
+      "beforePickedGripError": 0.53869,
+      "afterPickedGripError": 0.0045
+    },
+    {
+      "index": 24,
+      "time": 1,
+      "projectedGripTargetWorld": [
+        -0.18445,
+        1.17137,
+        0.39579
+      ],
+      "currentSocketWorld": [
+        -0.57558,
+        1.22199,
+        0.02875
+      ],
+      "currentGripWorld": [
+        -0.57558,
+        1.22199,
+        0.02875
+      ],
+      "socketToProjectedTarget": [
+        0.39113,
+        -0.05062,
+        0.36704
+      ],
+      "attachmentGripToProjectedTarget": [
+        0.39113,
+        -0.05062,
+        0.36704
+      ],
+      "attachmentGripToSocket": [
+        0,
+        0,
+        0
+      ],
+      "socketParentLocalCorrection": [
+        0.39113,
+        -0.05062,
+        0.36704
+      ],
+      "before": {
+        "socketError": 0.53876,
+        "pickedGripError": 0.53876,
+        "hiltLandmarkError": 0.53876
+      },
+      "predictedWithExactCorrection": {
+        "gripWorld": [
+          -0.18445,
+          1.17137,
+          0.39579
+        ],
+        "pickedGripError": 0
+      },
+      "predictedGripWorld": [
+        -0.18436,
+        1.17144,
+        0.39568
+      ],
+      "beforePickedGripError": 0.53876,
+      "afterPickedGripError": 0.00016
+    },
+    {
+      "index": 28,
+      "time": 1.166667,
+      "projectedGripTargetWorld": [
+        -0.18249,
+        1.17622,
+        0.39608
+      ],
+      "currentSocketWorld": [
+        -0.57614,
+        1.22411,
+        0.03127
+      ],
+      "currentGripWorld": [
+        -0.57614,
+        1.22411,
+        0.03127
+      ],
+      "socketToProjectedTarget": [
+        0.39365,
+        -0.04789,
+        0.36481
+      ],
+      "attachmentGripToProjectedTarget": [
+        0.39365,
+        -0.04789,
+        0.36481
+      ],
+      "attachmentGripToSocket": [
+        0,
+        0,
+        0
+      ],
+      "socketParentLocalCorrection": [
+        0.39365,
+        -0.04789,
+        0.36481
+      ],
+      "before": {
+        "socketError": 0.53883,
+        "pickedGripError": 0.53883,
+        "hiltLandmarkError": 0.53883
+      },
+      "predictedWithExactCorrection": {
+        "gripWorld": [
+          -0.18249,
+          1.17622,
+          0.39608
+        ],
+        "pickedGripError": 0
+      },
+      "predictedGripWorld": [
+        -0.18492,
+        1.17356,
+        0.3982
+      ],
+      "beforePickedGripError": 0.53883,
+      "afterPickedGripError": 0.00418
+    },
+    {
+      "index": 30,
+      "time": 1.25,
+      "projectedGripTargetWorld": [
+        -0.18221,
+        1.17691,
+        0.39611
+      ],
+      "currentSocketWorld": [
+        -0.57621,
+        1.22442,
+        0.03163
+      ],
+      "currentGripWorld": [
+        -0.57621,
+        1.22442,
+        0.03163
+      ],
+      "socketToProjectedTarget": [
+        0.394,
+        -0.04751,
+        0.36448
+      ],
+      "attachmentGripToProjectedTarget": [
+        0.394,
+        -0.04751,
+        0.36448
+      ],
+      "attachmentGripToSocket": [
+        0,
+        0,
+        0
+      ],
+      "socketParentLocalCorrection": [
+        0.394,
+        -0.04751,
+        0.36448
+      ],
+      "before": {
+        "socketError": 0.53884,
+        "pickedGripError": 0.53884,
+        "hiltLandmarkError": 0.53884
+      },
+      "predictedWithExactCorrection": {
+        "gripWorld": [
+          -0.18221,
+          1.17691,
+          0.39611
+        ],
+        "pickedGripError": 0
+      },
+      "predictedGripWorld": [
+        -0.18499,
+        1.17387,
+        0.39856
+      ],
+      "beforePickedGripError": 0.53884,
+      "afterPickedGripError": 0.00479
+    }
+  ]
+}

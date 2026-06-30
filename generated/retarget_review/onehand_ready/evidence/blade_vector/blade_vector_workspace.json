@@ -1,0 +1,2386 @@
+{
+  "schema": "pose-lab-meshy-blade-vector-workspace-v1",
+  "generatedAt": "2026-06-30T16:09:24.411Z",
+  "diagnosticOnly": true,
+  "productionBehaviorModified": false,
+  "clip": "OneHandReady",
+  "sourceKeyCount": 31,
+  "sourceKeyTimes": [
+    0,
+    0.041667,
+    0.083333,
+    0.125,
+    0.166667,
+    0.208333,
+    0.25,
+    0.291667,
+    0.333333,
+    0.375,
+    0.416667,
+    0.458333,
+    0.5,
+    0.541667,
+    0.583333,
+    0.625,
+    0.666667,
+    0.708333,
+    0.75,
+    0.791667,
+    0.833333,
+    0.875,
+    0.916667,
+    0.958333,
+    1,
+    1.041667,
+    1.083333,
+    1.125,
+    1.166667,
+    1.208333,
+    1.25
+  ],
+  "coordinateBridge": {
+    "targetBaseline": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+    "policy": "project FPS hilt/tip through calibrated T-pose frame; fixed FK arm projection; no IK, no roll, no retarget mutation",
+    "scale": 0.929843
+  },
+  "attachmentSnapshots": {
+    "fps": {
+      "actorKey": "player",
+      "proxy": {
+        "handLocalOffset": [
+          0,
+          0,
+          0
+        ],
+        "modelLocalOffset": [
+          0.06126,
+          -0.07096,
+          -0.00135
+        ],
+        "gripOffset": [
+          0,
+          0,
+          0
+        ],
+        "tipOffset": [
+          0,
+          0,
+          0.85
+        ]
+      },
+      "attachment": {
+        "scale": 0.323,
+        "rotationDeg": [
+          178.343,
+          4.512,
+          109.315
+        ],
+        "gripLocalPosition": [
+          0.67888,
+          -0.07803,
+          -0.06249
+        ],
+        "tipLocalPosition": [
+          -0.95561,
+          0.1368,
+          0
+        ]
+      }
+    },
+    "meshy": {
+      "actorKey": "meshyCharacter",
+      "proxy": {
+        "handLocalOffset": [
+          0.095,
+          0.035,
+          -0.01
+        ],
+        "modelLocalOffset": [
+          -0.18003,
+          -0.0236,
+          -0.13396
+        ],
+        "gripOffset": [
+          0,
+          0,
+          0
+        ],
+        "tipOffset": [
+          0,
+          0,
+          0.85
+        ]
+      },
+      "attachment": {
+        "scale": 0.47493,
+        "rotationDeg": [
+          90,
+          0,
+          -55.145
+        ],
+        "gripLocalPosition": [
+          0.6535,
+          -0.02302,
+          -0.07317
+        ],
+        "tipLocalPosition": [
+          -0.95561,
+          0.1368,
+          0
+        ]
+      }
+    }
+  },
+  "thresholds": {
+    "hiltSmall": 0.08,
+    "directionLargeDeg": 12,
+    "directionSmallDeg": 8,
+    "lengthRatioMismatch": 0.08
+  },
+  "reports": {
+    "perFrame": [
+      {
+        "index": 0,
+        "time": 0,
+        "socketError": 0.53884,
+        "socketGripDistance": 0.53884,
+        "pickedGripError": 0.53884,
+        "hiltLandmarkError": 0.53884,
+        "hiltDistance": 0.53884,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 39.772,
+        "tipDistance": 0.48654,
+        "fpsHilt": [
+          -0.18221,
+          1.17691,
+          0.39611
+        ],
+        "fpsTip": [
+          0.06043,
+          1.41525,
+          0.03582
+        ],
+        "fpsSocket": [
+          -0.18221,
+          1.17691,
+          0.39611
+        ],
+        "fpsBladeVector": [
+          0.24264,
+          0.23835,
+          -0.3603
+        ],
+        "meshyHilt": [
+          -0.57621,
+          1.22442,
+          0.03163
+        ],
+        "meshyTip": [
+          -0.13679,
+          1.84638,
+          -0.07355
+        ],
+        "meshySocket": [
+          -0.57621,
+          1.22442,
+          0.03163
+        ],
+        "meshyBladeVector": [
+          0.43943,
+          0.62196,
+          -0.10518
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 1,
+        "time": 0.041667,
+        "socketError": 0.53884,
+        "socketGripDistance": 0.53884,
+        "pickedGripError": 0.53884,
+        "hiltLandmarkError": 0.53884,
+        "hiltDistance": 0.53884,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 39.754,
+        "tipDistance": 0.48654,
+        "fpsHilt": [
+          -0.18224,
+          1.17683,
+          0.39611
+        ],
+        "fpsTip": [
+          0.06041,
+          1.41537,
+          0.03594
+        ],
+        "fpsSocket": [
+          -0.18224,
+          1.17683,
+          0.39611
+        ],
+        "fpsBladeVector": [
+          0.24265,
+          0.23854,
+          -0.36017
+        ],
+        "meshyHilt": [
+          -0.57621,
+          1.22438,
+          0.03159
+        ],
+        "meshyTip": [
+          -0.13689,
+          1.84643,
+          -0.07352
+        ],
+        "meshySocket": [
+          -0.57621,
+          1.22438,
+          0.03159
+        ],
+        "meshyBladeVector": [
+          0.43932,
+          0.62205,
+          -0.10511
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 2,
+        "time": 0.083333,
+        "socketError": 0.53883,
+        "socketGripDistance": 0.53883,
+        "pickedGripError": 0.53883,
+        "hiltLandmarkError": 0.53883,
+        "hiltDistance": 0.53883,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 39.699,
+        "tipDistance": 0.48654,
+        "fpsHilt": [
+          -0.18233,
+          1.1766,
+          0.3961
+        ],
+        "fpsTip": [
+          0.06033,
+          1.4157,
+          0.03632
+        ],
+        "fpsSocket": [
+          -0.18233,
+          1.1766,
+          0.3961
+        ],
+        "fpsBladeVector": [
+          0.24267,
+          0.2391,
+          -0.35978
+        ],
+        "meshyHilt": [
+          -0.57618,
+          1.22428,
+          0.03147
+        ],
+        "meshyTip": [
+          -0.13718,
+          1.84659,
+          -0.07345
+        ],
+        "meshySocket": [
+          -0.57618,
+          1.22428,
+          0.03147
+        ],
+        "meshyBladeVector": [
+          0.439,
+          0.62231,
+          -0.10492
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 3,
+        "time": 0.125,
+        "socketError": 0.53883,
+        "socketGripDistance": 0.53883,
+        "pickedGripError": 0.53883,
+        "hiltLandmarkError": 0.53883,
+        "hiltDistance": 0.53883,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 39.608,
+        "tipDistance": 0.48654,
+        "fpsHilt": [
+          -0.18249,
+          1.17622,
+          0.39608
+        ],
+        "fpsTip": [
+          0.06021,
+          1.41626,
+          0.03695
+        ],
+        "fpsSocket": [
+          -0.18249,
+          1.17622,
+          0.39608
+        ],
+        "fpsBladeVector": [
+          0.2427,
+          0.24004,
+          -0.35913
+        ],
+        "meshyHilt": [
+          -0.57614,
+          1.22411,
+          0.03127
+        ],
+        "meshyTip": [
+          -0.13768,
+          1.84685,
+          -0.07332
+        ],
+        "meshySocket": [
+          -0.57614,
+          1.22411,
+          0.03127
+        ],
+        "meshyBladeVector": [
+          0.43846,
+          0.62274,
+          -0.10459
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 4,
+        "time": 0.166667,
+        "socketError": 0.53882,
+        "socketGripDistance": 0.53882,
+        "pickedGripError": 0.53882,
+        "hiltLandmarkError": 0.53882,
+        "hiltDistance": 0.53882,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 39.481,
+        "tipDistance": 0.48655,
+        "fpsHilt": [
+          -0.1827,
+          1.1757,
+          0.39605
+        ],
+        "fpsTip": [
+          0.06004,
+          1.41704,
+          0.03782
+        ],
+        "fpsSocket": [
+          -0.1827,
+          1.1757,
+          0.39605
+        ],
+        "fpsBladeVector": [
+          0.24274,
+          0.24135,
+          -0.35823
+        ],
+        "meshyHilt": [
+          -0.57608,
+          1.22388,
+          0.031
+        ],
+        "meshyTip": [
+          -0.13836,
+          1.84722,
+          -0.07314
+        ],
+        "meshySocket": [
+          -0.57608,
+          1.22388,
+          0.031
+        ],
+        "meshyBladeVector": [
+          0.43771,
+          0.62334,
+          -0.10414
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 5,
+        "time": 0.208333,
+        "socketError": 0.53881,
+        "socketGripDistance": 0.53881,
+        "pickedGripError": 0.53881,
+        "hiltLandmarkError": 0.53881,
+        "hiltDistance": 0.53881,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 39.32,
+        "tipDistance": 0.48656,
+        "fpsHilt": [
+          -0.18298,
+          1.17503,
+          0.39602
+        ],
+        "fpsTip": [
+          0.05981,
+          1.41802,
+          0.03894
+        ],
+        "fpsSocket": [
+          -0.18298,
+          1.17503,
+          0.39602
+        ],
+        "fpsBladeVector": [
+          0.24279,
+          0.24299,
+          -0.35708
+        ],
+        "meshyHilt": [
+          -0.576,
+          1.22359,
+          0.03065
+        ],
+        "meshyTip": [
+          -0.13923,
+          1.84769,
+          -0.07291
+        ],
+        "meshySocket": [
+          -0.576,
+          1.22359,
+          0.03065
+        ],
+        "meshyBladeVector": [
+          0.43677,
+          0.6241,
+          -0.10356
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 6,
+        "time": 0.25,
+        "socketError": 0.5388,
+        "socketGripDistance": 0.5388,
+        "pickedGripError": 0.5388,
+        "hiltLandmarkError": 0.5388,
+        "hiltDistance": 0.5388,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 39.13,
+        "tipDistance": 0.48658,
+        "fpsHilt": [
+          -0.1833,
+          1.17424,
+          0.39597
+        ],
+        "fpsTip": [
+          0.05954,
+          1.41918,
+          0.04026
+        ],
+        "fpsSocket": [
+          -0.1833,
+          1.17424,
+          0.39597
+        ],
+        "fpsBladeVector": [
+          0.24284,
+          0.24494,
+          -0.35571
+        ],
+        "meshyHilt": [
+          -0.57591,
+          1.22324,
+          0.03024
+        ],
+        "meshyTip": [
+          -0.14026,
+          1.84824,
+          -0.07264
+        ],
+        "meshySocket": [
+          -0.57591,
+          1.22324,
+          0.03024
+        ],
+        "meshyBladeVector": [
+          0.43565,
+          0.625,
+          -0.10288
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 7,
+        "time": 0.291667,
+        "socketError": 0.53879,
+        "socketGripDistance": 0.53879,
+        "pickedGripError": 0.53879,
+        "hiltLandmarkError": 0.53879,
+        "hiltDistance": 0.53879,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 38.915,
+        "tipDistance": 0.48661,
+        "fpsHilt": [
+          -0.18366,
+          1.17334,
+          0.39592
+        ],
+        "fpsTip": [
+          0.05923,
+          1.42047,
+          0.04176
+        ],
+        "fpsSocket": [
+          -0.18366,
+          1.17334,
+          0.39592
+        ],
+        "fpsBladeVector": [
+          0.24289,
+          0.24713,
+          -0.35416
+        ],
+        "meshyHilt": [
+          -0.57581,
+          1.22285,
+          0.02977
+        ],
+        "meshyTip": [
+          -0.14143,
+          1.84885,
+          -0.07233
+        ],
+        "meshySocket": [
+          -0.57581,
+          1.22285,
+          0.02977
+        ],
+        "meshyBladeVector": [
+          0.43438,
+          0.626,
+          -0.10211
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 8,
+        "time": 0.333333,
+        "socketError": 0.53878,
+        "socketGripDistance": 0.53878,
+        "pickedGripError": 0.53878,
+        "hiltLandmarkError": 0.53878,
+        "hiltDistance": 0.53878,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 38.683,
+        "tipDistance": 0.48665,
+        "fpsHilt": [
+          -0.18405,
+          1.17237,
+          0.39586
+        ],
+        "fpsTip": [
+          0.05888,
+          1.42186,
+          0.04338
+        ],
+        "fpsSocket": [
+          -0.18405,
+          1.17237,
+          0.39586
+        ],
+        "fpsBladeVector": [
+          0.24293,
+          0.24949,
+          -0.35248
+        ],
+        "meshyHilt": [
+          -0.5757,
+          1.22243,
+          0.02927
+        ],
+        "meshyTip": [
+          -0.14269,
+          1.84952,
+          -0.072
+        ],
+        "meshySocket": [
+          -0.5757,
+          1.22243,
+          0.02927
+        ],
+        "meshyBladeVector": [
+          0.43301,
+          0.62709,
+          -0.10127
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 9,
+        "time": 0.375,
+        "socketError": 0.53876,
+        "socketGripDistance": 0.53876,
+        "pickedGripError": 0.53876,
+        "hiltLandmarkError": 0.53876,
+        "hiltDistance": 0.53876,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 38.442,
+        "tipDistance": 0.48671,
+        "fpsHilt": [
+          -0.18445,
+          1.17137,
+          0.39579
+        ],
+        "fpsTip": [
+          0.05852,
+          1.4233,
+          0.04508
+        ],
+        "fpsSocket": [
+          -0.18445,
+          1.17137,
+          0.39579
+        ],
+        "fpsBladeVector": [
+          0.24297,
+          0.25193,
+          -0.35071
+        ],
+        "meshyHilt": [
+          -0.57558,
+          1.22199,
+          0.02875
+        ],
+        "meshyTip": [
+          -0.14399,
+          1.8502,
+          -0.07166
+        ],
+        "meshySocket": [
+          -0.57558,
+          1.22199,
+          0.02875
+        ],
+        "meshyBladeVector": [
+          0.43158,
+          0.62821,
+          -0.1004
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 10,
+        "time": 0.416667,
+        "socketError": 0.53875,
+        "socketGripDistance": 0.53875,
+        "pickedGripError": 0.53875,
+        "hiltLandmarkError": 0.53875,
+        "hiltDistance": 0.53875,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 38.201,
+        "tipDistance": 0.48678,
+        "fpsHilt": [
+          -0.18485,
+          1.17036,
+          0.39571
+        ],
+        "fpsTip": [
+          0.05814,
+          1.42472,
+          0.04678
+        ],
+        "fpsSocket": [
+          -0.18485,
+          1.17036,
+          0.39571
+        ],
+        "fpsBladeVector": [
+          0.24299,
+          0.25436,
+          -0.34894
+        ],
+        "meshyHilt": [
+          -0.57546,
+          1.22156,
+          0.02822
+        ],
+        "meshyTip": [
+          -0.1453,
+          1.85089,
+          -0.07131
+        ],
+        "meshySocket": [
+          -0.57546,
+          1.22156,
+          0.02822
+        ],
+        "meshyBladeVector": [
+          0.43015,
+          0.62933,
+          -0.09954
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 11,
+        "time": 0.458333,
+        "socketError": 0.53873,
+        "socketGripDistance": 0.53873,
+        "pickedGripError": 0.53873,
+        "hiltLandmarkError": 0.53873,
+        "hiltDistance": 0.53873,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 37.969,
+        "tipDistance": 0.48686,
+        "fpsHilt": [
+          -0.18523,
+          1.16939,
+          0.39564
+        ],
+        "fpsTip": [
+          0.05777,
+          1.42608,
+          0.04843
+        ],
+        "fpsSocket": [
+          -0.18523,
+          1.16939,
+          0.39564
+        ],
+        "fpsBladeVector": [
+          0.243,
+          0.25669,
+          -0.34721
+        ],
+        "meshyHilt": [
+          -0.57534,
+          1.22115,
+          0.02772
+        ],
+        "meshyTip": [
+          -0.14657,
+          1.85154,
+          -0.07098
+        ],
+        "meshySocket": [
+          -0.57534,
+          1.22115,
+          0.02772
+        ],
+        "meshyBladeVector": [
+          0.42878,
+          0.6304,
+          -0.0987
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 12,
+        "time": 0.5,
+        "socketError": 0.53872,
+        "socketGripDistance": 0.53872,
+        "pickedGripError": 0.53872,
+        "hiltLandmarkError": 0.53872,
+        "hiltDistance": 0.53872,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 37.755,
+        "tipDistance": 0.48694,
+        "fpsHilt": [
+          -0.18559,
+          1.16849,
+          0.39557
+        ],
+        "fpsTip": [
+          0.05742,
+          1.42733,
+          0.04996
+        ],
+        "fpsSocket": [
+          -0.18559,
+          1.16849,
+          0.39557
+        ],
+        "fpsBladeVector": [
+          0.24301,
+          0.25884,
+          -0.34561
+        ],
+        "meshyHilt": [
+          -0.57523,
+          1.22076,
+          0.02725
+        ],
+        "meshyTip": [
+          -0.14774,
+          1.85215,
+          -0.07067
+        ],
+        "meshySocket": [
+          -0.57523,
+          1.22076,
+          0.02725
+        ],
+        "meshyBladeVector": [
+          0.4275,
+          0.63139,
+          -0.09792
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 13,
+        "time": 0.541667,
+        "socketError": 0.53871,
+        "socketGripDistance": 0.53871,
+        "pickedGripError": 0.53871,
+        "hiltLandmarkError": 0.53871,
+        "hiltDistance": 0.53871,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 37.564,
+        "tipDistance": 0.48702,
+        "fpsHilt": [
+          -0.1859,
+          1.16769,
+          0.3955
+        ],
+        "fpsTip": [
+          0.0571,
+          1.42844,
+          0.05132
+        ],
+        "fpsSocket": [
+          -0.1859,
+          1.16769,
+          0.3955
+        ],
+        "fpsBladeVector": [
+          0.243,
+          0.26075,
+          -0.34418
+        ],
+        "meshyHilt": [
+          -0.57514,
+          1.22043,
+          0.02683
+        ],
+        "meshyTip": [
+          -0.14877,
+          1.85269,
+          -0.0704
+        ],
+        "meshySocket": [
+          -0.57514,
+          1.22043,
+          0.02683
+        ],
+        "meshyBladeVector": [
+          0.42636,
+          0.63226,
+          -0.09723
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 14,
+        "time": 0.583333,
+        "socketError": 0.5387,
+        "socketGripDistance": 0.5387,
+        "pickedGripError": 0.5387,
+        "hiltLandmarkError": 0.5387,
+        "hiltDistance": 0.5387,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 37.404,
+        "tipDistance": 0.48709,
+        "fpsHilt": [
+          -0.18616,
+          1.16701,
+          0.39544
+        ],
+        "fpsTip": [
+          0.05683,
+          1.42936,
+          0.05247
+        ],
+        "fpsSocket": [
+          -0.18616,
+          1.16701,
+          0.39544
+        ],
+        "fpsBladeVector": [
+          0.24299,
+          0.26235,
+          -0.34297
+        ],
+        "meshyHilt": [
+          -0.57506,
+          1.22014,
+          0.02648
+        ],
+        "meshyTip": [
+          -0.14965,
+          1.85314,
+          -0.07016
+        ],
+        "meshySocket": [
+          -0.57506,
+          1.22014,
+          0.02648
+        ],
+        "meshyBladeVector": [
+          0.4254,
+          0.633,
+          -0.09665
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 15,
+        "time": 0.625,
+        "socketError": 0.53869,
+        "socketGripDistance": 0.53869,
+        "pickedGripError": 0.53869,
+        "hiltLandmarkError": 0.53869,
+        "hiltDistance": 0.53869,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 37.276,
+        "tipDistance": 0.48715,
+        "fpsHilt": [
+          -0.18637,
+          1.16648,
+          0.39539
+        ],
+        "fpsTip": [
+          0.05661,
+          1.43009,
+          0.05339
+        ],
+        "fpsSocket": [
+          -0.18637,
+          1.16648,
+          0.39539
+        ],
+        "fpsBladeVector": [
+          0.24298,
+          0.26361,
+          -0.34201
+        ],
+        "meshyHilt": [
+          -0.57499,
+          1.21992,
+          0.0262
+        ],
+        "meshyTip": [
+          -0.15034,
+          1.85349,
+          -0.06998
+        ],
+        "meshySocket": [
+          -0.57499,
+          1.21992,
+          0.0262
+        ],
+        "meshyBladeVector": [
+          0.42465,
+          0.63358,
+          -0.09619
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 16,
+        "time": 0.666667,
+        "socketError": 0.53868,
+        "socketGripDistance": 0.53868,
+        "pickedGripError": 0.53868,
+        "hiltLandmarkError": 0.53868,
+        "hiltDistance": 0.53868,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 37.185,
+        "tipDistance": 0.4872,
+        "fpsHilt": [
+          -0.18652,
+          1.16609,
+          0.39536
+        ],
+        "fpsTip": [
+          0.05645,
+          1.43062,
+          0.05405
+        ],
+        "fpsSocket": [
+          -0.18652,
+          1.16609,
+          0.39536
+        ],
+        "fpsBladeVector": [
+          0.24297,
+          0.26452,
+          -0.34131
+        ],
+        "meshyHilt": [
+          -0.57494,
+          1.21976,
+          0.026
+        ],
+        "meshyTip": [
+          -0.15084,
+          1.85375,
+          -0.06985
+        ],
+        "meshySocket": [
+          -0.57494,
+          1.21976,
+          0.026
+        ],
+        "meshyBladeVector": [
+          0.4241,
+          0.63399,
+          -0.09585
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 17,
+        "time": 0.708333,
+        "socketError": 0.53868,
+        "socketGripDistance": 0.53868,
+        "pickedGripError": 0.53868,
+        "hiltLandmarkError": 0.53868,
+        "hiltDistance": 0.53868,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 37.13,
+        "tipDistance": 0.48723,
+        "fpsHilt": [
+          -0.18661,
+          1.16586,
+          0.39534
+        ],
+        "fpsTip": [
+          0.05636,
+          1.43093,
+          0.05444
+        ],
+        "fpsSocket": [
+          -0.18661,
+          1.16586,
+          0.39534
+        ],
+        "fpsBladeVector": [
+          0.24296,
+          0.26506,
+          -0.34089
+        ],
+        "meshyHilt": [
+          -0.57491,
+          1.21966,
+          0.02589
+        ],
+        "meshyTip": [
+          -0.15114,
+          1.8539,
+          -0.06977
+        ],
+        "meshySocket": [
+          -0.57491,
+          1.21966,
+          0.02589
+        ],
+        "meshyBladeVector": [
+          0.42377,
+          0.63424,
+          -0.09565
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 18,
+        "time": 0.75,
+        "socketError": 0.53868,
+        "socketGripDistance": 0.53868,
+        "pickedGripError": 0.53868,
+        "hiltLandmarkError": 0.53868,
+        "hiltDistance": 0.53868,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 37.112,
+        "tipDistance": 0.48724,
+        "fpsHilt": [
+          -0.18663,
+          1.16579,
+          0.39533
+        ],
+        "fpsTip": [
+          0.05633,
+          1.43103,
+          0.05457
+        ],
+        "fpsSocket": [
+          -0.18663,
+          1.16579,
+          0.39533
+        ],
+        "fpsBladeVector": [
+          0.24296,
+          0.26524,
+          -0.34076
+        ],
+        "meshyHilt": [
+          -0.5749,
+          1.21963,
+          0.02585
+        ],
+        "meshyTip": [
+          -0.15124,
+          1.85395,
+          -0.06974
+        ],
+        "meshySocket": [
+          -0.5749,
+          1.21963,
+          0.02585
+        ],
+        "meshyBladeVector": [
+          0.42366,
+          0.63432,
+          -0.09559
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 19,
+        "time": 0.791667,
+        "socketError": 0.53868,
+        "socketGripDistance": 0.53868,
+        "pickedGripError": 0.53868,
+        "hiltLandmarkError": 0.53868,
+        "hiltDistance": 0.53868,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 37.153,
+        "tipDistance": 0.48722,
+        "fpsHilt": [
+          -0.18657,
+          1.16596,
+          0.39535
+        ],
+        "fpsTip": [
+          0.0564,
+          1.4308,
+          0.05428
+        ],
+        "fpsSocket": [
+          -0.18657,
+          1.16596,
+          0.39535
+        ],
+        "fpsBladeVector": [
+          0.24297,
+          0.26484,
+          -0.34107
+        ],
+        "meshyHilt": [
+          -0.57493,
+          1.2197,
+          0.02594
+        ],
+        "meshyTip": [
+          -0.15102,
+          1.85384,
+          -0.0698
+        ],
+        "meshySocket": [
+          -0.57493,
+          1.2197,
+          0.02594
+        ],
+        "meshyBladeVector": [
+          0.42391,
+          0.63414,
+          -0.09574
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 20,
+        "time": 0.833333,
+        "socketError": 0.53869,
+        "socketGripDistance": 0.53869,
+        "pickedGripError": 0.53869,
+        "hiltLandmarkError": 0.53869,
+        "hiltDistance": 0.53869,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 37.276,
+        "tipDistance": 0.48715,
+        "fpsHilt": [
+          -0.18637,
+          1.16648,
+          0.39539
+        ],
+        "fpsTip": [
+          0.05661,
+          1.43009,
+          0.05339
+        ],
+        "fpsSocket": [
+          -0.18637,
+          1.16648,
+          0.39539
+        ],
+        "fpsBladeVector": [
+          0.24298,
+          0.26361,
+          -0.34201
+        ],
+        "meshyHilt": [
+          -0.57499,
+          1.21992,
+          0.0262
+        ],
+        "meshyTip": [
+          -0.15034,
+          1.85349,
+          -0.06998
+        ],
+        "meshySocket": [
+          -0.57499,
+          1.21992,
+          0.0262
+        ],
+        "meshyBladeVector": [
+          0.42465,
+          0.63358,
+          -0.09619
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 21,
+        "time": 0.875,
+        "socketError": 0.5387,
+        "socketGripDistance": 0.5387,
+        "pickedGripError": 0.5387,
+        "hiltLandmarkError": 0.5387,
+        "hiltDistance": 0.5387,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 37.48,
+        "tipDistance": 0.48706,
+        "fpsHilt": [
+          -0.18604,
+          1.16734,
+          0.39547
+        ],
+        "fpsTip": [
+          0.05696,
+          1.42892,
+          0.05192
+        ],
+        "fpsSocket": [
+          -0.18604,
+          1.16734,
+          0.39547
+        ],
+        "fpsBladeVector": [
+          0.243,
+          0.26159,
+          -0.34355
+        ],
+        "meshyHilt": [
+          -0.57509,
+          1.22028,
+          0.02665
+        ],
+        "meshyTip": [
+          -0.14923,
+          1.85292,
+          -0.07028
+        ],
+        "meshySocket": [
+          -0.57509,
+          1.22028,
+          0.02665
+        ],
+        "meshyBladeVector": [
+          0.42586,
+          0.63265,
+          -0.09692
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 22,
+        "time": 0.916667,
+        "socketError": 0.53872,
+        "socketGripDistance": 0.53872,
+        "pickedGripError": 0.53872,
+        "hiltLandmarkError": 0.53872,
+        "hiltDistance": 0.53872,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 37.755,
+        "tipDistance": 0.48694,
+        "fpsHilt": [
+          -0.18559,
+          1.16849,
+          0.39557
+        ],
+        "fpsTip": [
+          0.05742,
+          1.42733,
+          0.04996
+        ],
+        "fpsSocket": [
+          -0.18559,
+          1.16849,
+          0.39557
+        ],
+        "fpsBladeVector": [
+          0.24301,
+          0.25884,
+          -0.34561
+        ],
+        "meshyHilt": [
+          -0.57523,
+          1.22076,
+          0.02725
+        ],
+        "meshyTip": [
+          -0.14774,
+          1.85215,
+          -0.07067
+        ],
+        "meshySocket": [
+          -0.57523,
+          1.22076,
+          0.02725
+        ],
+        "meshyBladeVector": [
+          0.4275,
+          0.63139,
+          -0.09792
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 23,
+        "time": 0.958333,
+        "socketError": 0.53874,
+        "socketGripDistance": 0.53874,
+        "pickedGripError": 0.53874,
+        "hiltLandmarkError": 0.53874,
+        "hiltDistance": 0.53874,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 38.084,
+        "tipDistance": 0.48682,
+        "fpsHilt": [
+          -0.18504,
+          1.16987,
+          0.39568
+        ],
+        "fpsTip": [
+          0.05795,
+          1.42541,
+          0.04761
+        ],
+        "fpsSocket": [
+          -0.18504,
+          1.16987,
+          0.39568
+        ],
+        "fpsBladeVector": [
+          0.243,
+          0.25554,
+          -0.34806
+        ],
+        "meshyHilt": [
+          -0.5754,
+          1.22135,
+          0.02797
+        ],
+        "meshyTip": [
+          -0.14594,
+          1.85122,
+          -0.07114
+        ],
+        "meshySocket": [
+          -0.5754,
+          1.22135,
+          0.02797
+        ],
+        "meshyBladeVector": [
+          0.42945,
+          0.62987,
+          -0.09911
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 24,
+        "time": 1,
+        "socketError": 0.53876,
+        "socketGripDistance": 0.53876,
+        "pickedGripError": 0.53876,
+        "hiltLandmarkError": 0.53876,
+        "hiltDistance": 0.53876,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 38.442,
+        "tipDistance": 0.48671,
+        "fpsHilt": [
+          -0.18445,
+          1.17137,
+          0.39579
+        ],
+        "fpsTip": [
+          0.05852,
+          1.4233,
+          0.04508
+        ],
+        "fpsSocket": [
+          -0.18445,
+          1.17137,
+          0.39579
+        ],
+        "fpsBladeVector": [
+          0.24297,
+          0.25193,
+          -0.35071
+        ],
+        "meshyHilt": [
+          -0.57558,
+          1.22199,
+          0.02875
+        ],
+        "meshyTip": [
+          -0.14399,
+          1.8502,
+          -0.07166
+        ],
+        "meshySocket": [
+          -0.57558,
+          1.22199,
+          0.02875
+        ],
+        "meshyBladeVector": [
+          0.43158,
+          0.62821,
+          -0.1004
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 25,
+        "time": 1.041667,
+        "socketError": 0.53878,
+        "socketGripDistance": 0.53878,
+        "pickedGripError": 0.53878,
+        "hiltLandmarkError": 0.53878,
+        "hiltDistance": 0.53878,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 38.801,
+        "tipDistance": 0.48663,
+        "fpsHilt": [
+          -0.18385,
+          1.17286,
+          0.39589
+        ],
+        "fpsTip": [
+          0.05906,
+          1.42116,
+          0.04256
+        ],
+        "fpsSocket": [
+          -0.18385,
+          1.17286,
+          0.39589
+        ],
+        "fpsBladeVector": [
+          0.24291,
+          0.24829,
+          -0.35333
+        ],
+        "meshyHilt": [
+          -0.57575,
+          1.22264,
+          0.02953
+        ],
+        "meshyTip": [
+          -0.14205,
+          1.84918,
+          -0.07217
+        ],
+        "meshySocket": [
+          -0.57575,
+          1.22264,
+          0.02953
+        ],
+        "meshyBladeVector": [
+          0.4337,
+          0.62654,
+          -0.1017
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 26,
+        "time": 1.083333,
+        "socketError": 0.5388,
+        "socketGripDistance": 0.5388,
+        "pickedGripError": 0.5388,
+        "hiltLandmarkError": 0.5388,
+        "hiltDistance": 0.5388,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 39.13,
+        "tipDistance": 0.48658,
+        "fpsHilt": [
+          -0.1833,
+          1.17424,
+          0.39597
+        ],
+        "fpsTip": [
+          0.05954,
+          1.41918,
+          0.04026
+        ],
+        "fpsSocket": [
+          -0.1833,
+          1.17424,
+          0.39597
+        ],
+        "fpsBladeVector": [
+          0.24284,
+          0.24494,
+          -0.35571
+        ],
+        "meshyHilt": [
+          -0.57591,
+          1.22324,
+          0.03024
+        ],
+        "meshyTip": [
+          -0.14026,
+          1.84824,
+          -0.07264
+        ],
+        "meshySocket": [
+          -0.57591,
+          1.22324,
+          0.03024
+        ],
+        "meshyBladeVector": [
+          0.43565,
+          0.625,
+          -0.10288
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 27,
+        "time": 1.125,
+        "socketError": 0.53882,
+        "socketGripDistance": 0.53882,
+        "pickedGripError": 0.53882,
+        "hiltLandmarkError": 0.53882,
+        "hiltDistance": 0.53882,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 39.404,
+        "tipDistance": 0.48655,
+        "fpsHilt": [
+          -0.18283,
+          1.17538,
+          0.39604
+        ],
+        "fpsTip": [
+          0.05993,
+          1.41751,
+          0.03835
+        ],
+        "fpsSocket": [
+          -0.18283,
+          1.17538,
+          0.39604
+        ],
+        "fpsBladeVector": [
+          0.24276,
+          0.24213,
+          -0.35768
+        ],
+        "meshyHilt": [
+          -0.57604,
+          1.22374,
+          0.03083
+        ],
+        "meshyTip": [
+          -0.13878,
+          1.84744,
+          -0.07303
+        ],
+        "meshySocket": [
+          -0.57604,
+          1.22374,
+          0.03083
+        ],
+        "meshyBladeVector": [
+          0.43726,
+          0.6237,
+          -0.10386
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 28,
+        "time": 1.166667,
+        "socketError": 0.53883,
+        "socketGripDistance": 0.53883,
+        "pickedGripError": 0.53883,
+        "hiltLandmarkError": 0.53883,
+        "hiltDistance": 0.53883,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 39.608,
+        "tipDistance": 0.48654,
+        "fpsHilt": [
+          -0.18249,
+          1.17622,
+          0.39608
+        ],
+        "fpsTip": [
+          0.06021,
+          1.41626,
+          0.03695
+        ],
+        "fpsSocket": [
+          -0.18249,
+          1.17622,
+          0.39608
+        ],
+        "fpsBladeVector": [
+          0.2427,
+          0.24004,
+          -0.35913
+        ],
+        "meshyHilt": [
+          -0.57614,
+          1.22411,
+          0.03127
+        ],
+        "meshyTip": [
+          -0.13768,
+          1.84685,
+          -0.07332
+        ],
+        "meshySocket": [
+          -0.57614,
+          1.22411,
+          0.03127
+        ],
+        "meshyBladeVector": [
+          0.43846,
+          0.62274,
+          -0.10459
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 29,
+        "time": 1.208333,
+        "socketError": 0.53884,
+        "socketGripDistance": 0.53884,
+        "pickedGripError": 0.53884,
+        "hiltLandmarkError": 0.53884,
+        "hiltDistance": 0.53884,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 39.731,
+        "tipDistance": 0.48654,
+        "fpsHilt": [
+          -0.18228,
+          1.17674,
+          0.39611
+        ],
+        "fpsTip": [
+          0.06038,
+          1.41551,
+          0.0361
+        ],
+        "fpsSocket": [
+          -0.18228,
+          1.17674,
+          0.39611
+        ],
+        "fpsBladeVector": [
+          0.24266,
+          0.23877,
+          -0.36001
+        ],
+        "meshyHilt": [
+          -0.5762,
+          1.22434,
+          0.03154
+        ],
+        "meshyTip": [
+          -0.13701,
+          1.8465,
+          -0.07349
+        ],
+        "meshySocket": [
+          -0.5762,
+          1.22434,
+          0.03154
+        ],
+        "meshyBladeVector": [
+          0.43919,
+          0.62215,
+          -0.10503
+        ],
+        "classification": "attachment-placement"
+      },
+      {
+        "index": 30,
+        "time": 1.25,
+        "socketError": 0.53884,
+        "socketGripDistance": 0.53884,
+        "pickedGripError": 0.53884,
+        "hiltLandmarkError": 0.53884,
+        "hiltDistance": 0.53884,
+        "fpsBladeLength": 0.49548,
+        "meshyBladeLength": 0.76876,
+        "bladeLengthRatio": 1.55155,
+        "bladeDirectionAngleDeg": 39.772,
+        "tipDistance": 0.48654,
+        "fpsHilt": [
+          -0.18221,
+          1.17691,
+          0.39611
+        ],
+        "fpsTip": [
+          0.06043,
+          1.41525,
+          0.03582
+        ],
+        "fpsSocket": [
+          -0.18221,
+          1.17691,
+          0.39611
+        ],
+        "fpsBladeVector": [
+          0.24264,
+          0.23835,
+          -0.3603
+        ],
+        "meshyHilt": [
+          -0.57621,
+          1.22442,
+          0.03163
+        ],
+        "meshyTip": [
+          -0.13679,
+          1.84638,
+          -0.07355
+        ],
+        "meshySocket": [
+          -0.57621,
+          1.22442,
+          0.03163
+        ],
+        "meshyBladeVector": [
+          0.43943,
+          0.62196,
+          -0.10518
+        ],
+        "classification": "attachment-placement"
+      }
+    ]
+  },
+  "summary": {
+    "averageSocketError": 0.53876,
+    "maxSocketError": 0.53884,
+    "averageSocketGripError": 0.53876,
+    "maxSocketGripError": 0.53884,
+    "averagePickedGripError": 0.53876,
+    "maxPickedGripError": 0.53884,
+    "averageHiltLandmarkError": 0.53876,
+    "maxHiltLandmarkError": 0.53884,
+    "averageHiltError": 0.53876,
+    "maxHiltError": 0.53884,
+    "averageBladeDirectionErrorDeg": 38.485,
+    "maxBladeDirectionErrorDeg": 39.772,
+    "averageBladeLengthRatio": 1.55155,
+    "averageTipError": 0.48679,
+    "maxTipError": 0.48724,
+    "classificationCounts": {
+      "attachment-placement": 31
+    },
+    "dominantClass": "attachment-placement",
+    "restGood": false,
+    "recommendation": "Align the actual attachment hilt/grip landmark or offset before blade-basis or scale fixes."
+  },
+  "diagnostics": {
+    "dominantClass": "attachment-placement",
+    "thresholds": {
+      "hiltSmall": 0.08,
+      "directionLargeDeg": 12,
+      "directionSmallDeg": 8,
+      "lengthRatioMismatch": 0.08
+    },
+    "findings": [
+      "Average socket error is 0.53876; this keeps WeaponGrip/socket alignment separate from rendered grip landmark alignment.",
+      "Average picked grip error is 0.53876; placement classification uses this rendered attachment grip landmark metric.",
+      "Average hilt landmark error is 0.53876; hilt placement is outside the small-error threshold 0.08.",
+      "Average blade direction error is 38.485 deg; this exceeds the large-direction threshold 12 deg.",
+      "Average blade length ratio is 1.55155; length is meaningfully mismatched by the 0.08 ratio threshold.",
+      "Dominant class is attachment-placement, so the single next production fix is: Align the actual attachment hilt/grip landmark or offset before blade-basis or scale fixes."
+    ]
+  },
+  "renderFrames": [
+    {
+      "index": 0,
+      "time": 0,
+      "socketError": 0.53884,
+      "socketGripDistance": 0.53884,
+      "pickedGripError": 0.53884,
+      "hiltLandmarkError": 0.53884,
+      "hiltDistance": 0.53884,
+      "fpsBladeLength": 0.49548,
+      "meshyBladeLength": 0.76876,
+      "bladeLengthRatio": 1.55155,
+      "bladeDirectionAngleDeg": 39.772,
+      "tipDistance": 0.48654,
+      "fpsHilt": [
+        -0.18221,
+        1.17691,
+        0.39611
+      ],
+      "fpsTip": [
+        0.06043,
+        1.41525,
+        0.03582
+      ],
+      "fpsSocket": [
+        -0.18221,
+        1.17691,
+        0.39611
+      ],
+      "fpsBladeVector": [
+        0.24264,
+        0.23835,
+        -0.3603
+      ],
+      "meshyHilt": [
+        -0.57621,
+        1.22442,
+        0.03163
+      ],
+      "meshyTip": [
+        -0.13679,
+        1.84638,
+        -0.07355
+      ],
+      "meshySocket": [
+        -0.57621,
+        1.22442,
+        0.03163
+      ],
+      "meshyBladeVector": [
+        0.43943,
+        0.62196,
+        -0.10518
+      ],
+      "classification": "attachment-placement"
+    },
+    {
+      "index": 4,
+      "time": 0.166667,
+      "socketError": 0.53882,
+      "socketGripDistance": 0.53882,
+      "pickedGripError": 0.53882,
+      "hiltLandmarkError": 0.53882,
+      "hiltDistance": 0.53882,
+      "fpsBladeLength": 0.49548,
+      "meshyBladeLength": 0.76876,
+      "bladeLengthRatio": 1.55155,
+      "bladeDirectionAngleDeg": 39.481,
+      "tipDistance": 0.48655,
+      "fpsHilt": [
+        -0.1827,
+        1.1757,
+        0.39605
+      ],
+      "fpsTip": [
+        0.06004,
+        1.41704,
+        0.03782
+      ],
+      "fpsSocket": [
+        -0.1827,
+        1.1757,
+        0.39605
+      ],
+      "fpsBladeVector": [
+        0.24274,
+        0.24135,
+        -0.35823
+      ],
+      "meshyHilt": [
+        -0.57608,
+        1.22388,
+        0.031
+      ],
+      "meshyTip": [
+        -0.13836,
+        1.84722,
+        -0.07314
+      ],
+      "meshySocket": [
+        -0.57608,
+        1.22388,
+        0.031
+      ],
+      "meshyBladeVector": [
+        0.43771,
+        0.62334,
+        -0.10414
+      ],
+      "classification": "attachment-placement"
+    },
+    {
+      "index": 8,
+      "time": 0.333333,
+      "socketError": 0.53878,
+      "socketGripDistance": 0.53878,
+      "pickedGripError": 0.53878,
+      "hiltLandmarkError": 0.53878,
+      "hiltDistance": 0.53878,
+      "fpsBladeLength": 0.49548,
+      "meshyBladeLength": 0.76876,
+      "bladeLengthRatio": 1.55155,
+      "bladeDirectionAngleDeg": 38.683,
+      "tipDistance": 0.48665,
+      "fpsHilt": [
+        -0.18405,
+        1.17237,
+        0.39586
+      ],
+      "fpsTip": [
+        0.05888,
+        1.42186,
+        0.04338
+      ],
+      "fpsSocket": [
+        -0.18405,
+        1.17237,
+        0.39586
+      ],
+      "fpsBladeVector": [
+        0.24293,
+        0.24949,
+        -0.35248
+      ],
+      "meshyHilt": [
+        -0.5757,
+        1.22243,
+        0.02927
+      ],
+      "meshyTip": [
+        -0.14269,
+        1.84952,
+        -0.072
+      ],
+      "meshySocket": [
+        -0.5757,
+        1.22243,
+        0.02927
+      ],
+      "meshyBladeVector": [
+        0.43301,
+        0.62709,
+        -0.10127
+      ],
+      "classification": "attachment-placement"
+    },
+    {
+      "index": 12,
+      "time": 0.5,
+      "socketError": 0.53872,
+      "socketGripDistance": 0.53872,
+      "pickedGripError": 0.53872,
+      "hiltLandmarkError": 0.53872,
+      "hiltDistance": 0.53872,
+      "fpsBladeLength": 0.49548,
+      "meshyBladeLength": 0.76876,
+      "bladeLengthRatio": 1.55155,
+      "bladeDirectionAngleDeg": 37.755,
+      "tipDistance": 0.48694,
+      "fpsHilt": [
+        -0.18559,
+        1.16849,
+        0.39557
+      ],
+      "fpsTip": [
+        0.05742,
+        1.42733,
+        0.04996
+      ],
+      "fpsSocket": [
+        -0.18559,
+        1.16849,
+        0.39557
+      ],
+      "fpsBladeVector": [
+        0.24301,
+        0.25884,
+        -0.34561
+      ],
+      "meshyHilt": [
+        -0.57523,
+        1.22076,
+        0.02725
+      ],
+      "meshyTip": [
+        -0.14774,
+        1.85215,
+        -0.07067
+      ],
+      "meshySocket": [
+        -0.57523,
+        1.22076,
+        0.02725
+      ],
+      "meshyBladeVector": [
+        0.4275,
+        0.63139,
+        -0.09792
+      ],
+      "classification": "attachment-placement"
+    },
+    {
+      "index": 16,
+      "time": 0.666667,
+      "socketError": 0.53868,
+      "socketGripDistance": 0.53868,
+      "pickedGripError": 0.53868,
+      "hiltLandmarkError": 0.53868,
+      "hiltDistance": 0.53868,
+      "fpsBladeLength": 0.49548,
+      "meshyBladeLength": 0.76876,
+      "bladeLengthRatio": 1.55155,
+      "bladeDirectionAngleDeg": 37.185,
+      "tipDistance": 0.4872,
+      "fpsHilt": [
+        -0.18652,
+        1.16609,
+        0.39536
+      ],
+      "fpsTip": [
+        0.05645,
+        1.43062,
+        0.05405
+      ],
+      "fpsSocket": [
+        -0.18652,
+        1.16609,
+        0.39536
+      ],
+      "fpsBladeVector": [
+        0.24297,
+        0.26452,
+        -0.34131
+      ],
+      "meshyHilt": [
+        -0.57494,
+        1.21976,
+        0.026
+      ],
+      "meshyTip": [
+        -0.15084,
+        1.85375,
+        -0.06985
+      ],
+      "meshySocket": [
+        -0.57494,
+        1.21976,
+        0.026
+      ],
+      "meshyBladeVector": [
+        0.4241,
+        0.63399,
+        -0.09585
+      ],
+      "classification": "attachment-placement"
+    },
+    {
+      "index": 20,
+      "time": 0.833333,
+      "socketError": 0.53869,
+      "socketGripDistance": 0.53869,
+      "pickedGripError": 0.53869,
+      "hiltLandmarkError": 0.53869,
+      "hiltDistance": 0.53869,
+      "fpsBladeLength": 0.49548,
+      "meshyBladeLength": 0.76876,
+      "bladeLengthRatio": 1.55155,
+      "bladeDirectionAngleDeg": 37.276,
+      "tipDistance": 0.48715,
+      "fpsHilt": [
+        -0.18637,
+        1.16648,
+        0.39539
+      ],
+      "fpsTip": [
+        0.05661,
+        1.43009,
+        0.05339
+      ],
+      "fpsSocket": [
+        -0.18637,
+        1.16648,
+        0.39539
+      ],
+      "fpsBladeVector": [
+        0.24298,
+        0.26361,
+        -0.34201
+      ],
+      "meshyHilt": [
+        -0.57499,
+        1.21992,
+        0.0262
+      ],
+      "meshyTip": [
+        -0.15034,
+        1.85349,
+        -0.06998
+      ],
+      "meshySocket": [
+        -0.57499,
+        1.21992,
+        0.0262
+      ],
+      "meshyBladeVector": [
+        0.42465,
+        0.63358,
+        -0.09619
+      ],
+      "classification": "attachment-placement"
+    },
+    {
+      "index": 24,
+      "time": 1,
+      "socketError": 0.53876,
+      "socketGripDistance": 0.53876,
+      "pickedGripError": 0.53876,
+      "hiltLandmarkError": 0.53876,
+      "hiltDistance": 0.53876,
+      "fpsBladeLength": 0.49548,
+      "meshyBladeLength": 0.76876,
+      "bladeLengthRatio": 1.55155,
+      "bladeDirectionAngleDeg": 38.442,
+      "tipDistance": 0.48671,
+      "fpsHilt": [
+        -0.18445,
+        1.17137,
+        0.39579
+      ],
+      "fpsTip": [
+        0.05852,
+        1.4233,
+        0.04508
+      ],
+      "fpsSocket": [
+        -0.18445,
+        1.17137,
+        0.39579
+      ],
+      "fpsBladeVector": [
+        0.24297,
+        0.25193,
+        -0.35071
+      ],
+      "meshyHilt": [
+        -0.57558,
+        1.22199,
+        0.02875
+      ],
+      "meshyTip": [
+        -0.14399,
+        1.8502,
+        -0.07166
+      ],
+      "meshySocket": [
+        -0.57558,
+        1.22199,
+        0.02875
+      ],
+      "meshyBladeVector": [
+        0.43158,
+        0.62821,
+        -0.1004
+      ],
+      "classification": "attachment-placement"
+    },
+    {
+      "index": 28,
+      "time": 1.166667,
+      "socketError": 0.53883,
+      "socketGripDistance": 0.53883,
+      "pickedGripError": 0.53883,
+      "hiltLandmarkError": 0.53883,
+      "hiltDistance": 0.53883,
+      "fpsBladeLength": 0.49548,
+      "meshyBladeLength": 0.76876,
+      "bladeLengthRatio": 1.55155,
+      "bladeDirectionAngleDeg": 39.608,
+      "tipDistance": 0.48654,
+      "fpsHilt": [
+        -0.18249,
+        1.17622,
+        0.39608
+      ],
+      "fpsTip": [
+        0.06021,
+        1.41626,
+        0.03695
+      ],
+      "fpsSocket": [
+        -0.18249,
+        1.17622,
+        0.39608
+      ],
+      "fpsBladeVector": [
+        0.2427,
+        0.24004,
+        -0.35913
+      ],
+      "meshyHilt": [
+        -0.57614,
+        1.22411,
+        0.03127
+      ],
+      "meshyTip": [
+        -0.13768,
+        1.84685,
+        -0.07332
+      ],
+      "meshySocket": [
+        -0.57614,
+        1.22411,
+        0.03127
+      ],
+      "meshyBladeVector": [
+        0.43846,
+        0.62274,
+        -0.10459
+      ],
+      "classification": "attachment-placement"
+    },
+    {
+      "index": 30,
+      "time": 1.25,
+      "socketError": 0.53884,
+      "socketGripDistance": 0.53884,
+      "pickedGripError": 0.53884,
+      "hiltLandmarkError": 0.53884,
+      "hiltDistance": 0.53884,
+      "fpsBladeLength": 0.49548,
+      "meshyBladeLength": 0.76876,
+      "bladeLengthRatio": 1.55155,
+      "bladeDirectionAngleDeg": 39.772,
+      "tipDistance": 0.48654,
+      "fpsHilt": [
+        -0.18221,
+        1.17691,
+        0.39611
+      ],
+      "fpsTip": [
+        0.06043,
+        1.41525,
+        0.03582
+      ],
+      "fpsSocket": [
+        -0.18221,
+        1.17691,
+        0.39611
+      ],
+      "fpsBladeVector": [
+        0.24264,
+        0.23835,
+        -0.3603
+      ],
+      "meshyHilt": [
+        -0.57621,
+        1.22442,
+        0.03163
+      ],
+      "meshyTip": [
+        -0.13679,
+        1.84638,
+        -0.07355
+      ],
+      "meshySocket": [
+        -0.57621,
+        1.22442,
+        0.03163
+      ],
+      "meshyBladeVector": [
+        0.43943,
+        0.62196,
+        -0.10518
+      ],
+      "classification": "attachment-placement"
+    }
+  ]
+}
