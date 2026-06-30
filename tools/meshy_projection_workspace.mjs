@@ -25,21 +25,37 @@ const CHAINS = [
   { side: 'left', source: ['Arm.L', 'Forearm.L', 'Hand.L'], target: ['LeftArm', 'LeftForeArm', 'LeftHand'] },
 ];
 const ALL_LAYERS = ['projected-pins', 'fk', 'ik', 'sword', 'basis', 'roll'];
+const LAYER_PRESETS = [
+  ['projected-pins'],
+  ['projected-pins', 'fk'],
+  ['projected-pins', 'fk', 'basis'],
+  ['projected-pins', 'fk', 'basis', 'roll'],
+  ['projected-pins', 'fk', 'sword'],
+];
 
 function parseArgs(argv) {
-  const args = { clip: 'OneHandReady', out: defaultOut, layers: new Set(ALL_LAYERS), maxRenderFrames: 7 };
+  const args = { clip: 'OneHandReady', out: defaultOut, explicitOut: false, layers: new Set(ALL_LAYERS), explicitLayers: false, maxRenderFrames: 7, suite: false };
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--clip') args.clip = argv[++i] || args.clip;
     else if (arg.startsWith('--clip=')) args.clip = arg.slice('--clip='.length);
-    else if (arg === '--out') args.out = path.resolve(projectRoot, argv[++i] || args.out);
-    else if (arg.startsWith('--out=')) args.out = path.resolve(projectRoot, arg.slice('--out='.length));
-    else if (arg === '--enable') args.layers = new Set(String(argv[++i] || '').split(',').filter(Boolean));
-    else if (arg.startsWith('--enable=')) args.layers = new Set(arg.slice('--enable='.length).split(',').filter(Boolean));
+    else if (arg === '--out') { args.out = path.resolve(projectRoot, argv[++i] || args.out); args.explicitOut = true; }
+    else if (arg.startsWith('--out=')) { args.out = path.resolve(projectRoot, arg.slice('--out='.length)); args.explicitOut = true; }
+    else if (arg === '--enable') { args.layers = new Set(String(argv[++i] || '').split(',').filter(Boolean)); args.explicitLayers = true; }
+    else if (arg.startsWith('--enable=')) { args.layers = new Set(arg.slice('--enable='.length).split(',').filter(Boolean)); args.explicitLayers = true; }
     else if (arg === '--max-render-frames') args.maxRenderFrames = Number(argv[++i] || args.maxRenderFrames);
     else if (arg.startsWith('--max-render-frames=')) args.maxRenderFrames = Number(arg.slice('--max-render-frames='.length));
+    else if (arg === '--layer-suite') args.suite = true;
+  }
+  if (args.explicitLayers && !args.explicitOut) {
+    args.out = path.join(path.dirname(defaultOut), `onehand_ready_${layerSlug([...args.layers])}`);
   }
   return args;
+}
+
+function layerSlug(layers) {
+  const ordered = ALL_LAYERS.filter((layer) => layers.includes(layer));
+  return ordered.length ? ordered.join('_').replace(/-/g, '') : 'none';
 }
 
 function ensureBrowserShim() {
@@ -502,6 +518,174 @@ function rollErrors(THREE, fpsRoot, meshyRoot) {
   return out;
 }
 
+function aggregateFkByJoint(report) {
+  const byJoint = new Map();
+  const bySide = new Map([
+    ['right', { sum: 0, max: 0, count: 0 }],
+    ['left', { sum: 0, max: 0, count: 0 }],
+    ['center', { sum: 0, max: 0, count: 0 }],
+  ]);
+  for (const frame of report.fkErrorReport || []) {
+    for (const error of frame.errors || []) {
+      const joint = byJoint.get(error.target) || { source: error.source, target: error.target, side: sideForBone(error.target), sum: 0, max: 0, count: 0 };
+      joint.sum += error.error;
+      joint.max = Math.max(joint.max, error.error);
+      joint.count += 1;
+      byJoint.set(error.target, joint);
+      const side = bySide.get(joint.side);
+      side.sum += error.error;
+      side.max = Math.max(side.max, error.error);
+      side.count += 1;
+    }
+  }
+  return {
+    joints: [...byJoint.values()].map((entry) => ({
+      source: entry.source,
+      target: entry.target,
+      side: entry.side,
+      avgError: round(entry.sum / Math.max(1, entry.count)),
+      maxError: round(entry.max),
+    })).sort((a, b) => b.maxError - a.maxError),
+    sides: Object.fromEntries([...bySide.entries()].map(([side, entry]) => [side, {
+      avgError: round(entry.sum / Math.max(1, entry.count)),
+      maxError: round(entry.max),
+      sampleCount: entry.count,
+    }])),
+  };
+}
+
+function sideForBone(name) {
+  if (/right|\.r$/i.test(name)) return 'right';
+  if (/left|\.l$/i.test(name)) return 'left';
+  return 'center';
+}
+
+function aggregateRollByBone(report) {
+  const byBone = new Map();
+  for (const frame of report.rollError || []) {
+    for (const error of frame.errors || []) {
+      const bone = byBone.get(error.target) || { source: error.source, target: error.target, sumAbs: 0, maxAbs: 0, signedAtMax: 0, count: 0 };
+      const abs = Math.abs(error.errorDeg);
+      bone.sumAbs += abs;
+      if (abs >= bone.maxAbs) {
+        bone.maxAbs = abs;
+        bone.signedAtMax = error.errorDeg;
+      }
+      bone.count += 1;
+      byBone.set(error.target, bone);
+    }
+  }
+  return [...byBone.values()].map((entry) => ({
+    source: entry.source,
+    target: entry.target,
+    avgAbsDeg: round(entry.sumAbs / Math.max(1, entry.count), 3),
+    maxAbsDeg: round(entry.maxAbs, 3),
+    signedDegAtMax: round(entry.signedAtMax, 3),
+  })).sort((a, b) => b.maxAbsDeg - a.maxAbsDeg);
+}
+
+function aggregateSword(report) {
+  const rows = report.swordTipError || [];
+  const gripErrors = rows.map((entry) => entry.weaponGripError);
+  const tipErrors = rows.map((entry) => entry.bladeTipError);
+  const worstTip = rows.reduce((best, entry) => (!best || entry.bladeTipError > best.bladeTipError ? entry : best), null);
+  return {
+    avgGripError: round(avg(gripErrors)),
+    maxGripError: round(max(gripErrors)),
+    avgTipError: round(avg(tipErrors)),
+    maxTipError: round(max(tipErrors)),
+    worstTipTime: worstTip ? round(worstTip.time, 6) : null,
+    policy: 'observation-only; sword landmarks are not arm solver inputs',
+  };
+}
+
+function buildLayerMetrics(report, toggles) {
+  const fkByJoint = aggregateFkByJoint(report);
+  const rollByBone = aggregateRollByBone(report);
+  const sword = aggregateSword(report);
+  return {
+    projectedPins: {
+      enabled: Boolean(toggles['projected-pins']),
+      samples: report.projectedJointReport.length,
+      jointsPerKey: SOURCE_BONES.length,
+    },
+    fk: {
+      enabled: Boolean(toggles.fk),
+      avgError: round(avg(report.fkErrorReport.map((entry) => entry.avgError))),
+      maxError: round(max(report.fkErrorReport.map((entry) => entry.maxError))),
+      byJoint: fkByJoint.joints,
+      bySide: fkByJoint.sides,
+    },
+    ik: {
+      enabled: Boolean(toggles.ik),
+      avgError: round(avg(report.ikRefinementReport.map((entry) => entry.avgError))),
+      maxError: round(max(report.ikRefinementReport.map((entry) => entry.maxError))),
+      clampedCount: report.ikRefinementReport.flatMap((entry) => entry.operations || []).filter((entry) => entry.wasClamped).length,
+    },
+    basis: {
+      enabled: Boolean(toggles.basis),
+      selectedSourceBones: SOURCE_BONES,
+      selectedTargetBones: TARGET_BONES,
+    },
+    roll: {
+      enabled: Boolean(toggles.roll),
+      maxAbsErrorDeg: round(max(report.rollError.flatMap((entry) => entry.errors.map((roll) => Math.abs(roll.errorDeg))))),
+      byBone: rollByBone,
+    },
+    sword: {
+      enabled: Boolean(toggles.sword),
+      ...sword,
+    },
+  };
+}
+
+function buildDiagnosticFindings(layerMetrics) {
+  const findings = [];
+  const worstJoint = layerMetrics.fk.byJoint?.[0];
+  const right = layerMetrics.fk.bySide?.right;
+  const left = layerMetrics.fk.bySide?.left;
+  const worstRoll = layerMetrics.roll.byBone?.[0];
+  if (layerMetrics.fk.enabled && worstJoint) findings.push(`Worst FK joint position is ${worstJoint.target} from ${worstJoint.source}: avg ${worstJoint.avgError}, max ${worstJoint.maxError}.`);
+  if (layerMetrics.fk.enabled && left && right) findings.push(`Left arm FK position is worse than right: left avg ${left.avgError}, right avg ${right.avgError}.`);
+  if (layerMetrics.roll.enabled && worstRoll) findings.push(`Worst roll divergence is ${worstRoll.target}: avg abs ${worstRoll.avgAbsDeg} deg, max abs ${worstRoll.maxAbsDeg} deg.`);
+  if (layerMetrics.sword.enabled) findings.push(`Sword grip error is ${layerMetrics.sword.avgGripError} avg while blade tip error is ${layerMetrics.sword.avgTipError} avg, so tip/orientation divergence dominates attachment placement.`);
+  if (layerMetrics.fk.enabled && layerMetrics.fk.avgError < 0.25) findings.push(`FK-only reconstruction is structurally close enough for silhouette analysis before IK/roll: avg ${layerMetrics.fk.avgError}, max ${layerMetrics.fk.maxError}.`);
+  if (layerMetrics.roll.enabled && layerMetrics.roll.maxAbsErrorDeg > 45) findings.push(`Roll remains dangerous: max abs roll error ${layerMetrics.roll.maxAbsErrorDeg} deg can visually destroy a pose even when joint positions are close.`);
+  return findings;
+}
+
+function firstDivergenceLayer(layerMetrics) {
+  if (layerMetrics.fk.enabled && layerMetrics.fk.avgError > 0.15) return 'fk';
+  if (layerMetrics.roll.enabled && layerMetrics.roll.maxAbsErrorDeg > 45) return 'roll';
+  if (layerMetrics.sword.enabled && layerMetrics.sword.avgTipError > layerMetrics.sword.avgGripError * 2) return 'sword';
+  if (layerMetrics.ik.enabled && layerMetrics.ik.avgError > layerMetrics.fk.avgError) return 'ik';
+  return 'none-detected';
+}
+
+function writeDiagnosticSummary(outDir, payload) {
+  const lines = [
+    '# OneHandReady Projection Diagnostic',
+    '',
+    `Generated: ${payload.generatedAt}`,
+    `Clip: ${payload.clip}`,
+    `Layers: ${Object.entries(payload.toggles).filter(([, enabled]) => enabled).map(([name]) => name).join(', ') || 'none'}`,
+    `First divergence layer: ${payload.diagnostics.firstDivergenceLayer}`,
+    '',
+    '## Top Findings',
+    ...payload.diagnostics.findings.map((finding, index) => `${index + 1}. ${finding}`),
+    '',
+    '## Metrics',
+    `- FK avg/max: ${payload.layerMetrics.fk.avgError} / ${payload.layerMetrics.fk.maxError}`,
+    `- Sword grip avg/max: ${payload.layerMetrics.sword.avgGripError} / ${payload.layerMetrics.sword.maxGripError}`,
+    `- Sword tip avg/max: ${payload.layerMetrics.sword.avgTipError} / ${payload.layerMetrics.sword.maxTipError}`,
+    `- Roll max abs: ${payload.layerMetrics.roll.maxAbsErrorDeg} deg`,
+    '',
+    'This artifact is diagnostic-only. It does not promote candidates or modify production retarget behavior.',
+    '',
+  ];
+  fs.writeFileSync(path.join(outDir, 'diagnostic_summary.md'), lines.join('\n'));
+}
+
 function sampleMeshPoints(THREE, root, maxPerMesh = 160) {
   const samples = [];
   root.updateMatrixWorld(true);
@@ -558,12 +742,12 @@ def bounds_for(frame, view, panel):
         pts += frame.get(key, [])
     for p in frame.get('projectedPins', {}).values():
         pts.append(p.get('projectedWorld'))
-    for group in ['fkActual','ikActual']:
+    for group in ['meshyActual','fkActual','ikActual']:
         for p in frame.get(group, {}).values():
             pts.append(p)
     if frame.get('sword'):
         pts.append(frame['sword'].get('weaponGripTargetWorld')); pts.append(frame['sword'].get('bladeTipTargetWorld'))
-    for t in frame.get('triads', []):
+    for t in frame.get('fpsTriads', []) + frame.get('meshyTriads', []) + frame.get('triads', []):
         pts.append(t.get('head')); pts.append(t.get('tail'))
     pts = [v(p) for p in pts if isinstance(p, list)]
     if not pts: return (0,0,1)
@@ -592,8 +776,21 @@ def draw_chain(points, names, panel, view, bounds, color, w=4):
         prev = p
 def add(a,b): return [a[0]+b[0],a[1]+b[1],a[2]+b[2]]
 def mul(a,s): return [a[0]*s,a[1]*s,a[2]*s]
+def draw_triad(t, panel, view, bounds, palette, label_prefix=''):
+    if not t or t.get('missing'): return
+    h = v(t.get('head'))
+    tail = v(t.get('tail'))
+    dot(h, panel, view, bounds, palette.get('joint',(255,255,255)), 5)
+    line(h, tail, panel, view, bounds, palette.get('forward',(220,220,220)), 3)
+    line(h, add(h, mul(v(t.get('actualUp')), .18)), panel, view, bounds, palette.get('up',(52,211,153)), 4)
+    line(h, add(h, mul(v(t.get('side')), .15)), panel, view, bounds, palette.get('side',(129,140,248)), 3)
+    if t.get('desiredUp'):
+        line(h, add(h, mul(v(t.get('desiredUp')), .21)), panel, view, bounds, palette.get('desired',(248,113,113)), 4)
+    x,y = project(h, panel, view, bounds)
+    if panel[2] - panel[0] > 280:
+        d.text((x+5,y-10), f"{label_prefix}{t.get('name','')}", fill=palette.get('label',(226,232,240)), font=small)
 
-d.text((18,16), 'Meshy Projection Workspace: projected pins=magenta, FK=cyan, IK=blue, triad up green/red', fill=(255,240,180), font=font)
+d.text((18,16), 'Meshy Projection Workspace: projected pins magenta, Meshy actual gray, FK cyan, IK blue, FPS basis amber, Meshy basis cyan, up green, desired up red, sword yellow', fill=(255,240,180), font=font)
 d.text((18,42), f"clip={data.get('clip')} keys={data.get('sourceKeyCount')} diagnostic-only={data.get('productionBehaviorModified') == False}", fill=(202,213,226), font=small)
 views = ['front','top']
 panel_w = W // max(1, len(frames))
@@ -609,6 +806,8 @@ for fi, frame in enumerate(frames):
         projected = {k: v.get('projectedWorld') for k,v in frame.get('projectedPins', {}).items()}
         draw_chain(projected, ['Arm.R','Forearm.R','Hand.R'], panel, view, bounds, (244,114,182), 5)
         draw_chain(projected, ['Arm.L','Forearm.L','Hand.L'], panel, view, bounds, (244,114,182), 5)
+        draw_chain(frame.get('meshyActual', {}), ['RightArm','RightForeArm','RightHand'], panel, view, bounds, (148,163,184), 3)
+        draw_chain(frame.get('meshyActual', {}), ['LeftArm','LeftForeArm','LeftHand'], panel, view, bounds, (148,163,184), 3)
         draw_chain(frame.get('fkActual', {}), ['RightArm','RightForeArm','RightHand'], panel, view, bounds, (34,211,238), 4)
         draw_chain(frame.get('fkActual', {}), ['LeftArm','LeftForeArm','LeftHand'], panel, view, bounds, (34,211,238), 4)
         draw_chain(frame.get('ikActual', {}), ['RightArm','RightForeArm','RightHand'], panel, view, bounds, (96,165,250), 2)
@@ -617,11 +816,16 @@ for fi, frame in enumerate(frames):
             s = frame['sword']
             line(s.get('weaponGripTargetWorld'), s.get('bladeTipTargetWorld'), panel, view, bounds, (250,204,21), 5)
             dot(s.get('weaponGripTargetWorld'), panel, view, bounds, (255,255,255), 5)
-        for t in frame.get('triads', []):
-            h = v(t.get('head'))
-            line(h, t.get('tail'), panel, view, bounds, (180,180,190), 1)
-            line(h, add(h, mul(v(t.get('actualUp')), .13)), panel, view, bounds, (52,211,153), 3)
-            if t.get('desiredUp'): line(h, add(h, mul(v(t.get('desiredUp')), .15)), panel, view, bounds, (248,113,113), 3)
+        for t in frame.get('fpsTriads', []):
+            draw_triad(t, panel, view, bounds, {
+                'joint': (251,191,36), 'forward': (245,158,11), 'up': (22,163,74),
+                'side': (168,85,247), 'desired': (248,113,113), 'label': (251,191,36)
+            }, 'F:')
+        for t in frame.get('meshyTriads', frame.get('triads', [])):
+            draw_triad(t, panel, view, bounds, {
+                'joint': (34,211,238), 'forward': (125,211,252), 'up': (52,211,153),
+                'side': (129,140,248), 'desired': (248,113,113), 'label': (125,211,252)
+            }, 'M:')
         sword = frame.get('sword') or {}
         d.text((panel[0]+8,panel[3]-22), f"fkAvg={frame.get('fkAvgError')} swordTip={sword.get('bladeTipError')} rollMax={frame.get('rollMaxAbsErrorDeg')}", fill=(248,220,160), font=small)
 out.parent.mkdir(parents=True, exist_ok=True)
@@ -659,10 +863,12 @@ async function main() {
   const frames = [];
   const report = {
     projectedJointReport: [],
+    actualJointReport: [],
     fkErrorReport: [],
     ikRefinementReport: [],
     swordTipError: [],
     rollError: [],
+    boneOrientationBasis: [],
   };
   const renderEvery = Math.max(1, Math.floor(sourceTimes.length / Math.max(1, Number(args.maxRenderFrames || 7))));
   for (let index = 0; index < sourceTimes.length; index += 1) {
@@ -673,6 +879,8 @@ async function main() {
     applyClipPose(THREE, fpsRoot, readyClip, time);
     const projected = projectSourceJoints(THREE, fpsRoot, meshyRoot, projectionScale);
     for (const [source, entry] of Object.entries(projected)) report.projectedJointReport.push({ time, source, ...entry });
+    const meshyActual = Object.fromEntries(TARGET_BONES.map((name) => [name, point(worldPosition(THREE, find(meshyRoot, name) || requireNode(meshyRoot, 'Spine02')))]));
+    for (const [target, actualWorld] of Object.entries(meshyActual)) report.actualJointReport.push({ time, target, actualWorld });
     let fkActual = {};
     if (args.layers.has('fk')) {
       const fkOps = applyFkProjection(THREE, meshyRoot, projected);
@@ -691,22 +899,27 @@ async function main() {
     if (sword) report.swordTipError.push({ time, weaponGripError: sword.weaponGripError, bladeTipError: sword.bladeTipError, policy: sword.policy });
     const rolls = args.layers.has('roll') ? rollErrors(THREE, fpsRoot, meshyRoot) : [];
     if (rolls.length) report.rollError.push({ time, errors: rolls, maxAbsErrorDeg: round(max(rolls.map((entry) => Math.abs(entry.errorDeg)))) });
+    const sourceTriads = args.layers.has('basis') ? SOURCE_BONES.map((sourceName) => triad(THREE, fpsRoot, sourceName, sourceName === 'Weapon.R' ? [0, 1, 0] : [0, 0, 1])) : [];
+    const targetTriads = args.layers.has('basis') ? TARGET_BONES.map((targetName) => {
+      const sourceName = Object.entries(BONE_MAP).find(([, target]) => target === targetName)?.[0] || '';
+      const basic = triad(THREE, meshyRoot, targetName, targetName === 'WeaponGrip' ? [0, 1, 0] : [0, -1, 0]);
+      const desired = sourceName ? desiredUpForTarget(THREE, fpsRoot, meshyRoot, sourceName, new THREE.Vector3().fromArray(basic.forward || [0, 0, 1])) : null;
+      return triad(THREE, meshyRoot, targetName, targetName === 'WeaponGrip' ? [0, 1, 0] : [0, -1, 0], desired);
+    }) : [];
+    if (args.layers.has('basis')) report.boneOrientationBasis.push({ time, source: sourceTriads, target: targetTriads });
     if (index % renderEvery === 0 || index === sourceTimes.length - 1) {
-      const triads = args.layers.has('basis') ? TARGET_BONES.map((targetName) => {
-        const sourceName = Object.entries(BONE_MAP).find(([, target]) => target === targetName)?.[0] || '';
-        const basic = triad(THREE, meshyRoot, targetName, targetName === 'WeaponGrip' ? [0, 1, 0] : [0, -1, 0]);
-        const desired = sourceName ? desiredUpForTarget(THREE, fpsRoot, meshyRoot, sourceName, new THREE.Vector3().fromArray(basic.forward || [0, 0, 1])) : null;
-        return triad(THREE, meshyRoot, targetName, targetName === 'WeaponGrip' ? [0, 1, 0] : [0, -1, 0], desired);
-      }) : [];
       frames.push({
         time,
         fpsMesh: sampleMeshPoints(THREE, fpsRoot),
         meshyMesh: sampleMeshPoints(THREE, meshyRoot),
         projectedPins: args.layers.has('projected-pins') ? projected : {},
+        meshyActual,
         fkActual,
         ikActual,
         sword,
-        triads,
+        triads: targetTriads,
+        fpsTriads: sourceTriads,
+        meshyTriads: targetTriads,
         fkAvgError: report.fkErrorReport.at(-1)?.avgError ?? null,
         rollMaxAbsErrorDeg: report.rollError.at(-1)?.maxAbsErrorDeg ?? null,
       });
@@ -715,12 +928,23 @@ async function main() {
   fs.mkdirSync(args.out, { recursive: true });
   const dataPath = path.join(args.out, 'projection_workspace.json');
   const pngPath = path.join(args.out, 'projection_workspace.png');
+  const toggles = Object.fromEntries(ALL_LAYERS.map((layer) => [layer, args.layers.has(layer)]));
   const summary = {
     fkAvgError: round(avg(report.fkErrorReport.map((entry) => entry.avgError))),
     fkMaxError: round(max(report.fkErrorReport.map((entry) => entry.maxError))),
     swordTipAvgError: round(avg(report.swordTipError.map((entry) => entry.bladeTipError))),
     swordTipMaxError: round(max(report.swordTipError.map((entry) => entry.bladeTipError))),
     rollMaxAbsErrorDeg: round(max(report.rollError.flatMap((entry) => entry.errors.map((roll) => Math.abs(roll.errorDeg))))),
+  };
+  const layerMetrics = buildLayerMetrics(report, toggles);
+  const diagnostics = {
+    firstDivergenceLayer: firstDivergenceLayer(layerMetrics),
+    findings: buildDiagnosticFindings(layerMetrics),
+    fkOnlyAlreadyClose: layerMetrics.fk.enabled ? layerMetrics.fk.avgError < 0.25 && layerMetrics.fk.maxError < 0.3 : null,
+    rollStillDangerous: layerMetrics.roll.enabled ? layerMetrics.roll.maxAbsErrorDeg > 45 : null,
+    swordLikelyCause: layerMetrics.sword.enabled
+      ? (layerMetrics.sword.avgTipError > layerMetrics.sword.avgGripError * 2 ? 'attachment-orientation-or-tip-axis' : 'arm-structure-or-grip-placement')
+      : null,
   };
   const payload = {
     schema: 'pose-lab-meshy-projection-workspace-v1',
@@ -737,14 +961,25 @@ async function main() {
       projectionScale: round(projectionScale, 6),
       rule: 'project joint positions through calibrated T-pose frames; do not transfer quaternions or solve roll before FK',
     },
-    toggles: Object.fromEntries(ALL_LAYERS.map((layer) => [layer, args.layers.has(layer)])),
+    toggles,
+    layerMetrics,
+    diagnostics,
     reports: report,
     summary,
     renderFrames: frames,
   };
   fs.writeFileSync(dataPath, JSON.stringify(payload, null, 2) + '\n');
+  writeDiagnosticSummary(args.out, payload);
   renderProjectionSheet(dataPath, pngPath);
-  console.log(JSON.stringify({ ok: true, data: path.relative(projectRoot, dataPath), png: path.relative(projectRoot, pngPath), sourceKeyCount: sourceTimes.length, summary }, null, 2));
+  console.log(JSON.stringify({
+    ok: true,
+    data: path.relative(projectRoot, dataPath),
+    png: path.relative(projectRoot, pngPath),
+    diagnosticSummary: path.relative(projectRoot, path.join(args.out, 'diagnostic_summary.md')),
+    sourceKeyCount: sourceTimes.length,
+    summary,
+    diagnostics,
+  }, null, 2));
 }
 
 main().catch((error) => {
