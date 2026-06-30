@@ -34,8 +34,8 @@ assert(js.includes('cancelWeaponGesture()') && js.includes('this.cancelWeaponGes
 assert(js.includes("localStorage.setItem('poseLab.weaponGizmoTuning'"), 'save should persist exact tuned weapon values for handoff');
 assert(js.includes('this.weaponTuningSnippet(values)'), 'save/readout should emit a rig-profiles.js snippet');
 assert(js.includes('tipLocalPosition: [') && js.includes('values.tipLocalPosition.join'), 'weapon save snippet should preserve the blade tip landmark');
-assert(rigProfiles.includes("label: 'FPS Arms'") && rigProfiles.includes('handLocalOffset: [0, 0, 0]') && rigProfiles.includes('modelLocalOffset: [0.06126, -0.07096, -0.00135]'), 'FPS Arms should save the accepted weapon proxy offsets');
-assert(rigProfiles.includes('rotationDeg: [178.343, 4.512, 109.315]') && rigProfiles.includes('scale: 0.323'), 'FPS Arms should save the accepted weapon attachment rotation and scale');
+assert(rigProfiles.includes("label: 'FPS Arms'") && rigProfiles.includes('handLocalOffset: [0, 0, 0]') && rigProfiles.includes('modelLocalOffset: [0.00424, -0.0167, 0.01744]'), 'FPS Arms should save the accepted weapon proxy offsets');
+assert(rigProfiles.includes('rotationDeg: [-179.998, -4.747, 111.678]') && rigProfiles.includes('scale: 0.323'), 'FPS Arms should save the accepted weapon attachment rotation and scale');
 assert(css.includes('#weaponPanel') && css.includes('sheet-weapon'), 'Weapon panel should have phone critique sheet styling');
 assert(!css.includes('body.critique-mode #weaponPanel { display: none !important; }'), 'critique mode must not globally hide the Weapon panel');
 

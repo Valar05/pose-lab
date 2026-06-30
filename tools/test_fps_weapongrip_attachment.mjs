@@ -15,7 +15,7 @@ assert(player.includes('scale: 0.323'), 'FPS weapon should use the source-tip so
 assert(player.includes('position: [0, 0, 0]'), 'FPS Meshy weapon should stay on the authored WeaponR grip origin; placeholder local position drifts this replacement mesh off hand');
 assert(player.includes('gripLocalPosition: [0.67888, -0.07803, -0.06249]'), 'FPS weapon should preserve the semantic/manual saber hilt candidate');
 assert(player.includes('tipLocalPosition: [-0.95561, 0.1368, 0]'), 'FPS weapon tip marker should be derived from the Meshy blade tip in attachment-local space');
-assert(player.includes('rotationDeg: [178.343, 4.512, 109.315]'), 'FPS weapon should use the manually saved saber rotation');
+assert(player.includes('rotationDeg: [-179.998, -4.747, 111.678]'), 'FPS weapon should use the manually saved saber rotation');
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({ checked: ['fps-weapongrip-saber-handle-tip-solved'] }, null, 2));
