@@ -268,7 +268,7 @@ const BASE_RIG_PROFILES = {
       socketBone: 'WeaponGrip',
       positionMode: 'right-hand',
       handLocalOffset: [0.095, 0.035, -0.01],
-      modelLocalOffset: [0.21119, -0.07415, 0.23297],
+      modelLocalOffset: [-0.18003, -0.0236, -0.13396],
       gripOffset: [0, 0, 0],
       tipOffset: [0, 0, 0.85],
       visibleClipPatterns: ['\\[FPS-REST-ARMS'],
