@@ -15,19 +15,24 @@ assert(js.includes('function meaningfulBoneChild'), 'runtime should ignore same-
 assert(js.includes('scoreNamedBoneCandidate'), 'runtime should score duplicate bone candidates deterministically');
 assert(js.includes('const clipNames = new Set(options.clipNames || options.clips || [])'), 'mapped rotation retarget should support clip filtering');
 assert(js.includes("const mappedTag = spec.clipTag || (spec.retargetMode === 'weapon-path-ik' ? 'SABRE' : 'MC')"), 'mapped retarget should support explicit clip tags including FPS-SWORD-UPPER');
+assert(js.includes('function validateAutoRetargetGenerationGroups'), 'runtime should fail auto-retarget group collisions before generation');
+assert(js.includes('generationGroup') && js.includes('shouldReplaceGeneratedClip(clip, generationGroup)'), 'generated clip replacement should use exact generation groups');
+assert(!js.includes('startsWith(originPrefix)') && !js.includes('key.startsWith(originPrefix)'), 'generated clip replacement must not use broad prefix deletion');
 assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }"), 'Meshy startup should use the accepted FPS/Meshy T-pose calibration');
 assert(profiles.includes("sourceKey: 'player'"), 'Meshy generated clips should source from FPS Arms');
 assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy generated clips should be tagged FPS-SWORD-UPPER');
-assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(-120)'), 'Meshy should expose the accepted FPS rest-arms CAL--120 clip');
+assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(0)'), 'Meshy T-pose bridge should expose FPS rest-arms without pre-applying the old -120 hand-roll offset');
 assert(profiles.includes("RestProbe: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe should default to the exact accepted CAL--120 clip path');
-assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]'"), 'Meshy SwordReady should not promote a failed ready candidate before artifact acceptance');
+assert(profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'Meshy SwordReady should use the accepted golden OneHandReady record');
+assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'"), 'Meshy golden ready clip should preserve a stable generated origin path');
 assert(!profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Meshy SwordReady must not point at the rejected ready retarget path during recovery');
 assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe clip should preserve the accepted CAL--120 origin path');
 assert(!profiles.includes('defaultRestClip') && !js.includes('applyDefaultModelRestClip') && !js.includes('this.applyDefaultModelRestClips();'), 'accepted CAL--120 RestProbe must remain a generated clip, not mutate actor modelRestPose');
 assert(!profiles.includes('...[-150') && !profiles.includes('FPS-REST-ARMS-CAL-120') && !profiles.includes('FPS-REST-ARMS-CAL-90') && !profiles.includes('FPS-REST-ARMS-CAL--90'), 'Meshy should not expose rejected positive or sweep hand-roll calibration clips after accepting CAL--120');
-assert(profiles.includes("clipNames: [\n          'OneHandReady',\n        ]"), 'Meshy keeps the old FPS OneHandReady generator only as an unpromoted source path during recovery');
-assert(profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy manual weapon placement must remain locked as repository truth');
+assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'") && profiles.includes("clipNames: [\n          'OneHandReady',\n        ]"), 'Meshy should keep only the accepted golden OneHandReady generator');
+assert(profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy rig-local weapon placement must remain locked as repository truth');
 assert(profiles.includes('modelLocalOffset: [0.00424, -0.0167, 0.01744]') && profiles.includes('gripLocalPosition: [0.67888, -0.07803, -0.06249]'), 'FPS manual weapon placement must remain locked as repository truth');
+assert(!profiles.includes('worldJointProjectionSocketOrientation') && !js.includes('handDeltaWorld') && !js.includes('restRelative.socketWorldQuaternion'), 'Meshy visual IK must not install special socket orientation policies; manual attachment should keep its local hand-to-blade angle');
 assert(socketSolver.includes('MANUAL_PLACEMENT_LOCK') && socketSolver.includes('promotable: false') && socketSolver.includes('productionSnippet: null') && socketSolver.includes('candidateModelLocalOffset: null'), 'socket diagnostics must not be able to promote or print production manual-placement overrides');
 for (const deferred of ['OneHandReadied -> meshyCharacter', 'OneHandAttack1 -> meshyCharacter', 'OneHandAttack5 -> meshyCharacter', 'OneHandAirForwardAttack -> meshyCharacter']) {
   assert(!profiles.includes(deferred), `Meshy should defer generated attack/readied clip: ${deferred}`);

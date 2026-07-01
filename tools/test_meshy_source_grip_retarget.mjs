@@ -16,7 +16,7 @@ assert(!profiles.includes("positionGuidedArmClips: {\n          allClips: true")
 assert(profiles.includes("sourceKey: 'player'"), 'Meshy should source the new clips from FPS Arms');
 assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy should generate only FPS-SWORD-UPPER sword clips');
 assert(js.includes("fps-upper-key-convert source-authored-times"), 'Meshy FPS sword clips should report source-authored key conversion');
-assert(profiles.includes("targetWeapon: 'WeaponGrip'"), 'Meshy FPS sword retarget should key the WeaponGrip socket, not only the hand');
+assert(profiles.includes("targetWeapon: 'WeaponR'"), 'Meshy FPS sword retarget should key synthetic WeaponR, not only the hand or visible WeaponGrip');
 
 if (failures.length) throw new Error('rejected Scavenger GRIP tuning should not remain in the active Meshy profile: ' + failures.join('\n'));
 console.log(JSON.stringify({ checked: ['rejected-scavenger-grip-path-removed', 'fps-source-key-convert-sword-path-active'] }, null, 2));

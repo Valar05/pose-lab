@@ -21,11 +21,11 @@ for (const deferred of ['OneHandReadied -> meshyCharacter', 'OneHandAttack1 -> m
 assert(profiles.includes("channels: { translate: false, rotate: true, scale: false }"), 'Meshy sword clips should be rotate-only');
 assert(profiles.includes("positionPolicy: 'none'"), 'Meshy sword clips should not bake position channels');
 assert(profiles.includes("retargetMode: 'fps-upper-key-convert'"), 'Meshy should use FPS source key conversion');
-assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter'"), 'Meshy FPS sword clips should preserve mapped-arms origin');
+assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-SWORD-UPPER'") && profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'"), 'Meshy FPS sword clips should preserve exact mapped-arms origin groups');
 assert(profiles.includes("{ from: 'Arm.R', to: 'RightArm', strength: 0.85 }"), 'right upper arm should be converted from authored FPS Arm.R keys');
 assert(profiles.includes("{ from: 'Forearm.R', to: 'RightForeArm', strength: 1.0 }"), 'right forearm should be converted from authored FPS Forearm.R keys');
 assert(profiles.includes("{ from: 'Hand.R', to: 'RightHand', strength: 1.0 }"), 'right hand should be converted from authored FPS Hand.R keys');
-assert(profiles.includes("sourceWeapon: 'Weapon.R'") && profiles.includes("targetWeapon: 'WeaponGrip'"), 'WeaponGrip should be converted from authored FPS Weapon.R keys');
+assert(profiles.includes("sourceWeapon: 'Weapon.R'") && profiles.includes("targetWeapon: 'WeaponR'"), 'synthetic WeaponR should be converted from authored FPS Weapon.R keys');
 for (const rejected of ["sourceKey: 'orc'", "clipTag: 'IB-MC'", "standing_melee_attack_horizontal -> meshyCharacter", "mixamorigHips", "mixamorigRightUpLeg", "to: 'LeftFoot'", "to: 'RightFoot'", "to: 'Head'"]) {
   assert(!profiles.includes(rejected), `Meshy sword profile must not retain rejected full-body token: ${rejected}`);
 }

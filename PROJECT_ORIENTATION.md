@@ -72,7 +72,7 @@ Use the visual QA harness or a fresh Android screenshot from the live browser wh
 1. Wake or launch the browser on the actual page URL.
 2. Wait for the page to finish loading and confirm the visible mode from the screenshot.
 3. Prefer the visual QA contact sheet for capture sequences and the newest Android screenshot for browser chrome or DOM state.
-4. Do not rely on the old standalone `screencap` path. It is not the source of truth for this workflow.
+4. Do not rely on the old standalone `screencap` path. It is deprecated for Pose Lab and is not the source of truth for this workflow.
 5. If the page looks stale, bump the cache token or hard-refresh before changing animation logic.
 
 ## Validation
@@ -125,7 +125,7 @@ The same contract now includes an Initiative Audit: check, document, and test th
 
 ## Meshy FPS Sword Retarget Note
 
-The accepted Meshy/FPS result is currently only the `[FPS-REST-ARMS roll -120]` `0T-Pose` calibration. The previous `[FPS-SWORD-UPPER]` `OneHandReady` path and later FK/IK candidates are not accepted ready poses and must not be promoted to startup, aliases, or default clip visibility without a fresh visual/metric artifact. Use `node tools/meshy_ready_pose_workbench.mjs` to produce a candidate-only FPS reference artifact before attempting a new `OneHandReady` overlay. The next ready attempt should be an upper-body authored overlay from FPS reference frames, not another stacked resolver; sword orientation is ignored until the arm pose is visually sane. Meshy native walk/run clips remain direct clips, the real Meshy gun-sword/sabre stays attached at `WeaponGrip`, and Meshy FPV should anchor at the head with a forward offset rather than following the hands.
+The accepted Meshy/FPS results are the `[FPS-REST-ARMS roll -120]` `0T-Pose` calibration and the `OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]` golden ready record. The golden ready record uses right-hand roll `-120` and left-hand roll `-90`; invalid one-size roll sweep candidates were removed. Use `node tools/meshy_ready_pose_workbench.mjs` to produce a candidate-only FPS reference artifact before attempting a new `OneHandReady` overlay. The next ready attempt should be an upper-body authored overlay from FPS reference frames, not another stacked resolver; sword orientation is ignored until the arm pose is visually sane. Meshy native walk/run clips remain direct clips, the real Meshy gun-sword/sabre stays attached at `WeaponGrip`, and Meshy FPV should anchor at the head with a forward offset rather than following the hands.
 
 ## Meshy Promotion Gate
 

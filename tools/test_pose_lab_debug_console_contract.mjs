@@ -30,8 +30,23 @@ for (const snippet of [
   "case 'clip':",
   "case 'bone':",
   "case 'weapon':",
+  "case 'weapon-follow':",
+  "case 'weapon-visual-follow':",
+  "case 'weapon-tuning-state':",
   'debugWeaponState()',
+  'debugWeaponFollow(sampleArgs = [])',
+  'debugWeaponVisualFollow(sampleArgs = [])',
+  'debugWeaponTuningState()',
   "schema: 'pose-lab-live-weapon-state-v1'",
+  "schema: 'pose-lab-live-weapon-follow-v1'",
+  "schema: 'pose-lab-live-weapon-visual-follow-v1'",
+  "schema: 'pose-lab-live-weapon-tuning-state-v1'",
+  "schema: 'pose-lab-weapon-mesh-landmarks-v1'",
+  "readSavedWeaponGizmoTuning()",
+  "weaponVisualMeshLandmarks(actor = this.selectedWeaponActor())",
+  "savedIsPromotableEvidence",
+  "savedMatchesCurrentCache",
+  "savedDiffersFromCurrent",
   'basketFrontErrorDeg',
   'socketForwardToBladeErrorDeg',
   "case 'view':",
@@ -62,7 +77,7 @@ for (const snippet of [
   assert(source.includes(snippet), `missing debug CLI snippet: ${snippet}`);
 }
 
-for (const command of ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'weapon', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'fpv', 'beacon', 'capture', 'qa']) {
+for (const command of ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'weapon', 'weapon-follow', 'weapon-visual-follow', 'weapon-tuning-state', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'fpv', 'beacon', 'capture', 'qa']) {
   assert(source.includes(`'${command}'`), `missing command name in source: ${command}`);
 }
 
