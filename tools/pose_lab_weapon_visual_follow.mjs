@@ -35,7 +35,7 @@ async function main() {
   if (!args.bridge) throw new Error('missing --bridge URL');
   fs.mkdirSync(args.out, { recursive: true });
   const result = await sendPoseLabDebugCommand(args.bridge, args.command, { timeoutMs: 90000 });
-  const image = result?.image || {};
+  const image = result?.image || result?.live?.image || {};
   const decoded = decodeDataUrl(image.dataUrl);
   const pngPath = path.join(args.out, 'weapon_visual_follow.png');
   const jsonPath = path.join(args.out, 'weapon_visual_follow.json');
@@ -55,8 +55,17 @@ async function main() {
     ok: Boolean(result?.ok),
     schema: result?.schema || '',
     cacheToken: result?.cacheToken || '',
-    actor: result?.actor || '',
-    clip: result?.clip || '',
+    actor: result?.actor || result?.live?.actor || '',
+    clip: result?.clip || result?.live?.clip || '',
+    liveHilt: result?.live ? {
+      ok: Boolean(result?.ok),
+      pageUrl: result.live.pageUrl || '',
+      cacheToken: result.live.cacheToken || '',
+      debugBridge: result.live.debugBridge || null,
+      targetPolicy: result.live.targetPolicy || null,
+      distances: result.live.distances || null,
+      checks: result.live.checks || null,
+    } : null,
     json: path.relative(projectRoot, jsonPath),
     png: path.relative(projectRoot, pngPath),
     image: stored.image,

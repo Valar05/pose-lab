@@ -467,7 +467,7 @@ function measureSabreBounds(THREE, sabreRoot) {
 
 function activeMeshyReadyProfileContract() {
   const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
-  const visualIkStart = profiles.indexOf("clipTag: 'FPS-VISUAL-IK'");
+  const visualIkStart = profiles.indexOf("clipTag: 'FPS-VISUAL-IK-GOLDEN'");
   const nextClipTag = visualIkStart >= 0 ? profiles.indexOf('clipTag:', visualIkStart + 1) : -1;
   const blockEnd = nextClipTag > visualIkStart ? nextClipTag : profiles.indexOf('],', visualIkStart);
   const activeBlock = visualIkStart >= 0 && blockEnd > visualIkStart ? profiles.slice(visualIkStart, blockEnd) : '';
@@ -478,8 +478,8 @@ function activeMeshyReadyProfileContract() {
     replacesTracks: activeBlock.includes('replaceTracks: true'),
     restRelative: activeBlock.includes('restRelative: true'),
     postRollDownDelta: activeBlock.includes("mode: 'world-down-delta'"),
-    rightArmCanary: activeBlock.includes('rightArmCanary: true') && activeBlock.includes('rightMaxTwistDeg: 120'),
-    leftArmBounded: activeBlock.includes('leftMaxTwistDeg: 95'),
+    rightArmCanary: activeBlock.includes('rightArmCanary: true') && activeBlock.includes('maxTwistDeg: 180'),
+    leftArmBounded: activeBlock.includes("label: 'left'") && activeBlock.includes('rollOffsetDeg: -90'),
     fullRightChain: activeBlock.includes("sourceUpper: 'Arm.R'") && activeBlock.includes("sourceLower: 'Forearm.R'") && activeBlock.includes("sourceHand: 'Hand.R'"),
     fullLeftChain: activeBlock.includes("sourceUpper: 'Arm.L'") && activeBlock.includes("sourceLower: 'Forearm.L'") && activeBlock.includes("sourceHand: 'Hand.L'"),
     weaponDoesNotOverwriteHand: activeBlock.includes('enabled: true')

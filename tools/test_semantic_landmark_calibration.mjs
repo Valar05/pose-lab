@@ -54,6 +54,8 @@ assert(Array.isArray(pickedData.meshPoints) && pickedData.meshPoints.length > 10
 assert(poseLab.includes('pose-lab-semantic-weapon-landmark-candidate-v1'), 'Pose Lab should expose semantic candidate export schema');
 assert(poseLab.includes('pickSemanticWeaponLandmark'), 'Pose Lab should include semantic mesh picking');
 assert(poseLab.includes('worldToLocal(hit.point.clone())'), 'semantic picks should convert visible mesh point into weapon-local landmark values');
+assert(poseLab.includes('applySemanticLandmarkCandidate(target =') && poseLab.includes("gripLocalPosition"), 'Pose Lab should let a picked hilt candidate update the live attachment grip landmark');
+assert(poseLab.includes('actor.syncWeaponVisualAttachment?.({ forceSocket: true });'), 'applying a semantic hilt/tip should immediately resync the visible weapon');
 assert(poseLab.includes('SEMANTIC_LANDMARK_KEY'), 'semantic candidate should save to a separate localStorage key');
 assert(poseLab.includes('forceSelectedWeaponVisibleForTooling'), 'weapon tooling should force the selected weapon proxy visible');
 assert(poseLab.includes('selectedRealWeapon'), 'selected real weapon attachments should remain visible instead of depending only on clip-name gates');

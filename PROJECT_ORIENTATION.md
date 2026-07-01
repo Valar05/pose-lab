@@ -75,6 +75,12 @@ Use the visual QA harness or a fresh Android screenshot from the live browser wh
 4. Do not rely on the old standalone `screencap` path. It is deprecated for Pose Lab and is not the source of truth for this workflow.
 5. If the page looks stale, bump the cache token or hard-refresh before changing animation logic.
 
+## Offline Pose And Weapon Renderer
+
+Use `node tools/pose_lab_offline_render.mjs` when Meshy pose/weapon behavior must be verified without Android browser capture, debug bridge, or screencap. It loads the Meshy actor GLB and sabre GLB, applies the shared browser weapon runtime rules from `src/weapon-runtime-rules.mjs`, samples full-body pose chains plus weapon landmarks, draws the real sabre mesh point cloud, and writes `pose_weapon_render.png`, `pose_weapon_render.json`, and `pose_weapon_render_summary.md`.
+
+Run `node tools/test_pose_lab_offline_render_contract.mjs` after changing pose or weapon runtime code. `--assert-repro` is the red-build mode: it passes only when the offline renderer reproduces Meshy weapon behavior where the hilt collapses onto the wrist, drifts away from its captured hand-local target, or the visible blade cannot align to mapped FPS `Weapon.R`. `--assert-fixed` intentionally fails unless the requested clip is actually resolved offline, the applied hilt stays pinned to `WeaponGrip`, the hilt remains visibly displaced from the raw wrist/hand origin by the authored `modelLocalOffset`, and the visible hilt-to-tip blade direction matches mapped FPS `Weapon.R`. For Meshy synthetic sockets, `WeaponR` carries blade orientation while `WeaponGrip` is a stable displaced local child under `WeaponR`; compensate inherited bone scale when applying `modelLocalOffset` so the world-space hilt displacement does not shrink to the wrist. The configured hand-local palm target is diagnostic only; do not treat fallback GLB-clip output, palm marker coincidence, or hilt-to-socket pinning alone as proof that a browser-generated ready clip is fixed.
+
 ## Validation
 
 ```sh

@@ -4,13 +4,22 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-159';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-180';
+import {
+  applyWeaponAttachmentRuntimeRules,
+  applyWeaponSocketRuntimeRules,
+  captureWeaponLayerRuntimeState,
+  captureWeaponPinningRuntimeState,
+  pinWeaponLocalPointToDisplay as pinWeaponLocalPointToDisplayRuntime,
+  updateWeaponFallbackFromTipRuntime,
+} from './weapon-runtime-rules.mjs?v=pose-editor-180';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-180';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
 
 const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget';
-const LAB_CACHE_TOKEN = 'pose-editor-159';
+const LAB_CACHE_TOKEN = 'pose-editor-180';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
@@ -354,6 +363,8 @@ const UI = {
   semanticLandmarkToggle: document.getElementById('semanticLandmarkToggle'),
   semanticLandmarkPickHilt: document.getElementById('semanticLandmarkPickHilt'),
   semanticLandmarkPickTip: document.getElementById('semanticLandmarkPickTip'),
+  semanticLandmarkApplyHilt: document.getElementById('semanticLandmarkApplyHilt'),
+  semanticLandmarkApplyTip: document.getElementById('semanticLandmarkApplyTip'),
   semanticLandmarkClear: document.getElementById('semanticLandmarkClear'),
   semanticLandmarkExport: document.getElementById('semanticLandmarkExport'),
   weaponGizmoStatus: document.getElementById('weaponGizmoStatus'),
@@ -512,6 +523,24 @@ function screenPointForWorld(world, camera, rect) {
     x: rect.left + ((projected.x + 1) * 0.5 * rect.width),
     y: rect.top + ((1 - projected.y) * 0.5 * rect.height),
     z: projected.z,
+  };
+}
+
+function screenPointInsideRect(point, rect) {
+  return Boolean(point
+    && point.z >= -1
+    && point.z <= 1
+    && point.x >= rect.left
+    && point.x <= rect.left + rect.width
+    && point.y >= rect.top
+    && point.y <= rect.top + rect.height);
+}
+
+function clampScreenPointToRect(point, rect, padding = 12) {
+  return {
+    x: clampValue(Number(point?.x || 0), rect.left + padding, rect.left + Math.max(padding, rect.width - padding)),
+    y: clampValue(Number(point?.y || 0), rect.top + padding, rect.top + Math.max(padding, rect.height - padding)),
+    z: Number(point?.z || 0),
   };
 }
 
@@ -1602,6 +1631,21 @@ function armSideProjectionSetup(sourceRoot, targetRoot, side, sourceRestFrame, t
 }
 
 function buildFpsWorldJointProjectionClips(sharedClips, sourceRoot, targetRoot, options = {}) {
+  if (String(options.clipSuffix || '').includes('[FPS-VISUAL-IK R-120 L-90]')) {
+    const generated = buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, sourceRoot, targetRoot, sharedClips || [], {
+      clipName: 'OneHandReady ' + (options.clipSuffix || '-> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'),
+      sourceClipName: 'OneHandReady',
+      sourceRestClip: options.sourceRestClip || '0T-Pose',
+      timeSourceBone: options.timeSourceBone || 'Hand.R',
+      dropInitialRestKey: options.dropInitialRestKey !== false,
+    });
+    if (generated?.clip) {
+      const built = [generated.clip];
+      built.failures = 0;
+      built.fallback = false;
+      return built;
+    }
+  }
   const sourceLabel = options.sourceLabel || 'source';
   const targetLabel = options.targetLabel || 'target';
   const skipClipNames = new Set(options.skipClipNames || []);
@@ -4383,7 +4427,7 @@ class PoseActor {
     arc.frustumCulled = false;
     arc.visible = false;
     this.model.add(arc);
-    this.weaponProxy = { root, displayRoot, arc, config, handBone: rightHand?.name || '', leftHandBone: leftHand?.name || '', sourceSocketBone: sourceSocket?.name || '', syntheticSourceSocket, rightHand, leftHand, sourceSocket, arcKey: '', fkPlacementSignature: '', fkLocalPosition: null, fkLocalQuaternion: null };
+    this.weaponProxy = { root, displayRoot, arc, config, handBone: rightHand?.name || '', leftHandBone: leftHand?.name || '', sourceSocketBone: sourceSocket?.name || '', syntheticSourceSocket, rightHand, leftHand, sourceSocket, arcKey: '', fkPlacementSignature: '', fkLocalPosition: null, fkLocalQuaternion: null, syntheticFkSignature: '', syntheticFkLocalPosition: null, syntheticFkLocalQuaternion: null, syntheticPlacementSignature: '', syntheticHandLocalPosition: null };
     this.updateWeaponSocketTransform();
     return this.weaponProxy;
   }
@@ -4396,85 +4440,26 @@ class PoseActor {
     const animatedSourceSocketRotation = proxy.syntheticSourceSocket
       ? clipHasQuaternionTrackForBone(this.activeAction?._clip, proxy.syntheticSourceSocket.name)
       : false;
-    if (proxy.sourceSocket) {
-      proxy.root.position.set(0, 0, 0);
-      if (Array.isArray(proxy.config.modelLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
-      if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
-      return;
-    }
-    if (!proxy.rightHand) return;
-    this.model.updateMatrixWorld(true);
-    const rightWorld = Array.isArray(proxy.config.handLocalOffset)
-      ? proxy.rightHand.localToWorld(new THREE.Vector3().fromArray(proxy.config.handLocalOffset))
-      : worldPositionOf(proxy.rightHand);
-    const leftWorld = proxy.leftHand ? worldPositionOf(proxy.leftHand) : rightWorld.clone();
-    const socketWorld = (proxy.config.positionMode || 'two-hand-center') === 'right-hand' || !proxy.leftHand
-      ? rightWorld.clone()
-      : rightWorld.clone().add(leftWorld).multiplyScalar(0.5);
-    const local = this.model.worldToLocal(socketWorld);
-    if (Array.isArray(proxy.config.modelLocalOffset)) local.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
-    if (Array.isArray(proxy.config.gripOffset)) local.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
-    if (proxy.config.parentMode === 'synthetic-source-socket' && proxy.syntheticSourceSocket) {
-      const socketParent = proxy.syntheticSourceSocket;
-      const socketParentWorldPosition = socketWorld.clone();
-      const fallbackSocketWorldQuaternion = (() => {
-        const localQuaternion = new THREE.Quaternion();
-        if (Array.isArray(proxy.config.rotationDeg)) {
-          localQuaternion.setFromEuler(new THREE.Euler(...proxy.config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0))));
-        }
-        return worldQuaternionOf(this.model).multiply(localQuaternion).normalize();
-      })();
-      const handWorldInverse = proxy.rightHand.matrixWorld.clone().invert();
-      socketParent.position.copy(socketParentWorldPosition.applyMatrix4(handWorldInverse));
-      if (!animatedSourceSocketRotation) {
-        socketParent.quaternion.copy(worldQuaternionOf(proxy.rightHand).invert().multiply(fallbackSocketWorldQuaternion).normalize());
+    const signature = weaponProxyPlacementSignature(proxy.config, {
+      clipKey: this.activeAction?._clip ? clipKey(this.activeAction._clip) : '',
+      restPose: this.currentRestPose || '',
+    });
+    const result = applyWeaponSocketRuntimeRules(THREE, {
+      model: this.model,
+      proxy,
+      animatedSocketRotation,
+      animatedSourceSocketRotation,
+      force,
+      placementSignature: signature,
+    });
+    if (!result?.handled) return;
+    for (const object of [result.socketParent, result.root, proxy.root]) {
+      if (!object?.name) continue;
+      const rest = this.boneRest.get(object.name);
+      if (rest) {
+        rest.position.copy(object.position);
+        rest.quaternion.copy(object.quaternion);
       }
-      socketParent.updateMatrixWorld(true);
-      const socketWorldPosition = this.model.localToWorld(local.clone());
-      proxy.root.position.copy(socketWorldPosition.applyMatrix4(socketParent.matrixWorld.clone().invert()));
-      if (!animatedSocketRotation) proxy.root.quaternion.identity();
-      const socketRest = this.boneRest.get(socketParent.name);
-      if (socketRest) {
-        socketRest.position.copy(socketParent.position);
-        socketRest.quaternion.copy(socketParent.quaternion);
-      }
-      const rootRest = this.boneRest.get(proxy.root.name);
-      if (rootRest) {
-        rootRest.position.copy(proxy.root.position);
-        rootRest.quaternion.copy(proxy.root.quaternion);
-      }
-      return;
-    }
-    if (proxy.config.parentMode === 'hand-fk') {
-      const signature = weaponProxyPlacementSignature(proxy.config, {
-        clipKey: this.activeAction?._clip ? clipKey(this.activeAction._clip) : '',
-        restPose: this.currentRestPose || '',
-      });
-      if (force || proxy.fkPlacementSignature !== signature || !proxy.fkLocalPosition || !proxy.fkLocalQuaternion) {
-        const socketWorldPosition = this.model.localToWorld(local.clone());
-        proxy.fkLocalPosition = socketWorldPosition.clone().applyMatrix4(proxy.rightHand.matrixWorld.clone().invert());
-        const socketLocalQuaternion = new THREE.Quaternion();
-        if (Array.isArray(proxy.config.rotationDeg)) {
-          socketLocalQuaternion.setFromEuler(new THREE.Euler(...proxy.config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0))));
-        }
-        const socketWorldQuaternion = worldQuaternionOf(this.model).multiply(socketLocalQuaternion).normalize();
-        proxy.fkLocalQuaternion = worldQuaternionOf(proxy.rightHand).invert().multiply(socketWorldQuaternion).normalize();
-        proxy.fkPlacementSignature = signature;
-        proxy.root.position.copy(proxy.fkLocalPosition);
-        proxy.root.quaternion.copy(proxy.fkLocalQuaternion);
-        const rest = this.boneRest.get(proxy.root.name);
-        if (rest) {
-          rest.position.copy(proxy.root.position);
-          rest.quaternion.copy(proxy.root.quaternion);
-        }
-      }
-      return;
-    }
-    if (!proxy.leftHand) return;
-    proxy.root.position.copy(local);
-    if (!animatedSocketRotation) {
-      const modelWorldQuat = worldQuaternionOf(this.model).invert();
-      proxy.root.quaternion.copy(modelWorldQuat.multiply(worldQuaternionOf(proxy.rightHand))).normalize();
     }
   }
 
@@ -4525,81 +4510,20 @@ class PoseActor {
     const weaponRoot = proxy?.model;
     const tip = proxy?.tipMarker;
     if (!weaponRoot || !config) return null;
-    const attachmentScale = Number(config.scale ?? 1);
-    const displayRoot = proxy.displayRoot || weaponRoot.parent || proxy.root;
-    const socketScaleCompensation = new THREE.Vector3(1, 1, 1);
-    if ((proxy?.config?.parentMode === 'hand-fk' || proxy?.config?.parentMode === 'synthetic-source-socket') && proxy.root && this.model) {
-      this.model.updateMatrixWorld(true);
-      proxy.root.updateMatrixWorld(true);
-      const modelWorldScale = this.model.getWorldScale(new THREE.Vector3());
-      const socketWorldScale = proxy.root.getWorldScale(new THREE.Vector3());
-      socketScaleCompensation.set(
-        modelWorldScale.x / Math.max(0.000001, Math.abs(socketWorldScale.x)),
-        modelWorldScale.y / Math.max(0.000001, Math.abs(socketWorldScale.y)),
-        modelWorldScale.z / Math.max(0.000001, Math.abs(socketWorldScale.z))
-      );
-    }
-    if (displayRoot) {
-      displayRoot.position.set(0, 0, 0);
-      displayRoot.quaternion.identity();
-      displayRoot.scale.copy(socketScaleCompensation);
-      displayRoot.visible = true;
-    }
-    weaponRoot.scale.setScalar(attachmentScale);
-    if (Array.isArray(config.rotationDeg)) weaponRoot.rotation.set(...config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
-    if (Array.isArray(config.position)) weaponRoot.position.fromArray(config.position);
-    else weaponRoot.position.set(0, 0, 0);
-    if (Array.isArray(config.gripLocalPosition)) {
-      const localGrip = new THREE.Vector3().fromArray(config.gripLocalPosition);
-      localGrip.multiplyScalar(attachmentScale);
-      localGrip.applyQuaternion(weaponRoot.quaternion);
-      weaponRoot.position.sub(localGrip);
-    }
+    applyWeaponAttachmentRuntimeRules(THREE, { actorModel: this.model, proxy, config });
     if (tip) {
-      if (Array.isArray(config.tipLocalPosition)) {
-        const localTip = new THREE.Vector3().fromArray(config.tipLocalPosition);
-        localTip.multiplyScalar(attachmentScale);
-        localTip.applyQuaternion(weaponRoot.quaternion);
-        localTip.add(weaponRoot.position);
-        tip.position.copy(localTip);
-      } else {
-        tip.position.fromArray(config.tipOffset || this.info.weaponProxy?.tipOffset || [0, 0, 0.85]);
-      }
       const rest = this.boneRest.get(tip.name);
       if (rest) rest.position.copy(tip.position);
     }
-    this.updateWeaponFallbackFromTip();
     return proxy;
   }
 
+  pinWeaponLocalPointToDisplay(weaponRoot, displayRoot, localPoint = [0, 0, 0], targetLocal = [0, 0, 0]) {
+    return pinWeaponLocalPointToDisplayRuntime(THREE, weaponRoot, displayRoot, localPoint, targetLocal);
+  }
+
   updateWeaponFallbackFromTip() {
-    const proxy = this.weaponProxy;
-    const displayRoot = proxy?.displayRoot;
-    if (!displayRoot) return null;
-    const blade = displayRoot.children.find((entry) => entry.userData?.weaponFallbackBlade);
-    const hilt = displayRoot.children.find((entry) => entry.userData?.weaponFallbackHilt);
-    if (!blade) return null;
-    const tipLocal = proxy?.tipMarker
-      ? proxy.tipMarker.position.clone()
-      : new THREE.Vector3().fromArray(proxy?.config?.tipOffset || [0, 0, Number(proxy?.config?.length || 0.85)]);
-    let length = tipLocal.length();
-    if (length < 0.0001) {
-      length = Number(proxy?.config?.length || 0.85);
-      tipLocal.set(0, 0, length);
-    }
-    const dir = tipLocal.clone().normalize();
-    const baseLength = Number(blade.userData?.weaponFallbackBladeBaseLength || proxy?.config?.length || 0.85);
-    blade.position.copy(tipLocal).multiplyScalar(0.5);
-    blade.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
-    blade.scale.set(1, length / Math.max(0.0001, baseLength), 1);
-    blade.visible = true;
-    if (hilt) {
-      hilt.position.set(0, 0, 0);
-      hilt.quaternion.identity();
-      hilt.scale.set(1, 1, 1);
-      hilt.visible = true;
-    }
-    return { blade, hilt, tipLocal, length };
+    return updateWeaponFallbackFromTipRuntime(THREE, this.weaponProxy);
   }
 
   syncWeaponVisualAttachment(options = {}) {
@@ -5420,7 +5344,7 @@ class PoseLab {
     this.stateSaveTimer = null;
     this.savedState = this.visualQa?.enabled ? {} : this.readSavedState();
     this.debugBridge = debugBridgeConfig();
-    this.debugBridgeState = { enabled: this.debugBridge.enabled, connected: false, clientId: '', lastCommand: '', lastCommandId: '', lastResult: null, lastError: '', syncAt: 0 };
+    this.debugBridgeState = { enabled: this.debugBridge.enabled, connected: false, clientId: '', pageUrl: '', build: LAB_BUILD, cacheToken: LAB_CACHE_TOKEN, lastCommand: '', lastCommandId: '', lastResult: null, lastError: '', syncAt: 0 };
     this.installDebugConsole();
   }
 
@@ -5704,7 +5628,7 @@ class PoseLab {
     socket.renderOrder = 60;
     const tip = new THREE.Mesh(
       new THREE.SphereGeometry(0.028, 16, 8),
-      new THREE.MeshBasicMaterial({ color: 0x34d399, depthTest: false, depthWrite: false })
+      new THREE.MeshBasicMaterial({ color: 0xfb923c, depthTest: false, depthWrite: false })
     );
     tip.name = 'weapon-overlay-tip';
     tip.renderOrder = 60;
@@ -5714,15 +5638,21 @@ class PoseLab {
     );
     hand.name = 'weapon-overlay-hand';
     hand.renderOrder = 60;
+    const grip = new THREE.Mesh(
+      new THREE.SphereGeometry(0.031, 16, 8),
+      new THREE.MeshBasicMaterial({ color: 0xec4899, depthTest: false, depthWrite: false })
+    );
+    grip.name = 'weapon-overlay-applied-hilt';
+    grip.renderOrder = 61;
     const line = new THREE.Line(
       new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]),
       new THREE.LineBasicMaterial({ color: 0xfacc15, depthTest: false, depthWrite: false })
     );
     line.name = 'weapon-overlay-socket-tip-line';
     line.renderOrder = 59;
-    group.add(line, socket, tip, hand);
+    group.add(line, socket, tip, hand, grip);
     this.scene.add(group);
-    this.weaponGizmo = { group, socket, tip, hand, line, pickables: [socket, tip, hand] };
+    this.weaponGizmo = { group, socket, tip, hand, grip, line, pickables: [socket, tip, hand, grip] };
   }
 
   selectedWeaponActor() {
@@ -5766,16 +5696,20 @@ class PoseLab {
     ));
   }
 
-  weaponVisualMeshLandmarks(actor = this.selectedWeaponActor()) {
+  weaponVisualMeshLandmarks(actor = this.selectedWeaponActor(), options = {}) {
     const proxy = actor?.weaponProxy;
     const attachment = actor?.info?.weaponAttachment || proxy?.attachmentConfig || {};
     if (!actor || !proxy?.model) return null;
-    actor.syncWeaponVisualAttachment?.();
+    if (options.resync !== false) actor.syncWeaponVisualAttachment?.();
     actor.model.updateMatrixWorld(true);
     proxy.root.updateMatrixWorld(true);
     proxy.model.updateMatrixWorld(true);
     proxy.tipMarker?.updateMatrixWorld(true);
     proxy.rightHand?.updateMatrixWorld(true);
+    proxy.displayRoot?.updateMatrixWorld(true);
+    const pinningState = captureWeaponPinningRuntimeState(THREE, proxy);
+    const pinningLandmarks = pinningState.landmarks || {};
+    const layerState = pinningState.layers || captureWeaponLayerRuntimeState(proxy);
     const rect = UI.canvas?.getBoundingClientRect?.() || { left: 0, top: 0, width: innerWidth, height: innerHeight };
     const round = (value, digits = 5) => Number(Number(value || 0).toFixed(digits));
     const roundVec = (vec) => vec ? vec.toArray().map((value) => round(value)) : null;
@@ -5784,8 +5718,8 @@ class PoseLab {
       y: round(point.y, 2),
       z: round(point.z, 4),
     } : null;
-    const configuredGripWorld = this.weaponLocalPointWorld(actor, attachment.gripLocalPosition || [0, 0, 0]);
-    const configuredTipWorld = proxy.tipMarker ? worldPositionOf(proxy.tipMarker) : this.weaponLocalPointWorld(actor, attachment.tipLocalPosition || [0, 0, 0.85]);
+    const configuredGripWorld = pinningLandmarks.appliedHilt || null;
+    const configuredTipWorld = pinningLandmarks.tip || null;
     const saved = this.readSavedWeaponGizmoTuning();
     const savedValues = saved?.values || {};
     const currentValues = this.weaponTuningValues(actor);
@@ -5798,8 +5732,10 @@ class PoseLab {
     const savedTipWorld = Array.isArray(savedValues.tipLocalPosition)
       ? this.weaponLocalPointWorld(actor, savedValues.tipLocalPosition)
       : null;
-    const handWorld = proxy.rightHand ? worldPositionOf(proxy.rightHand) : null;
-    const socketWorld = worldPositionOf(proxy.root);
+    const handWorld = pinningLandmarks.rightHand || null;
+    const handBaselineWorld = pinningLandmarks.socketHandBaseline || null;
+    const palmTargetWorld = pinningLandmarks.palmTarget || null;
+    const socketWorld = pinningLandmarks.socket || null;
     const modelBounds = new THREE.Box3().setFromObject(proxy.model);
     const modelCenter = new THREE.Vector3();
     modelBounds.getCenter(modelCenter);
@@ -5826,8 +5762,11 @@ class PoseLab {
       } : null,
       world: {
         hand: roundVec(handWorld),
+        socketHandBaseline: roundVec(handBaselineWorld),
+        palmTarget: roundVec(palmTargetWorld),
         socket: roundVec(socketWorld),
         configuredGrip: roundVec(configuredGripWorld),
+        appliedHilt: roundVec(configuredGripWorld),
         configuredTip: roundVec(configuredTipWorld),
         savedGrip: roundVec(savedGripWorld),
         savedTip: roundVec(savedTipWorld),
@@ -5835,29 +5774,278 @@ class PoseLab {
       },
       screen: {
         hand: roundScreen(screen(handWorld)),
+        socketHandBaseline: roundScreen(screen(handBaselineWorld)),
+        palmTarget: roundScreen(screen(palmTargetWorld)),
         socket: roundScreen(screen(socketWorld)),
         configuredGrip: roundScreen(screen(configuredGripWorld)),
+        appliedHilt: roundScreen(screen(configuredGripWorld)),
         configuredTip: roundScreen(screen(configuredTipWorld)),
         savedGrip: roundScreen(screen(savedGripWorld)),
         savedTip: roundScreen(screen(savedTipWorld)),
         modelCenter: roundScreen(screen(modelCenter)),
       },
       distances: {
-        handToSocket: distance(handWorld, socketWorld),
-        handToConfiguredGrip: distance(handWorld, configuredGripWorld),
+        handToSocket: Number.isFinite(pinningState.distances?.handToSocket) ? round(pinningState.distances.handToSocket) : distance(handWorld, socketWorld),
+        handBaselineToSocket: Number.isFinite(pinningState.distances?.handBaselineToSocket) ? round(pinningState.distances.handBaselineToSocket) : distance(handBaselineWorld, socketWorld),
+        palmTargetToSocket: Number.isFinite(pinningState.distances?.palmTargetToSocket) ? round(pinningState.distances.palmTargetToSocket) : distance(palmTargetWorld, socketWorld),
+        handToConfiguredGrip: Number.isFinite(pinningState.distances?.handToAppliedHilt) ? round(pinningState.distances.handToAppliedHilt) : distance(handWorld, configuredGripWorld),
+        handToAppliedHilt: Number.isFinite(pinningState.distances?.handToAppliedHilt) ? round(pinningState.distances.handToAppliedHilt) : distance(handWorld, configuredGripWorld),
+        handBaselineToAppliedHilt: Number.isFinite(pinningState.distances?.handBaselineToAppliedHilt) ? round(pinningState.distances.handBaselineToAppliedHilt) : distance(handBaselineWorld, configuredGripWorld),
+        palmTargetToAppliedHilt: Number.isFinite(pinningState.distances?.palmTargetToAppliedHilt) ? round(pinningState.distances.palmTargetToAppliedHilt) : distance(palmTargetWorld, configuredGripWorld),
+        socketToAppliedHilt: Number.isFinite(pinningState.distances?.socketToAppliedHilt) ? round(pinningState.distances.socketToAppliedHilt) : distance(socketWorld, configuredGripWorld),
         handToSavedGrip: distance(handWorld, savedGripWorld),
         configuredGripToSavedGrip: distance(configuredGripWorld, savedGripWorld),
         configuredTipToSavedTip: distance(configuredTipWorld, savedTipWorld),
         handToSocketPx: screenDistance(handWorld, socketWorld),
+        handBaselineToSocketPx: screenDistance(handBaselineWorld, socketWorld),
+        palmTargetToSocketPx: screenDistance(palmTargetWorld, socketWorld),
         handToConfiguredGripPx: screenDistance(handWorld, configuredGripWorld),
+        handToAppliedHiltPx: screenDistance(handWorld, configuredGripWorld),
+        handBaselineToAppliedHiltPx: screenDistance(handBaselineWorld, configuredGripWorld),
+        palmTargetToAppliedHiltPx: screenDistance(palmTargetWorld, configuredGripWorld),
+        socketToAppliedHiltPx: screenDistance(socketWorld, configuredGripWorld),
         handToSavedGripPx: screenDistance(handWorld, savedGripWorld),
       },
+      pinning: {
+        schema: pinningState.schema,
+        checks: pinningState.checks,
+        layers: layerState,
+        local: {
+          socketInHand: roundVec(pinningState.local?.socketInHand),
+          socketHandBaseline: roundVec(pinningState.local?.socketHandBaseline),
+          socketInPalmTarget: roundVec(pinningState.local?.socketInPalmTarget),
+          socketInSourceSocket: roundVec(pinningState.local?.socketInSourceSocket),
+          socketQuaternionInSourceSocket: pinningState.local?.socketQuaternionInSourceSocket ? [
+            round(pinningState.local.socketQuaternionInSourceSocket.x),
+            round(pinningState.local.socketQuaternionInSourceSocket.y),
+            round(pinningState.local.socketQuaternionInSourceSocket.z),
+            round(pinningState.local.socketQuaternionInSourceSocket.w),
+          ] : null,
+          displayInSocket: roundVec(pinningState.local?.displayInSocket),
+          displayQuaternionInSocket: pinningState.local?.displayQuaternionInSocket ? [
+            round(pinningState.local.displayQuaternionInSocket.x),
+            round(pinningState.local.displayQuaternionInSocket.y),
+            round(pinningState.local.displayQuaternionInSocket.z),
+            round(pinningState.local.displayQuaternionInSocket.w),
+          ] : null,
+          modelInDisplay: roundVec(pinningState.local?.modelInDisplay),
+          modelQuaternionInDisplay: pinningState.local?.modelQuaternionInDisplay ? [
+            round(pinningState.local.modelQuaternionInDisplay.x),
+            round(pinningState.local.modelQuaternionInDisplay.y),
+            round(pinningState.local.modelQuaternionInDisplay.z),
+            round(pinningState.local.modelQuaternionInDisplay.w),
+          ] : null,
+        },
+        thresholds: pinningState.thresholds || null,
+      },
     };
+  }
+
+  debugLiveWeaponHiltState(sampleArgs = []) {
+    const actor = this.selectedWeaponActor();
+    const clip = actor?.activeAction?._clip || null;
+    const proxy = actor?.weaponProxy || null;
+    if (!actor || !proxy?.root) {
+      return { ok: false, command: 'weapon-live-hilt-state', error: 'active actor has no weapon proxy', snapshot: this.debugSnapshot() };
+    }
+    const includeImage = sampleArgs.some((arg) => String(arg || '').toLowerCase() === 'image');
+    const marker = this.weaponScreenHiltMarker || null;
+    const rect = UI.canvas?.getBoundingClientRect?.() || { left: 0, top: 0, width: innerWidth, height: innerHeight };
+    const round = (value, digits = 5) => Number(Number(value || 0).toFixed(digits));
+    const roundVec = (vec) => vec ? vec.toArray().map((value) => round(value)) : null;
+    const screen = (world) => world ? screenPointForWorld(world, this.camera, rect) : null;
+    const roundScreen = (point) => point ? {
+      x: round(point.x, 2),
+      y: round(point.y, 2),
+      z: round(point.z, 4),
+      inCanvas: screenPointInsideRect(point, rect),
+    } : null;
+    const markerScreen = marker ? {
+      visible: marker.style.display !== 'none',
+      inCanvas: marker.dataset.inCanvas || '',
+      x: Number(marker.dataset.screenX || Number.NaN),
+      y: Number(marker.dataset.screenY || Number.NaN),
+      z: Number(marker.dataset.screenZ || Number.NaN),
+      cssLeft: marker.style.left || '',
+      cssTop: marker.style.top || '',
+    } : null;
+    actor.model.updateMatrixWorld(true);
+    proxy.root.updateMatrixWorld(true);
+    proxy.model?.updateMatrixWorld(true);
+    proxy.displayRoot?.updateMatrixWorld(true);
+    proxy.tipMarker?.updateMatrixWorld(true);
+    proxy.rightHand?.updateMatrixWorld(true);
+    const pinningState = captureWeaponPinningRuntimeState(THREE, proxy);
+    const pinningLandmarks = pinningState.landmarks || {};
+    const layerState = pinningState.layers || captureWeaponLayerRuntimeState(proxy);
+    const handWorld = pinningLandmarks.rightHand || null;
+    const handBaselineWorld = pinningLandmarks.socketHandBaseline || null;
+    const palmTargetWorld = pinningLandmarks.palmTarget || null;
+    const socketWorld = pinningLandmarks.socket || null;
+    const appliedHiltWorld = pinningLandmarks.appliedHilt || null;
+    const tipWorld = pinningLandmarks.tip || null;
+    const fallbackHilt = proxy.displayRoot?.children?.find((entry) => entry.userData?.weaponFallbackHilt) || null;
+    const fallbackBlade = proxy.displayRoot?.children?.find((entry) => entry.userData?.weaponFallbackBlade) || null;
+    fallbackHilt?.updateMatrixWorld(true);
+    fallbackBlade?.updateMatrixWorld(true);
+    const fallbackHiltWorld = fallbackHilt ? worldPositionOf(fallbackHilt) : null;
+    const fallbackBladeWorld = fallbackBlade ? worldPositionOf(fallbackBlade) : null;
+    const modelBounds = proxy.model ? new THREE.Box3().setFromObject(proxy.model) : null;
+    const modelCenter = modelBounds ? modelBounds.getCenter(new THREE.Vector3()) : null;
+    const markerDistance = markerScreen && Number.isFinite(markerScreen.x) && Number.isFinite(markerScreen.y) && appliedHiltWorld
+      ? Math.hypot(markerScreen.x - screen(appliedHiltWorld).x, markerScreen.y - screen(appliedHiltWorld).y)
+      : null;
+    const screenDistance = (a, b) => {
+      const pa = screen(a);
+      const pb = screen(b);
+      return pa && pb ? round(Math.hypot(pa.x - pb.x, pa.y - pb.y), 2) : null;
+    };
+    const landmarks = this.weaponVisualMeshLandmarks(actor, { resync: false });
+    const live = {
+      schema: 'pose-lab-live-weapon-hilt-state-v1',
+      build: LAB_BUILD,
+      cacheToken: LAB_CACHE_TOKEN,
+      pageUrl: window.location.href,
+      actor: actor.key || this.selected || '',
+      actorLabel: actor.info?.label || '',
+      clip: clip?.name || '',
+      clipTime: Number(Number(actor.activeAction?.time || 0).toFixed(5)),
+      viewMode: this.viewMode || '',
+      activePanel: this.activePanel || '',
+      debugBridge: {
+        enabled: Boolean(this.debugBridge?.enabled),
+        url: this.debugBridge?.url || '',
+        clientId: this.debugBridgeState?.clientId || '',
+        pageUrl: this.debugBridgeState?.pageUrl || '',
+        build: this.debugBridgeState?.build || '',
+        cacheToken: this.debugBridgeState?.cacheToken || '',
+        connected: Boolean(this.debugBridgeState?.connected),
+        syncAt: Number(this.debugBridgeState?.syncAt || 0),
+      },
+      targetPolicy: {
+        intendedPinTarget: 'stable FK child transform under WeaponR',
+        palmTargetReportedAsDiagnosticOnly: true,
+        handBaselineReportedAsDiagnosticOnly: true,
+        rawRightHandReportedSeparately: true,
+        acceptsFallbackHiltAsProof: false,
+      },
+      world: {
+        hand: roundVec(handWorld),
+        socketHandBaseline: roundVec(handBaselineWorld),
+        palmTarget: roundVec(palmTargetWorld),
+        socket: roundVec(socketWorld),
+        appliedHilt: roundVec(appliedHiltWorld),
+        tip: roundVec(tipWorld),
+        fallbackHilt: roundVec(fallbackHiltWorld),
+        fallbackBlade: roundVec(fallbackBladeWorld),
+        modelCenter: roundVec(modelCenter),
+      },
+      screen: {
+        hand: roundScreen(screen(handWorld)),
+        socketHandBaseline: roundScreen(screen(handBaselineWorld)),
+        palmTarget: roundScreen(screen(palmTargetWorld)),
+        socket: roundScreen(screen(socketWorld)),
+        appliedHilt: roundScreen(screen(appliedHiltWorld)),
+        tip: roundScreen(screen(tipWorld)),
+        fallbackHilt: roundScreen(screen(fallbackHiltWorld)),
+        fallbackBlade: roundScreen(screen(fallbackBladeWorld)),
+        modelCenter: roundScreen(screen(modelCenter)),
+      },
+      domMarker: markerScreen,
+      distances: {
+        handToSocket: Number.isFinite(pinningState.distances?.handToSocket) ? round(pinningState.distances.handToSocket) : null,
+        handBaselineToSocket: Number.isFinite(pinningState.distances?.handBaselineToSocket) ? round(pinningState.distances.handBaselineToSocket) : null,
+        palmTargetToSocket: Number.isFinite(pinningState.distances?.palmTargetToSocket) ? round(pinningState.distances.palmTargetToSocket) : null,
+        socketToAppliedHilt: Number.isFinite(pinningState.distances?.socketToAppliedHilt) ? round(pinningState.distances.socketToAppliedHilt) : null,
+        handToAppliedHilt: Number.isFinite(pinningState.distances?.handToAppliedHilt) ? round(pinningState.distances.handToAppliedHilt) : null,
+        handBaselineToAppliedHilt: Number.isFinite(pinningState.distances?.handBaselineToAppliedHilt) ? round(pinningState.distances.handBaselineToAppliedHilt) : null,
+        palmTargetToAppliedHilt: Number.isFinite(pinningState.distances?.palmTargetToAppliedHilt) ? round(pinningState.distances.palmTargetToAppliedHilt) : null,
+        handToSocketPx: screenDistance(handWorld, socketWorld),
+        handBaselineToSocketPx: screenDistance(handBaselineWorld, socketWorld),
+        palmTargetToSocketPx: screenDistance(palmTargetWorld, socketWorld),
+        socketToAppliedHiltPx: screenDistance(socketWorld, appliedHiltWorld),
+        handToAppliedHiltPx: screenDistance(handWorld, appliedHiltWorld),
+        handBaselineToAppliedHiltPx: screenDistance(handBaselineWorld, appliedHiltWorld),
+        palmTargetToAppliedHiltPx: screenDistance(palmTargetWorld, appliedHiltWorld),
+        fallbackHiltToAppliedHiltPx: screenDistance(fallbackHiltWorld, appliedHiltWorld),
+        socketToFallbackHiltPx: screenDistance(socketWorld, fallbackHiltWorld),
+        domMarkerToAppliedHiltPx: markerDistance === null ? null : round(markerDistance, 2),
+      },
+      checks: {
+        sameLiveMarkerPoint: markerDistance !== null && markerDistance <= 2,
+        appliedHiltPinnedToAuthoredSocket: pinningState.checks?.appliedHiltPinnedToSocket === true && screenDistance(socketWorld, appliedHiltWorld) !== null && screenDistance(socketWorld, appliedHiltWorld) <= 8,
+        weaponGripHasSourceSocketLocal: Boolean(pinningState.local?.socketInSourceSocket && pinningState.local?.socketQuaternionInSourceSocket),
+        displayRootHasWeaponGripLocal: Boolean(pinningState.local?.displayInSocket && pinningState.local?.displayQuaternionInSocket),
+        weaponMeshHasDisplayRootLocal: Boolean(pinningState.local?.modelInDisplay && pinningState.local?.modelQuaternionInDisplay),
+        socketPinnedToHandBaseline: pinningState.checks?.socketPinnedToHandBaseline === true && screenDistance(handBaselineWorld, socketWorld) !== null && screenDistance(handBaselineWorld, socketWorld) <= 8,
+        appliedHiltPinnedToHandBaseline: pinningState.checks?.appliedHiltPinnedToHandBaseline === true && screenDistance(handBaselineWorld, appliedHiltWorld) !== null && screenDistance(handBaselineWorld, appliedHiltWorld) <= 8,
+        socketPinnedToPalmTarget: pinningState.checks?.socketPinnedToPalmTarget === true && screenDistance(palmTargetWorld, socketWorld) !== null && screenDistance(palmTargetWorld, socketWorld) <= 8,
+        appliedHiltPinnedToPalmTarget: pinningState.checks?.appliedHiltPinnedToPalmTarget === true && screenDistance(palmTargetWorld, appliedHiltWorld) !== null && screenDistance(palmTargetWorld, appliedHiltWorld) <= 8,
+        appliedHiltAwayFromRawHand: pinningState.checks?.appliedHiltNotCollapsedToRawHand === true && screenDistance(handWorld, appliedHiltWorld) !== null && screenDistance(handWorld, appliedHiltWorld) > 8,
+        fallbackHiddenWithRealWeapon: layerState.fallbackHiddenWithRealWeapon === true,
+        realWeaponVisible: layerState.realWeaponVisible === true,
+        fallbackHiltNotUsedAsAcceptance: true,
+        noResyncDuringRead: true,
+      },
+      pinning: {
+        schema: pinningState.schema,
+        checks: pinningState.checks,
+        layers: layerState,
+        local: {
+          socketInHand: roundVec(pinningState.local?.socketInHand),
+          socketHandBaseline: roundVec(pinningState.local?.socketHandBaseline),
+          socketInPalmTarget: roundVec(pinningState.local?.socketInPalmTarget),
+          socketInSourceSocket: roundVec(pinningState.local?.socketInSourceSocket),
+          socketQuaternionInSourceSocket: pinningState.local?.socketQuaternionInSourceSocket ? [
+            round(pinningState.local.socketQuaternionInSourceSocket.x),
+            round(pinningState.local.socketQuaternionInSourceSocket.y),
+            round(pinningState.local.socketQuaternionInSourceSocket.z),
+            round(pinningState.local.socketQuaternionInSourceSocket.w),
+          ] : null,
+          displayInSocket: roundVec(pinningState.local?.displayInSocket),
+          displayQuaternionInSocket: pinningState.local?.displayQuaternionInSocket ? [
+            round(pinningState.local.displayQuaternionInSocket.x),
+            round(pinningState.local.displayQuaternionInSocket.y),
+            round(pinningState.local.displayQuaternionInSocket.z),
+            round(pinningState.local.displayQuaternionInSocket.w),
+          ] : null,
+          modelInDisplay: roundVec(pinningState.local?.modelInDisplay),
+          modelQuaternionInDisplay: pinningState.local?.modelQuaternionInDisplay ? [
+            round(pinningState.local.modelQuaternionInDisplay.x),
+            round(pinningState.local.modelQuaternionInDisplay.y),
+            round(pinningState.local.modelQuaternionInDisplay.z),
+            round(pinningState.local.modelQuaternionInDisplay.w),
+          ] : null,
+        },
+        thresholds: pinningState.thresholds || null,
+      },
+      currentValues: this.weaponTuningValues(actor),
+      landmarks,
+      snapshot: this.debugSnapshot(),
+    };
+    live.ok = Boolean(live.checks.sameLiveMarkerPoint
+      && live.checks.appliedHiltPinnedToAuthoredSocket
+      && live.checks.weaponGripHasSourceSocketLocal
+      && live.checks.displayRootHasWeaponGripLocal
+      && live.checks.weaponMeshHasDisplayRootLocal
+      && live.checks.fallbackHiddenWithRealWeapon
+      && live.checks.realWeaponVisible);
+    if (includeImage) {
+      const canvas = this.renderer?.domElement || null;
+      live.image = canvas ? {
+        mime: 'image/png',
+        width: canvas.width || canvas.clientWidth || 0,
+        height: canvas.height || canvas.clientHeight || 0,
+        dataUrl: canvas.toDataURL('image/png'),
+      } : null;
+    }
+    return { ok: live.ok, command: 'weapon-live-hilt-state', live };
   }
 
   debugWeaponTuningState() {
     const actor = this.selectedWeaponActor();
     if (!actor?.weaponProxy?.root) return { ok: false, command: 'weapon-tuning-state', error: 'active actor has no weapon proxy', snapshot: this.debugSnapshot() };
+    const marker = this.weaponScreenHiltMarker || null;
     return {
       ok: true,
       command: 'weapon-tuning-state',
@@ -5865,7 +6053,15 @@ class PoseLab {
       build: LAB_BUILD,
       cacheToken: LAB_CACHE_TOKEN,
       currentValues: this.weaponTuningValues(actor),
-      landmarks: this.weaponVisualMeshLandmarks(actor),
+      landmarks: this.weaponVisualMeshLandmarks(actor, { resync: false }),
+      liveHiltState: this.debugLiveWeaponHiltState().live || null,
+      screenAppliedHiltMarker: marker ? {
+        visible: marker.style.display !== 'none',
+        inCanvas: marker.dataset.inCanvas || '',
+        x: marker.dataset.screenX || '',
+        y: marker.dataset.screenY || '',
+        z: marker.dataset.screenZ || '',
+      } : null,
       snapshot: this.debugSnapshot(),
     };
   }
@@ -5909,6 +6105,51 @@ class PoseLab {
     this.updateWeaponGizmoStatus('mode=' + this.weaponGizmoMode);
   }
 
+  ensureWeaponScreenHiltMarker() {
+    if (this.weaponScreenHiltMarker?.isConnected) return this.weaponScreenHiltMarker;
+    const marker = document.createElement('div');
+    marker.id = 'weapon-screen-applied-hilt-marker';
+    marker.style.position = 'fixed';
+    marker.style.left = '0px';
+    marker.style.top = '0px';
+    marker.style.width = '18px';
+    marker.style.height = '18px';
+    marker.style.borderRadius = '50%';
+    marker.style.background = '#ec4899';
+    marker.style.border = '3px solid #071016';
+    marker.style.boxShadow = '0 0 0 2px #f9a8d4, 0 0 18px rgba(236,72,153,0.9)';
+    marker.style.transform = 'translate(-50%, -50%)';
+    marker.style.pointerEvents = 'none';
+    marker.style.zIndex = '2147483647';
+    marker.style.display = 'none';
+    marker.dataset.role = 'weapon-screen-applied-hilt';
+    document.body.appendChild(marker);
+    this.weaponScreenHiltMarker = marker;
+    return marker;
+  }
+
+  updateWeaponScreenHiltMarker(enabled, worldPoint = null) {
+    const marker = this.ensureWeaponScreenHiltMarker();
+    if (!enabled || !worldPoint || !UI.canvas) {
+      marker.style.display = 'none';
+      return null;
+    }
+    const rect = UI.canvas.getBoundingClientRect();
+    const screen = screenPointForWorld(worldPoint, this.camera, rect);
+    const inCanvas = screenPointInsideRect(screen, rect);
+    const visible = inCanvas ? screen : clampScreenPointToRect(screen, rect, 14);
+    marker.style.left = visible.x + 'px';
+    marker.style.top = visible.y + 'px';
+    marker.style.display = 'block';
+    marker.style.opacity = inCanvas ? '1' : '0.86';
+    marker.style.borderStyle = inCanvas ? 'solid' : 'dashed';
+    marker.dataset.inCanvas = inCanvas ? 'true' : 'false';
+    marker.dataset.screenX = Number(screen.x.toFixed(2)).toString();
+    marker.dataset.screenY = Number(screen.y.toFixed(2)).toString();
+    marker.dataset.screenZ = Number(screen.z.toFixed(4)).toString();
+    return { screen, visible, inCanvas };
+  }
+
   updateWeaponGizmo() {
     const actor = this.selectedWeaponActor();
     const proxy = actor?.weaponProxy;
@@ -5922,20 +6163,31 @@ class PoseLab {
       || weaponDebugForceVisible()
     ));
     gizmo.group.visible = enabled;
-    if (!enabled) return false;
-    actor.syncWeaponVisualAttachment?.({ forceSocket: true });
+    if (!enabled) {
+      this.updateWeaponScreenHiltMarker(false);
+      return false;
+    }
+    actor.syncWeaponVisualAttachment?.();
     actor.model.updateMatrixWorld(true);
     proxy.root.updateMatrixWorld(true);
     proxy.tipMarker?.updateMatrixWorld(true);
     proxy.rightHand?.updateMatrixWorld(true);
-    const socketWorld = worldPositionOf(proxy.root);
-    const tipWorld = proxy.tipMarker
-      ? worldPositionOf(proxy.tipMarker)
-      : socketWorld.clone().add(worldDirectionOf(proxy.root, [0, 0, 1]).multiplyScalar(Number(proxy.config?.length || 0.85)));
-    const handWorld = proxy.rightHand ? worldPositionOf(proxy.rightHand) : socketWorld;
+    proxy.displayRoot?.updateMatrixWorld(true);
+    const pinningState = captureWeaponPinningRuntimeState(THREE, proxy);
+    const pinningLandmarks = pinningState.landmarks || {};
+    const socketWorld = pinningLandmarks.socket || worldPositionOf(proxy.root);
+    const tipWorld = pinningLandmarks.tip
+      || socketWorld.clone().add(worldDirectionOf(proxy.root, [0, 0, 1]).multiplyScalar(Number(proxy.config?.length || 0.85)));
+    const handWorld = pinningLandmarks.rightHand || socketWorld;
+    const gripWorld = pinningLandmarks.appliedHilt || socketWorld;
     gizmo.socket.position.copy(socketWorld);
     gizmo.tip.position.copy(tipWorld);
     gizmo.hand.position.copy(handWorld);
+    if (gizmo.grip) {
+      gizmo.grip.position.copy(gripWorld || socketWorld);
+      gizmo.grip.visible = true;
+    }
+    this.updateWeaponScreenHiltMarker(true, gripWorld || socketWorld);
     gizmo.line.geometry.setFromPoints([socketWorld, tipWorld]);
     gizmo.socket.visible = true;
     gizmo.tip.visible = true;
@@ -6245,7 +6497,7 @@ class PoseLab {
     this.semanticLandmarkObjects = {
       configuredHilt: sphere('configured-hilt-marker', 0x22d3ee, 0.024),
       configuredTip: sphere('configured-tip-marker', 0xfb923c, 0.024),
-      pickedHilt: sphere('picked-hilt-marker', 0x38bdf8, 0.035),
+      pickedHilt: sphere('picked-hilt-marker', 0xec4899, 0.035),
       pickedTip: sphere('picked-tip-marker', 0xf97316, 0.035),
       hiltDelta: line('semantic-hilt-delta', 0x38bdf8),
       tipDelta: line('semantic-tip-delta', 0xf97316),
@@ -6444,6 +6696,34 @@ class PoseLab {
     return lines.join('\n');
   }
 
+  applySemanticLandmarkCandidate(target = 'hilt') {
+    const actor = this.selectedWeaponActor();
+    const proxy = actor?.weaponProxy;
+    if (!actor || !proxy?.model) {
+      this.updateWeaponGizmoStatus('semantic apply failed: no selected weapon attachment');
+      return null;
+    }
+    const candidate = this.currentSemanticCandidate(actor);
+    const key = target === 'tip' ? 'tip' : 'hilt';
+    const local = candidate[key]?.local;
+    if (!Array.isArray(local) || local.length !== 3) {
+      this.updateWeaponGizmoStatus('semantic apply failed: pick ' + key + ' first');
+      return null;
+    }
+    const next = local.map((value) => Number(Number(value || 0).toFixed(5)));
+    const attachment = actor.info.weaponAttachment || {};
+    if (!actor.info.weaponAttachment) actor.info.weaponAttachment = attachment;
+    const field = key === 'tip' ? 'tipLocalPosition' : 'gripLocalPosition';
+    attachment[field] = next;
+    if (proxy.attachmentConfig) proxy.attachmentConfig[field] = next;
+    actor.syncWeaponVisualAttachment?.({ forceSocket: true });
+    proxy.model.updateMatrixWorld(true);
+    candidate[key].world = this.semanticLandmarkRoundVector(proxy.model.localToWorld(new THREE.Vector3().fromArray(next)));
+    this.updateSemanticLandmarkOverlay();
+    this.updateWeaponGizmoStatus('applied semantic ' + key + ' to live weapon attachment; applied hilt pins that mesh point to the WeaponGrip/socket\n' + this.weaponTuningSnippet(this.weaponTuningValues(actor)));
+    return { field, value: next, values: this.weaponTuningValues(actor) };
+  }
+
   exportSemanticLandmarkCandidate() {
     const payload = this.semanticLandmarkCandidatePayload();
     payload.snippet = this.semanticLandmarkCandidateSnippet(payload);
@@ -6565,6 +6845,8 @@ class PoseLab {
     UI.semanticLandmarkToggle?.addEventListener('click', () => this.setSemanticLandmarkEnabled());
     UI.semanticLandmarkPickHilt?.addEventListener('click', () => this.setSemanticLandmarkPickTarget('hilt'));
     UI.semanticLandmarkPickTip?.addEventListener('click', () => this.setSemanticLandmarkPickTarget('tip'));
+    UI.semanticLandmarkApplyHilt?.addEventListener('click', () => this.applySemanticLandmarkCandidate('hilt'));
+    UI.semanticLandmarkApplyTip?.addEventListener('click', () => this.applySemanticLandmarkCandidate('tip'));
     UI.semanticLandmarkClear?.addEventListener('click', () => this.clearSemanticLandmarkCandidate());
     UI.semanticLandmarkExport?.addEventListener('click', () => this.exportSemanticLandmarkCandidate());
     UI.critiqueSaveNote?.addEventListener('click', () => { this.critiquePersistCurrentNote('saved note'); this.saveActiveCleanupDraft('manual'); });
@@ -10275,7 +10557,7 @@ class PoseLab {
   }
 
   debugCommandNames() {
-    return ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'weapon', 'weapon-follow', 'weapon-visual-follow', 'weapon-tuning-state', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'fpv', 'beacon', 'capture', 'qa'];
+    return ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'weapon', 'weapon-follow', 'weapon-visual-follow', 'weapon-live-hilt-state', 'weapon-tuning-state', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'fpv', 'beacon', 'capture', 'qa'];
   }
 
   debugHelpText() {
@@ -10290,6 +10572,7 @@ class PoseLab {
       '  weapon',
       '  weapon follow',
       '  weapon visual-follow',
+      '  weapon live-hilt-state',
       '  weapon tuning-state',
       '  view firstPerson',
       '  panel bones',
@@ -10504,15 +10787,24 @@ class PoseLab {
       displayMoves: motion.display > motionEpsilon,
       modelMoves: motion.model > motionEpsilon,
       tipMoves: motion.tip > motionEpsilon,
-      socketStableInHand: architecture === 'direct-hand-fk' ? relativeDrift.socketInHand < 0.005 : true,
-      socketMayAnimateInHand: architecture === 'source-socket' || architecture === 'synthetic-source-socket',
+      socketStableInHand: architecture === 'source-socket' ? true : relativeDrift.socketInHand < 0.005,
+      socketMayAnimateInHand: architecture === 'source-socket',
       displayStableInSocket: relativeDrift.displayInSocket < 0.005,
       modelStableInDisplay: relativeDrift.modelInDisplay < 0.005,
       parentChain: (sourceSocketParentOk && syntheticSocketParentOk && (proxy.sourceSocket || proxy.syntheticSourceSocket || directHandParentOk))
         && displayRoot.parent === proxy.root && model.parent === displayRoot && tip.parent === displayRoot,
       fpsParityArchitecture: architecture === 'source-socket' || architecture === 'synthetic-source-socket',
     };
-    const passed = Object.values(follows).every(Boolean);
+    const passed = follows.handMoves
+      && follows.socketMoves
+      && follows.displayMoves
+      && follows.modelMoves
+      && follows.tipMoves
+      && follows.socketStableInHand
+      && follows.displayStableInSocket
+      && follows.modelStableInDisplay
+      && follows.parentChain
+      && follows.fpsParityArchitecture;
     return {
       ok: passed,
       command: 'weapon-follow',
@@ -10582,6 +10874,12 @@ class PoseLab {
       child.updateMatrixWorld(true);
       return child.getWorldPosition(new THREE.Vector3()).applyMatrix4(parent.matrixWorld.clone().invert());
     };
+    const localQuaternion = (parent, child) => {
+      parent.updateMatrixWorld(true);
+      child.updateMatrixWorld(true);
+      return parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(child.getWorldQuaternion(new THREE.Quaternion())).normalize();
+    };
+    const roundQuat = (quat) => [round(quat.x), round(quat.y), round(quat.z), round(quat.w)];
     const project = (world, xOffset) => {
       const projected = world.clone().project(this.camera);
       return {
@@ -10590,6 +10888,18 @@ class PoseLab {
         z: projected.z,
       };
     };
+    const pointInTile = (point, xOffset) => Boolean(point
+      && point.z >= -1
+      && point.z <= 1
+      && point.x >= xOffset
+      && point.x <= xOffset + tileWidth
+      && point.y >= 0
+      && point.y <= tileHeight);
+    const clampToTile = (point, xOffset, padding = 8) => ({
+      x: clampValue(Number(point?.x || 0), xOffset + padding, xOffset + tileWidth - padding),
+      y: clampValue(Number(point?.y || 0), padding, tileHeight - padding),
+      z: Number(point?.z || 0),
+    });
     const drawDot = (point, color, label) => {
       ctx.fillStyle = color;
       ctx.strokeStyle = '#071016';
@@ -10625,19 +10935,46 @@ class PoseLab {
       displayRoot.updateMatrixWorld(true);
       model.updateMatrixWorld(true);
       tip.updateMatrixWorld(true);
+      const meshLandmarks = this.weaponVisualMeshLandmarks(actor);
+      const handBaselineWorld = meshLandmarks?.world?.socketHandBaseline
+        ? new THREE.Vector3().fromArray(meshLandmarks.world.socketHandBaseline)
+        : Array.isArray(proxy.socketHandBaselineLocal)
+          ? hand.localToWorld(new THREE.Vector3(
+              Number(proxy.socketHandBaselineLocal[0] || 0),
+              Number(proxy.socketHandBaselineLocal[1] || 0),
+              Number(proxy.socketHandBaselineLocal[2] || 0)
+            ))
+          : worldPositionOf(proxy.root);
       const world = {
         hand: worldPositionOf(hand),
+        handBaseline: handBaselineWorld,
+        palmTarget: Array.isArray(proxy.config?.handLocalOffset)
+          ? hand.localToWorld(new THREE.Vector3(
+              Number(proxy.config.handLocalOffset[0] || 0),
+              Number(proxy.config.handLocalOffset[1] || 0),
+              Number(proxy.config.handLocalOffset[2] || 0)
+            ))
+          : worldPositionOf(hand),
         socket: worldPositionOf(proxy.root),
         model: worldPositionOf(model),
         tip: worldPositionOf(tip),
       };
       const screen = {
         hand: project(world.hand, xOffset),
+        handBaseline: project(world.handBaseline, xOffset),
+        palmTarget: project(world.palmTarget, xOffset),
         socket: project(world.socket, xOffset),
         model: project(world.model, xOffset),
         tip: project(world.tip, xOffset),
       };
-      const meshLandmarks = this.weaponVisualMeshLandmarks(actor);
+      const appliedHiltWorld = meshLandmarks?.world?.appliedHilt
+        ? new THREE.Vector3().fromArray(meshLandmarks.world.appliedHilt)
+        : null;
+      const appliedHiltPoint = appliedHiltWorld ? project(appliedHiltWorld, xOffset) : null;
+      const appliedHiltInTile = pointInTile(appliedHiltPoint, xOffset);
+      const appliedHiltDrawPoint = appliedHiltPoint
+        ? (appliedHiltInTile ? appliedHiltPoint : clampToTile(appliedHiltPoint, xOffset))
+        : null;
       ctx.strokeStyle = '#facc15';
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -10648,12 +10985,40 @@ class PoseLab {
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(screen.hand.x, screen.hand.y);
+      ctx.lineTo(screen.handBaseline.x, screen.handBaseline.y);
+      ctx.stroke();
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(screen.handBaseline.x, screen.handBaseline.y);
+      ctx.lineTo(screen.socket.x, screen.socket.y);
+      ctx.stroke();
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(screen.palmTarget.x, screen.palmTarget.y);
       ctx.lineTo(screen.socket.x, screen.socket.y);
       ctx.stroke();
       drawDot(screen.hand, '#38bdf8', 'hand');
+      drawDot(screen.handBaseline, '#f8fafc', 'baseline');
+      drawDot(screen.palmTarget, '#94a3b8', 'palm');
       drawDot(screen.socket, '#facc15', 'socket');
       drawDot(screen.model, '#fb923c', 'model');
-      drawDot(screen.tip, '#34d399', 'tip');
+      drawDot(screen.tip, '#fb923c', 'tip');
+      if (appliedHiltPoint && appliedHiltDrawPoint) {
+        if (!appliedHiltInTile) {
+          ctx.save();
+          ctx.setLineDash([5, 4]);
+          ctx.strokeStyle = '#ec4899';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(screen.socket.x, screen.socket.y);
+          ctx.lineTo(appliedHiltDrawPoint.x, appliedHiltDrawPoint.y);
+          ctx.stroke();
+          ctx.restore();
+        }
+        drawDot(appliedHiltDrawPoint, '#ec4899', appliedHiltInTile ? 'applied hilt' : 'applied hilt offscreen');
+      }
       ctx.fillStyle = 'rgba(7, 16, 22, 0.72)';
       ctx.fillRect(xOffset + 5, 5, 128, 36);
       ctx.fillStyle = '#f8fafc';
@@ -10664,17 +11029,28 @@ class PoseLab {
         time: probeMode ? round(probeTime) : round(time),
         probeDeg: probeMode ? round(time, 2) : null,
         hand: roundVec(world.hand),
+        handBaseline: roundVec(world.handBaseline),
+        palmTarget: roundVec(world.palmTarget),
         socket: roundVec(world.socket),
         model: roundVec(world.model),
         tip: roundVec(world.tip),
         socketInHand: roundVec(localPoint(hand, proxy.root)),
+        socketInSourceSocket: roundVec(localPoint(proxy.sourceSocket || proxy.syntheticSourceSocket || hand, proxy.root)),
+        socketQuaternionInSourceSocket: roundQuat(localQuaternion(proxy.sourceSocket || proxy.syntheticSourceSocket || hand, proxy.root)),
         displayInSocket: roundVec(localPoint(proxy.root, displayRoot)),
+        displayQuaternionInSocket: roundQuat(localQuaternion(proxy.root, displayRoot)),
         modelInDisplay: roundVec(localPoint(displayRoot, model)),
+        modelQuaternionInDisplay: roundQuat(localQuaternion(displayRoot, model)),
         screen: {
           hand: { x: round(screen.hand.x - xOffset, 2), y: round(screen.hand.y, 2), z: round(screen.hand.z, 4) },
+          handBaseline: { x: round(screen.handBaseline.x - xOffset, 2), y: round(screen.handBaseline.y, 2), z: round(screen.handBaseline.z, 4) },
+          palmTarget: { x: round(screen.palmTarget.x - xOffset, 2), y: round(screen.palmTarget.y, 2), z: round(screen.palmTarget.z, 4) },
           socket: { x: round(screen.socket.x - xOffset, 2), y: round(screen.socket.y, 2), z: round(screen.socket.z, 4) },
           model: { x: round(screen.model.x - xOffset, 2), y: round(screen.model.y, 2), z: round(screen.model.z, 4) },
           tip: { x: round(screen.tip.x - xOffset, 2), y: round(screen.tip.y, 2), z: round(screen.tip.z, 4) },
+          appliedHilt: appliedHiltPoint ? { x: round(appliedHiltPoint.x - xOffset, 2), y: round(appliedHiltPoint.y, 2), z: round(appliedHiltPoint.z, 4) } : null,
+          appliedHiltDrawn: appliedHiltDrawPoint ? { x: round(appliedHiltDrawPoint.x - xOffset, 2), y: round(appliedHiltDrawPoint.y, 2), z: round(appliedHiltDrawPoint.z, 4) } : null,
+          appliedHiltInTile,
         },
         meshLandmarks: meshLandmarks ? {
           hasSavedTuning: Boolean(meshLandmarks.hasSavedTuning),
@@ -10682,9 +11058,23 @@ class PoseLab {
           savedDiffersFromCurrent: Boolean(meshLandmarks.savedDiffersFromCurrent),
           savedIsPromotableEvidence: Boolean(meshLandmarks.savedIsPromotableEvidence),
           handToConfiguredGripPx: meshLandmarks.distances.handToConfiguredGripPx,
+          handToAppliedHiltPx: meshLandmarks.distances.handToAppliedHiltPx,
+          handBaselineToSocketPx: meshLandmarks.distances.handBaselineToSocketPx,
+          handBaselineToAppliedHiltPx: meshLandmarks.distances.handBaselineToAppliedHiltPx,
+          palmTargetToSocketPx: meshLandmarks.distances.palmTargetToSocketPx,
+          palmTargetToAppliedHiltPx: meshLandmarks.distances.palmTargetToAppliedHiltPx,
+          socketToAppliedHiltPx: meshLandmarks.distances.socketToAppliedHiltPx,
           handToSavedGripPx: meshLandmarks.distances.handToSavedGripPx,
-          configuredGripScreen: meshLandmarks.screen.configuredGrip,
+          configuredGripCanvasScreen: meshLandmarks.screen.configuredGrip,
+          appliedHiltCanvasScreen: meshLandmarks.screen.appliedHilt,
+          appliedHiltTileScreen: appliedHiltPoint ? { x: round(appliedHiltPoint.x - xOffset, 2), y: round(appliedHiltPoint.y, 2), z: round(appliedHiltPoint.z, 4) } : null,
+          handBaselineCanvasScreen: meshLandmarks.screen.socketHandBaseline,
+          handBaselineTileScreen: { x: round(screen.handBaseline.x - xOffset, 2), y: round(screen.handBaseline.y, 2), z: round(screen.handBaseline.z, 4) },
+          palmTargetCanvasScreen: meshLandmarks.screen.palmTarget,
+          palmTargetTileScreen: { x: round(screen.palmTarget.x - xOffset, 2), y: round(screen.palmTarget.y, 2), z: round(screen.palmTarget.z, 4) },
+          appliedHiltInTile,
           savedGripScreen: meshLandmarks.screen.savedGrip,
+          layers: meshLandmarks.pinning?.layers || null,
         } : null,
       });
     }
@@ -10694,10 +11084,21 @@ class PoseLab {
     actor.updateWeaponProxyVisibility?.();
     if (previousViewMode !== this.viewMode) this.setViewMode(previousViewMode);
     const drift = (field) => Math.max(...samples.map((sample) => distance(samples[0][field], sample[field])));
+    const quaternionDriftDeg = (field) => {
+      const start = new THREE.Quaternion().fromArray(samples[0][field] || [0, 0, 0, 1]).normalize();
+      return Math.max(...samples.map((sample) => {
+        const current = new THREE.Quaternion().fromArray(sample[field] || [0, 0, 0, 1]).normalize();
+        return THREE.MathUtils.radToDeg(start.angleTo(current));
+      }));
+    };
     const relativeDrift = {
       socketInHand: round(drift('socketInHand')),
+      socketInSourceSocket: round(drift('socketInSourceSocket')),
+      socketQuaternionInSourceSocketDeg: round(quaternionDriftDeg('socketQuaternionInSourceSocket'), 4),
       displayInSocket: round(drift('displayInSocket')),
+      displayQuaternionInSocketDeg: round(quaternionDriftDeg('displayQuaternionInSocket'), 4),
       modelInDisplay: round(drift('modelInDisplay')),
+      modelQuaternionInDisplayDeg: round(quaternionDriftDeg('modelQuaternionInDisplay'), 4),
     };
     const screenDistance = (field) => Math.max(...samples.map((sample) => {
       const start = samples[0].screen[field];
@@ -10706,6 +11107,8 @@ class PoseLab {
     }));
     const screenMotion = {
       hand: round(screenDistance('hand'), 2),
+      handBaseline: round(screenDistance('handBaseline'), 2),
+      palmTarget: round(screenDistance('palmTarget'), 2),
       socket: round(screenDistance('socket'), 2),
       model: round(screenDistance('model'), 2),
       tip: round(screenDistance('tip'), 2),
@@ -10728,10 +11131,20 @@ class PoseLab {
     };
     const screenMetrics = {
       maxHandToSocketPx: round(maxScreenDistance('hand', 'socket'), 2),
+      maxHandBaselineToSocketPx: maxFiniteSampleMetric('handBaselineToSocketPx'),
+      maxPalmTargetToSocketPx: maxFiniteSampleMetric('palmTargetToSocketPx'),
       minSocketToTipPx: round(minScreenDistance('socket', 'tip'), 2),
       maxModelToTipPx: round(maxScreenDistance('model', 'tip'), 2),
       maxHandToConfiguredGripPx: maxFiniteSampleMetric('handToConfiguredGripPx'),
+      maxHandToAppliedHiltPx: maxFiniteSampleMetric('handToAppliedHiltPx'),
+      maxHandBaselineToAppliedHiltPx: maxFiniteSampleMetric('handBaselineToAppliedHiltPx'),
+      maxPalmTargetToAppliedHiltPx: maxFiniteSampleMetric('palmTargetToAppliedHiltPx'),
+      maxSocketToAppliedHiltPx: maxFiniteSampleMetric('socketToAppliedHiltPx'),
       maxHandToSavedGripPx: maxFiniteSampleMetric('handToSavedGripPx'),
+      appliedHiltInTile: samples.every((sample) => sample.screen.appliedHiltInTile === true),
+      appliedHiltMarkerDrawn: samples.every((sample) => Boolean(sample.screen.appliedHiltDrawn)),
+      fallbackHiddenWithRealWeapon: samples.every((sample) => sample.meshLandmarks?.layers?.fallbackHiddenWithRealWeapon === true),
+      realWeaponVisible: samples.every((sample) => sample.meshLandmarks?.layers?.realWeaponVisible === true),
     };
     const parentChain = [
       model.name || '',
@@ -10756,22 +11169,42 @@ class PoseLab {
             : proxy.root.parent === hand
       ) && displayRoot.parent === proxy.root && model.parent === displayRoot && tip.parent === displayRoot,
       fpsParityArchitecture: architecture === 'source-socket' || architecture === 'synthetic-source-socket',
-      socketStableInHand: architecture === 'direct-hand-fk' ? relativeDrift.socketInHand < 0.005 : true,
+      socketStableInHand: architecture === 'source-socket' || architecture === 'synthetic-source-socket' ? true : relativeDrift.socketInHand < 0.005,
       socketMayAnimateInHand: architecture === 'source-socket' || architecture === 'synthetic-source-socket',
+      socketStableInSourceSocket: relativeDrift.socketInSourceSocket < 0.005,
+      socketQuaternionStableInSourceSocket: relativeDrift.socketQuaternionInSourceSocketDeg < 0.5,
       displayStableInSocket: relativeDrift.displayInSocket < 0.005,
+      displayQuaternionStableInSocket: relativeDrift.displayQuaternionInSocketDeg < 0.5,
       modelStableInDisplay: relativeDrift.modelInDisplay < 0.005,
+      modelQuaternionStableInDisplay: relativeDrift.modelQuaternionInDisplayDeg < 0.5,
       visibleWeaponCluster: screenMetrics.maxHandToSocketPx < 40 && screenMetrics.minSocketToTipPx > 10,
       socketTipLineVisible: screenMetrics.minSocketToTipPx > 10,
-      visibleConfiguredGripAtHand: Number.isFinite(Number(screenMetrics.maxHandToConfiguredGripPx)) && screenMetrics.maxHandToConfiguredGripPx < 40,
+      configuredGripScreenMetricPresent: Number.isFinite(Number(screenMetrics.maxHandToConfiguredGripPx)),
+      appliedHiltScreenMetricPresent: Number.isFinite(Number(screenMetrics.maxHandToAppliedHiltPx)),
+      appliedHiltPinnedToAuthoredSocket: Number.isFinite(Number(screenMetrics.maxSocketToAppliedHiltPx)) && screenMetrics.maxSocketToAppliedHiltPx <= 8,
+      socketPinnedToHandBaseline: Number.isFinite(Number(screenMetrics.maxHandBaselineToSocketPx)) && screenMetrics.maxHandBaselineToSocketPx <= 8,
+      appliedHiltPinnedToHandBaseline: Number.isFinite(Number(screenMetrics.maxHandBaselineToAppliedHiltPx)) && screenMetrics.maxHandBaselineToAppliedHiltPx <= 8,
+      socketPinnedToPalmTarget: Number.isFinite(Number(screenMetrics.maxPalmTargetToSocketPx)) && screenMetrics.maxPalmTargetToSocketPx <= 8,
+      appliedHiltPinnedToPalmTarget: Number.isFinite(Number(screenMetrics.maxPalmTargetToAppliedHiltPx)) && screenMetrics.maxPalmTargetToAppliedHiltPx <= 8,
+      appliedHiltAwayFromRawHand: Number.isFinite(Number(screenMetrics.maxHandToAppliedHiltPx)) && screenMetrics.maxHandToAppliedHiltPx > 8,
+      fallbackHiddenWithRealWeapon: screenMetrics.fallbackHiddenWithRealWeapon === true,
+      realWeaponVisible: screenMetrics.realWeaponVisible === true,
+      visibleAppliedHiltMarker: screenMetrics.appliedHiltMarkerDrawn === true,
       imageDataUrl: sheet.width > 0 && sheet.height > 0,
     };
     const passed = checks.parentChain
       && checks.socketStableInHand
+      && checks.socketStableInSourceSocket
+      && checks.socketQuaternionStableInSourceSocket
       && checks.displayStableInSocket
+      && checks.displayQuaternionStableInSocket
       && checks.modelStableInDisplay
-      && checks.visibleWeaponCluster
+      && checks.modelQuaternionStableInDisplay
       && checks.socketTipLineVisible
-      && checks.visibleConfiguredGripAtHand
+      && checks.appliedHiltPinnedToAuthoredSocket
+      && checks.fallbackHiddenWithRealWeapon
+      && checks.realWeaponVisible
+      && checks.visibleAppliedHiltMarker
       && checks.imageDataUrl;
     return {
       ok: passed,
@@ -10870,6 +11303,9 @@ class PoseLab {
         url: this.debugBridge?.url || '',
         connected: Boolean(this.debugBridgeState?.connected),
         clientId: this.debugBridgeState?.clientId || '',
+        pageUrl: this.debugBridgeState?.pageUrl || '',
+        build: this.debugBridgeState?.build || '',
+        cacheToken: this.debugBridgeState?.cacheToken || '',
         lastCommand: this.debugBridgeState?.lastCommand || '',
         lastCommandId: this.debugBridgeState?.lastCommandId || '',
         lastError: this.debugBridgeState?.lastError || '',
@@ -11034,6 +11470,7 @@ class PoseLab {
         const subcommand = String(spec.args[0] || '').trim().toLowerCase();
         if (subcommand === 'follow' || subcommand === 'follows') return this.debugWeaponFollow(spec.args.slice(1));
         if (subcommand === 'visual-follow' || subcommand === 'visual' || subcommand === 'visualfollow') return this.debugWeaponVisualFollow(spec.args.slice(1));
+        if (subcommand === 'live-hilt-state' || subcommand === 'live-hilt' || subcommand === 'hilt-state') return this.debugLiveWeaponHiltState(spec.args.slice(1));
         if (subcommand === 'tuning-state' || subcommand === 'tuning' || subcommand === 'mesh-landmarks') return this.debugWeaponTuningState();
         return this.debugWeaponState();
       }
@@ -11043,6 +11480,11 @@ class PoseLab {
       case 'weapon-visual-follow':
       case 'weaponvisualfollow':
         return this.debugWeaponVisualFollow(spec.args);
+      case 'weapon-live-hilt-state':
+      case 'weaponlivehiltstate':
+      case 'weapon-hilt-state':
+      case 'weaponhiltstate':
+        return this.debugLiveWeaponHiltState(spec.args);
       case 'weapon-tuning-state':
       case 'weapontuningstate':
       case 'weapon-mesh-landmarks':
@@ -11234,12 +11676,15 @@ class PoseLab {
       const register = await fetch(baseUrl + '/register', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ label: this.debugBridge.label, build: LAB_BUILD, labMode: this.labMode, url: window.location.href }),
+        body: JSON.stringify({ label: this.debugBridge.label, build: LAB_BUILD, cacheToken: LAB_CACHE_TOKEN, labMode: this.labMode, url: window.location.href, registeredAt: Date.now() }),
       });
       if (!register.ok) throw new Error('bridge register HTTP ' + register.status);
       const registered = await register.json();
       bridge.connected = true;
       bridge.clientId = String(registered.clientId || '');
+      bridge.pageUrl = window.location.href;
+      bridge.build = LAB_BUILD;
+      bridge.cacheToken = LAB_CACHE_TOKEN;
       bridge.syncAt = Date.now();
       while (bridge.connected) {
         const controller = new AbortController();

@@ -33,7 +33,7 @@ assert(fs.statSync(tipPngPath).size > 1000, 'tip landmark overlay should not be 
 assert(data.schema === 'pose-lab-meshy-blade-vector-workspace-v1', 'current data should be a blade vector workspace');
 assert(data.productionBehaviorModified === false && data.diagnosticOnly === true, 'blade vector workspace must remain diagnostic-only');
 assert(data.attachmentSnapshots?.fps?.attachment?.gripLocalPosition?.join(',') === '0.67888,-0.07803,-0.06249', 'FPS snapshot should preserve the semantic/manual hilt candidate');
-assert(data.attachmentSnapshots?.meshy?.attachment?.gripLocalPosition?.join(',') === '0.6535,-0.02302,-0.07317', 'Meshy snapshot should preserve the rig-local hilt candidate');
+assert(data.attachmentSnapshots?.meshy?.attachment?.gripLocalPosition?.join(',') === '0.69507,-0.02421,-0.06231', 'Meshy snapshot should preserve the rig-local hilt candidate');
 assert(data.attachmentSnapshots?.fps?.attachment?.tipLocalPosition?.join(',') === '-0.95561,0.1368,0', 'FPS tip landmark should remain unchanged');
 assert(data.attachmentSnapshots?.meshy?.attachment?.tipLocalPosition?.join(',') === '-0.95561,0.1368,0', 'Meshy tip landmark should remain unchanged');
 
@@ -54,7 +54,7 @@ assert(Array.isArray(tip.visibleBladeEndpoint) && tip.visibleBladeEndpoint.lengt
 assert(Number.isFinite(tip.distanceConfiguredToVisible), 'tip audit should include configured-to-visible distance');
 assert(typeof tip.configuredPointOnPhysicalBladeEndpoint === 'boolean', 'tip audit should classify configured endpoint parity');
 
-assert(profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'audit must not replace the Meshy rig-local grip placement');
+assert(profiles.includes('gripLocalPosition: [0.69507, -0.02421, -0.06231]'), 'audit must not replace the Meshy rig-local grip placement');
 assert(profiles.includes('gripLocalPosition: [0.67888, -0.07803, -0.06249]'), 'audit must not replace the FPS manual/semantic grip placement');
 assert(!profiles.includes('pose-lab-post-grip-baseline-audit-v1'), 'audit schema must not be wired into production profiles');
 assert(!profiles.includes('post_grip_baseline'), 'audit must not edit production visibility/startup/aliases');

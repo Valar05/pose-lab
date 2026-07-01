@@ -299,7 +299,7 @@ const BASE_RIG_PROFILES = {
         max: [0.95101, 0.402693, 0.198555],
       },
       sourceAttachment: {
-        basis: 'Saber handle-centered attachment for Meshy Character: gripLocalPosition pins the semantic landmark hilt candidate to WeaponGrip, rotationDeg keeps the tip forward while rolling the rifle-shaped guard toward model right, handLocalOffset moves toward the palm, and modelLocalOffset applies explicit model-space down/back/out placement. Architecture mirrors FPS Arms as RightHand -> synthetic WeaponR -> WeaponGrip -> visible weapon while preserving Meshy rig-local placement differences.',
+        basis: 'Saber handle-centered attachment for Meshy Character: gripLocalPosition pins the semantic landmark hilt candidate to the local WeaponGrip compatibility socket under the animated WeaponR sword FK bone, rotationDeg is the hard-won manual Meshy visual orientation, handLocalOffset places synthetic WeaponR under the Meshy hand, and modelLocalOffset applies explicit model-space down/back/out placement. The generated Ready WeaponR solve targets this restored attachment-local blade axis rather than changing the mesh basis.',
       },
     },
     extraClipUrls: [
