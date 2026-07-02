@@ -18,6 +18,7 @@ for (const id of ['semanticLandmarkPickHilt', 'semanticLandmarkPickTip', 'semant
   assert(html.includes(`id="${id}"`), `missing semantic landmark control ${id}`);
 }
 assert(html.includes('Weapon Gestures'), 'weapon panel should present gesture controls, not a 3D gizmo promise');
+assert(html.includes('Mesh Rotate'), 'weapon rotate control should name the mesh/model layer, not imply WeaponGrip socket rotation');
 assert(js.includes('createWeaponGizmo()') && js.includes("group.name = 'weapon-visual-sync-overlay'") && js.includes("line.name = 'weapon-overlay-socket-tip-line'"), 'runtime should expose the lightweight weapon visual-sync overlay for socket/tip/hand feedback');
 assert(js.includes("grip.name = 'weapon-overlay-applied-hilt'") && js.includes("this.weaponGizmo = { group, socket, tip, hand, grip, line"), 'weapon overlay should show the currently applied hilt/grip point, not only the hand/socket/tip');
 assert(js.includes("marker.id = 'weapon-screen-applied-hilt-marker'") && js.includes('updateWeaponScreenHiltMarker(true, gripWorld || socketWorld)'), 'weapon debug should expose a screen-space applied hilt marker when the 3D hilt point is offscreen or occluded');
@@ -36,6 +37,7 @@ assert(weaponRules.includes('if (Array.isArray(config.modelLocalOffset)) proxy.r
 assert(weaponRules.includes('fallbackHiddenWithRealWeapon') && weaponRules.includes('fallbackVisible = !(proxy?.model && proxy?.attachmentConfig?.url)'), 'real attached weapons should hide fallback blade/hilt so visual debugging does not show a fake weapon');
 assert(js.includes('weaponGestureRotationSnapshot(actor') && js.includes('applyWeaponScreenRotation(actor'), 'rotation should use a socket-aware screen quaternion snapshot');
 assert(js.includes('setWeaponAttachmentLocalQuaternion(actor, localQuat)'), 'rotation should write weaponAttachment.rotationDeg after quaternion conversion');
+assert(js.includes('Mesh Rotate edits attachment/model orientation'), 'weapon status should say Rotate edits the attachment/model layer');
 assert(js.includes('setWeaponAttachmentScale(actor, scale)'), 'scale should use a dedicated scale writer');
 assert(js.includes('applySemanticLandmarkCandidate(target =') && js.includes("const field = key === 'tip' ? 'tipLocalPosition' : 'gripLocalPosition'"), 'semantic landmark apply should let picked hilt/tip update live attachment landmarks');
 assert(js.includes("UI.semanticLandmarkApplyHilt?.addEventListener('click', () => this.applySemanticLandmarkCandidate('hilt'))"), 'Apply Hilt should wire to live gripLocalPosition updates');
@@ -50,6 +52,7 @@ assert(js.includes('cancelWeaponGesture()') && js.includes('this.cancelWeaponGes
 assert(js.includes("localStorage.setItem('poseLab.weaponGizmoTuning'"), 'save should persist exact tuned weapon values for handoff');
 assert(js.includes('this.weaponTuningSnippet(values)'), 'save/readout should emit a rig-profiles.js snippet');
 assert(js.includes('tipLocalPosition: [') && js.includes('values.tipLocalPosition.join'), 'weapon save snippet should preserve the blade tip landmark');
+assert(js.includes('rotationDeg: [\' + values.rotationDeg.join(\', \') + \'], // mesh/model layer under displayRoot'), 'weapon save snippet should identify rotationDeg as attachment mesh/model orientation');
 assert(rigProfiles.includes("label: 'FPS Arms'") && rigProfiles.includes('handLocalOffset: [0, 0, 0]') && rigProfiles.includes('modelLocalOffset: [0.00424, -0.0167, 0.01744]'), 'FPS Arms should save the accepted weapon proxy offsets');
 assert(rigProfiles.includes('rotationDeg: [-179.998, -4.747, 111.678]') && rigProfiles.includes('scale: 0.323'), 'FPS Arms should save the accepted weapon attachment rotation and scale');
 assert(css.includes('#weaponPanel') && css.includes('sheet-weapon'), 'Weapon panel should have phone critique sheet styling');

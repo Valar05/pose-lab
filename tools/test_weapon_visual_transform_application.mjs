@@ -165,6 +165,8 @@ async function main() {
 
   const config = resolvePoseLabActorRuntimeConfig('meshyCharacter');
   assert(config.proxy.parentMode === 'hand-fk', `Meshy must stay hand-fk for this contract, got ${config.proxy.parentMode}`);
+  assert(JSON.stringify(config.proxy.rotationDeg || []) === JSON.stringify([0, 0, 0]), `Meshy socket orientation should stay at weaponProxy.rotationDeg [0,0,0], got ${JSON.stringify(config.proxy.rotationDeg)}`);
+  assert(JSON.stringify(config.attachment.rotationDeg || []) === JSON.stringify([121.031, -41.564, -13.871]), `Meshy manual orientation should live on weaponAttachment.rotationDeg, got ${JSON.stringify(config.attachment.rotationDeg)}`);
 
   const actorGltf = await loadGlb(GLTFLoader, path.join(projectRoot, config.actor.url));
   fitModelToHeight(THREE, actorGltf.scene, config.actor.targetHeight);
@@ -238,6 +240,12 @@ async function main() {
   const report = {
     checked: 'weapon-visual-transform-application',
     actor: config.actorKey,
+    rotationLayerContract: {
+      socketLayer: 'weaponProxy.rotationDeg / WeaponGrip local quaternion',
+      attachmentLayer: 'weaponAttachment.rotationDeg / sabre mesh local quaternion under displayRoot',
+      weaponProxyRotationDeg: config.proxy.rotationDeg,
+      weaponAttachmentRotationDegBeforeProbe: config.attachment.rotationDeg,
+    },
     move: {
       expectedWeaponGripLocalDelta: roundVec(expectedLocalDelta),
       actualWeaponGripLocalDelta: roundVec(actualLocalDelta),
@@ -249,6 +257,10 @@ async function main() {
     },
     rotate: {
       weaponGripLocalStable: round(distance(proxy.root.position, socketLocalAfterMove), 8),
+      weaponGripSocketLocalQuaternionBefore: roundVec(socketQuatAfterMove),
+      weaponGripSocketLocalQuaternionAfter: roundVec(localQuaternionOf(THREE, proxy.rightHand, proxy.root)),
+      sabreMeshLocalQuaternionBefore: roundVec(modelLocalQuatBeforeRotate),
+      sabreMeshLocalQuaternionAfter: roundVec(modelLocalQuatAfterRotate),
       sabreLocalQuaternionDeltaDeg: round(THREE.MathUtils.radToDeg(modelLocalQuatBeforeRotate.angleTo(modelLocalQuatAfterRotate)), 4),
       sabreWorldQuaternionDeltaDeg: round(THREE.MathUtils.radToDeg(modelWorldQuatBeforeRotate.angleTo(modelWorldQuatAfterRotate)), 4),
       hiltToWeaponGrip: round(distance(rotated.landmarks.appliedHilt, proxy.root.getWorldPosition(new THREE.Vector3())), 6),

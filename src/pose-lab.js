@@ -6065,7 +6065,7 @@ class PoseLab {
       '},',
       'weaponAttachment: {',
       '  scale: ' + values.scale + ',',
-      '  rotationDeg: [' + values.rotationDeg.join(', ') + '],',
+      '  rotationDeg: [' + values.rotationDeg.join(', ') + '], // mesh/model layer under displayRoot',
       '  gripLocalPosition: [' + values.gripLocalPosition.join(', ') + '],',
       '  tipLocalPosition: [' + values.tipLocalPosition.join(', ') + '],',
       '}',
@@ -6083,7 +6083,7 @@ class PoseLab {
     this.weaponGizmoEnabled = Boolean(enabled);
     if (UI.weaponGizmoToggle) UI.weaponGizmoToggle.textContent = this.weaponGizmoEnabled ? 'Disable' : 'Enable';
     if (!this.weaponGizmoEnabled) this.cancelWeaponGesture();
-    this.updateWeaponGizmoStatus(this.weaponGizmoEnabled ? 'weapon gestures enabled: Move, Rotate, and Scale are separate modes' : 'weapon gestures disabled');
+    this.updateWeaponGizmoStatus(this.weaponGizmoEnabled ? 'weapon gestures enabled: Move edits socket position, Mesh Rotate edits attachment/model orientation, Scale edits attachment scale' : 'weapon gestures disabled');
   }
 
   setWeaponGizmoMode(mode) {
@@ -10631,6 +10631,7 @@ class PoseLab {
     proxy.model?.updateMatrixWorld(true);
     proxy.tipMarker?.updateMatrixWorld(true);
     const roundVec = (vec) => vec.toArray().map((value) => Number(value.toFixed(5)));
+    const roundQuat = (quat) => quat.toArray().map((value) => Number(value.toFixed(5)));
     const angleDeg = (a, b) => Number(THREE.MathUtils.radToDeg(a.angleTo(b)).toFixed(2));
     const hilt = worldPositionOf(proxy.root);
     const tip = proxy.tipMarker ? worldPositionOf(proxy.tipMarker) : hilt.clone().add(worldDirectionOf(proxy.root, [0, 0, 1]).multiplyScalar(Number(proxy.config?.length || 0.85)));
@@ -10650,6 +10651,9 @@ class PoseLab {
     const sourceSocketWorldScale = (proxy.sourceSocket || proxy.syntheticSourceSocket)?.getWorldScale(new THREE.Vector3()) || null;
     const displayWorldScale = proxy.displayRoot?.getWorldScale(new THREE.Vector3()) || null;
     const modelWorldScale = proxy.model?.getWorldScale(new THREE.Vector3()) || null;
+    const socketLocalQuaternion = proxy.root.quaternion.clone().normalize();
+    const sabreMeshLocalQuaternion = proxy.model?.quaternion?.clone?.().normalize?.() || null;
+    const sabreMeshWorldQuaternion = proxy.model ? worldQuaternionOf(proxy.model) : null;
     const weaponHandle = actor.boneHandles?.get(proxy.root.name) || null;
     const architecture = proxy.sourceSocket
       ? 'source-socket'
@@ -10704,10 +10708,17 @@ class PoseLab {
         positionMode: proxy.config?.positionMode || '',
         handLocalOffset: proxy.config?.handLocalOffset || null,
         modelLocalOffset: proxy.config?.modelLocalOffset || null,
-        rotationDeg: actor.info?.weaponAttachment?.rotationDeg || null,
+        socketRotationDeg: proxy.config?.rotationDeg || null,
+        attachmentRotationDeg: actor.info?.weaponAttachment?.rotationDeg || proxy.attachmentConfig?.rotationDeg || null,
+        rotationLayerContract: 'socketRotationDeg applies to WeaponGrip; attachmentRotationDeg applies to sabre mesh under displayRoot',
         gripLocalPosition: actor.info?.weaponAttachment?.gripLocalPosition || null,
         tipLocalPosition: actor.info?.weaponAttachment?.tipLocalPosition || null,
         scale: actor.info?.weaponAttachment?.scale ?? null,
+      },
+      quaternions: {
+        weaponGripSocketLocal: roundQuat(socketLocalQuaternion),
+        sabreMeshLocalInDisplayRoot: sabreMeshLocalQuaternion ? roundQuat(sabreMeshLocalQuaternion) : null,
+        sabreMeshWorld: sabreMeshWorldQuaternion ? roundQuat(sabreMeshWorldQuaternion) : null,
       },
     };
     return { ok: true, command: 'weapon', weapon: source, snapshot: this.debugSnapshot() };

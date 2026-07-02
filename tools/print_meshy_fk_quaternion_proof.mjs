@@ -200,16 +200,22 @@ async function main() {
   const rows = {
     'RightHand world quaternion T-pose': quatArray(samples['T-pose'].rightHandWorldQuaternion),
     'RightHand world quaternion Ready': quatArray(samples.Ready.rightHandWorldQuaternion),
-    'WeaponGrip local quaternion T-pose': quatArray(samples['T-pose'].weaponGripLocalQuaternion),
-    'WeaponGrip local quaternion Ready': quatArray(samples.Ready.weaponGripLocalQuaternion),
-    'Sabre mesh local quaternion T-pose': quatArray(samples['T-pose'].sabreMeshLocalQuaternion),
-    'Sabre mesh local quaternion Ready': quatArray(samples.Ready.sabreMeshLocalQuaternion),
+    'WeaponGrip socket local quaternion T-pose (weaponProxy.rotationDeg layer)': quatArray(samples['T-pose'].weaponGripLocalQuaternion),
+    'WeaponGrip socket local quaternion Ready (weaponProxy.rotationDeg layer)': quatArray(samples.Ready.weaponGripLocalQuaternion),
+    'Sabre mesh local quaternion T-pose (weaponAttachment.rotationDeg layer)': quatArray(samples['T-pose'].sabreMeshLocalQuaternion),
+    'Sabre mesh local quaternion Ready (weaponAttachment.rotationDeg layer)': quatArray(samples.Ready.sabreMeshLocalQuaternion),
     'Sabre world quaternion T-pose': quatArray(samples['T-pose'].sabreWorldQuaternion),
     'Sabre world quaternion Ready': quatArray(samples.Ready.sabreWorldQuaternion),
   };
 
   console.log(JSON.stringify({
     checked: 'meshy-fk-quaternion-proof',
+    rotationLayerContract: {
+      socketLayer: 'weaponProxy.rotationDeg applies to WeaponGrip local quaternion',
+      attachmentLayer: 'weaponAttachment.rotationDeg applies to sabre mesh local quaternion under displayRoot',
+      weaponProxyRotationDeg: config.proxy.rotationDeg,
+      weaponAttachmentRotationDeg: config.attachment.rotationDeg,
+    },
     clips: {
       'T-pose': {
         clip: samples['T-pose'].clip,
