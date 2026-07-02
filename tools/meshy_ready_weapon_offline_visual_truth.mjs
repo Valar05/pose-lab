@@ -237,7 +237,11 @@ async function main() {
   const readyHand = rightHand.getWorldPosition(new THREE.Vector3());
   const readyHandDisplacement = restHand.distanceTo(readyHand);
   const clipHasWeaponTracks = built.clip.tracks.some((track) => /WeaponGrip|Weapon\.R|WeaponR/.test(track.name));
-  const visibility = classifyWeaponVisibility({ clipName: built.clip.name, clipUserData: built.clip.userData, config: profile.weaponProxy, weaponDebug: args.weaponDebug });
+  const candidateVisibilityConfig = {
+    ...profile.weaponProxy,
+    visibleClipPatterns: [...(profile.weaponProxy.visibleClipPatterns || []), '\\[FPS-VISUAL-IK'],
+  };
+  const visibility = classifyWeaponVisibility({ clipName: built.clip.name, clipUserData: built.clip.userData, config: candidateVisibilityConfig, weaponDebug: args.weaponDebug });
   const offlineTruth = classifyReadyWeaponTruth(THREE, { readyState: frames[1].state, restState, visibility });
   const parity = buildReadyWeaponParityVerdict({ offlineTruth, observedWebTruth });
   const result = parity.visualVerdict;
@@ -249,6 +253,7 @@ async function main() {
     schema: 'pose-lab-offline-web-truth-parity-ready-weapon-fk-v1',
     generatedAt: new Date().toISOString(),
     proofMode: 'offline-web-truth-parity',
+    visibilityPolicy: 'candidate-lane-only',
     browserCaptureDeprecated: true,
     sourceActor: 'FPS Arms',
     targetActor: 'Meshy Character',
@@ -259,6 +264,7 @@ async function main() {
     sharedTruthModule: 'src/ready-weapon-truth.mjs',
     observedWebTruthPath: path.relative(projectRoot, args.observed),
     manualPlacementPolicy: 'locked literals; verifier reads rig profile and does not tune offsets',
+    candidateVisibilityPolicy: 'verifier may make FPS-VISUAL-IK Ready visible for proof without widening runtime/default UI visibleClipPatterns',
     observedWebTruth,
     observedTruth: parity.observedTruth,
     offlineTruth,
@@ -282,7 +288,7 @@ async function main() {
   fs.writeFileSync(jsonPath, JSON.stringify(artifact, null, 2) + '\n');
   const gatePath = path.join(projectRoot, 'generated', 'visual_red_build', 'meshy_ready_weapon_fk_follow_latest.json');
   fs.mkdirSync(path.dirname(gatePath), { recursive: true });
-  fs.writeFileSync(gatePath, JSON.stringify({ schema: 'pose-lab-ready-weapon-fk-offline-web-parity-gate-v1', generatedAt: artifact.generatedAt, currentFixCacheToken: artifact.cacheToken, cacheToken: artifact.cacheToken, runtimeBuild: artifact.runtimeBuild, actorKey: 'meshyCharacter', clipName: built.clip.name, readyClipName: built.clip.name, proofMode: artifact.proofMode, browserCaptureDeprecated: true, browserCapturePolicy: 'Browser screenshots, debug bridge state, Android screencap, and visual-QA browser capture are manual inspection aids only and cannot close this red build.', sharedTruthModule: artifact.sharedTruthModule, observedWebTruthPath: artifact.observedWebTruthPath, observedWebTruth, observedTruth: artifact.observedTruth, offlineTruth, visibilityGate: artifact.visibilityGate, transformGate: artifact.transformGate, promotionVerdict: artifact.promotionVerdict, parity: artifact.parity, offlineVisualTruth: { artifactPath: path.relative(projectRoot, jsonPath), sheetPath: path.relative(projectRoot, sheetPath), result: artifact.result, metrics: artifact.metrics, acceptance: artifact.acceptance } }, null, 2) + '\n');
+  fs.writeFileSync(gatePath, JSON.stringify({ schema: 'pose-lab-ready-weapon-fk-offline-web-parity-gate-v1', generatedAt: artifact.generatedAt, currentFixCacheToken: artifact.cacheToken, cacheToken: artifact.cacheToken, runtimeBuild: artifact.runtimeBuild, actorKey: 'meshyCharacter', clipName: built.clip.name, readyClipName: built.clip.name, proofMode: artifact.proofMode, visibilityPolicy: artifact.visibilityPolicy, candidateVisibilityPolicy: artifact.candidateVisibilityPolicy, browserCaptureDeprecated: true, browserCapturePolicy: 'Browser screenshots, debug bridge state, Android screencap, and visual-QA browser capture are manual inspection aids only and cannot close this red build.', sharedTruthModule: artifact.sharedTruthModule, observedWebTruthPath: artifact.observedWebTruthPath, observedWebTruth, observedTruth: artifact.observedTruth, offlineTruth, visibilityGate: artifact.visibilityGate, transformGate: artifact.transformGate, promotionVerdict: artifact.promotionVerdict, parity: artifact.parity, offlineVisualTruth: { artifactPath: path.relative(projectRoot, jsonPath), sheetPath: path.relative(projectRoot, sheetPath), result: artifact.result, metrics: artifact.metrics, acceptance: artifact.acceptance } }, null, 2) + '\n');
   console.log(JSON.stringify({ ok: result === 'fixed', result, observedWebClass: observedWebTruth.visualClass, observedAuthority: 'context-only', offlineClass: offlineTruth.visualClass, transformClass: offlineTruth.transformClass, visibilityClass: offlineTruth.visibilityClass, visibilityGate: offlineTruth.visibilityGate?.status, transformGate: offlineTruth.transformGate?.status, parityFailure: parity.parityFailure, artifact: path.relative(projectRoot, jsonPath), sheet: path.relative(projectRoot, sheetPath), metrics: artifact.metrics }, null, 2));
 }
 main().catch((error) => { console.error(error?.stack || String(error)); process.exit(1); });

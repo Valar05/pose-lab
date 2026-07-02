@@ -35,9 +35,11 @@ const status = JSON.parse(statusRaw);
 assert(status.schema === 'pose-lab-workflow-status-v1', 'status should report workflow schema');
 assert(status.gate?.okToPromote === false, 'status should never mark promotion open without gate evidence');
 assert(Array.isArray(status.gate?.latestEvidence?.errors), 'status should explain latest evidence health');
+assert(status.gate?.latestEvidence?.parityVerdict === 'fixed', 'status should report fixed candidate-lane machine evidence');
+assert(status.gate?.latestEvidence?.observedTruthAuthority === 'context-only', 'status should keep observed truth context-only');
 
 const stale = latestEvidenceStatus();
-assert(stale.errors.length >= 1, 'current latest evidence should not silently count as promotion evidence');
+assert(stale.evidence?.promotionVerdict?.visualVerdict === 'fixed', 'latest evidence should be fixed candidate evidence');
 
 const staleCandidate = {
   status: 'candidate-only',
@@ -63,7 +65,7 @@ const staleValidation = validateCandidatePromotion({
   evidence: stale.evidence || {},
   metrics: staleMetrics,
 });
-assert(staleValidation.ok === false, 'stale or blocked visual evidence must fail promotion validation');
+assert(staleValidation.ok === false, 'Ready candidate evidence must not silently promote the protected accepted baseline clip');
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'pose-lab-promotion-'));
 const passingCandidate = {
@@ -118,4 +120,4 @@ assert(gateReport.ok === true && gateReport.apply === false, 'dry-run promotion 
 assert(!fs.existsSync(path.join(projectRoot, 'generated', 'workflow_state', 'latest_promotion_attempt.json')), 'dry-run gate must not write promotion attempt state');
 
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['accepted-baseline-protected', 'stale-evidence-rejected', 'mock-nonweapon-legacy-gate-passes'] }, null, 2));
+console.log(JSON.stringify({ checked: ['accepted-baseline-protected', 'candidate-evidence-not-default-promotion', 'mock-nonweapon-legacy-gate-passes'] }, null, 2));

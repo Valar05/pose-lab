@@ -26,7 +26,8 @@ function validate(evidence, candidate, metrics, baseline) {
 const baseline = readJson(baselinePath);
 const latest = latestEvidenceStatus();
 assert(latest.path.endsWith('meshy_ready_weapon_fk_follow_latest.json'), 'latest evidence should point at Meshy Ready parity gate');
-assert(latest.errors.some((entry) => entry.includes('not fixed') || entry.includes('visibility gate')), 'current red parity evidence should block promotion status');
+assert(latest.evidence?.promotionVerdict?.visualVerdict === 'fixed', 'latest Ready candidate evidence should now have fixed machine gates');
+assert(latest.evidence?.observedTruth?.authority === 'context-only', 'latest Ready evidence should keep observed truth context-only');
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'pose-lab-parity-promotion-'));
 const candidate = {
@@ -227,4 +228,4 @@ const gateReport = JSON.parse(gate.stdout);
 assert(gateReport.ok === true && gateReport.apply === false, 'fixed parity dry-run should validate without applying');
 
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['latest-parity-status-red', 'fixed-machine-gates-promotion-accepted', 'visibility-and-transform-gates-required', 'observed-truth-context-only'] }, null, 2));
+console.log(JSON.stringify({ checked: ['latest-parity-status-fixed', 'fixed-machine-gates-promotion-accepted', 'visibility-and-transform-gates-required', 'observed-truth-context-only'] }, null, 2));

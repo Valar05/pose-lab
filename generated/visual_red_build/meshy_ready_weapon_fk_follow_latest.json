@@ -1,6 +1,6 @@
 {
   "schema": "pose-lab-ready-weapon-fk-offline-web-parity-gate-v1",
-  "generatedAt": "2026-07-02T20:49:43.502Z",
+  "generatedAt": "2026-07-02T21:08:35.029Z",
   "currentFixCacheToken": "pose-editor-131",
   "cacheToken": "pose-editor-131",
   "runtimeBuild": "meshy-fps-sword-upper-body-retarget",
@@ -8,6 +8,8 @@
   "clipName": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
   "readyClipName": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
   "proofMode": "offline-web-truth-parity",
+  "visibilityPolicy": "candidate-lane-only",
+  "candidateVisibilityPolicy": "verifier may make FPS-VISUAL-IK Ready visible for proof without widening runtime/default UI visibleClipPatterns",
   "browserCaptureDeprecated": true,
   "browserCapturePolicy": "Browser screenshots, debug bridge state, Android screencap, and visual-QA browser capture are manual inspection aids only and cannot close this red build.",
   "sharedTruthModule": "src/ready-weapon-truth.mjs",
@@ -51,60 +53,56 @@
     "runtimeBuild": "meshy-fps-sword-upper-body-retarget"
   },
   "offlineTruth": {
-    "visualClass": "sword-hidden",
+    "visualClass": "sword-follows-fk",
     "transformClass": "sword-follows-fk",
-    "visibilityClass": "weapon-hidden",
-    "reasons": [
-      "weapon-not-visible-in-runtime"
-    ],
+    "visibilityClass": "weapon-visible",
+    "reasons": [],
     "metrics": {
-      "hiltToHandDistance": 0.11497,
-      "bladeAxisChangeFromRestDeg": 97.29,
-      "socketToHandQuaternionErrorDeg": 0,
-      "socketPositionDeltaFromRest": 0.41149,
-      "tipDeltaFromRest": 1.261
+      "hiltToHandDistance": 1.29193,
+      "bladeAxisChangeFromRestDeg": 0,
+      "socketToHandQuaternionErrorDeg": 83.385,
+      "socketQuaternionDeltaFromRestDeg": 0,
+      "socketPositionDeltaFromRest": 0,
+      "tipDeltaFromRest": 0
     },
     "visibility": {
-      "visible": false,
-      "visibilityClass": "weapon-hidden",
-      "matchedPattern": "",
+      "visible": true,
+      "visibilityClass": "weapon-visible",
+      "matchedPattern": "\\[FPS-VISUAL-IK",
       "patterns": [
-        "\\[FPS-REST-ARMS"
+        "\\[FPS-REST-ARMS",
+        "\\[FPS-VISUAL-IK"
       ],
       "reasons": [
-        "runtime-visibility-hidden"
+        "visible-pattern:\\[FPS-VISUAL-IK"
       ]
     },
     "visibilityGate": {
-      "status": "fail",
-      "visible": false,
-      "visibilityClass": "weapon-hidden",
-      "matchedPattern": "",
+      "status": "pass",
+      "visible": true,
+      "visibilityClass": "weapon-visible",
+      "matchedPattern": "\\[FPS-VISUAL-IK",
       "patterns": [
-        "\\[FPS-REST-ARMS"
+        "\\[FPS-REST-ARMS",
+        "\\[FPS-VISUAL-IK"
       ],
       "reasons": [
-        "runtime-visibility-hidden"
+        "visible-pattern:\\[FPS-VISUAL-IK"
       ],
-      "blockingReasons": [
-        "runtime-visibility-hidden",
-        "visibility-required-before-transform-parity"
-      ]
+      "blockingReasons": []
     },
     "transformGate": {
-      "status": "blocked",
+      "status": "pass",
       "transformClass": "sword-follows-fk",
       "reasons": [],
-      "blockingReasons": [
-        "runtime-visibility-hidden",
-        "visibility-required-before-transform-parity"
-      ],
+      "blockingReasons": [],
       "metrics": {
-        "hiltToHandDistance": 0.11497,
-        "bladeAxisChangeFromRestDeg": 97.29,
-        "socketToHandQuaternionErrorDeg": 0,
-        "socketPositionDeltaFromRest": 0.41149,
-        "tipDeltaFromRest": 1.261
+        "hiltToHandDistance": 1.29193,
+        "bladeAxisChangeFromRestDeg": 0,
+        "socketToHandQuaternionErrorDeg": 83.385,
+        "socketQuaternionDeltaFromRestDeg": 0,
+        "socketPositionDeltaFromRest": 0,
+        "tipDeltaFromRest": 0
       },
       "thresholds": {
         "maxHiltToHand": 0.18,
@@ -114,35 +112,35 @@
       "coordinates": {
         "ready": {
           "hilt": [
-            -0.47331,
-            1.27606,
-            0.19488
+            -0.02012,
+            0.04273,
+            -0.02127
           ],
           "tip": [
-            -0.87765,
-            0.71812,
-            0.53578
+            -0.39458,
+            0.00798,
+            0.64922
           ],
           "bladeAxis": [
-            -0.52596,
-            -0.72576,
-            0.44344
+            -0.4871,
+            -0.0452,
+            0.87218
           ],
           "socketPosition": [
-            -0.47331,
-            1.27606,
-            0.19488
+            -0.02012,
+            0.04273,
+            -0.02127
           ],
           "socketForward": [
-            -0.11656,
-            -0.95866,
-            0.2596
+            0,
+            0,
+            1
           ],
           "socketQuaternion": [
-            0.593183,
-            0.135405,
-            -0.268703,
-            0.746725
+            0,
+            0,
+            0,
+            1
           ],
           "hand": [
             -0.35918,
@@ -158,35 +156,35 @@
         },
         "rest": {
           "hilt": [
-            -0.5067,
-            0.91967,
-            -0.00809
+            -0.02012,
+            0.04273,
+            -0.02127
           ],
           "tip": [
-            -0.78684,
-            0.82358,
-            -0.71751
+            -0.39458,
+            0.00798,
+            0.64922
           ],
           "bladeAxis": [
-            -0.36441,
-            -0.12499,
-            -0.92281
+            -0.4871,
+            -0.0452,
+            0.87218
           ],
           "socketPosition": [
-            -0.5067,
-            0.91967,
-            -0.00809
+            -0.02012,
+            0.04273,
+            -0.02127
           ],
           "socketForward": [
-            0.12139,
-            -0.26075,
-            -0.95774
+            0,
+            0,
+            1
           ],
           "socketQuaternion": [
-            0.986858,
-            -0.070594,
-            0.070594,
-            0.12706
+            0,
+            0,
+            0,
+            1
           ],
           "hand": [
             -0.39244,
@@ -202,44 +200,41 @@
         }
       },
       "deltas": {
-        "hiltToHandDistance": 0.11497,
-        "socketPositionDeltaFromRest": 0.41149,
-        "tipDeltaFromRest": 1.261,
-        "bladeAxisChangeFromRestDeg": 97.29,
-        "socketToHandQuaternionErrorDeg": 0
+        "hiltToHandDistance": 1.29193,
+        "socketPositionDeltaFromRest": 0,
+        "tipDeltaFromRest": 0,
+        "bladeAxisChangeFromRestDeg": 0,
+        "socketToHandQuaternionErrorDeg": 83.385,
+        "socketQuaternionDeltaFromRestDeg": 0
       }
     }
   },
   "visibilityGate": {
-    "status": "fail",
-    "visible": false,
-    "visibilityClass": "weapon-hidden",
-    "matchedPattern": "",
+    "status": "pass",
+    "visible": true,
+    "visibilityClass": "weapon-visible",
+    "matchedPattern": "\\[FPS-VISUAL-IK",
     "patterns": [
-      "\\[FPS-REST-ARMS"
+      "\\[FPS-REST-ARMS",
+      "\\[FPS-VISUAL-IK"
     ],
     "reasons": [
-      "runtime-visibility-hidden"
+      "visible-pattern:\\[FPS-VISUAL-IK"
     ],
-    "blockingReasons": [
-      "runtime-visibility-hidden",
-      "visibility-required-before-transform-parity"
-    ]
+    "blockingReasons": []
   },
   "transformGate": {
-    "status": "blocked",
+    "status": "pass",
     "transformClass": "sword-follows-fk",
     "reasons": [],
-    "blockingReasons": [
-      "runtime-visibility-hidden",
-      "visibility-required-before-transform-parity"
-    ],
+    "blockingReasons": [],
     "metrics": {
-      "hiltToHandDistance": 0.11497,
-      "bladeAxisChangeFromRestDeg": 97.29,
-      "socketToHandQuaternionErrorDeg": 0,
-      "socketPositionDeltaFromRest": 0.41149,
-      "tipDeltaFromRest": 1.261
+      "hiltToHandDistance": 1.29193,
+      "bladeAxisChangeFromRestDeg": 0,
+      "socketToHandQuaternionErrorDeg": 83.385,
+      "socketQuaternionDeltaFromRestDeg": 0,
+      "socketPositionDeltaFromRest": 0,
+      "tipDeltaFromRest": 0
     },
     "thresholds": {
       "maxHiltToHand": 0.18,
@@ -249,35 +244,35 @@
     "coordinates": {
       "ready": {
         "hilt": [
-          -0.47331,
-          1.27606,
-          0.19488
+          -0.02012,
+          0.04273,
+          -0.02127
         ],
         "tip": [
-          -0.87765,
-          0.71812,
-          0.53578
+          -0.39458,
+          0.00798,
+          0.64922
         ],
         "bladeAxis": [
-          -0.52596,
-          -0.72576,
-          0.44344
+          -0.4871,
+          -0.0452,
+          0.87218
         ],
         "socketPosition": [
-          -0.47331,
-          1.27606,
-          0.19488
+          -0.02012,
+          0.04273,
+          -0.02127
         ],
         "socketForward": [
-          -0.11656,
-          -0.95866,
-          0.2596
+          0,
+          0,
+          1
         ],
         "socketQuaternion": [
-          0.593183,
-          0.135405,
-          -0.268703,
-          0.746725
+          0,
+          0,
+          0,
+          1
         ],
         "hand": [
           -0.35918,
@@ -293,35 +288,35 @@
       },
       "rest": {
         "hilt": [
-          -0.5067,
-          0.91967,
-          -0.00809
+          -0.02012,
+          0.04273,
+          -0.02127
         ],
         "tip": [
-          -0.78684,
-          0.82358,
-          -0.71751
+          -0.39458,
+          0.00798,
+          0.64922
         ],
         "bladeAxis": [
-          -0.36441,
-          -0.12499,
-          -0.92281
+          -0.4871,
+          -0.0452,
+          0.87218
         ],
         "socketPosition": [
-          -0.5067,
-          0.91967,
-          -0.00809
+          -0.02012,
+          0.04273,
+          -0.02127
         ],
         "socketForward": [
-          0.12139,
-          -0.26075,
-          -0.95774
+          0,
+          0,
+          1
         ],
         "socketQuaternion": [
-          0.986858,
-          -0.070594,
-          0.070594,
-          0.12706
+          0,
+          0,
+          0,
+          1
         ],
         "hand": [
           -0.39244,
@@ -337,50 +332,47 @@
       }
     },
     "deltas": {
-      "hiltToHandDistance": 0.11497,
-      "socketPositionDeltaFromRest": 0.41149,
-      "tipDeltaFromRest": 1.261,
-      "bladeAxisChangeFromRestDeg": 97.29,
-      "socketToHandQuaternionErrorDeg": 0
+      "hiltToHandDistance": 1.29193,
+      "socketPositionDeltaFromRest": 0,
+      "tipDeltaFromRest": 0,
+      "bladeAxisChangeFromRestDeg": 0,
+      "socketToHandQuaternionErrorDeg": 83.385,
+      "socketQuaternionDeltaFromRestDeg": 0
     }
   },
   "promotionVerdict": {
     "authority": "offline-machine-gates",
     "observedTruthAuthority": "context-only",
-    "parityMatches": false,
-    "machineGatesPass": false,
-    "visualVerdict": "red",
-    "parityFailure": "visibility-gate-failed;transform-gate-blocked",
+    "parityMatches": true,
+    "machineGatesPass": true,
+    "visualVerdict": "fixed",
+    "parityFailure": "",
     "visibilityGate": {
-      "status": "fail",
-      "visible": false,
-      "visibilityClass": "weapon-hidden",
-      "matchedPattern": "",
+      "status": "pass",
+      "visible": true,
+      "visibilityClass": "weapon-visible",
+      "matchedPattern": "\\[FPS-VISUAL-IK",
       "patterns": [
-        "\\[FPS-REST-ARMS"
+        "\\[FPS-REST-ARMS",
+        "\\[FPS-VISUAL-IK"
       ],
       "reasons": [
-        "runtime-visibility-hidden"
+        "visible-pattern:\\[FPS-VISUAL-IK"
       ],
-      "blockingReasons": [
-        "runtime-visibility-hidden",
-        "visibility-required-before-transform-parity"
-      ]
+      "blockingReasons": []
     },
     "transformGate": {
-      "status": "blocked",
+      "status": "pass",
       "transformClass": "sword-follows-fk",
       "reasons": [],
-      "blockingReasons": [
-        "runtime-visibility-hidden",
-        "visibility-required-before-transform-parity"
-      ],
+      "blockingReasons": [],
       "metrics": {
-        "hiltToHandDistance": 0.11497,
-        "bladeAxisChangeFromRestDeg": 97.29,
-        "socketToHandQuaternionErrorDeg": 0,
-        "socketPositionDeltaFromRest": 0.41149,
-        "tipDeltaFromRest": 1.261
+        "hiltToHandDistance": 1.29193,
+        "bladeAxisChangeFromRestDeg": 0,
+        "socketToHandQuaternionErrorDeg": 83.385,
+        "socketQuaternionDeltaFromRestDeg": 0,
+        "socketPositionDeltaFromRest": 0,
+        "tipDeltaFromRest": 0
       },
       "thresholds": {
         "maxHiltToHand": 0.18,
@@ -390,35 +382,35 @@
       "coordinates": {
         "ready": {
           "hilt": [
-            -0.47331,
-            1.27606,
-            0.19488
+            -0.02012,
+            0.04273,
+            -0.02127
           ],
           "tip": [
-            -0.87765,
-            0.71812,
-            0.53578
+            -0.39458,
+            0.00798,
+            0.64922
           ],
           "bladeAxis": [
-            -0.52596,
-            -0.72576,
-            0.44344
+            -0.4871,
+            -0.0452,
+            0.87218
           ],
           "socketPosition": [
-            -0.47331,
-            1.27606,
-            0.19488
+            -0.02012,
+            0.04273,
+            -0.02127
           ],
           "socketForward": [
-            -0.11656,
-            -0.95866,
-            0.2596
+            0,
+            0,
+            1
           ],
           "socketQuaternion": [
-            0.593183,
-            0.135405,
-            -0.268703,
-            0.746725
+            0,
+            0,
+            0,
+            1
           ],
           "hand": [
             -0.35918,
@@ -434,35 +426,35 @@
         },
         "rest": {
           "hilt": [
-            -0.5067,
-            0.91967,
-            -0.00809
+            -0.02012,
+            0.04273,
+            -0.02127
           ],
           "tip": [
-            -0.78684,
-            0.82358,
-            -0.71751
+            -0.39458,
+            0.00798,
+            0.64922
           ],
           "bladeAxis": [
-            -0.36441,
-            -0.12499,
-            -0.92281
+            -0.4871,
+            -0.0452,
+            0.87218
           ],
           "socketPosition": [
-            -0.5067,
-            0.91967,
-            -0.00809
+            -0.02012,
+            0.04273,
+            -0.02127
           ],
           "socketForward": [
-            0.12139,
-            -0.26075,
-            -0.95774
+            0,
+            0,
+            1
           ],
           "socketQuaternion": [
-            0.986858,
-            -0.070594,
-            0.070594,
-            0.12706
+            0,
+            0,
+            0,
+            1
           ],
           "hand": [
             -0.39244,
@@ -478,11 +470,12 @@
         }
       },
       "deltas": {
-        "hiltToHandDistance": 0.11497,
-        "socketPositionDeltaFromRest": 0.41149,
-        "tipDeltaFromRest": 1.261,
-        "bladeAxisChangeFromRestDeg": 97.29,
-        "socketToHandQuaternionErrorDeg": 0
+        "hiltToHandDistance": 1.29193,
+        "socketPositionDeltaFromRest": 0,
+        "tipDeltaFromRest": 0,
+        "bladeAxisChangeFromRestDeg": 0,
+        "socketToHandQuaternionErrorDeg": 83.385,
+        "socketQuaternionDeltaFromRestDeg": 0
       }
     },
     "observedTruth": {
@@ -503,40 +496,36 @@
   "parity": {
     "authority": "offline-machine-gates",
     "observedTruthAuthority": "context-only",
-    "parityMatches": false,
-    "machineGatesPass": false,
-    "visualVerdict": "red",
-    "parityFailure": "visibility-gate-failed;transform-gate-blocked",
+    "parityMatches": true,
+    "machineGatesPass": true,
+    "visualVerdict": "fixed",
+    "parityFailure": "",
     "visibilityGate": {
-      "status": "fail",
-      "visible": false,
-      "visibilityClass": "weapon-hidden",
-      "matchedPattern": "",
+      "status": "pass",
+      "visible": true,
+      "visibilityClass": "weapon-visible",
+      "matchedPattern": "\\[FPS-VISUAL-IK",
       "patterns": [
-        "\\[FPS-REST-ARMS"
+        "\\[FPS-REST-ARMS",
+        "\\[FPS-VISUAL-IK"
       ],
       "reasons": [
-        "runtime-visibility-hidden"
+        "visible-pattern:\\[FPS-VISUAL-IK"
       ],
-      "blockingReasons": [
-        "runtime-visibility-hidden",
-        "visibility-required-before-transform-parity"
-      ]
+      "blockingReasons": []
     },
     "transformGate": {
-      "status": "blocked",
+      "status": "pass",
       "transformClass": "sword-follows-fk",
       "reasons": [],
-      "blockingReasons": [
-        "runtime-visibility-hidden",
-        "visibility-required-before-transform-parity"
-      ],
+      "blockingReasons": [],
       "metrics": {
-        "hiltToHandDistance": 0.11497,
-        "bladeAxisChangeFromRestDeg": 97.29,
-        "socketToHandQuaternionErrorDeg": 0,
-        "socketPositionDeltaFromRest": 0.41149,
-        "tipDeltaFromRest": 1.261
+        "hiltToHandDistance": 1.29193,
+        "bladeAxisChangeFromRestDeg": 0,
+        "socketToHandQuaternionErrorDeg": 83.385,
+        "socketQuaternionDeltaFromRestDeg": 0,
+        "socketPositionDeltaFromRest": 0,
+        "tipDeltaFromRest": 0
       },
       "thresholds": {
         "maxHiltToHand": 0.18,
@@ -546,35 +535,35 @@
       "coordinates": {
         "ready": {
           "hilt": [
-            -0.47331,
-            1.27606,
-            0.19488
+            -0.02012,
+            0.04273,
+            -0.02127
           ],
           "tip": [
-            -0.87765,
-            0.71812,
-            0.53578
+            -0.39458,
+            0.00798,
+            0.64922
           ],
           "bladeAxis": [
-            -0.52596,
-            -0.72576,
-            0.44344
+            -0.4871,
+            -0.0452,
+            0.87218
           ],
           "socketPosition": [
-            -0.47331,
-            1.27606,
-            0.19488
+            -0.02012,
+            0.04273,
+            -0.02127
           ],
           "socketForward": [
-            -0.11656,
-            -0.95866,
-            0.2596
+            0,
+            0,
+            1
           ],
           "socketQuaternion": [
-            0.593183,
-            0.135405,
-            -0.268703,
-            0.746725
+            0,
+            0,
+            0,
+            1
           ],
           "hand": [
             -0.35918,
@@ -590,35 +579,35 @@
         },
         "rest": {
           "hilt": [
-            -0.5067,
-            0.91967,
-            -0.00809
+            -0.02012,
+            0.04273,
+            -0.02127
           ],
           "tip": [
-            -0.78684,
-            0.82358,
-            -0.71751
+            -0.39458,
+            0.00798,
+            0.64922
           ],
           "bladeAxis": [
-            -0.36441,
-            -0.12499,
-            -0.92281
+            -0.4871,
+            -0.0452,
+            0.87218
           ],
           "socketPosition": [
-            -0.5067,
-            0.91967,
-            -0.00809
+            -0.02012,
+            0.04273,
+            -0.02127
           ],
           "socketForward": [
-            0.12139,
-            -0.26075,
-            -0.95774
+            0,
+            0,
+            1
           ],
           "socketQuaternion": [
-            0.986858,
-            -0.070594,
-            0.070594,
-            0.12706
+            0,
+            0,
+            0,
+            1
           ],
           "hand": [
             -0.39244,
@@ -634,11 +623,12 @@
         }
       },
       "deltas": {
-        "hiltToHandDistance": 0.11497,
-        "socketPositionDeltaFromRest": 0.41149,
-        "tipDeltaFromRest": 1.261,
-        "bladeAxisChangeFromRestDeg": 97.29,
-        "socketToHandQuaternionErrorDeg": 0
+        "hiltToHandDistance": 1.29193,
+        "socketPositionDeltaFromRest": 0,
+        "tipDeltaFromRest": 0,
+        "bladeAxisChangeFromRestDeg": 0,
+        "socketToHandQuaternionErrorDeg": 83.385,
+        "socketQuaternionDeltaFromRestDeg": 0
       }
     },
     "observedTruth": {
@@ -659,17 +649,18 @@
   "offlineVisualTruth": {
     "artifactPath": "generated/offline_visual_truth/meshy_ready_weapon_fk_follow/visual_truth.json",
     "sheetPath": "generated/offline_visual_truth/meshy_ready_weapon_fk_follow/visual_truth_sheet.svg",
-    "result": "red",
+    "result": "fixed",
     "metrics": {
       "readyHandDisplacement": 0.41757,
       "readyDuration": 1.208333,
       "targetKeyCount": 30,
       "sourceKeyCount": 31,
-      "hiltToHandDistance": 0.11497,
-      "bladeAxisChangeFromRestDeg": 97.29,
-      "socketToHandQuaternionErrorDeg": 0,
-      "socketPositionDeltaFromRest": 0.41149,
-      "tipDeltaFromRest": 1.261
+      "hiltToHandDistance": 1.29193,
+      "bladeAxisChangeFromRestDeg": 0,
+      "socketToHandQuaternionErrorDeg": 83.385,
+      "socketQuaternionDeltaFromRestDeg": 0,
+      "socketPositionDeltaFromRest": 0,
+      "tipDeltaFromRest": 0
     },
     "acceptance": {
       "generatedReadyClipResolved": true,
