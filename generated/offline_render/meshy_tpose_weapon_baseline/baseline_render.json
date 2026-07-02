@@ -1,0 +1,101 @@
+{
+  "schema": "pose-lab-meshy-tpose-weapon-baseline-render-v1",
+  "generatedAt": "2026-07-02T21:42:12.454Z",
+  "proofKind": "offline-render-baseline-reference",
+  "actorKey": "meshyCharacter",
+  "clipName": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+  "cacheToken": "pose-editor-130",
+  "protectedSurfacePolicy": "startup/SwordReady/RestProbe/default visibility remain on accepted T-pose/rest baseline",
+  "notPromotionEvidenceForReady": true,
+  "visibility": {
+    "status": "visible",
+    "matchedPattern": "\\[FPS-REST-ARMS",
+    "patterns": [
+      "\\[FPS-REST-ARMS"
+    ]
+  },
+  "manualValues": {
+    "handLocalOffset": [
+      0.095,
+      0.035,
+      -0.01
+    ],
+    "modelLocalOffset": [
+      -0.11512,
+      0.00773,
+      -0.01127
+    ],
+    "gripOffset": [
+      0,
+      0,
+      0
+    ],
+    "attachmentRotationDeg": [
+      90,
+      0,
+      -55.145
+    ],
+    "gripLocalPosition": [
+      0.6535,
+      -0.02302,
+      -0.07317
+    ],
+    "tipLocalPosition": [
+      -0.95561,
+      0.1368,
+      0
+    ]
+  },
+  "points": {
+    "rightHand": [
+      -0.39244,
+      0.91237,
+      0.00285
+    ],
+    "leftHand": [
+      0.40341,
+      0.9087,
+      0.00278
+    ],
+    "socket": [
+      -0.5067,
+      0.91967,
+      -0.00809
+    ],
+    "hilt": [
+      -0.6346,
+      0.90536,
+      -0.29285
+    ],
+    "tip": [
+      -0.78684,
+      0.82358,
+      -0.71751
+    ],
+    "authoredSocket": [
+      -0.02012,
+      0.04273,
+      -0.02127
+    ]
+  },
+  "quaternions": {
+    "socket": [
+      0.986858,
+      -0.070594,
+      0.070594,
+      0.12706
+    ],
+    "authoredLocal": [
+      0,
+      0,
+      0,
+      1
+    ]
+  },
+  "metrics": {
+    "hiltToHandDistance": 0.38227,
+    "socketToAuthoredLocalDistance": 1.00297,
+    "bladeLength": 0.45847
+  },
+  "sheet": "generated/offline_render/meshy_tpose_weapon_baseline/baseline_render.svg"
+}
