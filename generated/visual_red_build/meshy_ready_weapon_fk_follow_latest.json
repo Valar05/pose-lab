@@ -1,25 +1,58 @@
 {
-  "schema": "pose-lab-ready-weapon-fk-red-build-v1",
-  "generatedAt": "2026-07-02T13:06:45-05:00",
-  "observedCacheToken": "pose-editor-130",
+  "schema": "pose-lab-ready-weapon-fk-offline-web-parity-gate-v1",
+  "generatedAt": "2026-07-02T18:52:17.589Z",
   "currentFixCacheToken": "pose-editor-131",
   "runtimeBuild": "meshy-fps-sword-upper-body-retarget",
   "actorKey": "meshyCharacter",
   "readyClipName": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
-  "tPoseClipName": "0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120",
-  "tPoseCapturePath": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130645.png",
-  "readyCapturePath": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130642.png",
-  "visualRead": "Fresh Android screenshots show Meshy Character T-pose weapon placement is correct, while the Ready clip has corrected hands but the visible sabre remains in rest/T-pose orientation instead of following the final right-hand FK pose.",
-  "visualAssertions": {
-    "freshAndroidScreenshotsInspected": true,
-    "tPoseWeaponPlacementAccepted": true,
-    "readyHandsCorrected": true,
-    "readySwordNotFollowingFinalFk": true,
-    "failureIsRuntimeWeaponFollowNotPoseRetarget": true,
-    "manualWeaponPlacementMustRemainLocked": true,
-    "normalReadyClipMustNotKeyWeaponGrip": true,
-    "expectedNextReadySwordFollowsFinalRightHandFk": true,
-    "freshPostFixScreenshotRequired": true
+  "proofMode": "offline-web-truth-parity",
+  "browserCaptureDeprecated": true,
+  "browserCapturePolicy": "Browser screenshots, debug bridge state, Android screencap, and visual-QA browser capture are manual inspection aids only and cannot close this red build.",
+  "sharedTruthModule": "src/ready-weapon-truth.mjs",
+  "observedWebTruth": {
+    "visualClass": "sword-rest-space",
+    "confidence": "human-visible-red-build",
+    "source": "user screenshots and red-build report, not browser automation",
+    "tPoseCapturePath": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130645.png",
+    "readyCapturePaths": [
+      "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130642.png",
+      "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-131830.png"
+    ],
+    "visualRead": "T-pose weapon placement reads correct; Ready hands improved, but the sabre remains visually rest-space / not following final FK."
   },
-  "nextVerificationUrl": "http://127.0.0.1:8798/pose-lab-quartermaster/pose-lab.html?mode=standard&actor=meshyCharacter&clip=OneHandReady%20-%3E%20meshyCharacter%20%5BFPS-VISUAL-IK%20R-120%20L-90%5D&weaponDebug=1&cacheBust=pose-salvage-fk-follow-20260702"
+  "offlineTruth": {
+    "visualClass": "sword-follows-fk",
+    "reasons": [],
+    "metrics": {
+      "hiltToHandDistance": 0.11497,
+      "bladeAxisChangeFromRestDeg": 97.29,
+      "socketToHandQuaternionErrorDeg": 0
+    }
+  },
+  "parity": {
+    "parityMatches": false,
+    "visualVerdict": "red",
+    "parityFailure": "offline-web-visual-class-diverged"
+  },
+  "offlineVisualTruth": {
+    "artifactPath": "generated/offline_visual_truth/meshy_ready_weapon_fk_follow/visual_truth.json",
+    "sheetPath": "generated/offline_visual_truth/meshy_ready_weapon_fk_follow/visual_truth_sheet.svg",
+    "result": "red",
+    "metrics": {
+      "readyHandDisplacement": 0.41757,
+      "readyDuration": 1.208333,
+      "targetKeyCount": 30,
+      "sourceKeyCount": 31,
+      "hiltToHandDistance": 0.11497,
+      "bladeAxisChangeFromRestDeg": 97.29,
+      "socketToHandQuaternionErrorDeg": 0
+    },
+    "acceptance": {
+      "generatedReadyClipResolved": true,
+      "readyClipSampled": true,
+      "readyHandDisplacedFromRest": true,
+      "noGeneratedWeaponTracks": true,
+      "manualSaberPlacementPreserved": true
+    }
+  }
 }

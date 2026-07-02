@@ -4,7 +4,8 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
-import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-130';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-131';
+import { applyWeaponAttachmentTruthTransform, updateSyntheticWeaponSocketTransform } from './ready-weapon-truth.mjs?v=pose-editor-131';
 import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-131';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
@@ -3882,29 +3883,15 @@ class PoseActor {
     const proxy = this.weaponProxy;
     if (!proxy?.root) return;
     const animatedSocketRotation = clipHasQuaternionTrackForBone(this.activeAction?._clip, proxy.root.name);
-    if (proxy.sourceSocket) {
-      proxy.root.position.set(0, 0, 0);
-      if (Array.isArray(proxy.config.modelLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
-      if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
-      return;
-    }
-    if (!proxy.leftHand || !proxy.rightHand) return;
-    this.model.updateMatrixWorld(true);
-    const rightWorld = Array.isArray(proxy.config.handLocalOffset)
-      ? proxy.rightHand.localToWorld(new THREE.Vector3().fromArray(proxy.config.handLocalOffset))
-      : worldPositionOf(proxy.rightHand);
-    const leftWorld = worldPositionOf(proxy.leftHand);
-    const socketWorld = (proxy.config.positionMode || 'two-hand-center') === 'right-hand'
-      ? rightWorld.clone()
-      : rightWorld.clone().add(leftWorld).multiplyScalar(0.5);
-    const local = this.model.worldToLocal(socketWorld);
-    if (Array.isArray(proxy.config.modelLocalOffset)) local.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
-    if (Array.isArray(proxy.config.gripOffset)) local.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
-    proxy.root.position.copy(local);
-    if (!animatedSocketRotation) {
-      const modelWorldQuat = worldQuaternionOf(this.model).invert();
-      proxy.root.quaternion.copy(modelWorldQuat.multiply(worldQuaternionOf(proxy.rightHand))).normalize();
-    }
+    updateSyntheticWeaponSocketTransform(THREE, {
+      model: this.model,
+      root: proxy.root,
+      rightHand: proxy.rightHand,
+      leftHand: proxy.leftHand,
+      sourceSocket: proxy.sourceSocket,
+      config: proxy.config,
+      activeClipHasSocketRotation: animatedSocketRotation,
+    });
   }
 
   attachWeaponAttachment(weaponRoot, config = {}) {
@@ -3950,31 +3937,16 @@ class PoseActor {
     const weaponRoot = proxy?.model;
     const tip = proxy?.tipMarker;
     if (!weaponRoot || !config) return null;
-    weaponRoot.scale.setScalar(Number(config.scale ?? 1));
-    if (Array.isArray(config.rotationDeg)) weaponRoot.rotation.set(...config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
-    if (Array.isArray(config.position)) weaponRoot.position.fromArray(config.position);
-    else weaponRoot.position.set(0, 0, 0);
-    if (Array.isArray(config.gripLocalPosition)) {
-      const localGrip = new THREE.Vector3().fromArray(config.gripLocalPosition);
-      localGrip.multiplyScalar(Number(config.scale ?? 1));
-      localGrip.applyQuaternion(weaponRoot.quaternion);
-      weaponRoot.position.sub(localGrip);
-    }
-    if (tip) {
-      if (Array.isArray(config.tipLocalPosition)) {
-        const localTip = new THREE.Vector3().fromArray(config.tipLocalPosition);
-        localTip.multiplyScalar(Number(config.scale ?? 1));
-        localTip.applyQuaternion(weaponRoot.quaternion);
-        localTip.add(weaponRoot.position);
-        tip.position.copy(localTip);
-      } else {
-        tip.position.fromArray(config.tipOffset || this.info.weaponProxy?.tipOffset || [0, 0, 0.85]);
-      }
-      const rest = this.boneRest.get(tip.name);
-      if (rest) rest.position.copy(tip.position);
-    }
+    applyWeaponAttachmentTruthTransform(THREE, {
+      weaponRoot,
+      tip,
+      config,
+      fallbackTipOffset: this.info.weaponProxy?.tipOffset || [0, 0, 0.85],
+      boneRest: this.boneRest,
+    });
     return proxy;
   }
+
 
   updateWeaponArc(clip, active) {
     const arc = this.weaponProxy?.arc;

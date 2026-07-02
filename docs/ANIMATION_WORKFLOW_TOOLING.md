@@ -69,6 +69,15 @@ Use this before changing Meshy/FPS `OneHandReady` retarget code. It is a diagnos
 
 Independent layers can be toggled with `--enable projected-pins,fk,ik,sword,basis,roll`. The roll layer must remain removable. Sword landmarks are projected as observations (`WeaponGrip` and blade tip), not as arm solvers: use the arm solution to explain the sword, not the sword to force the arm.
 
+
+## Offline/Web Truth Parity Gate
+
+```sh
+node tools/meshy_ready_weapon_offline_visual_truth.mjs
+```
+
+Use this as the canonical acceptance proof for Meshy Ready weapon follow. It loads repo GLBs in Node, builds the Visual-IK Ready clip, applies the same shared `src/ready-weapon-truth.mjs` socket and attachment rules used by the browser runtime, compares the offline visual class against recorded human web truth, and writes `generated/offline_visual_truth/meshy_ready_weapon_fk_follow/visual_truth.json` plus `visual_truth_sheet.svg`. Browser screenshots, Android `screencap`, debug bridge state, and visual-QA browser capture are deprecated as acceptance evidence; they can illustrate a human report, but they cannot close a red build or promote a pose/weapon change. If offline and web truth disagree, the gate is red until the divergent layer is investigated.
+
 ## Meshy Promotion Gate
 
 ```sh
@@ -76,9 +85,9 @@ node tools/pose_lab_workflow_status.mjs
 node tools/promote_pose_candidate.mjs --candidate CANDIDATE.json --evidence VISUAL.json --metrics METRICS.json
 ```
 
-Meshy/FPS ready, saber, and retarget experiments are candidate-only by default. The status command reports the protected accepted baseline, current cache token, latest evidence freshness, dirty protected files, and unpromoted candidate directories. The promotion command rejects blocked/stale visual evidence, missing metric assertions, actor/clip mismatches, and weapon candidates that do not prove grip, hilt, and blade-axis sanity.
+Meshy/FPS ready, saber, and retarget experiments are candidate-only by default. The status command reports the protected accepted baseline, current cache token, latest offline/web parity evidence freshness, dirty protected files, and unpromoted candidate directories. The promotion command rejects blocked/stale evidence, browser-only evidence, missing metric assertions, actor/clip mismatches, and weapon candidates that do not prove grip, hilt, and blade-axis sanity.
 
-Do not wire a candidate to `startupClip`, `SwordReady`, `RestProbe`, or `visibleClipPatterns` manually. If a change needs to become user-facing, produce fresh visual evidence and metric evidence, then run the promotion gate. Source-string tests can support the change, but they cannot promote it.
+Do not wire a candidate to `startupClip`, `SwordReady`, `RestProbe`, or `visibleClipPatterns` manually. If a change needs to become user-facing, produce offline/web truth parity evidence and metric evidence, then run the promotion gate. Browser capture and source-string tests can support investigation, but they cannot promote it.
 
 ## Deep Ocean 2026-06-30: Meshy Saber Placement Pain
 
@@ -127,14 +136,9 @@ The compact critique section should support two playback modes in the same contr
 
 When the user says `get motivated`, do not stop after diagnosis. Continue through implementation, verification, and the next obvious follow-up fix in the same turn when the environment allows it.
 
-## Device Capture Standard
+## Device Capture Standard Deprecated
 
-Use the live browser plus the visual QA harness as the capture path.
-
-1. Start from the actual page URL in the Android browser.
-2. If the visible UI looks stale, refresh or bump the cache token before judging the change.
-3. Use the visual QA report for frame sequences and the newest Android screenshot for browser chrome or DOM visibility.
-4. Do not use the old standalone `screencap` path.
+Do not use the live browser, Android `screencap`, debug bridge screenshots, or visual-QA browser capture as acceptance proof for animation, pose, or weapon-follow fixes on this device. These paths drift or fail too often. Use repo-owned offline/web truth parity renderers for closure, then use browser/manual screenshots only as optional human-perception follow-up.
 
 ## UX Critique Skill
 

@@ -51,29 +51,28 @@ If the session already exists, do not restart it unnecessarily unless a visual r
 
 When Pose Lab looks wrong, do not collapse multiple failures into one diagnosis. Check them in this order:
 
-1. Inspect the newest screenshot or contact sheet first. Treat it as the source of truth for the visible state.
-2. Confirm the browser is on the intended entry path and mode, including any query-string overrides such as `actor`, `qaActor`, `clip`, `mode`, or visual-QA flags.
-3. Verify the selected actor in the startup resolver before chasing panel visibility or clip search logic. In critique mode, the default should be Ares if it is available.
-4. Check whether a syntax error or module failure is preventing the UI from finishing its render pass.
-5. The visual-QA harness should emit a ready-to-view Android broadcast after the first rendered beacon so the browser can be reopened from automation without guessing.
+1. For animation, pose, and weapon-follow acceptance, run the repo-owned offline/web truth parity verifier first. Treat its JSON metrics plus contact sheet as the source of truth.
+2. Use the newest screenshot or browser contact sheet only as human-report context; it cannot close a red build on this device.
+3. Confirm the browser is on the intended entry path and mode only when debugging UI state, browser chrome, or human perception gaps.
+4. Verify the selected actor in the startup resolver before chasing panel visibility or clip search logic. In critique mode, the default should be Ares if it is available.
+5. Check whether a syntax error or module failure is preventing the UI from finishing its render pass.
 6. Check whether persistence is restoring an older actor, clip, or panel state after startup.
-7. Only after the page is visibly on the correct actor and module-loaded should you debug missing controls, hidden docks, or clip-list filtering.
+7. Only after offline/web parity and module-loaded state agree should you debug missing controls, hidden docks, or clip-list filtering.
 
-This order prevents a stale screenshot, a startup override, and a parse error from being treated as one bug.
+This order prevents stale screenshots, startup overrides, browser capture failures, and parse errors from being treated as one bug.
 
 ## Ritual Word
 
 When the user says `get motivated`, continue through implementation and verification instead of stopping after the first diagnosis. Anticipate the next likely failure, add the regression test, and close the loop before handing back the result.
 
-## Device Capture Standard
+## Device Capture Standard Deprecated
 
-Use the visual QA harness or a fresh Android screenshot from the live browser when you need visible proof.
+Browser screenshots, Android `screencap`, debug bridge state, and visual-QA browser capture are deprecated as acceptance proof for animation, pose, and weapon-follow work on this device. They are manual inspection aids only.
 
-1. Wake or launch the browser on the actual page URL.
-2. Wait for the page to finish loading and confirm the visible mode from the screenshot.
-3. Prefer the visual QA contact sheet for capture sequences and the newest Android screenshot for browser chrome or DOM state.
-4. Do not rely on the old standalone `screencap` path. It is not the source of truth for this workflow.
-5. If the page looks stale, bump the cache token or hard-refresh before changing animation logic.
+1. Use offline/web truth parity artifacts for red-build closure and promotion.
+2. Require repo-generated JSON metrics plus a non-empty contact sheet from GLBs/profile data.
+3. Use browser/manual screenshots only to explain human perception gaps after offline truth is known.
+4. If browser state disagrees with offline truth, debug browser loading/cache/state separately instead of changing animation logic blindly.
 
 ## Validation
 
@@ -135,7 +134,7 @@ Meshy/FPS experiments now default to the candidate lane. Before editing startup 
 node tools/pose_lab_workflow_status.mjs
 ```
 
-Promotion requires `tools/promote_pose_candidate.mjs` with fresh visual evidence and metric evidence. The accepted baseline is recorded in `generated/workflow_state/meshy_fps_accepted_baseline.json`; blocked or stale evidence must fail. String/source tests are only support checks and must not be treated as visual acceptance.
+Promotion requires `tools/promote_pose_candidate.mjs` with offline/web truth parity evidence and metric evidence. The accepted baseline is recorded in `generated/workflow_state/meshy_fps_accepted_baseline.json`; blocked browser capture, stale screenshots, or source-string checks must fail. For Meshy Ready weapon follow, `tools/meshy_ready_weapon_offline_visual_truth.mjs` is the canonical proof path.
 
 ## Manual Fix Authority
 

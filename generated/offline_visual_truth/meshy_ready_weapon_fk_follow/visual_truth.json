@@ -1,0 +1,184 @@
+{
+  "schema": "pose-lab-offline-web-truth-parity-ready-weapon-fk-v1",
+  "generatedAt": "2026-07-02T18:52:17.589Z",
+  "proofMode": "offline-web-truth-parity",
+  "browserCaptureDeprecated": true,
+  "sourceActor": "FPS Arms",
+  "targetActor": "Meshy Character",
+  "clipName": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
+  "runtimeBuild": "meshy-fps-sword-upper-body-retarget",
+  "cacheToken": "pose-editor-131",
+  "sharedTruthModule": "src/ready-weapon-truth.mjs",
+  "manualPlacementPolicy": "locked literals; verifier reads rig profile and does not tune offsets",
+  "observedWebTruth": {
+    "visualClass": "sword-rest-space",
+    "confidence": "human-visible-red-build",
+    "source": "user screenshots and red-build report, not browser automation",
+    "tPoseCapturePath": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130645.png",
+    "readyCapturePaths": [
+      "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130642.png",
+      "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-131830.png"
+    ],
+    "visualRead": "T-pose weapon placement reads correct; Ready hands improved, but the sabre remains visually rest-space / not following final FK."
+  },
+  "offlineTruth": {
+    "visualClass": "sword-follows-fk",
+    "reasons": [],
+    "metrics": {
+      "hiltToHandDistance": 0.11497,
+      "bladeAxisChangeFromRestDeg": 97.29,
+      "socketToHandQuaternionErrorDeg": 0
+    }
+  },
+  "parity": {
+    "parityMatches": false,
+    "visualVerdict": "red",
+    "parityFailure": "offline-web-visual-class-diverged"
+  },
+  "result": "red",
+  "acceptance": {
+    "generatedReadyClipResolved": true,
+    "readyClipSampled": true,
+    "readyHandDisplacedFromRest": true,
+    "noGeneratedWeaponTracks": true,
+    "manualSaberPlacementPreserved": true
+  },
+  "metrics": {
+    "readyHandDisplacement": 0.41757,
+    "readyDuration": 1.208333,
+    "targetKeyCount": 30,
+    "sourceKeyCount": 31,
+    "hiltToHandDistance": 0.11497,
+    "bladeAxisChangeFromRestDeg": 97.29,
+    "socketToHandQuaternionErrorDeg": 0
+  },
+  "samples": [
+    {
+      "label": "ready-start",
+      "time": 0,
+      "hilt": [
+        -0.4737,
+        1.28061,
+        0.19928
+      ],
+      "hand": [
+        -0.35956,
+        1.27299,
+        0.21078
+      ],
+      "tip": [
+        -0.89017,
+        0.73678,
+        0.54826
+      ],
+      "bladeAxis": [
+        -0.54174,
+        -0.70742,
+        0.45395
+      ],
+      "socketForward": [
+        -0.13698,
+        -0.95172,
+        0.27469
+      ],
+      "socketQuaternion": [
+        0.588801,
+        0.126358,
+        -0.277001,
+        0.748744
+      ],
+      "handQuaternion": [
+        0.588801,
+        0.126358,
+        -0.277001,
+        0.748744
+      ],
+      "hiltToHandDistance": 0.11497
+    },
+    {
+      "label": "ready-mid",
+      "time": 0.604167,
+      "hilt": [
+        -0.47331,
+        1.27606,
+        0.19488
+      ],
+      "hand": [
+        -0.35918,
+        1.26841,
+        0.20639
+      ],
+      "tip": [
+        -0.87765,
+        0.71812,
+        0.53578
+      ],
+      "bladeAxis": [
+        -0.52596,
+        -0.72576,
+        0.44344
+      ],
+      "socketForward": [
+        -0.11656,
+        -0.95866,
+        0.2596
+      ],
+      "socketQuaternion": [
+        0.593183,
+        0.135405,
+        -0.268703,
+        0.746725
+      ],
+      "handQuaternion": [
+        0.593183,
+        0.135405,
+        -0.268703,
+        0.746725
+      ],
+      "hiltToHandDistance": 0.11497
+    },
+    {
+      "label": "ready-end",
+      "time": 1.208333,
+      "hilt": [
+        -0.4737,
+        1.28061,
+        0.19928
+      ],
+      "hand": [
+        -0.35956,
+        1.27299,
+        0.21078
+      ],
+      "tip": [
+        -0.89017,
+        0.73678,
+        0.54826
+      ],
+      "bladeAxis": [
+        -0.54174,
+        -0.70742,
+        0.45395
+      ],
+      "socketForward": [
+        -0.13698,
+        -0.95172,
+        0.27469
+      ],
+      "socketQuaternion": [
+        0.588801,
+        0.126358,
+        -0.277001,
+        0.748744
+      ],
+      "handQuaternion": [
+        0.588801,
+        0.126358,
+        -0.277001,
+        0.748744
+      ],
+      "hiltToHandDistance": 0.11497
+    }
+  ],
+  "sheet": "generated/offline_visual_truth/meshy_ready_weapon_fk_follow/visual_truth_sheet.svg"
+}
