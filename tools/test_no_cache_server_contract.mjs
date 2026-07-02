@@ -15,12 +15,14 @@ for (const header of ['Cache-Control', 'no-store', 'no-cache', 'must-revalidate'
 }
 assert(orientation.includes('tools/no_cache_http_server.py --port 8798'), 'durable server docs should use no-cache server on the old URL port');
 assert(orientation.includes('no-cache headers'), 'durable server docs should require no-cache header verification');
-assert(html.includes('./src/rig-profiles.js?v=pose-editor-129'), 'HTML should cache-bust rig profile module');
-assert(html.includes('./src/pose-lab.js?v=pose-editor-129'), 'HTML should cache-bust Pose Lab runtime module');
-assert(js.includes("const LAB_CACHE_TOKEN = 'pose-editor-129'"), 'runtime should expose current cache token');
-assert(js.includes("./rig-profiles.js?v=pose-editor-129"), 'runtime import should use current rig profile token');
+const cacheToken = js.match(/const\s+LAB_CACHE_TOKEN\s*=\s*['"]([^'"]+)['"]/)?.[1];
+assert(cacheToken, 'runtime should expose current cache token');
+assert(html.includes(`./src/rig-profiles.js?v=${cacheToken}`), 'HTML should cache-bust rig profile module');
+assert(html.includes(`./src/pose-lab.js?v=${cacheToken}`), 'HTML should cache-bust Pose Lab runtime module');
+assert(js.includes(`./rig-profiles.js?v=${cacheToken}`), 'runtime import should use current rig profile token');
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({
-  checked: ['no-cache-dev-server', 'old-url-server-docs', 'pose-editor-129-cache-token'],
+  checked: ['no-cache-dev-server', 'old-url-server-docs', 'cache-token'],
+  cacheToken,
 }, null, 2));
