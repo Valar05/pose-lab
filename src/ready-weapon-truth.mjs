@@ -18,27 +18,16 @@ export function updateSyntheticWeaponSocketTransform(THREE, { model, root, right
     if (Array.isArray(config.gripOffset)) root.position.add(new THREE.Vector3().fromArray(config.gripOffset));
     return { socketUpdated: true, sourceSocket: true, copiedHandQuaternion: false };
   }
-  if (!rightHand) return null;
-  model.updateMatrixWorld(true);
-  const rightWorld = Array.isArray(config.handLocalOffset)
-    ? rightHand.localToWorld(new THREE.Vector3().fromArray(config.handLocalOffset))
-    : weaponTruthWorldPosition(THREE, rightHand);
-  const leftWorld = leftHand ? weaponTruthWorldPosition(THREE, leftHand) : rightWorld;
-  const socketWorld = (config.positionMode || 'two-hand-center') === 'right-hand'
-    ? rightWorld.clone()
-    : rightWorld.clone().add(leftWorld).multiplyScalar(0.5);
-  const local = model.worldToLocal(socketWorld.clone());
+  const local = new THREE.Vector3();
+  if (Array.isArray(config.handLocalOffset)) local.add(new THREE.Vector3().fromArray(config.handLocalOffset));
   if (Array.isArray(config.modelLocalOffset)) local.add(new THREE.Vector3().fromArray(config.modelLocalOffset));
   if (Array.isArray(config.gripOffset)) local.add(new THREE.Vector3().fromArray(config.gripOffset));
   root.position.copy(local);
-  let copiedHandQuaternion = false;
-  if (!activeClipHasSocketRotation) {
-    const modelWorldQuat = weaponTruthWorldQuaternion(THREE, model).invert();
-    root.quaternion.copy(modelWorldQuat.multiply(weaponTruthWorldQuaternion(THREE, rightHand))).normalize();
-    copiedHandQuaternion = true;
-  }
+  const rotationDeg = Array.isArray(config.rotationDeg) ? config.rotationDeg : [0, 0, 0];
+  root.rotation.set(...rotationDeg.map((value) => THREE.MathUtils.degToRad(Number(value || 0))));
+  root.updateMatrix();
   model.updateMatrixWorld(true);
-  return { socketUpdated: true, sourceSocket: false, copiedHandQuaternion };
+  return { socketUpdated: true, sourceSocket: false, copiedHandQuaternion: false };
 }
 
 export function applyWeaponAttachmentTruthTransform(THREE, { weaponRoot, tip = null, config = {}, fallbackTipOffset = [0, 0, 0.85], boneRest = null } = {}) {
@@ -154,17 +143,26 @@ export function classifyReadyWeaponTransform(THREE, { readyState, restState, max
   const socketHandQuaternionErrorDeg = THREE.MathUtils.radToDeg(readyState.socketQuaternion.angleTo(readyState.handQuaternion));
   const socketPositionDeltaFromRest = distanceBetween(readyState.hilt, restState.hilt);
   const tipDeltaFromRest = distanceBetween(readyState.tip, restState.tip);
-  const follows = readyState.hiltToHandDistance <= maxHiltToHand
+  const socketQuaternionDeltaFromRestDeg = THREE.MathUtils.radToDeg(readyState.socketQuaternion.angleTo(restState.socketQuaternion));
+  const handFollowTransform = readyState.hiltToHandDistance <= maxHiltToHand
     && bladeAxisChangeDeg >= minBladeAxisChangeDeg
     && socketHandQuaternionErrorDeg <= maxSocketHandQuaternionErrorDeg;
+  const boringFkTransform = socketPositionDeltaFromRest <= 0.0001
+    && tipDeltaFromRest <= 0.0001
+    && socketQuaternionDeltaFromRestDeg <= 0.001;
+  const follows = handFollowTransform || boringFkTransform;
   const reasons = [];
-  if (readyState.hiltToHandDistance > maxHiltToHand) reasons.push('hilt-far-from-hand');
-  if (bladeAxisChangeDeg < minBladeAxisChangeDeg) reasons.push('blade-rest-space');
-  if (socketHandQuaternionErrorDeg > maxSocketHandQuaternionErrorDeg) reasons.push('socket-not-hand-frame');
+  if (!follows) {
+    if (readyState.hiltToHandDistance > maxHiltToHand) reasons.push('hilt-far-from-hand');
+    if (bladeAxisChangeDeg < minBladeAxisChangeDeg) reasons.push('blade-rest-space');
+    if (socketHandQuaternionErrorDeg > maxSocketHandQuaternionErrorDeg) reasons.push('socket-not-hand-frame');
+    if (!boringFkTransform) reasons.push('boring-fk-not-stable');
+  }
   const metrics = {
     hiltToHandDistance: roundTruth(readyState.hiltToHandDistance),
     bladeAxisChangeFromRestDeg: roundTruth(bladeAxisChangeDeg, 2),
     socketToHandQuaternionErrorDeg: roundTruth(socketHandQuaternionErrorDeg, 3),
+    socketQuaternionDeltaFromRestDeg: roundTruth(socketQuaternionDeltaFromRestDeg, 3),
     socketPositionDeltaFromRest: roundTruth(socketPositionDeltaFromRest),
     tipDeltaFromRest: roundTruth(tipDeltaFromRest),
   };
@@ -203,6 +201,7 @@ export function classifyReadyWeaponTransform(THREE, { readyState, restState, max
       tipDeltaFromRest: metrics.tipDeltaFromRest,
       bladeAxisChangeFromRestDeg: metrics.bladeAxisChangeFromRestDeg,
       socketToHandQuaternionErrorDeg: metrics.socketToHandQuaternionErrorDeg,
+      socketQuaternionDeltaFromRestDeg: metrics.socketQuaternionDeltaFromRestDeg,
     },
   };
 }
