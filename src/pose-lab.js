@@ -3829,11 +3829,12 @@ class PoseActor {
     const leftHand = config.leftHandBone ? findBoneCanonical(this.model, config.leftHandBone) : null;
     const sourceSocket = config.sourceSocketBone ? findBoneCanonical(this.model, config.sourceSocketBone) : null;
     if (!rightHand && !sourceSocket) return null;
+    const handFkParent = config.parentMode === 'hand-fk';
     const length = Number(config.length ?? config.tipOffset?.[2] ?? 0.85);
     const root = new THREE.Bone();
     root.name = config.socketBone || config.boneName || this.info.weaponAttachment?.socketBone || 'WeaponR';
     root.userData.syntheticWeaponBone = true;
-    root.userData.twoHandCenteredWeaponBone = Boolean(leftHand && !sourceSocket && (config.positionMode || 'two-hand-center') !== 'right-hand');
+    root.userData.twoHandCenteredWeaponBone = Boolean(leftHand && !sourceSocket && !handFkParent && (config.positionMode || 'two-hand-center') !== 'right-hand');
     root.userData.sourceSocketBone = sourceSocket?.name || '';
     root.userData.positionMode = config.positionMode || (leftHand && !sourceSocket ? 'two-hand-center' : 'right-hand');
     const blade = new THREE.Mesh(
@@ -3856,6 +3857,7 @@ class PoseActor {
     if (Array.isArray(config.rotationDeg)) root.rotation.set(...config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
     root.visible = false;
     if (sourceSocket) sourceSocket.add(root);
+    else if (handFkParent) rightHand.add(root);
     else if (leftHand) this.model.add(root);
     else rightHand.add(root);
     this.boneByName.set(root.name, root);
@@ -3885,6 +3887,22 @@ class PoseActor {
       proxy.root.position.set(0, 0, 0);
       if (Array.isArray(proxy.config.modelLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
       if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
+      return;
+    }
+    if (proxy.config.parentMode === 'hand-fk') {
+      proxy.root.position.set(0, 0, 0);
+      if (Array.isArray(proxy.config.handLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.handLocalOffset));
+      if (Array.isArray(proxy.config.modelLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
+      if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
+      if (!animatedSocketRotation) {
+        if (Array.isArray(proxy.config.rotationDeg)) proxy.root.rotation.set(...proxy.config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
+        else proxy.root.quaternion.identity();
+      }
+      const rest = this.boneRest.get(proxy.root.name);
+      if (rest) {
+        rest.position.copy(proxy.root.position);
+        rest.quaternion.copy(proxy.root.quaternion);
+      }
       return;
     }
     if (!proxy.leftHand || !proxy.rightHand) return;
