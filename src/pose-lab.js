@@ -5,13 +5,13 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
 import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-130';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-130';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-131';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-128';
 
 const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget';
-const LAB_CACHE_TOKEN = 'pose-editor-130';
+const LAB_CACHE_TOKEN = 'pose-editor-131';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
@@ -4569,10 +4569,11 @@ class PoseActor {
     this.activeAction = next;
     if (!this.applyCritiqueClipState(next._clip)) this.resetAllBoneEdits();
     this.mixer.setTime(0);
+    this.reapplyBoneEdits();
     this.applyGrounding();
+    this.updateWeaponProxyVisibility();
     this.updateDebugHelpers();
     this.updateBoneOverlay();
-    this.updateWeaponProxyVisibility();
     this.rememberClip(name);
   }
 
@@ -4629,9 +4630,9 @@ class PoseActor {
 
   update(dt) {
     this.mixer.update(dt);
-    this.updateWeaponProxyVisibility();
     this.reapplyBoneEdits();
     this.applyGrounding();
+    this.updateWeaponProxyVisibility();
     this.updateLegSymmetryOverlay();
     this.updateDebugHelpers();
     this.updateBoneOverlay();

@@ -1,0 +1,25 @@
+{
+  "schema": "pose-lab-ready-weapon-fk-red-build-v1",
+  "generatedAt": "2026-07-02T13:06:45-05:00",
+  "observedCacheToken": "pose-editor-130",
+  "currentFixCacheToken": "pose-editor-131",
+  "runtimeBuild": "meshy-fps-sword-upper-body-retarget",
+  "actorKey": "meshyCharacter",
+  "readyClipName": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
+  "tPoseClipName": "0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120",
+  "tPoseCapturePath": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130645.png",
+  "readyCapturePath": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130642.png",
+  "visualRead": "Fresh Android screenshots show Meshy Character T-pose weapon placement is correct, while the Ready clip has corrected hands but the visible sabre remains in rest/T-pose orientation instead of following the final right-hand FK pose.",
+  "visualAssertions": {
+    "freshAndroidScreenshotsInspected": true,
+    "tPoseWeaponPlacementAccepted": true,
+    "readyHandsCorrected": true,
+    "readySwordNotFollowingFinalFk": true,
+    "failureIsRuntimeWeaponFollowNotPoseRetarget": true,
+    "manualWeaponPlacementMustRemainLocked": true,
+    "normalReadyClipMustNotKeyWeaponGrip": true,
+    "expectedNextReadySwordFollowsFinalRightHandFk": true,
+    "freshPostFixScreenshotRequired": true
+  },
+  "nextVerificationUrl": "http://127.0.0.1:8798/pose-lab-quartermaster/pose-lab.html?mode=standard&actor=meshyCharacter&clip=OneHandReady%20-%3E%20meshyCharacter%20%5BFPS-VISUAL-IK%20R-120%20L-90%5D&weaponDebug=1&cacheBust=pose-salvage-fk-follow-20260702"
+}
