@@ -151,7 +151,7 @@ export function validateParityEvidenceReadback(evidence) {
         errors.push(`parity evidence offline artifact ${key} does not match wrapper`);
       }
     }
-    for (const key of ['observedWebTruth', 'offlineTruth', 'parity']) {
+    for (const key of ['observedWebTruth', 'observedTruth', 'offlineTruth', 'visibilityGate', 'transformGate', 'promotionVerdict', 'parity']) {
       if (!jsonEqual(offline[key], evidence[key])) errors.push(`parity evidence offline artifact ${key} does not match wrapper`);
     }
     if (!jsonEqual(offline.sheet, evidence.offlineVisualTruth?.sheetPath)) {
@@ -185,8 +185,11 @@ export function latestEvidenceStatus(file = latestEvidencePath) {
   if (token !== cacheToken) errors.push(`evidence cacheToken ${token || 'missing'} != current ${cacheToken || 'missing'}`);
   if (evidence.runtimeBuild !== runtimeBuild) errors.push(`evidence runtimeBuild ${evidence.runtimeBuild || 'missing'} != current ${runtimeBuild || 'missing'}`);
   if (isParityEvidence(evidence)) {
+    const verdict = evidence.promotionVerdict || evidence.parity || {};
     if (evidence.browserCaptureDeprecated !== true) errors.push('parity evidence must deprecate browser capture');
-    if (evidence.parity?.visualVerdict !== 'fixed') errors.push(`parity evidence is ${evidence.parity?.visualVerdict || 'missing'}, not fixed`);
+    if (verdict.visualVerdict !== 'fixed') errors.push(`parity evidence is ${verdict.visualVerdict || 'missing'}, not fixed`);
+    if (evidence.visibilityGate?.status !== 'pass') errors.push(`visibility gate is ${evidence.visibilityGate?.status || 'missing'}, not pass`);
+    if (evidence.transformGate?.status !== 'pass') errors.push(`transform gate is ${evidence.transformGate?.status || 'missing'}, not pass`);
     errors.push(...validateParityEvidenceReadback(evidence));
   } else if (isLegacyVisualEvidence(evidence)) {
     if (evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked') errors.push('evidence is blocked');
@@ -199,7 +202,7 @@ export function latestEvidenceStatus(file = latestEvidencePath) {
     path: file,
     evidence,
     stale: token !== cacheToken || evidence.runtimeBuild !== runtimeBuild,
-    blocked: isParityEvidence(evidence) ? evidence.parity?.visualVerdict !== 'fixed' || errors.length > 0 : evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked',
+    blocked: isParityEvidence(evidence) ? (evidence.promotionVerdict || evidence.parity || {}).visualVerdict !== 'fixed' || errors.length > 0 : evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked',
     errors,
   };
 }
@@ -229,14 +232,20 @@ export function validateCandidatePromotion({ baseline, candidate, evidence, metr
   }
 
   if (isParityEvidence(evidence)) {
+    const verdict = evidence.promotionVerdict || evidence.parity || {};
+    const visibilityGate = evidence.visibilityGate || evidence.offlineTruth?.visibilityGate || {};
+    const transformGate = evidence.transformGate || evidence.offlineTruth?.transformGate || {};
     if (evidence.browserCaptureDeprecated !== true) errors.push('parity evidence must deprecate browser capture');
-    if (evidence.parity?.visualVerdict !== 'fixed') errors.push(`parity evidence visualVerdict ${evidence.parity?.visualVerdict || 'missing'} is not fixed`);
-    if (evidence.parity?.parityMatches !== true) errors.push('parity evidence must have parityMatches=true');
-    if (evidence.observedWebTruth?.visualClass !== 'sword-follows-fk') errors.push(`observed web truth ${evidence.observedWebTruth?.visualClass || 'missing'} is not sword-follows-fk`);
-    if (evidence.offlineTruth?.visualClass !== 'sword-follows-fk') errors.push(`offline truth ${evidence.offlineTruth?.visualClass || 'missing'} is not sword-follows-fk`);
-    if (evidence.offlineTruth?.visibilityClass !== 'weapon-visible') errors.push(`offline weapon visibility ${evidence.offlineTruth?.visibilityClass || 'missing'} is not weapon-visible`);
+    if (verdict.visualVerdict !== 'fixed') errors.push(`parity evidence visualVerdict ${verdict.visualVerdict || 'missing'} is not fixed`);
+    if (verdict.machineGatesPass !== true && verdict.parityMatches !== true) errors.push('parity evidence must have machineGatesPass=true');
+    if (visibilityGate.status !== 'pass') errors.push(`offline visibility gate ${visibilityGate.status || 'missing'} is not pass`);
+    if (visibilityGate.visibilityClass !== 'weapon-visible') errors.push(`offline weapon visibility ${visibilityGate.visibilityClass || evidence.offlineTruth?.visibilityClass || 'missing'} is not weapon-visible`);
+    if (transformGate.status !== 'pass') errors.push(`offline transform gate ${transformGate.status || 'missing'} is not pass`);
+    if (transformGate.transformClass !== 'sword-follows-fk') errors.push(`offline transform ${transformGate.transformClass || evidence.offlineTruth?.transformClass || 'missing'} is not sword-follows-fk`);
+    if (evidence.observedTruth?.authority && evidence.observedTruth.authority !== 'context-only') errors.push(`observed truth authority ${evidence.observedTruth.authority} is not context-only`);
     errors.push(...validateParityEvidenceReadback(evidence));
   } else if (isLegacyVisualEvidence(evidence)) {
+    if (candidate.weaponIncluded || metrics.weaponIncluded) errors.push('weapon promotion requires offline parity evidence, not legacy visual evidence');
     if (evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked') errors.push('visual evidence is blocked');
     if (evidence.motionEvidencePending === true) errors.push('visual evidence still has motionEvidencePending=true');
     if (!evidence.visualRead || String(evidence.visualRead).length < 20) errors.push('visual evidence needs a concrete visualRead');

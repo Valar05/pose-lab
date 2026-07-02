@@ -118,10 +118,42 @@ export function measureReadyWeaponTruth(THREE, { socket, rightHand, weaponRoot =
   };
 }
 
+function roundTruth(value, digits = 5) {
+  const scale = 10 ** digits;
+  return Math.round(Number(value || 0) * scale) / scale;
+}
+
+function vectorTruthPoint(vector, digits = 5) {
+  if (!vector) return null;
+  return [roundTruth(vector.x, digits), roundTruth(vector.y, digits), roundTruth(vector.z, digits)];
+}
+
+function quaternionTruthPoint(quaternion, digits = 6) {
+  if (!quaternion) return null;
+  return [roundTruth(quaternion.x, digits), roundTruth(quaternion.y, digits), roundTruth(quaternion.z, digits), roundTruth(quaternion.w, digits)];
+}
+
+function distanceBetween(a, b) {
+  return a && b ? a.distanceTo(b) : null;
+}
+
 export function classifyReadyWeaponTransform(THREE, { readyState, restState, maxHiltToHand = 0.18, minBladeAxisChangeDeg = 20, maxSocketHandQuaternionErrorDeg = 0.5 } = {}) {
-  if (!readyState || !restState) return { transformClass: 'unknown', reasons: ['missing-state'] };
+  if (!readyState || !restState) {
+    return {
+      status: 'blocked',
+      transformClass: 'unknown',
+      reasons: ['missing-state'],
+      blockingReasons: ['missing-state'],
+      metrics: {},
+      thresholds: { maxHiltToHand, minBladeAxisChangeDeg, maxSocketHandQuaternionErrorDeg },
+      coordinates: {},
+      deltas: {},
+    };
+  }
   const bladeAxisChangeDeg = THREE.MathUtils.radToDeg(restState.bladeAxis.clone().normalize().angleTo(readyState.bladeAxis.clone().normalize()));
   const socketHandQuaternionErrorDeg = THREE.MathUtils.radToDeg(readyState.socketQuaternion.angleTo(readyState.handQuaternion));
+  const socketPositionDeltaFromRest = distanceBetween(readyState.hilt, restState.hilt);
+  const tipDeltaFromRest = distanceBetween(readyState.tip, restState.tip);
   const follows = readyState.hiltToHandDistance <= maxHiltToHand
     && bladeAxisChangeDeg >= minBladeAxisChangeDeg
     && socketHandQuaternionErrorDeg <= maxSocketHandQuaternionErrorDeg;
@@ -129,37 +161,122 @@ export function classifyReadyWeaponTransform(THREE, { readyState, restState, max
   if (readyState.hiltToHandDistance > maxHiltToHand) reasons.push('hilt-far-from-hand');
   if (bladeAxisChangeDeg < minBladeAxisChangeDeg) reasons.push('blade-rest-space');
   if (socketHandQuaternionErrorDeg > maxSocketHandQuaternionErrorDeg) reasons.push('socket-not-hand-frame');
+  const metrics = {
+    hiltToHandDistance: roundTruth(readyState.hiltToHandDistance),
+    bladeAxisChangeFromRestDeg: roundTruth(bladeAxisChangeDeg, 2),
+    socketToHandQuaternionErrorDeg: roundTruth(socketHandQuaternionErrorDeg, 3),
+    socketPositionDeltaFromRest: roundTruth(socketPositionDeltaFromRest),
+    tipDeltaFromRest: roundTruth(tipDeltaFromRest),
+  };
   return {
+    status: follows ? 'pass' : 'fail',
     transformClass: follows ? 'sword-follows-fk' : 'sword-rest-space',
     reasons,
-    metrics: {
-      hiltToHandDistance: Number(readyState.hiltToHandDistance.toFixed(5)),
-      bladeAxisChangeFromRestDeg: Number(bladeAxisChangeDeg.toFixed(2)),
-      socketToHandQuaternionErrorDeg: Number(socketHandQuaternionErrorDeg.toFixed(3)),
+    blockingReasons: [],
+    metrics,
+    thresholds: { maxHiltToHand, minBladeAxisChangeDeg, maxSocketHandQuaternionErrorDeg },
+    coordinates: {
+      ready: {
+        hilt: vectorTruthPoint(readyState.hilt),
+        tip: vectorTruthPoint(readyState.tip),
+        bladeAxis: vectorTruthPoint(readyState.bladeAxis),
+        socketPosition: vectorTruthPoint(readyState.hilt),
+        socketForward: vectorTruthPoint(readyState.socketForward),
+        socketQuaternion: quaternionTruthPoint(readyState.socketQuaternion),
+        hand: vectorTruthPoint(readyState.hand),
+        handQuaternion: quaternionTruthPoint(readyState.handQuaternion),
+      },
+      rest: {
+        hilt: vectorTruthPoint(restState.hilt),
+        tip: vectorTruthPoint(restState.tip),
+        bladeAxis: vectorTruthPoint(restState.bladeAxis),
+        socketPosition: vectorTruthPoint(restState.hilt),
+        socketForward: vectorTruthPoint(restState.socketForward),
+        socketQuaternion: quaternionTruthPoint(restState.socketQuaternion),
+        hand: vectorTruthPoint(restState.hand),
+        handQuaternion: quaternionTruthPoint(restState.handQuaternion),
+      },
+    },
+    deltas: {
+      hiltToHandDistance: metrics.hiltToHandDistance,
+      socketPositionDeltaFromRest: metrics.socketPositionDeltaFromRest,
+      tipDeltaFromRest: metrics.tipDeltaFromRest,
+      bladeAxisChangeFromRestDeg: metrics.bladeAxisChangeFromRestDeg,
+      socketToHandQuaternionErrorDeg: metrics.socketToHandQuaternionErrorDeg,
     },
   };
 }
 
-export function classifyReadyWeaponTruth(THREE, { readyState, restState, visibility = null } = {}) {
-  const transform = classifyReadyWeaponTransform(THREE, { readyState, restState });
-  const visible = visibility?.visible !== false;
-  const reasons = [...(transform.reasons || [])];
-  if (!visible) reasons.push('weapon-not-visible-in-runtime');
+export function buildReadyWeaponVisibilityGate(visibility = null) {
+  const visible = visibility?.visible === true;
+  const reasons = [...(visibility?.reasons || [])];
+  const blockingReasons = visible ? [] : [...reasons, 'visibility-required-before-transform-parity'];
   return {
-    visualClass: visible ? transform.transformClass : 'sword-hidden',
-    transformClass: transform.transformClass,
+    status: visible ? 'pass' : 'fail',
+    visible,
     visibilityClass: visibility?.visibilityClass || (visible ? 'weapon-visible' : 'weapon-hidden'),
+    matchedPattern: visibility?.matchedPattern || '',
+    patterns: visibility?.patterns || [],
     reasons,
-    metrics: transform.metrics,
-    visibility,
+    blockingReasons,
   };
 }
 
-export function buildReadyWeaponParityVerdict({ observedWebClass, offlineClass }) {
-  const parityMatches = Boolean(observedWebClass && offlineClass && observedWebClass === offlineClass);
+export function classifyReadyWeaponTruth(THREE, { readyState, restState, visibility = null } = {}) {
+  const visibilityGate = buildReadyWeaponVisibilityGate(visibility);
+  const transform = classifyReadyWeaponTransform(THREE, { readyState, restState });
+  const transformGate = visibilityGate.status === 'pass'
+    ? transform
+    : {
+        ...transform,
+        status: 'blocked',
+        blockingReasons: [...(transform.blockingReasons || []), ...visibilityGate.blockingReasons],
+      };
+  const reasons = [...(transform.reasons || [])];
+  if (visibilityGate.status !== 'pass') reasons.push('weapon-not-visible-in-runtime');
   return {
-    parityMatches,
-    visualVerdict: parityMatches && observedWebClass === 'sword-follows-fk' ? 'fixed' : 'red',
-    parityFailure: parityMatches ? '' : 'offline-web-visual-class-diverged',
+    visualClass: visibilityGate.status === 'pass' ? transform.transformClass : 'sword-hidden',
+    transformClass: transform.transformClass,
+    visibilityClass: visibilityGate.visibilityClass,
+    reasons,
+    metrics: transform.metrics,
+    visibility,
+    visibilityGate,
+    transformGate,
+  };
+}
+
+export function buildObservedTruthContext(observedWebTruth = null) {
+  if (!observedWebTruth) return { authority: 'context-only', present: false };
+  return {
+    authority: 'context-only',
+    present: true,
+    schema: observedWebTruth.schema || '',
+    visualClass: observedWebTruth.visualClass || '',
+    visualRead: observedWebTruth.visualRead || '',
+    capturePaths: observedWebTruth.capturePaths || [],
+    cacheToken: observedWebTruth.cacheToken || '',
+    runtimeBuild: observedWebTruth.runtimeBuild || '',
+  };
+}
+
+export function buildReadyWeaponParityVerdict({ offlineTruth, observedWebTruth = null } = {}) {
+  const visibilityPass = offlineTruth?.visibilityGate?.status === 'pass';
+  const transformPass = offlineTruth?.transformGate?.status === 'pass';
+  const machineGatesPass = Boolean(visibilityPass && transformPass);
+  const failures = [];
+  if (!visibilityPass) failures.push('visibility-gate-failed');
+  if (offlineTruth?.transformGate?.status === 'blocked') failures.push('transform-gate-blocked');
+  else if (!transformPass) failures.push('transform-gate-failed');
+  return {
+    authority: 'offline-machine-gates',
+    observedTruthAuthority: 'context-only',
+    parityMatches: machineGatesPass,
+    machineGatesPass,
+    visualVerdict: machineGatesPass ? 'fixed' : 'red',
+    parityFailure: failures.join(';') || '',
+    visibilityGate: offlineTruth?.visibilityGate || null,
+    transformGate: offlineTruth?.transformGate || null,
+    observedTruth: buildObservedTruthContext(observedWebTruth),
   };
 }

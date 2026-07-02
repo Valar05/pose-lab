@@ -76,7 +76,7 @@ Independent layers can be toggled with `--enable projected-pins,fk,ik,sword,basi
 node tools/meshy_ready_weapon_offline_visual_truth.mjs
 ```
 
-Use this as the canonical acceptance proof for Meshy Ready weapon follow. It loads repo GLBs in Node, builds the Visual-IK Ready clip, applies the same shared `src/ready-weapon-truth.mjs` socket, attachment, and runtime visibility rules used by the browser runtime, reads recorded human web truth from `generated/visual_red_build/meshy_ready_weapon_fk_follow_observed_web_truth.json`, and writes `generated/offline_visual_truth/meshy_ready_weapon_fk_follow/visual_truth.json` plus `visual_truth_sheet.svg`. Browser screenshots, Android `screencap`, debug bridge state, and visual-QA browser capture are deprecated as acceptance evidence; they can illustrate a human report, but they cannot close a red build or promote a pose/weapon change. If offline and web truth disagree, or if runtime visibility hides the weapon, the gate is red until the divergent layer is investigated.
+Use this as the canonical acceptance proof for Meshy Ready weapon follow. It loads repo GLBs in Node, builds the Visual-IK Ready clip, applies the same shared `src/ready-weapon-truth.mjs` socket, attachment, and runtime visibility rules used by the browser runtime, and writes `generated/offline_visual_truth/meshy_ready_weapon_fk_follow/visual_truth.json` plus `visual_truth_sheet.svg`. The artifact has three gates: offline visibility, offline transform, and observed human context. Visibility must pass before transform can be promoted; if the weapon is hidden, transform measurements are still recorded but the transform gate is blocked. Transform compares hilt, tip, blade axis, socket position, and socket quaternion in shared coordinates. `generated/visual_red_build/meshy_ready_weapon_fk_follow_observed_web_truth.json` is allowed only as human report context and is not parity authority. Browser screenshots, Android `screencap`, debug bridge state, and visual-QA browser capture are deprecated as acceptance evidence; they can illustrate a human report, but they cannot close a red build or promote a pose/weapon change.
 
 ## Meshy Promotion Gate
 
@@ -85,9 +85,9 @@ node tools/pose_lab_workflow_status.mjs
 node tools/promote_pose_candidate.mjs --candidate CANDIDATE.json --evidence VISUAL.json --metrics METRICS.json
 ```
 
-Meshy/FPS ready, saber, and retarget experiments are candidate-only by default. The status command reports the protected accepted baseline, current cache token, latest offline/web parity evidence freshness, dirty protected files, and unpromoted candidate directories. The promotion command rejects blocked/stale evidence, browser-only evidence, missing metric assertions, actor/clip mismatches, and weapon candidates that do not prove grip, hilt, and blade-axis sanity.
+Meshy/FPS ready, saber, and retarget experiments are candidate-only by default. The status command reports the protected accepted baseline, current cache token, latest machine-gate evidence freshness, dirty protected files, and unpromoted candidate directories. The promotion command rejects blocked/stale evidence, browser-only evidence, observed-report-only evidence, missing metric assertions, actor/clip mismatches, hidden weapon visibility, blocked transform gates, and weapon candidates that do not prove grip, hilt, and blade-axis sanity.
 
-Do not wire a candidate to `startupClip`, `SwordReady`, `RestProbe`, or `visibleClipPatterns` manually. If a change needs to become user-facing, produce offline/web truth parity evidence and metric evidence, then run the promotion gate. Browser capture and source-string tests can support investigation, but they cannot promote it.
+Do not wire a candidate to `startupClip`, `SwordReady`, `RestProbe`, or `visibleClipPatterns` manually. If a change needs to become user-facing, produce fixed offline visibility/transform gate evidence and metric evidence, then run the promotion gate. Browser capture and source-string tests can support investigation, but they cannot promote it. CI or promotion validation must run `POSE_LAB_REQUIRE_READY_FIXED=1` or an equivalent fixed-gate path before claiming the Ready weapon-follow red build is closed.
 
 ## Deep Ocean 2026-06-30: Meshy Saber Placement Pain
 
@@ -138,7 +138,7 @@ When the user says `get motivated`, do not stop after diagnosis. Continue throug
 
 ## Device Capture Standard Deprecated
 
-Do not use the live browser, Android `screencap`, debug bridge screenshots, or visual-QA browser capture as acceptance proof for animation, pose, or weapon-follow fixes on this device. These paths drift or fail too often. Use repo-owned offline/web truth parity renderers for closure, then use browser/manual screenshots only as optional human-perception follow-up.
+Do not use the live browser, Android `screencap`, debug bridge screenshots, or visual-QA browser capture as acceptance proof for animation, pose, or weapon-follow fixes on this device. These paths drift or fail too often. Use repo-owned offline visibility and transform gates for closure, then use browser/manual screenshots only as optional human-perception context.
 
 ## UX Critique Skill
 

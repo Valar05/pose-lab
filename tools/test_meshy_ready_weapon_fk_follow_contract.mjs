@@ -59,10 +59,22 @@ assert(artifact?.browserCaptureDeprecated === true, 'artifact should deprecate b
 assert(artifact?.clipName === 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]', `unexpected verified clip ${artifact?.clipName}`);
 assert(artifact?.cacheToken === token, 'artifact cache token should match runtime cache token');
 assert(artifact?.observedWebTruthPath === 'generated/visual_red_build/meshy_ready_weapon_fk_follow_observed_web_truth.json', 'artifact should point to observed web truth artifact');
-assert(artifact?.observedWebTruth?.visualClass === 'sword-rest-space', 'artifact should preserve current human web truth red class');
-assert(artifact?.offlineTruth?.transformClass === 'sword-follows-fk', `unexpected offline transform class ${artifact?.offlineTruth?.transformClass}`);
+assert(artifact?.observedWebTruth?.visualClass === 'sword-rest-space', 'artifact should preserve current human web truth red class as context');
+assert(artifact?.observedTruth?.authority === 'context-only', 'observed web truth must be context-only, not parity authority');
+assert(artifact?.visibilityGate?.status === 'fail', `unexpected visibility gate ${artifact?.visibilityGate?.status}`);
+assert(artifact?.visibilityGate?.visibilityClass === 'weapon-hidden', `unexpected visibility class ${artifact?.visibilityGate?.visibilityClass}`);
+assert(artifact?.transformGate?.status === 'blocked', `unexpected transform gate ${artifact?.transformGate?.status}`);
+assert(artifact?.transformGate?.transformClass === 'sword-follows-fk', `unexpected offline transform class ${artifact?.transformGate?.transformClass}`);
+for (const key of ['hilt', 'tip', 'bladeAxis', 'socketPosition', 'socketQuaternion']) {
+  assert(artifact?.transformGate?.coordinates?.ready?.[key], `transform gate should report ready ${key} in shared coordinates`);
+}
+for (const key of ['hiltToHandDistance', 'bladeAxisChangeFromRestDeg', 'socketToHandQuaternionErrorDeg']) {
+  assert(Number.isFinite(artifact?.transformGate?.deltas?.[key]), `transform gate should report numeric delta ${key}`);
+}
 assert(artifact?.offlineTruth?.visibilityClass === 'weapon-hidden', `unexpected offline visibility class ${artifact?.offlineTruth?.visibilityClass}`);
 assert(artifact?.offlineTruth?.visualClass === 'sword-hidden', `unexpected offline visual class ${artifact?.offlineTruth?.visualClass}`);
+assert(artifact?.promotionVerdict?.authority === 'offline-machine-gates', 'promotion verdict should be based on offline machine gates');
+assert(artifact?.promotionVerdict?.observedTruthAuthority === 'context-only', 'promotion verdict must not use observed web truth as authority');
 assert(artifact?.parity?.visualVerdict === 'red' || artifact?.parity?.visualVerdict === 'fixed', 'artifact must explicitly classify red or fixed');
 const acceptance = artifact?.acceptance || {};
 for (const key of ['generatedReadyClipResolved', 'readyClipSampled', 'readyHandDisplacedFromRest', 'noGeneratedWeaponTracks', 'runtimeVisibilityModeled', 'manualSaberPlacementPreserved']) {
@@ -77,6 +89,9 @@ assert(evidence.observedWebTruthPath === artifact.observedWebTruthPath, 'red-bui
 assert(evidence.offlineVisualTruth?.artifactPath === run.artifact, 'red-build gate should point at the parity artifact');
 assert(evidence.offlineVisualTruth?.sheetPath === run.sheet, 'red-build gate should point at the parity sheet');
 assert(evidence.offlineVisualTruth?.result === artifact.result, 'red-build gate result should mirror parity artifact');
+assert(evidence.observedTruth?.authority === 'context-only', 'red-build gate should mark observed truth as context-only');
+assert(evidence.visibilityGate?.status === artifact.visibilityGate?.status, 'red-build gate visibility status should mirror artifact');
+assert(evidence.transformGate?.status === artifact.transformGate?.status, 'red-build gate transform status should mirror artifact');
 assertOrdered(runtime, ['this.mixer.setTime(0);', 'this.reapplyBoneEdits();', 'this.applyGrounding();', 'this.updateWeaponProxyVisibility();', 'this.updateDebugHelpers();'], 'clip start should update weapon after final pose edits');
 const updateStart = runtime.indexOf('  update(dt) {');
 const updateEnd = runtime.indexOf('\n  }', updateStart + 1);
@@ -85,11 +100,12 @@ assertOrdered(updateBlock, ['this.mixer.update(dt);', 'this.reapplyBoneEdits();'
 assert(!profiles.includes("targetWeapon: 'WeaponGrip'") && !profiles.includes("sourceWeapon: 'Weapon.R'"), 'normal Ready clip must not key WeaponGrip or Weapon.R');
 assert(!profiles.includes('weaponKeyConvert: {'), 'normal Ready profile must not re-enable weapon conversion');
 const requireFixed = process.env.POSE_LAB_REQUIRE_READY_FIXED === '1';
-if (requireFixed && artifact?.parity?.visualVerdict !== 'fixed') failures.push(`RED BUILD: offline/web truth parity not fixed: observed=${artifact?.observedWebTruth?.visualClass} offline=${artifact?.offlineTruth?.visualClass} visibility=${artifact?.offlineTruth?.visibilityClass} parityFailure=${artifact?.parity?.parityFailure || 'current-visual-truth-red'}`);
+if (requireFixed && artifact?.promotionVerdict?.visualVerdict !== 'fixed') failures.push(`RED BUILD: offline machine truth gates not fixed: visibility=${artifact?.visibilityGate?.status} transform=${artifact?.transformGate?.status} observedAuthority=${artifact?.observedTruth?.authority} parityFailure=${artifact?.promotionVerdict?.parityFailure || 'current-visual-truth-red'}`);
 if (!requireFixed) {
-  assert(artifact?.parity?.visualVerdict === 'red', 'default contract should preserve current red visual truth until explicitly fixed');
-  assert(artifact?.observedWebTruth?.visualClass === 'sword-rest-space', 'default contract should preserve human-observed sword-rest-space red class');
-  assert(artifact?.offlineTruth?.visualClass === 'sword-hidden', 'default contract should preserve offline weapon-hidden red class');
+  assert(artifact?.promotionVerdict?.visualVerdict === 'red', 'default contract should preserve current red visual truth until explicitly fixed');
+  assert(artifact?.observedWebTruth?.visualClass === 'sword-rest-space', 'default contract should preserve human-observed sword-rest-space red class as context');
+  assert(artifact?.visibilityGate?.status === 'fail', 'default contract should preserve current offline visibility failure');
+  assert(artifact?.transformGate?.status === 'blocked', 'default contract should block transform parity while visibility is hidden');
 }
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({ checked: [requireFixed ? 'ready-weapon-fk-offline-web-parity-fixed' : 'ready-weapon-fk-offline-web-parity-current-red'], artifact: run.artifact, sheet: run.sheet, result: artifact.result, metrics: artifact.metrics }, null, 2));

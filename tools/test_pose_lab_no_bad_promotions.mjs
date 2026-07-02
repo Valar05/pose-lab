@@ -24,8 +24,11 @@ assert(baseline.acceptedClip.includes('[FPS-REST-ARMS roll -120]'), 'baseline sh
 assert(baseline.promotionRules?.requiresFreshVisualEvidence === true, 'baseline should require fresh visual evidence');
 assert(baseline.promotionRules?.requiresMetricEvidence === true, 'baseline should require metric evidence');
 
-const selectionMismatches = compareSelectionSurfaces(baseline, currentMeshySelectionSurfaces());
+const currentSurfaces = currentMeshySelectionSurfaces();
+const selectionMismatches = compareSelectionSurfaces(baseline, currentSurfaces);
 assert(selectionMismatches.length === 0, `protected selection surfaces drifted: ${JSON.stringify(selectionMismatches)}`);
+const selectableSurfaceText = JSON.stringify(currentSurfaces);
+assert(!selectableSurfaceText.includes('FPS-VISUAL-IK'), 'Visual-IK Ready must remain candidate-only and absent from startup/SwordReady/RestProbe/default visibility surfaces');
 
 const statusRaw = execFileSync('node', ['tools/pose_lab_workflow_status.mjs'], { cwd: projectRoot, encoding: 'utf8' });
 const status = JSON.parse(statusRaw);
@@ -68,7 +71,7 @@ const passingCandidate = {
   promotable: false,
   actorKey: 'meshyCharacter',
   clipName: 'OneHandReady -> meshyCharacter [READY-GATED-MOCK]',
-  weaponIncluded: true,
+  weaponIncluded: false,
 };
 const passingEvidence = {
   schema: 'pose-lab-visual-evidence-v1',
@@ -86,16 +89,13 @@ const passingMetrics = {
   schema: 'pose-lab-promotion-metrics-v1',
   actorKey: 'meshyCharacter',
   clipName: 'OneHandReady -> meshyCharacter [READY-GATED-MOCK]',
-  weaponIncluded: true,
+  weaponIncluded: false,
   assertions: {
     beatsOrPreservesBaseline: true,
     noTposeLeak: true,
     armLengthPreserved: true,
     handPositionSane: true,
     rollDoesNotMoveJoints: true,
-    saberGripAtHandCenter: true,
-    basketHiltFacesAwayFromBody: true,
-    bladeLongAxisSane: true,
   },
 };
 const candidateFile = path.join(tmp, 'candidate.json');
@@ -118,4 +118,4 @@ assert(gateReport.ok === true && gateReport.apply === false, 'dry-run promotion 
 assert(!fs.existsSync(path.join(projectRoot, 'generated', 'workflow_state', 'latest_promotion_attempt.json')), 'dry-run gate must not write promotion attempt state');
 
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['accepted-baseline-protected', 'stale-evidence-rejected', 'mock-fresh-gate-passes'] }, null, 2));
+console.log(JSON.stringify({ checked: ['accepted-baseline-protected', 'stale-evidence-rejected', 'mock-nonweapon-legacy-gate-passes'] }, null, 2));
