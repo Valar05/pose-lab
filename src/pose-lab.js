@@ -4,13 +4,14 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-129';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-130';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-130';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-128';
 
 const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget';
-const LAB_CACHE_TOKEN = 'pose-editor-129';
+const LAB_CACHE_TOKEN = 'pose-editor-130';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
@@ -6404,6 +6405,21 @@ class PoseLab {
               clipSuffix: spec.clipSuffix || ('-> ' + targetKey + ' [' + mappedTag + ']'),
               originPrefix: customOriginPrefix,
             })
+              : spec.retargetMode === 'meshy-fps-visual-ik-ready'
+              ? (() => {
+                const generated = buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source.model, target.model, sourceClips, {
+                  clipName: (spec.clipNames?.[0] || 'OneHandReady') + ' ' + (spec.clipSuffix || ('-> ' + targetKey + ' [' + mappedTag + ']')),
+                  sourceClipName: spec.clipNames?.[0] || 'OneHandReady',
+                  sourceRestClip: spec.sourceRestClip || '0T-Pose',
+                  timeSourceBone: spec.timeSourceBone || 'Hand.R',
+                  dropInitialRestKey: spec.dropInitialRestKey !== false,
+                  weaponAttachment: target.info?.weaponAttachment || {},
+                });
+                const built = generated?.clip ? [generated.clip] : [];
+                built.failures = generated?.clip ? 0 : 1;
+                built.fallback = !generated?.clip;
+                return built;
+              })()
               : spec.retargetMode === 'mapped-rotation'
               ? buildMappedRotationClips(sourceClips, source.model, target.model, {
               ...retargetOptions,

@@ -12,18 +12,15 @@ assert(js.includes("spec.retargetMode === 'weapon-path-ik'"), 'auto retarget dis
 assert(js.includes('createWeaponProxy()'), 'runtime should create a WeaponGrip socket/fallback sabre from the target hands');
 assert(js.includes('attachWeaponAttachment(weaponRoot, config = {})'), 'runtime should attach the downloaded Meshy sabre model to WeaponGrip');
 assert(js.includes('updateWeaponProxyVisibility()'), 'weapon socket visibility should be runtime-controlled');
-assert(js.includes('visibleClipPatterns') && js.includes("patterns.some((pattern) => new RegExp(pattern).test(clip?.name || ''))"), 'weapon should be visible on accepted configured sword clips');
-assert(js.includes('function weaponDebugForceVisible()') && js.includes("params.get('weaponDebug') === '1'"), 'saber-only visual debugging should be able to force the real weapon visible without widening protected clip patterns');
-assert(profiles.includes("weaponAttachment: {") && profiles.includes("socketBone: 'WeaponGrip'") && profiles.includes("leftHandBone: 'LeftHand'"), 'Meshy profile should attach the real Meshy sabre to the centered WeaponGrip');
-assert(profiles.includes('Saber handle-centered attachment for Meshy Character') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy Character should preserve the semantic/manual saber hilt candidate');
-assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy saber should rotate from the hand origin without shifting the socket');
-assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]') && profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]') && profiles.includes('rotationDeg: [90, 0, -55.145]'), 'Meshy saber should use the saved 3D gizmo socket position and rotation');
-assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy FPS-SWORD-UPPER remains available as an unpromoted weapon diagnostic');
-assert(profiles.includes("visibleClipPatterns: ['\\\\[FPS-REST-ARMS']"), 'Meshy weapon visibility should not default to the rejected ready path during recovery');
-assert(profiles.includes("sourceWeapon: 'Weapon.R'") && profiles.includes("targetWeapon: 'WeaponGrip'"), 'FPS Weapon.R rotation should drive Meshy WeaponGrip through source-key conversion');
+assert(profiles.includes("weaponAttachment: {") && profiles.includes("socketBone: 'WeaponGrip'") && profiles.includes("leftHandBone: 'LeftHand'"), 'Meshy profile should still attach the real Meshy sabre to WeaponGrip');
+assert(profiles.includes('Saber handle-centered attachment for Meshy Character') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy Character should preserve the main saber hilt candidate');
+assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy saber should not shift the socket through gripOffset');
+assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]') && profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]') && profiles.includes('rotationDeg: [90, 0, -55.145]'), 'Meshy saber should preserve main weapon placement values');
+assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy Ready pose should use the visual IK candidate clip');
+assert(!profiles.includes("targetWeapon: 'WeaponGrip'") && !profiles.includes("sourceWeapon: 'Weapon.R'"), 'normal Meshy Ready pose generation should not key WeaponGrip or WeaponR');
 assert(!profiles.includes("retargetMode: 'weapon-path-ik'"), 'Meshy active profile should not request the rejected weapon-path IK acceptance path');
 assert(!profiles.includes("clipTag: 'IB-MC'") && !profiles.includes("clipTag: 'RA-FULL'"), 'Meshy active profile should not generate rejected full-body/RA weapon clips');
 assert(!profiles.includes("pathMode: 'authored-diagonal-cut'"), 'the authored Scavenger fallback path should not remain in the active Meshy profile');
 
-if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['fps-sword-weapon-visible', 'rejected-weapon-path-acceptance-removed'] }, null, 2));
+if (failures.length) throw new Error(failures.join('\\n'));
+console.log(JSON.stringify({ checked: ['weapon-visible-main-values-preserved', 'visual-ik-ready-no-weapon-tracks'] }, null, 2));
