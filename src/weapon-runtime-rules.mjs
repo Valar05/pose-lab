@@ -24,6 +24,29 @@ function quaternionFromDeg(THREE, value) {
   return q;
 }
 
+function weaponRuntimeTraceEnabled() {
+  try {
+    if (typeof window === 'undefined') return false;
+    const params = new URLSearchParams(window.location.search || '');
+    return params.get('weaponDebug') === '1' || params.get('weaponDebug') === 'true';
+  } catch (_err) {
+    return false;
+  }
+}
+
+function traceRotation(object) {
+  return object?.rotation?.toArray ? object.rotation.toArray().map((value) => Number(Number(value || 0).toFixed(5))) : null;
+}
+
+function traceQuaternion(object) {
+  return object?.quaternion?.toArray ? object.quaternion.toArray().map((value) => Number(Number(value || 0).toFixed(5))) : null;
+}
+
+function weaponRuntimeTrace(stage, payload = {}) {
+  if (!weaponRuntimeTraceEnabled()) return;
+  console.log('[pose-lab weapon-runtime]', stage, payload);
+}
+
 function numericArray(value, fallback = null) {
   if (!Array.isArray(value)) return fallback;
   return value.map((entry) => Number(Number(entry || 0).toFixed(8)));
@@ -255,6 +278,14 @@ export function applyWeaponAttachmentRuntimeRules(THREE, {
   const weaponRoot = proxy?.model;
   const tip = proxy?.tipMarker;
   if (!weaponRoot || !config) return null;
+  weaponRuntimeTrace('applyAttachment ENTER', {
+    configRotationDeg: config.rotationDeg || null,
+    modelName: weaponRoot.name || '',
+    modelRotationBefore: traceRotation(weaponRoot),
+    modelQuaternionBefore: traceQuaternion(weaponRoot),
+    displayRootName: proxy?.displayRoot?.name || '',
+    displayRootQuaternionBefore: traceQuaternion(proxy?.displayRoot),
+  });
   const attachmentScale = Number(config.scale ?? 1);
   const displayRoot = proxy.displayRoot || weaponRoot.parent || proxy.root;
   const socketScaleCompensation = new THREE.Vector3(1, 1, 1);
@@ -305,6 +336,13 @@ export function applyWeaponAttachmentRuntimeRules(THREE, {
     }
   }
   updateWeaponFallbackFromTipRuntime(THREE, proxy);
+  weaponRuntimeTrace('applyAttachment EXIT', {
+    configRotationDeg: config.rotationDeg || null,
+    modelName: weaponRoot.name || '',
+    modelRotationAfter: traceRotation(weaponRoot),
+    modelQuaternionAfter: traceQuaternion(weaponRoot),
+    displayRootQuaternionAfter: traceQuaternion(displayRoot),
+  });
   return { proxy, displayRoot, weaponRoot, tip, socketScaleCompensation };
 }
 

@@ -4,7 +4,7 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-186';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-187';
 import {
   applyWeaponAttachmentRuntimeRules,
   applyWeaponSocketRuntimeRules,
@@ -13,14 +13,14 @@ import {
   pinWeaponLocalPointToDisplay as pinWeaponLocalPointToDisplayRuntime,
   updateWeaponFallbackFromTipRuntime,
   weaponPlacementConfigSignature,
-} from './weapon-runtime-rules.mjs?v=pose-editor-186';
-import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-186';
+} from './weapon-runtime-rules.mjs?v=pose-editor-187';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-187';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
 
 const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget';
-const LAB_CACHE_TOKEN = 'pose-editor-186';
+const LAB_CACHE_TOKEN = 'pose-editor-187';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
@@ -104,6 +104,28 @@ function debugBridgeConfig() {
 function weaponDebugForceVisible() {
   const params = new URLSearchParams(window.location.search || '');
   return params.get('weaponDebug') === '1' || params.get('weaponDebug') === 'true';
+}
+
+const weaponTraceObjectIds = new WeakMap();
+let weaponTraceNextObjectId = 1;
+
+function weaponTraceObjectId(object) {
+  if (!object || (typeof object !== 'object' && typeof object !== 'function')) return null;
+  if (!weaponTraceObjectIds.has(object)) weaponTraceObjectIds.set(object, weaponTraceNextObjectId++);
+  return weaponTraceObjectIds.get(object);
+}
+
+function weaponTraceRotation(object) {
+  return object?.rotation?.toArray ? object.rotation.toArray().map((value) => Number(Number(value || 0).toFixed(5))) : null;
+}
+
+function weaponTraceQuaternion(object) {
+  return object?.quaternion?.toArray ? object.quaternion.toArray().map((value) => Number(Number(value || 0).toFixed(5))) : null;
+}
+
+function weaponLiveTrace(stage, payload = {}) {
+  if (!weaponDebugForceVisible()) return;
+  console.log('[pose-lab weapon-live]', stage, payload);
 }
 
 function splitDebugCommand(input) {
@@ -4457,6 +4479,15 @@ class PoseActor {
     if (!weaponRoot || !this.weaponProxy?.root) return null;
     const socket = this.weaponProxy.root;
     const displayRoot = this.weaponProxy.displayRoot || socket;
+    weaponLiveTrace('attachWeaponAttachment ENTER', {
+      actorKey: this.key,
+      profileAttachmentId: weaponTraceObjectId(ACTORS?.[this.key]?.weaponAttachment),
+      actorAttachmentId: weaponTraceObjectId(this.info?.weaponAttachment),
+      incomingConfigId: weaponTraceObjectId(config),
+      configRotationDeg: config.rotationDeg || null,
+      displayRootId: weaponTraceObjectId(displayRoot),
+      incomingModelId: weaponTraceObjectId(weaponRoot),
+    });
     if (this.weaponProxy.config?.hideFallbackOnAttachment === true) {
       for (const child of displayRoot.children.filter((entry) => entry.userData?.weaponFallback)) displayRoot.remove(child);
     }
@@ -4492,6 +4523,18 @@ class PoseActor {
     this.weaponProxy.tipMarker = tip;
     this.weaponProxy.attachmentConfig = config;
     this.syncWeaponVisualAttachment({ forceSocket: true });
+    weaponLiveTrace('attachWeaponAttachment EXIT', {
+      actorKey: this.key,
+      profileAttachmentId: weaponTraceObjectId(ACTORS?.[this.key]?.weaponAttachment),
+      actorAttachmentId: weaponTraceObjectId(this.info?.weaponAttachment),
+      proxyAttachmentId: weaponTraceObjectId(this.weaponProxy.attachmentConfig),
+      proxyConfigMatchesActorInfo: this.weaponProxy.attachmentConfig === this.info?.weaponAttachment,
+      proxyModelId: weaponTraceObjectId(this.weaponProxy.model),
+      displayRootId: weaponTraceObjectId(this.weaponProxy.displayRoot),
+      modelRotation: weaponTraceRotation(this.weaponProxy.model),
+      modelQuaternion: weaponTraceQuaternion(this.weaponProxy.model),
+      displayRootQuaternion: weaponTraceQuaternion(this.weaponProxy.displayRoot),
+    });
     return this.weaponProxy;
   }
 
@@ -4500,7 +4543,27 @@ class PoseActor {
     const weaponRoot = proxy?.model;
     const tip = proxy?.tipMarker;
     if (!weaponRoot || !config) return null;
+    weaponLiveTrace('updateWeaponAttachmentTransform BEFORE', {
+      actorKey: this.key,
+      configId: weaponTraceObjectId(config),
+      configRotationDeg: config.rotationDeg || null,
+      proxyAttachmentId: weaponTraceObjectId(proxy.attachmentConfig),
+      actorAttachmentId: weaponTraceObjectId(this.info?.weaponAttachment),
+      modelId: weaponTraceObjectId(weaponRoot),
+      modelRotation: weaponTraceRotation(weaponRoot),
+      modelQuaternion: weaponTraceQuaternion(weaponRoot),
+      displayRootQuaternion: weaponTraceQuaternion(proxy.displayRoot),
+    });
     applyWeaponAttachmentRuntimeRules(THREE, { actorModel: this.model, proxy, config });
+    weaponLiveTrace('updateWeaponAttachmentTransform AFTER', {
+      actorKey: this.key,
+      configId: weaponTraceObjectId(config),
+      configRotationDeg: config.rotationDeg || null,
+      modelId: weaponTraceObjectId(weaponRoot),
+      modelRotation: weaponTraceRotation(weaponRoot),
+      modelQuaternion: weaponTraceQuaternion(weaponRoot),
+      displayRootQuaternion: weaponTraceQuaternion(proxy.displayRoot),
+    });
     if (tip) {
       const rest = this.boneRest.get(tip.name);
       if (rest) rest.position.copy(tip.position);
@@ -5101,6 +5164,15 @@ class PoseActor {
   play(name) {
     const next = this.actions.get(name);
     if (!next) return;
+    weaponLiveTrace('actor.play BEFORE', {
+      actorKey: this.key,
+      clip: name,
+      attachmentRotationDeg: this.info?.weaponAttachment?.rotationDeg || this.weaponProxy?.attachmentConfig?.rotationDeg || null,
+      proxyAttachmentId: weaponTraceObjectId(this.weaponProxy?.attachmentConfig),
+      actorAttachmentId: weaponTraceObjectId(this.info?.weaponAttachment),
+      modelRotation: weaponTraceRotation(this.weaponProxy?.model),
+      modelQuaternion: weaponTraceQuaternion(this.weaponProxy?.model),
+    });
 
     // Sparse clips must start from a clean rest pose. Do not blend from the
     // previous action, or unkeyed bones keep locomotion/pose residue.
@@ -5127,6 +5199,15 @@ class PoseActor {
     this.updateDebugHelpers();
     this.updateBoneOverlay();
     this.updateWeaponProxyVisibility();
+    weaponLiveTrace('actor.play AFTER', {
+      actorKey: this.key,
+      clip: name,
+      attachmentRotationDeg: this.info?.weaponAttachment?.rotationDeg || this.weaponProxy?.attachmentConfig?.rotationDeg || null,
+      proxyAttachmentId: weaponTraceObjectId(this.weaponProxy?.attachmentConfig),
+      actorAttachmentId: weaponTraceObjectId(this.info?.weaponAttachment),
+      modelRotation: weaponTraceRotation(this.weaponProxy?.model),
+      modelQuaternion: weaponTraceQuaternion(this.weaponProxy?.model),
+    });
     this.rememberClip(name);
   }
 
@@ -5552,6 +5633,7 @@ class PoseLab {
     }
     this.applySavedActorState(actor);
     this.select(key);
+    this.applySavedWeaponGizmoTuning(actor, 'activateActor');
     if (options.viewMode) this.setViewMode(options.viewMode);
     if (this.viewMode === 'firstPerson' && !actor.info?.firstPersonCamera) this.setViewMode('orbit');
     const savedClip = options.preferSaved && this.savedState?.actorKey === key ? this.findSavedClip(actor, this.savedState) : null;
@@ -5673,6 +5755,50 @@ class PoseLab {
     } catch (_err) {
       return null;
     }
+  }
+
+  applySavedWeaponGizmoTuning(actor = this.selectedWeaponActor(), stage = 'apply-saved-weapon-gizmo') {
+    const proxy = actor?.weaponProxy;
+    const saved = this.readSavedWeaponGizmoTuning();
+    const values = saved?.values || {};
+    const cacheMatches = saved?.cacheToken === LAB_CACHE_TOKEN;
+    const actorMatches = Boolean(actor?.key && values.actor === actor.key);
+    weaponLiveTrace(stage + ' CHECK', {
+      selected: this.selected,
+      actorKey: actor?.key || '',
+      savedActor: values.actor || '',
+      cacheToken: LAB_CACHE_TOKEN,
+      savedCacheToken: saved?.cacheToken || '',
+      cacheMatches,
+      actorMatches,
+      hasProxy: Boolean(proxy?.root),
+      hasAttachment: Boolean(actor?.info?.weaponAttachment || proxy?.attachmentConfig),
+    });
+    if (!saved || saved.schema !== 'pose-lab-weapon-gizmo-tuning-v1' || !cacheMatches || !actorMatches || !proxy?.root) return false;
+    const attachment = actor.info.weaponAttachment || proxy.attachmentConfig || {};
+    if (!actor.info.weaponAttachment) actor.info.weaponAttachment = attachment;
+    if (Array.isArray(values.modelLocalOffset) && proxy.config) proxy.config.modelLocalOffset = [...values.modelLocalOffset];
+    if (Array.isArray(values.handLocalOffset) && proxy.config) proxy.config.handLocalOffset = [...values.handLocalOffset];
+    if (Array.isArray(values.gripOffset) && proxy.config) proxy.config.gripOffset = [...values.gripOffset];
+    if (Array.isArray(values.rotationDeg)) attachment.rotationDeg = [...values.rotationDeg];
+    if (Number.isFinite(Number(values.scale))) attachment.scale = Number(values.scale);
+    if (Array.isArray(values.gripLocalPosition)) attachment.gripLocalPosition = [...values.gripLocalPosition];
+    if (Array.isArray(values.tipLocalPosition)) attachment.tipLocalPosition = [...values.tipLocalPosition];
+    proxy.attachmentConfig = attachment;
+    actor.syncWeaponVisualAttachment?.({ forceSocket: true });
+    weaponLiveTrace(stage + ' APPLIED', {
+      selected: this.selected,
+      actorKey: actor.key,
+      profileAttachmentId: weaponTraceObjectId(ACTORS?.[actor.key]?.weaponAttachment),
+      actorAttachmentId: weaponTraceObjectId(actor.info.weaponAttachment),
+      proxyAttachmentId: weaponTraceObjectId(proxy.attachmentConfig),
+      proxyConfigMatchesActorInfo: proxy.attachmentConfig === actor.info.weaponAttachment,
+      values,
+      modelRotation: weaponTraceRotation(proxy.model),
+      modelQuaternion: weaponTraceQuaternion(proxy.model),
+      displayRootQuaternion: weaponTraceQuaternion(proxy.displayRoot),
+    });
+    return true;
   }
 
   weaponLocalPointWorld(actor, local = [0, 0, 0]) {
@@ -6210,9 +6336,29 @@ class PoseLab {
   }
 
   applyWeaponGestureUpdate(actor) {
+    weaponLiveTrace('applyWeaponGestureUpdate BEFORE', {
+      selected: this.selected,
+      actorKey: actor?.key || '',
+      mode: this.weaponGizmoMode,
+      actorAttachmentId: weaponTraceObjectId(actor?.info?.weaponAttachment),
+      proxyAttachmentId: weaponTraceObjectId(actor?.weaponProxy?.attachmentConfig),
+      actorRotationDeg: actor?.info?.weaponAttachment?.rotationDeg || null,
+      proxyRotationDeg: actor?.weaponProxy?.attachmentConfig?.rotationDeg || null,
+      modelRotation: weaponTraceRotation(actor?.weaponProxy?.model),
+      modelQuaternion: weaponTraceQuaternion(actor?.weaponProxy?.model),
+    });
     actor?.syncWeaponVisualAttachment?.({ forceSocket: true });
     actor?.updateBoneOverlay?.();
     this.updateWeaponGizmo();
+    weaponLiveTrace('applyWeaponGestureUpdate AFTER', {
+      selected: this.selected,
+      actorKey: actor?.key || '',
+      mode: this.weaponGizmoMode,
+      actorRotationDeg: actor?.info?.weaponAttachment?.rotationDeg || null,
+      proxyRotationDeg: actor?.weaponProxy?.attachmentConfig?.rotationDeg || null,
+      modelRotation: weaponTraceRotation(actor?.weaponProxy?.model),
+      modelQuaternion: weaponTraceQuaternion(actor?.weaponProxy?.model),
+    });
     this.updateWeaponGizmoStatus('gesture ' + this.weaponGizmoMode);
   }
 
@@ -6256,6 +6402,16 @@ class PoseLab {
   setWeaponAttachmentLocalQuaternion(actor, localQuat) {
     const proxy = actor?.weaponProxy;
     if (!actor || !proxy || !localQuat) return null;
+    weaponLiveTrace('setWeaponAttachmentLocalQuaternion BEFORE', {
+      selected: this.selected,
+      actorKey: actor.key,
+      actorAttachmentId: weaponTraceObjectId(actor.info.weaponAttachment),
+      proxyAttachmentId: weaponTraceObjectId(proxy.attachmentConfig),
+      actorRotationDeg: actor.info.weaponAttachment?.rotationDeg || null,
+      proxyRotationDeg: proxy.attachmentConfig?.rotationDeg || null,
+      modelRotation: weaponTraceRotation(proxy.model),
+      modelQuaternion: weaponTraceQuaternion(proxy.model),
+    });
     const euler = new THREE.Euler().setFromQuaternion(localQuat.normalize(), 'XYZ');
     const next = [
       Number(THREE.MathUtils.radToDeg(euler.x).toFixed(3)),
@@ -6264,6 +6420,16 @@ class PoseLab {
     ];
     if (actor.info.weaponAttachment) actor.info.weaponAttachment.rotationDeg = next;
     if (proxy.attachmentConfig) proxy.attachmentConfig.rotationDeg = next;
+    weaponLiveTrace('setWeaponAttachmentLocalQuaternion AFTER', {
+      selected: this.selected,
+      actorKey: actor.key,
+      actorAttachmentId: weaponTraceObjectId(actor.info.weaponAttachment),
+      proxyAttachmentId: weaponTraceObjectId(proxy.attachmentConfig),
+      actorRotationDeg: actor.info.weaponAttachment?.rotationDeg || null,
+      proxyRotationDeg: proxy.attachmentConfig?.rotationDeg || null,
+      modelRotation: weaponTraceRotation(proxy.model),
+      modelQuaternion: weaponTraceQuaternion(proxy.model),
+    });
     return next;
   }
 
@@ -6368,6 +6534,18 @@ class PoseLab {
     const attachment = actor.info.weaponAttachment || {};
     const proxyConfig = actor.weaponProxy.config || {};
     const rotationSnapshot = this.weaponGizmoMode === 'rotate' ? this.weaponGestureRotationSnapshot(actor) : null;
+    weaponLiveTrace('beginWeaponGizmoDrag', {
+      selected: this.selected,
+      actorKey: actor.key,
+      mode: this.weaponGizmoMode,
+      actorAttachmentId: weaponTraceObjectId(actor.info.weaponAttachment),
+      proxyAttachmentId: weaponTraceObjectId(actor.weaponProxy.attachmentConfig),
+      actorRotationDeg: actor.info.weaponAttachment?.rotationDeg || null,
+      proxyRotationDeg: actor.weaponProxy.attachmentConfig?.rotationDeg || null,
+      modelRotation: weaponTraceRotation(actor.weaponProxy.model),
+      modelQuaternion: weaponTraceQuaternion(actor.weaponProxy.model),
+      rotationSnapshot,
+    });
     this.weaponGizmoDrag = {
       mode: this.weaponGizmoMode,
       pointerId: event.pointerId,
@@ -6409,6 +6587,16 @@ class PoseLab {
       const cameraUp = new THREE.Vector3().fromArray(snapshot?.cameraUp || [0, 1, 0]).normalize();
       const horizontal = new THREE.Quaternion().setFromAxisAngle(cameraUp, dx * 0.006);
       const vertical = new THREE.Quaternion().setFromAxisAngle(cameraRight, dy * 0.006);
+      weaponLiveTrace('updateWeaponGizmoDrag ROTATE', {
+        selected: this.selected,
+        actorKey: actor.key,
+        dx,
+        dy,
+        actorRotationDegBefore: actor.info.weaponAttachment?.rotationDeg || null,
+        proxyRotationDegBefore: proxy.attachmentConfig?.rotationDeg || null,
+        modelRotationBefore: weaponTraceRotation(proxy.model),
+        modelQuaternionBefore: weaponTraceQuaternion(proxy.model),
+      });
       this.applyWeaponScreenRotation(actor, snapshot, horizontal.multiply(vertical).normalize());
     }
     this.applyWeaponGestureUpdate(actor);
@@ -6446,6 +6634,7 @@ class PoseLab {
 
   saveWeaponGizmoTuning() {
     const values = this.weaponTuningValues();
+    const actor = this.selectedWeaponActor();
     const payload = {
       schema: 'pose-lab-weapon-gizmo-tuning-v1',
       cacheToken: LAB_CACHE_TOKEN,
@@ -6455,6 +6644,14 @@ class PoseLab {
     };
     localStorage.setItem('poseLab.weaponGizmoTuning', JSON.stringify(payload, null, 2));
     navigator.clipboard?.writeText(payload.snippet).catch(() => {});
+    this.applySavedWeaponGizmoTuning(actor, 'saveWeaponGizmoTuning');
+    weaponLiveTrace('saveWeaponGizmoTuning SAVED', {
+      selected: this.selected,
+      actorKey: actor?.key || '',
+      payload,
+      modelRotation: weaponTraceRotation(actor?.weaponProxy?.model),
+      modelQuaternion: weaponTraceQuaternion(actor?.weaponProxy?.model),
+    });
     this.updateWeaponGizmoStatus('saved to localStorage + clipboard\n' + payload.snippet);
     return payload;
   }
@@ -7221,6 +7418,7 @@ class PoseLab {
         try {
           const weaponLoaded = await this.loadAsset(info.weaponAttachment.url);
           actor.attachWeaponAttachment(weaponLoaded.scene, info.weaponAttachment);
+          this.applySavedWeaponGizmoTuning(actor, 'loadActorProfile weaponAttachment');
         } catch (err) {
           console.warn('weapon attachment failed', info.weaponAttachment.url, err);
         }
@@ -8717,6 +8915,7 @@ class PoseLab {
     this.setUiValues(actor.values.posX || 0, actor.values.posY || 0, actor.values.posZ || 0, actor.values.x, actor.values.y, actor.values.z, actor.values.scale, actor.values.basisX || 0, actor.values.basisY || 0, actor.values.basisZ || 0);
     this.populateBoneSelect(actor);
     this.setBoneUiValues(actor.currentBoneEdit());
+    this.applySavedWeaponGizmoTuning(actor, 'select');
     if (UI.clipSearch) UI.clipSearch.value = actor.clipSearch || '';
     this.renderClipButtons();
     this.renderPoseIndexUi();
