@@ -7,11 +7,13 @@ import {
   applyWeaponAttachmentRuntimeRules,
   applyWeaponSocketRuntimeRules,
   captureWeaponRuntimeLandmarks,
+  weaponPlacementConfigSignature,
 } from '../src/weapon-runtime-rules.mjs';
 import {
   findRuntimeNode,
   fitModelToHeight,
 } from '../src/pose-runtime-rules.mjs';
+import { resolvePoseLabActorRuntimeConfig } from '../src/pose-lab-profile-resolver.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const failures = [];
@@ -59,80 +61,6 @@ function arrayBuffer(file) {
 
 async function loadGlb(GLTFLoader, file) {
   return await new Promise((resolve, reject) => new GLTFLoader().parse(arrayBuffer(file), path.dirname(file) + path.sep, resolve, reject));
-}
-
-function profileBlock(name, nextName = '') {
-  const source = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
-  const start = source.indexOf(`  ${name}:`);
-  if (start < 0) throw new Error(`missing profile ${name}`);
-  const end = nextName ? source.indexOf(`\n  ${nextName}:`, start) : -1;
-  return source.slice(start, end > start ? end : undefined);
-}
-
-function objectBlock(source, key) {
-  const start = source.indexOf(`${key}: {`);
-  if (start < 0) throw new Error(`missing block ${key}`);
-  let depth = 0;
-  for (let i = source.indexOf('{', start); i < source.length; i += 1) {
-    if (source[i] === '{') depth += 1;
-    else if (source[i] === '}') {
-      depth -= 1;
-      if (depth === 0) return source.slice(start, i + 1);
-    }
-  }
-  throw new Error(`unterminated block ${key}`);
-}
-
-function arrayFor(block, name, fallback) {
-  const match = block.match(new RegExp(`${name}:\\s*\\[([^\\]]*)\\]`));
-  return match ? match[1].split(',').map((value) => Number(value.trim())).filter(Number.isFinite) : fallback;
-}
-
-function numberFor(block, name, fallback) {
-  const match = block.match(new RegExp(`${name}:\\s*(-?[0-9.]+)`));
-  return match ? Number(match[1]) : fallback;
-}
-
-function stringFor(block, name, fallback) {
-  const match = block.match(new RegExp(`${name}:\\s*'([^']*)'`));
-  return match ? match[1] : fallback;
-}
-
-function parseMeshyConfig() {
-  const block = profileBlock('meshyCharacter', 'meshyStatic');
-  const proxy = objectBlock(block, 'weaponProxy');
-  const attachment = objectBlock(block, 'weaponAttachment');
-  return {
-    actor: {
-      url: stringFor(block, 'url', 'assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb'),
-      targetHeight: numberFor(block, 'targetHeight', 1.89),
-    },
-    proxy: {
-      handBone: stringFor(proxy, 'handBone', 'RightHand'),
-      leftHandBone: stringFor(proxy, 'leftHandBone', 'LeftHand'),
-      socketBone: stringFor(proxy, 'socketBone', 'WeaponGrip'),
-      syntheticSourceSocketBone: stringFor(proxy, 'syntheticSourceSocketBone', 'WeaponR'),
-      parentMode: stringFor(proxy, 'parentMode', 'synthetic-source-socket'),
-      positionMode: stringFor(proxy, 'positionMode', 'right-hand'),
-      handLocalOffset: arrayFor(proxy, 'handLocalOffset', [0, 0, 0]),
-      modelLocalOffset: arrayFor(proxy, 'modelLocalOffset', [0, 0, 0]),
-      gripOffset: arrayFor(proxy, 'gripOffset', [0, 0, 0]),
-      tipOffset: arrayFor(proxy, 'tipOffset', [0, 0, 0.85]),
-      rotationDeg: arrayFor(proxy, 'rotationDeg', [0, 0, 0]),
-      allowAnimatedSocketAnimation: false,
-    },
-    attachment: {
-      url: stringFor(attachment, 'url', 'assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb'),
-      name: stringFor(attachment, 'name', 'Meshy French Revolution Sabre'),
-      socketBone: stringFor(attachment, 'socketBone', 'WeaponGrip'),
-      tipMarker: stringFor(attachment, 'tipMarker', 'WeaponGrip_end'),
-      scale: numberFor(attachment, 'scale', 1),
-      position: arrayFor(attachment, 'position', [0, 0, 0]),
-      rotationDeg: arrayFor(attachment, 'rotationDeg', [0, 0, 0]),
-      gripLocalPosition: arrayFor(attachment, 'gripLocalPosition', [0, 0, 0]),
-      tipLocalPosition: arrayFor(attachment, 'tipLocalPosition', [0, 0.85, 0]),
-    },
-  };
 }
 
 function localPoint(THREE, driver, point) {
@@ -188,13 +116,17 @@ function makeProxy(THREE, actorRoot, sabreRoot, config, parentMode) {
 }
 
 function syncWeapon(THREE, actorRoot, proxy, attachmentConfig, options = {}) {
+  const placementSignature = options.placementSignature || weaponPlacementConfigSignature(THREE, proxy.config, {
+    model: actorRoot,
+    parent: proxy.syntheticSourceSocket || proxy.rightHand || null,
+  });
   applyWeaponSocketRuntimeRules(THREE, {
     model: actorRoot,
     proxy,
     animatedSocketRotation: Boolean(options.animatedSocketRotation),
     animatedSourceSocketRotation: Boolean(options.animatedSourceSocketRotation),
     force: Boolean(options.force),
-    placementSignature: options.placementSignature || 'manual-placement',
+    placementSignature,
   });
   applyWeaponAttachmentRuntimeRules(THREE, { actorModel: actorRoot, proxy, config: attachmentConfig });
   actorRoot.updateMatrixWorld(true);
@@ -234,7 +166,7 @@ async function main() {
   const threeDir = ensureThreeSandbox();
   const THREE = await import(pathToFileURL(path.join(threeDir, 'build', 'three.module.js')));
   const { GLTFLoader } = await import(pathToFileURL(path.join(threeDir, 'examples', 'jsm', 'loaders', 'GLTFLoader.js')));
-  const config = parseMeshyConfig();
+  const config = resolvePoseLabActorRuntimeConfig('meshyCharacter');
   const actorPath = path.join(projectRoot, config.actor.url);
   const weaponPath = path.join(projectRoot, config.attachment.url);
 

@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { resolvePoseLabActorRuntimeConfig } from '../src/pose-lab-profile-resolver.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const defaultOut = path.join(projectRoot, 'generated', 'weapon_fk_follow_offline');
@@ -74,73 +75,6 @@ function findNode(root, name) {
     if (!found && canon(node.name) === wanted) found = node;
   });
   return found;
-}
-
-function profileBlock(name, nextName = '') {
-  const source = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
-  const start = source.indexOf(`  ${name}:`);
-  if (start < 0) throw new Error(`missing profile ${name}`);
-  const end = nextName ? source.indexOf(`\n  ${nextName}:`, start) : -1;
-  return source.slice(start, end > start ? end : undefined);
-}
-
-function objectBlock(source, key) {
-  const start = source.indexOf(`${key}: {`);
-  if (start < 0) throw new Error(`missing block ${key}`);
-  let depth = 0;
-  for (let i = source.indexOf('{', start); i < source.length; i += 1) {
-    if (source[i] === '{') depth += 1;
-    else if (source[i] === '}') {
-      depth -= 1;
-      if (depth === 0) return source.slice(start, i + 1);
-    }
-  }
-  throw new Error(`unterminated block ${key}`);
-}
-
-function arrayFor(block, name, fallback) {
-  const match = block.match(new RegExp(`${name}:\\s*\\[([^\\]]*)\\]`));
-  return match ? match[1].split(',').map((value) => Number(value.trim())).filter(Number.isFinite) : fallback;
-}
-
-function numberFor(block, name, fallback) {
-  const match = block.match(new RegExp(`${name}:\\s*(-?[0-9.]+)`));
-  return match ? Number(match[1]) : fallback;
-}
-
-function stringFor(block, name, fallback) {
-  const match = block.match(new RegExp(`${name}:\\s*'([^']*)'`));
-  return match ? match[1] : fallback;
-}
-
-function parseMeshyConfig() {
-  const block = profileBlock('meshyCharacter', 'meshyStatic');
-  const proxy = objectBlock(block, 'weaponProxy');
-  const attachment = objectBlock(block, 'weaponAttachment');
-  return {
-    proxy: {
-      handBone: stringFor(proxy, 'handBone', 'RightHand'),
-      leftHandBone: stringFor(proxy, 'leftHandBone', 'LeftHand'),
-      socketBone: stringFor(proxy, 'socketBone', 'WeaponGrip'),
-      parentMode: stringFor(proxy, 'parentMode', ''),
-      positionMode: stringFor(proxy, 'positionMode', 'right-hand'),
-      handLocalOffset: arrayFor(proxy, 'handLocalOffset', [0, 0, 0]),
-      modelLocalOffset: arrayFor(proxy, 'modelLocalOffset', [0, 0, 0]),
-      gripOffset: arrayFor(proxy, 'gripOffset', [0, 0, 0]),
-      rotationDeg: arrayFor(proxy, 'rotationDeg', [0, 0, 0]),
-    },
-    attachment: {
-      url: stringFor(attachment, 'url', 'assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb'),
-      name: stringFor(attachment, 'name', 'Meshy Sabre'),
-      socketBone: stringFor(attachment, 'socketBone', 'WeaponGrip'),
-      tipMarker: stringFor(attachment, 'tipMarker', 'WeaponGrip_end'),
-      scale: numberFor(attachment, 'scale', 1),
-      position: arrayFor(attachment, 'position', [0, 0, 0]),
-      rotationDeg: arrayFor(attachment, 'rotationDeg', [0, 0, 0]),
-      gripLocalPosition: arrayFor(attachment, 'gripLocalPosition', [0, 0, 0]),
-      tipLocalPosition: arrayFor(attachment, 'tipLocalPosition', [0, 0.85, 0]),
-    },
-  };
 }
 
 function worldPosition(THREE, object) {
@@ -257,7 +191,7 @@ async function main() {
   const threeDir = ensureThreeSandbox();
   const THREE = await import(pathToFileURL(path.join(threeDir, 'build', 'three.module.js')));
   const { GLTFLoader } = await import(pathToFileURL(path.join(threeDir, 'examples', 'jsm', 'loaders', 'GLTFLoader.js')));
-  const config = parseMeshyConfig();
+  const config = resolvePoseLabActorRuntimeConfig('meshyCharacter');
   const meshyPath = path.join(projectRoot, 'assets', 'models', 'meshy_character_sheet', 'animated', 'Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb');
   const sabrePath = path.join(projectRoot, config.attachment.url);
   const meshy = await loadGlb(GLTFLoader, meshyPath);

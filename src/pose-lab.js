@@ -12,6 +12,7 @@ import {
   captureWeaponPinningRuntimeState,
   pinWeaponLocalPointToDisplay as pinWeaponLocalPointToDisplayRuntime,
   updateWeaponFallbackFromTipRuntime,
+  weaponPlacementConfigSignature,
 } from './weapon-runtime-rules.mjs?v=pose-editor-186';
 import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-186';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
@@ -844,17 +845,6 @@ function clipHasQuaternionTrackForBone(clip, boneName) {
   return (clip?.tracks || []).some((track) => {
     const normalized = normalizeTrackName(track.name || '');
     return normalized.endsWith('.quaternion') && canonicalBoneName(trackTargetName(normalized)) === wanted;
-  });
-}
-
-function weaponProxyPlacementSignature(config = {}) {
-  return JSON.stringify({
-    parentMode: config.parentMode || '',
-    positionMode: config.positionMode || '',
-    handLocalOffset: config.handLocalOffset || null,
-    modelLocalOffset: config.modelLocalOffset || null,
-    gripOffset: config.gripOffset || null,
-    rotationDeg: config.rotationDeg || null,
   });
 }
 
@@ -4438,7 +4428,10 @@ class PoseActor {
     const animatedSourceSocketRotation = proxy.syntheticSourceSocket
       ? clipHasQuaternionTrackForBone(this.activeAction?._clip, proxy.syntheticSourceSocket.name)
       : false;
-    const signature = weaponProxyPlacementSignature(proxy.config);
+    const signature = weaponPlacementConfigSignature(THREE, proxy.config, {
+      model: this.model,
+      parent: proxy.syntheticSourceSocket || proxy.rightHand || null,
+    });
     const result = applyWeaponSocketRuntimeRules(THREE, {
       model: this.model,
       proxy,

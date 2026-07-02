@@ -10,8 +10,10 @@ import {
   applyWeaponSocketRuntimeRules,
   captureWeaponPinningRuntimeState,
   captureWeaponRuntimeLandmarks,
+  weaponPlacementConfigSignature,
 } from '../src/weapon-runtime-rules.mjs';
 import { buildMeshyFpsVisualIkReadyClip } from '../src/meshy-ready-runtime.mjs';
+import { resolvePoseLabActorRuntimeConfig } from '../src/pose-lab-profile-resolver.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const READY_CLIP = 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]';
@@ -70,81 +72,6 @@ function arrayBuffer(file) {
 
 async function loadGlb(GLTFLoader, file) {
   return await new Promise((resolve, reject) => new GLTFLoader().parse(arrayBuffer(file), path.dirname(file) + path.sep, resolve, reject));
-}
-
-function profileBlock(name, nextName = '') {
-  const source = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
-  const start = source.indexOf(`  ${name}:`);
-  if (start < 0) throw new Error(`missing profile ${name}`);
-  const end = nextName ? source.indexOf(`\n  ${nextName}:`, start) : -1;
-  return source.slice(start, end > start ? end : undefined);
-}
-
-function objectBlock(source, key) {
-  const start = source.indexOf(`${key}: {`);
-  if (start < 0) throw new Error(`missing block ${key}`);
-  let depth = 0;
-  for (let i = source.indexOf('{', start); i < source.length; i += 1) {
-    if (source[i] === '{') depth += 1;
-    else if (source[i] === '}') {
-      depth -= 1;
-      if (depth === 0) return source.slice(start, i + 1);
-    }
-  }
-  throw new Error(`unterminated block ${key}`);
-}
-
-function arrayFor(block, name, fallback) {
-  const match = block.match(new RegExp(`${name}:\\s*\\[([^\\]]*)\\]`));
-  return match ? match[1].split(',').map((value) => Number(value.trim())).filter(Number.isFinite) : fallback;
-}
-
-function numberFor(block, name, fallback) {
-  const match = block.match(new RegExp(`${name}:\\s*(-?[0-9.]+)`));
-  return match ? Number(match[1]) : fallback;
-}
-
-function stringFor(block, name, fallback) {
-  const match = block.match(new RegExp(`${name}:\\s*'([^']*)'`));
-  return match ? match[1] : fallback;
-}
-
-function parseMeshyConfig() {
-  const block = profileBlock('meshyCharacter', 'meshyStatic');
-  const proxy = objectBlock(block, 'weaponProxy');
-  const attachment = objectBlock(block, 'weaponAttachment');
-  return {
-    actor: {
-      url: stringFor(block, 'url', 'assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb'),
-      targetHeight: numberFor(block, 'targetHeight', 1.89),
-    },
-    proxy: {
-      handBone: stringFor(proxy, 'handBone', 'RightHand'),
-      leftHandBone: stringFor(proxy, 'leftHandBone', 'LeftHand'),
-      socketBone: stringFor(proxy, 'socketBone', 'WeaponGrip'),
-      syntheticSourceSocketBone: stringFor(proxy, 'syntheticSourceSocketBone', 'WeaponR'),
-      parentMode: stringFor(proxy, 'parentMode', 'synthetic-source-socket'),
-      positionMode: stringFor(proxy, 'positionMode', 'right-hand'),
-      handLocalOffset: arrayFor(proxy, 'handLocalOffset', [0, 0, 0]),
-      modelLocalOffset: arrayFor(proxy, 'modelLocalOffset', [0, 0, 0]),
-      gripOffset: arrayFor(proxy, 'gripOffset', [0, 0, 0]),
-      tipOffset: arrayFor(proxy, 'tipOffset', [0, 0, 0.85]),
-      rotationDeg: arrayFor(proxy, 'rotationDeg', [0, 0, 0]),
-      length: numberFor(proxy, 'length', 0.85),
-      allowAnimatedSocketAnimation: /allowAnimatedSocketAnimation:\s*true/.test(proxy),
-    },
-    attachment: {
-      url: stringFor(attachment, 'url', 'assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb'),
-      name: stringFor(attachment, 'name', 'Meshy French Revolution Sabre'),
-      socketBone: stringFor(attachment, 'socketBone', 'WeaponGrip'),
-      tipMarker: stringFor(attachment, 'tipMarker', 'WeaponGrip_end'),
-      scale: numberFor(attachment, 'scale', 1),
-      position: arrayFor(attachment, 'position', [0, 0, 0]),
-      rotationDeg: arrayFor(attachment, 'rotationDeg', [0, 0, 0]),
-      gripLocalPosition: arrayFor(attachment, 'gripLocalPosition', [0, 0, 0]),
-      tipLocalPosition: arrayFor(attachment, 'tipLocalPosition', [0, 0.85, 0]),
-    },
-  };
 }
 
 function trackTargetName(trackName) {
@@ -270,17 +197,6 @@ function createWeaponProxy(THREE, actorRoot, sabreRoot, config) {
   return proxy;
 }
 
-function placementSignature(config = {}) {
-  return JSON.stringify({
-    parentMode: config.parentMode || '',
-    positionMode: config.positionMode || '',
-    handLocalOffset: config.handLocalOffset || null,
-    modelLocalOffset: config.modelLocalOffset || null,
-    gripOffset: config.gripOffset || null,
-    rotationDeg: config.rotationDeg || null,
-  });
-}
-
 function buildGeneratedClip(THREE, cloneSkinnedObject, fps, actor, config, clipName) {
   if (clipName === READY_CLIP) {
     return buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, fps.scene, actor.scene, fps.animations || [], { clipName });
@@ -326,7 +242,10 @@ async function inspectClip(THREE, GLTFLoader, cloneSkinnedObject, config, clipNa
     const animatedSourceSocketRotation = hasQuaternionTrack(clip, proxy.syntheticSourceSocket?.name || 'WeaponR');
     const animatedSocketRotation = hasQuaternionTrack(clip, proxy.root?.name || 'WeaponGrip');
     const force = index === 0;
-    const signature = placementSignature(proxy.config);
+    const signature = weaponPlacementConfigSignature(THREE, proxy.config, {
+      model: actor.scene,
+      parent: proxy.syntheticSourceSocket || proxy.rightHand || null,
+    });
     const result = applyWeaponSocketRuntimeRules(THREE, {
       model: actor.scene,
       proxy,
@@ -450,7 +369,7 @@ async function main() {
   const THREE = await import(pathToFileURL(path.join(threeDir, 'build', 'three.module.js')));
   const { GLTFLoader } = await import(pathToFileURL(path.join(threeDir, 'examples', 'jsm', 'loaders', 'GLTFLoader.js')));
   const { clone: cloneSkinnedObject } = await import(pathToFileURL(path.join(threeDir, 'examples', 'jsm', 'utils', 'SkeletonUtils.js')));
-  const config = parseMeshyConfig();
+  const config = resolvePoseLabActorRuntimeConfig('meshyCharacter');
   const ready = await inspectClip(THREE, GLTFLoader, cloneSkinnedObject, config, READY_CLIP, args.samples);
   const tpose = await inspectClip(THREE, GLTFLoader, cloneSkinnedObject, config, TPOSE_CLIP, args.samples);
   const comparison = compareReports(ready, tpose);
