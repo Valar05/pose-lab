@@ -166,7 +166,7 @@ async function main() {
   const config = resolvePoseLabActorRuntimeConfig('meshyCharacter');
   assert(config.proxy.parentMode === 'hand-fk', `Meshy must stay hand-fk for this contract, got ${config.proxy.parentMode}`);
   assert(JSON.stringify(config.proxy.rotationDeg || []) === JSON.stringify([0, 0, 0]), `Meshy socket orientation should stay at weaponProxy.rotationDeg [0,0,0], got ${JSON.stringify(config.proxy.rotationDeg)}`);
-  assert(JSON.stringify(config.attachment.rotationDeg || []) === JSON.stringify([121.031, -41.564, -13.871]), `Meshy manual orientation should live on weaponAttachment.rotationDeg, got ${JSON.stringify(config.attachment.rotationDeg)}`);
+  assert(JSON.stringify(config.attachment.rotationDeg || []) === JSON.stringify([112.476, -48.326, 154.661]), `Meshy manual orientation should live on weaponAttachment.rotationDeg, got ${JSON.stringify(config.attachment.rotationDeg)}`);
 
   const actorGltf = await loadGlb(GLTFLoader, path.join(projectRoot, config.actor.url));
   fitModelToHeight(THREE, actorGltf.scene, config.actor.targetHeight);

@@ -1,9 +1,9 @@
 {
   "schema": "pose-lab-visual-evidence-v1",
-  "generatedAt": "2026-07-02T22:31:53.002Z",
+  "generatedAt": "2026-07-02T22:59:37.899Z",
   "captureKind": "offline-pose-render",
   "offlineTruthOnly": true,
-  "cacheToken": "pose-editor-188",
+  "cacheToken": "pose-editor-189",
   "runtimeBuild": "meshy-fps-sword-upper-body-retarget",
   "actorKey": "meshyCharacter",
   "clipName": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
@@ -48,8 +48,8 @@
       "tip": 0
     },
     "maxWeaponOrientationErrorDeg": {
-      "blade": 94.1353,
-      "visibleMeshBlade": 93.3,
+      "blade": 97.9801,
+      "visibleMeshBlade": 98.3512,
       "up": 0
     },
     "truthLedger": {

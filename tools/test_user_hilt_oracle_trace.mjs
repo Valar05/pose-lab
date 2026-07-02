@@ -16,7 +16,7 @@ import { RIG_PROFILES } from '../src/rig-profiles.js';
 import { resolvePoseLabActorRuntimeConfig } from '../src/pose-lab-profile-resolver.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const USER_HILT_ORACLE = [0.69507, -0.02421, -0.06231];
+const USER_HILT_ORACLE = [0.73272, 0.0091, -0.01674];
 const failures = [];
 
 function assert(condition, message) {

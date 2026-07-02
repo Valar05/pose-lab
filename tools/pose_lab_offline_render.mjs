@@ -271,10 +271,11 @@ function closestMeshPoint(THREE, points, target) {
 
 function deriveVisibleMeshLandmarks(THREE, meshPoints, weaponLandmarks = {}) {
   const appliedHilt = weaponLandmarks.appliedHilt || null;
+  const runtimeVisibleHilt = weaponLandmarks.visibleMeshHilt || null;
   const tip = weaponLandmarks.tip || null;
   const sampledHilt = closestMeshPoint(THREE, meshPoints, appliedHilt);
   const tipPoint = closestMeshPoint(THREE, meshPoints, tip);
-  const hilt = appliedHilt || sampledHilt?.point || null;
+  const hilt = runtimeVisibleHilt || sampledHilt?.point || appliedHilt || null;
   const blade = hilt && tipPoint?.point ? tipPoint.point.clone().sub(hilt) : null;
   return {
     hilt,
@@ -282,7 +283,7 @@ function deriveVisibleMeshLandmarks(THREE, meshPoints, weaponLandmarks = {}) {
     blade,
     distances: {
       sampledHiltToAppliedHilt: Number.isFinite(sampledHilt?.distance) ? sampledHilt.distance : null,
-      hiltToAppliedHilt: appliedHilt ? 0 : (Number.isFinite(sampledHilt?.distance) ? sampledHilt.distance : null),
+      hiltToAppliedHilt: hilt && appliedHilt ? hilt.distanceTo(appliedHilt) : null,
       tipToTipMarker: Number.isFinite(tipPoint?.distance) ? tipPoint.distance : null,
     },
   };
@@ -582,6 +583,7 @@ async function main() {
   const localAuthoredDisplacementMinDistance = 0.04;
   const readySocketMotionMinDistance = 0.0005;
   const readyTipMotionMinDistance = 0.005;
+  const readyVisibleMeshBladeErrorMaxDeg = 5;
   const socketPinnedToPalmTarget = palmTargetSocketDistances.every((value) => Number.isFinite(value) && value <= palmTargetTolerance);
   const appliedHiltPinnedToPalmTarget = palmTargetHiltDistances.every((value) => Number.isFinite(value) && value <= palmTargetTolerance);
   const displacementMinDistance = 0.05;
@@ -622,6 +624,11 @@ async function main() {
   const visibleMeshHiltMotion = samples.map((sample) => distance3(samples[0]?.visibleMesh?.hilt, sample.visibleMesh?.hilt));
   const tipMotion = motionFromFirst('tip');
   const isReadyClip = wantsGeneratedReadyClip(args.clip);
+  const readyVisibleMeshBladeAxisMatchesFpsSource = !isReadyClip
+    || (
+      weaponMeshBladeDirectionErrorsDeg.length === samples.length
+      && Number(maxFinite(weaponMeshBladeDirectionErrorsDeg)) <= readyVisibleMeshBladeErrorMaxDeg
+    );
   const readyWeaponMovesWithHand = !isReadyClip
     || (
       Number(maxFinite(rightHandMotion)) >= readySocketMotionMinDistance
@@ -667,7 +674,7 @@ async function main() {
     visibleMeshHiltMatchesAppliedHilt,
     visibleMeshBladeLengthFinite,
     visibleMeshBladeDirectionComparedToFpsSource: weaponMeshBladeDirectionErrorsDeg.length === samples.length,
-    visibleMeshBladeDirectionMatchesFpsSource: null,
+    visibleMeshBladeDirectionMatchesFpsSource: readyVisibleMeshBladeAxisMatchesFpsSource,
     weaponOrientationComparedToFpsSource: weaponBladeDirectionErrorsDeg.length === samples.length,
     weaponBladeDirectionMatchesFpsSource: null,
     appliedHiltPinnedToWeaponGrip: samples.every((sample) => sample.weaponPinning?.checks?.appliedHiltPinnedToSocket === true),
@@ -677,6 +684,7 @@ async function main() {
     appliedHiltPinnedToPalmTarget,
     reproducesLiveRed,
     readyWeaponMovesWithHand,
+    readyVisibleMeshBladeAxisMatchesFpsSource,
     bladeLengthFinite: tipDistances.every((value) => Number.isFinite(value) && value > 0.05),
   };
   const ok = checks.actorResolved
@@ -703,6 +711,7 @@ async function main() {
     && checks.socketAwayFromRawHandLocal
     && checks.appliedHiltInHandRegion
     && checks.readyWeaponMovesWithHand
+    && checks.readyVisibleMeshBladeAxisMatchesFpsSource
     && checks.bladeLengthFinite
     && generatedClipResolved;
   const anyTruthRed = !ok;
@@ -749,6 +758,7 @@ async function main() {
       localAuthoredDisplacementMinDistance,
       readySocketMotionMinDistance,
       readyTipMotionMinDistance,
+      readyVisibleMeshBladeErrorMaxDeg,
       displacementMinDistance,
       handRegionMaxDistance,
       socketToAppliedHiltTolerance: 0.0005,
