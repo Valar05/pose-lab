@@ -35,7 +35,7 @@ const poseChains = [
 ];
 
 function parseArgs(argv) {
-  const args = { out: defaultOut, actor: 'meshyCharacter', clip: defaultClip, time: null, assertFixed: false, assertRepro: false, samples: 4 };
+  const args = { out: defaultOut, actor: 'meshyCharacter', clip: defaultClip, time: null, assertFixed: false, assertRepro: false, samples: 4, faults: [] };
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--out') args.out = path.resolve(projectRoot, argv[++i] || args.out);
@@ -50,7 +50,10 @@ function parseArgs(argv) {
     else if (arg.startsWith('--samples=')) args.samples = Math.max(1, Number(arg.slice('--samples='.length)));
     else if (arg === '--assert-fixed') args.assertFixed = true;
     else if (arg === '--assert-repro') args.assertRepro = true;
+    else if (arg === '--fault') args.faults.push(String(argv[++i] || '').trim());
+    else if (arg.startsWith('--fault=')) args.faults.push(arg.slice('--fault='.length).trim());
   }
+  args.faults = args.faults.filter(Boolean);
   return args;
 }
 
@@ -191,6 +194,23 @@ function wantsGeneratedReadyClip(requested) {
   return /OneHandReady\s*->\s*meshyCharacter\s*\[FPS-VISUAL-IK R-120 L-90\]/i.test(String(requested || ''));
 }
 
+function wantsGeneratedFpsRestArmsClip(requested) {
+  return /0T-Pose\s*->\s*meshyCharacter\s*\[FPS-REST-ARMS roll -120\]/i.test(String(requested || ''));
+}
+
+function applyFaults(config, faults = []) {
+  const applied = [];
+  if (faults.includes('collapse-displacement')) {
+    config.proxy.modelLocalOffset = [0, 0, 0];
+    config.proxy.gripOffset = [0, 0, 0];
+    applied.push({
+      name: 'collapse-displacement',
+      visibleFailure: 'WeaponGrip/applied hilt collapses onto the raw wrist/WeaponR origin instead of preserving authored modelLocalOffset displacement.',
+    });
+  }
+  return applied;
+}
+
 function createWeaponProxy(THREE, actorRoot, sabreRoot, config) {
   const rightHand = findRuntimeNode(actorRoot, config.proxy.handBone);
   const leftHand = findRuntimeNode(actorRoot, config.proxy.leftHandBone);
@@ -303,6 +323,43 @@ function collectMeshWorldPoints(THREE, root, limit = 900) {
     }
   });
   return points;
+}
+
+function pointArrayToVector(THREE, point) {
+  return finitePoint(point) ? new THREE.Vector3(point[0], point[1], point[2]) : null;
+}
+
+function closestMeshPoint(THREE, points, target) {
+  if (!target || !Array.isArray(points) || !points.length) return null;
+  let best = null;
+  let bestDistance = Infinity;
+  for (const point of points) {
+    const vector = pointArrayToVector(THREE, point);
+    if (!vector) continue;
+    const distance = vector.distanceTo(target);
+    if (distance < bestDistance) {
+      best = vector;
+      bestDistance = distance;
+    }
+  }
+  return best ? { point: best, distance: bestDistance } : null;
+}
+
+function deriveVisibleMeshLandmarks(THREE, meshPoints, weaponLandmarks = {}) {
+  const appliedHilt = weaponLandmarks.appliedHilt || null;
+  const tip = weaponLandmarks.tip || null;
+  const hilt = closestMeshPoint(THREE, meshPoints, appliedHilt);
+  const tipPoint = closestMeshPoint(THREE, meshPoints, tip);
+  const blade = hilt?.point && tipPoint?.point ? tipPoint.point.clone().sub(hilt.point) : null;
+  return {
+    hilt: hilt?.point || null,
+    tip: tipPoint?.point || null,
+    blade,
+    distances: {
+      hiltToAppliedHilt: Number.isFinite(hilt?.distance) ? hilt.distance : null,
+      tipToTipMarker: Number.isFinite(tipPoint?.distance) ? tipPoint.distance : null,
+    },
+  };
 }
 
 function serializableRuntimeDistances(distances, digits = 6) {
@@ -437,6 +494,7 @@ async function main() {
   const { GLTFLoader } = await import(pathToFileURL(path.join(threeDir, 'examples', 'jsm', 'loaders', 'GLTFLoader.js')));
   const { clone: cloneSkinnedObject } = await import(pathToFileURL(path.join(threeDir, 'examples', 'jsm', 'utils', 'SkeletonUtils.js')));
   const config = parseMeshyConfig();
+  const injectedFaults = applyFaults(config, args.faults);
   const actorPath = path.join(projectRoot, config.actor.url);
   const weaponPath = path.join(projectRoot, config.attachment.url);
   const fpsPath = path.join(projectRoot, 'assets', 'models', 'FPSPlayer.glb');
@@ -447,13 +505,22 @@ async function main() {
   const proxy = createWeaponProxy(THREE, actor.scene, weapon.scene, config);
   const generated = wantsGeneratedReadyClip(args.clip)
     ? buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, fps.scene, actor.scene, fps.animations || [], { clipName: args.clip })
-    : { clip: null, generatedClipResolved: false, reason: 'not-generated-ready-request' };
+    : wantsGeneratedFpsRestArmsClip(args.clip)
+      ? buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, fps.scene, actor.scene, fps.animations || [], {
+          clipName: args.clip,
+          sourceClipName: '0T-Pose',
+          sourceRestClip: '0T-Pose',
+          timeSourceBone: 'Hand.R',
+          dropInitialRestKey: false,
+          weaponAttachment: config.attachment,
+        })
+      : { clip: null, generatedClipResolved: false, reason: 'not-generated-pose-lab-request' };
   const fallbackClip = findClip(actor.animations || [], args.clip);
   const clip = generated.clip || fallbackClip;
   const generatedClipResolved = Boolean(generated.generatedClipResolved && clip?.name === args.clip);
   const clipSource = generatedClipResolved ? 'requested-generated-ready-clip' : `fallback-glb-clip:${clip?.name || 'none'}`;
   const duration = Math.max(0.001, Number(clip?.duration || 0.001));
-  const sourceReadyClip = (fps.animations || []).find((entry) => entry.name === 'OneHandReady') || null;
+  const sourceOrientationClip = (fps.animations || []).find((entry) => entry.name === (generated.clip?.userData?.sourceName || 'OneHandReady')) || null;
   const sourceWeapon = findRuntimeNode(fps.scene, 'Weapon.R');
   const sourceFrame = findRuntimeNode(fps.scene, 'ShoulderCenter');
   const targetFrame = findRuntimeNode(actor.scene, 'Spine02');
@@ -480,9 +547,10 @@ async function main() {
     const weaponLandmarks = captureWeaponRuntimeLandmarks(THREE, proxy);
     const pinningState = captureWeaponPinningRuntimeState(THREE, proxy);
     const weaponMesh = collectMeshWorldPoints(THREE, proxy.model, 900);
+    const visibleMesh = deriveVisibleMeshLandmarks(THREE, weaponMesh, weaponLandmarks);
     let sourceWeaponOrientation = null;
-    if (generatedClipResolved && sourceReadyClip && sourceWeapon && sourceFrame && targetFrame) {
-      applyClipPoseAtTime(THREE, fps.scene, sourceReadyClip, time + sourceTimeOffset);
+    if (generatedClipResolved && sourceOrientationClip && sourceWeapon && sourceFrame && targetFrame) {
+      applyClipPoseAtTime(THREE, fps.scene, sourceOrientationClip, time + sourceTimeOffset);
       fps.scene.updateMatrixWorld(true);
       actor.scene.updateMatrixWorld(true);
       const sourceTipWorld = sourceWeapon.localToWorld(new THREE.Vector3(0.00854, 0.57786, 0.00995));
@@ -493,6 +561,7 @@ async function main() {
       const visibleBlade = weaponLandmarks.tip && weaponLandmarks.appliedHilt
         ? weaponLandmarks.tip.clone().sub(weaponLandmarks.appliedHilt)
         : null;
+      const visibleMeshBlade = visibleMesh.blade;
       const visibleUp = proxy.syntheticSourceSocket
         ? worldDirection(THREE, proxy.syntheticSourceSocket, generated.clip?.userData?.keyConvert?.weaponTargetUpLocal || [0, 1, 0])
         : null;
@@ -501,8 +570,10 @@ async function main() {
         mappedBlade: serializableVector(mappedBlade),
         mappedUp: serializableVector(mappedUp),
         visibleBlade: serializableVector(visibleBlade?.clone?.().normalize?.()),
+        visibleMeshBlade: serializableVector(visibleMeshBlade?.clone?.().normalize?.()),
         visibleUp: serializableVector(visibleUp?.clone?.().normalize?.()),
         bladeErrorDeg: Number.isFinite(angleBetweenVectorsDeg(mappedBlade, visibleBlade)) ? Number(angleBetweenVectorsDeg(mappedBlade, visibleBlade).toFixed(4)) : null,
+        meshBladeErrorDeg: Number.isFinite(angleBetweenVectorsDeg(mappedBlade, visibleMeshBlade)) ? Number(angleBetweenVectorsDeg(mappedBlade, visibleMeshBlade).toFixed(4)) : null,
         upErrorDeg: Number.isFinite(angleBetweenVectorsDeg(mappedUp, visibleUp)) ? Number(angleBetweenVectorsDeg(mappedUp, visibleUp).toFixed(4)) : null,
       };
     }
@@ -518,6 +589,13 @@ async function main() {
         points: chain.points.map((point) => serializablePoint(point)),
       })),
       weapon: serializableLandmarks(weaponLandmarks),
+      visibleMesh: {
+        localHilt: serializablePoint(proxy.visibleMeshHiltPin?.localPoint || null),
+        hilt: serializablePoint(visibleMesh.hilt),
+        tip: serializablePoint(visibleMesh.tip),
+        blade: serializableVector(visibleMesh.blade),
+        distances: serializableRuntimeDistances(visibleMesh.distances),
+      },
       weaponMesh,
       weaponPinning: {
         schema: pinningState.schema,
@@ -534,6 +612,8 @@ async function main() {
         whitePalmTarget: serializablePoint(weaponLandmarks.palmTarget),
         yellowSocket: serializablePoint(weaponLandmarks.socket),
         magentaAppliedHilt: serializablePoint(weaponLandmarks.appliedHilt),
+        redVisibleMeshHilt: serializablePoint(visibleMesh.hilt),
+        redVisibleMeshTip: serializablePoint(visibleMesh.tip),
         orangeTip: serializablePoint(weaponLandmarks.tip),
       },
       parentChain: [proxy.model?.name, proxy.displayRoot?.name, proxy.root?.name, proxy.syntheticSourceSocket?.name, proxy.rightHand?.name].filter(Boolean),
@@ -551,7 +631,14 @@ async function main() {
   const handBaselineHiltDistances = samples.map((sample) => distance3(sample.weapon.socketHandBaseline, sample.weapon.appliedHilt));
   const tipDistances = samples.map((sample) => distance3(sample.weapon.appliedHilt, sample.weapon.tip));
   const weaponBladeDirectionErrorsDeg = samples.map((sample) => Number(sample.sourceWeaponOrientation?.bladeErrorDeg)).filter(Number.isFinite);
+  const weaponMeshBladeDirectionErrorsDeg = samples.map((sample) => Number(sample.sourceWeaponOrientation?.meshBladeErrorDeg)).filter(Number.isFinite);
   const weaponUpDirectionErrorsDeg = samples.map((sample) => Number(sample.sourceWeaponOrientation?.upErrorDeg)).filter(Number.isFinite);
+  const visibleMeshHiltToAppliedHiltDistances = samples.map((sample) => distance3(sample.visibleMesh?.hilt, sample.weapon.appliedHilt));
+  const visibleMeshHiltToSocketDistances = samples.map((sample) => distance3(sample.visibleMesh?.hilt, sample.weapon.socket));
+  const visibleMeshHiltToRightHandDistances = samples.map((sample) => distance3(sample.visibleMesh?.hilt, sample.weapon.rightHand));
+  const visibleMeshHiltToWeaponRDistances = samples.map((sample) => distance3(sample.visibleMesh?.hilt, sample.weapon.syntheticSourceSocket));
+  const visibleMeshTipToTipDistances = samples.map((sample) => distance3(sample.visibleMesh?.tip, sample.weapon.tip));
+  const visibleMeshBladeLengths = samples.map((sample) => distance3(sample.visibleMesh?.hilt, sample.visibleMesh?.tip));
   const maxFinite = (values) => {
     const finite = values.filter(Number.isFinite);
     return finite.length ? Math.max(...finite) : null;
@@ -561,6 +648,8 @@ async function main() {
   const localDriftTolerance = 0.005;
   const localQuaternionDriftToleranceDeg = 0.5;
   const weaponBladeDirectionToleranceDeg = 8;
+  const meshLandmarkTolerance = 0.02;
+  const meshBladeLengthMinDistance = 0.05;
   const socketPinnedToPalmTarget = palmTargetSocketDistances.every((value) => Number.isFinite(value) && value <= palmTargetTolerance);
   const appliedHiltPinnedToPalmTarget = palmTargetHiltDistances.every((value) => Number.isFinite(value) && value <= palmTargetTolerance);
   const displacementMinDistance = 0.05;
@@ -583,9 +672,19 @@ async function main() {
   const displayQuaternionStableInSocket = displayQuaternionInSocketDriftDeg.every((value) => Number.isFinite(value) && value <= localQuaternionDriftToleranceDeg);
   const modelStableInDisplay = modelInDisplayDrift.every((value) => Number.isFinite(value) && value <= localDriftTolerance);
   const modelQuaternionStableInDisplay = modelQuaternionInDisplayDriftDeg.every((value) => Number.isFinite(value) && value <= localQuaternionDriftToleranceDeg);
+  const visibleMeshHiltLandmarkPresent = visibleMeshHiltToAppliedHiltDistances.every(Number.isFinite);
+  const visibleMeshTipLandmarkPresent = visibleMeshTipToTipDistances.every(Number.isFinite);
+  const visibleMeshHiltPinnedToWeaponGrip = visibleMeshHiltToSocketDistances.every((value) => Number.isFinite(value) && value <= meshLandmarkTolerance);
+  const visibleMeshHiltMatchesAppliedHilt = visibleMeshHiltToAppliedHiltDistances.every((value) => Number.isFinite(value) && value <= meshLandmarkTolerance);
+  const visibleMeshBladeLengthFinite = visibleMeshBladeLengths.every((value) => Number.isFinite(value) && value >= meshBladeLengthMinDistance);
+  const visibleMeshBladeDirectionMatchesFpsSource = weaponMeshBladeDirectionErrorsDeg.length === samples.length && maxFinite(weaponMeshBladeDirectionErrorsDeg) <= weaponBladeDirectionToleranceDeg;
   const reproducesLiveRed = generatedClipResolved
     && hiltSocketDistances.every((value) => Number.isFinite(value) && value <= 0.0005)
-    && (!appliedHiltAwayFromRawHand || !(weaponBladeDirectionErrorsDeg.length === samples.length && maxFinite(weaponBladeDirectionErrorsDeg) <= weaponBladeDirectionToleranceDeg));
+    && (!appliedHiltAwayFromRawHand
+      || !visibleMeshHiltPinnedToWeaponGrip
+      || !visibleMeshHiltMatchesAppliedHilt
+      || !visibleMeshBladeDirectionMatchesFpsSource
+      || !(weaponBladeDirectionErrorsDeg.length === samples.length && maxFinite(weaponBladeDirectionErrorsDeg) <= weaponBladeDirectionToleranceDeg));
   const checks = {
     actorResolved: Boolean(actor.scene),
     poseChecksPresent: true,
@@ -607,6 +706,13 @@ async function main() {
     displayRootQuaternionStableUnderWeaponGrip: displayQuaternionStableInSocket,
     weaponMeshLocalStableUnderDisplayRoot: modelStableInDisplay,
     weaponMeshQuaternionStableUnderDisplayRoot: modelQuaternionStableInDisplay,
+    visibleMeshHiltLandmarkPresent,
+    visibleMeshTipLandmarkPresent,
+    visibleMeshHiltPinnedToWeaponGrip,
+    visibleMeshHiltMatchesAppliedHilt,
+    visibleMeshBladeLengthFinite,
+    visibleMeshBladeDirectionComparedToFpsSource: weaponMeshBladeDirectionErrorsDeg.length === samples.length,
+    visibleMeshBladeDirectionMatchesFpsSource,
     weaponOrientationComparedToFpsSource: weaponBladeDirectionErrorsDeg.length === samples.length,
     weaponBladeDirectionMatchesFpsSource: weaponBladeDirectionErrorsDeg.length === samples.length && maxFinite(weaponBladeDirectionErrorsDeg) <= weaponBladeDirectionToleranceDeg,
     appliedHiltPinnedToWeaponGrip: samples.every((sample) => sample.weaponPinning?.checks?.appliedHiltPinnedToSocket === true),
@@ -629,6 +735,13 @@ async function main() {
     && checks.displayRootQuaternionStableUnderWeaponGrip
     && checks.weaponMeshLocalStableUnderDisplayRoot
     && checks.weaponMeshQuaternionStableUnderDisplayRoot
+    && checks.visibleMeshHiltLandmarkPresent
+    && checks.visibleMeshTipLandmarkPresent
+    && checks.visibleMeshHiltPinnedToWeaponGrip
+    && checks.visibleMeshHiltMatchesAppliedHilt
+    && checks.visibleMeshBladeLengthFinite
+    && checks.visibleMeshBladeDirectionComparedToFpsSource
+    && checks.visibleMeshBladeDirectionMatchesFpsSource
     && checks.weaponOrientationComparedToFpsSource
     && checks.weaponBladeDirectionMatchesFpsSource
     && checks.appliedHiltPinnedToWeaponGrip
@@ -642,6 +755,7 @@ async function main() {
     schema: 'pose-lab-offline-pose-weapon-render-v1',
     diagnosticOnly: true,
     productionBehaviorModified: false,
+    injectedFaults,
     actor: args.actor,
     actorAsset: path.relative(projectRoot, actorPath),
     sourceActorAsset: path.relative(projectRoot, fpsPath),
@@ -666,8 +780,8 @@ async function main() {
       leftRestRollOverride: generated.clip?.userData?.keyConvert?.leftRestRollOverride ?? null,
     },
     generatedClipResolutionNote: generatedClipResolved
-      ? 'Requested browser-generated Pose Lab ready clip was rebuilt offline from FPS OneHandReady using the shared Meshy ready runtime builder.'
-      : 'Requested generated Pose Lab clip is not embedded in the Meshy GLB; this verifier deliberately marks fixed-mode false instead of pretending browser-generated clip parity.',
+      ? `Requested browser-generated Pose Lab clip was rebuilt offline from FPS ${generated.clip?.userData?.sourceName || 'source'} using the shared Meshy runtime builder.`
+      : 'Requested generated Pose Lab clip is not embedded in the Meshy GLB and was not rebuilt offline; this verifier deliberately marks fixed-mode false instead of pretending browser-generated clip parity.',
     samples: samples.length,
     checks,
     thresholds: {
@@ -676,6 +790,8 @@ async function main() {
       localDriftTolerance,
       localQuaternionDriftToleranceDeg,
       weaponBladeDirectionToleranceDeg,
+      meshLandmarkTolerance,
+      meshBladeLengthMinDistance,
       displacementMinDistance,
       socketToAppliedHiltTolerance: 0.0005,
     },
@@ -687,6 +803,12 @@ async function main() {
     palmTargetHiltDistances,
     weaponRSocketDistances,
     weaponRHiltDistances,
+    visibleMeshHiltToAppliedHiltDistances,
+    visibleMeshHiltToSocketDistances,
+    visibleMeshHiltToRightHandDistances,
+    visibleMeshHiltToWeaponRDistances,
+    visibleMeshTipToTipDistances,
+    visibleMeshBladeLengths,
     tipDistances,
     localDrift: {
       socketInSourceSocket: socketInSourceSocketDrift,
@@ -697,6 +819,7 @@ async function main() {
       modelQuaternionInDisplayDeg: modelQuaternionInDisplayDriftDeg,
     },
     weaponBladeDirectionErrorsDeg,
+    weaponMeshBladeDirectionErrorsDeg,
     weaponUpDirectionErrorsDeg,
     maxDistances: {
       socketToAppliedHilt: maxFinite(hiltSocketDistances),
@@ -705,6 +828,12 @@ async function main() {
       handBaselineToAppliedHilt: maxFinite(handBaselineHiltDistances),
       weaponRToWeaponGrip: maxFinite(weaponRSocketDistances),
       weaponRToAppliedHilt: maxFinite(weaponRHiltDistances),
+      visibleMeshHiltToAppliedHilt: maxFinite(visibleMeshHiltToAppliedHiltDistances),
+      visibleMeshHiltToWeaponGrip: maxFinite(visibleMeshHiltToSocketDistances),
+      visibleMeshHiltToRawHand: maxFinite(visibleMeshHiltToRightHandDistances),
+      visibleMeshHiltToWeaponR: maxFinite(visibleMeshHiltToWeaponRDistances),
+      visibleMeshTipToTip: maxFinite(visibleMeshTipToTipDistances),
+      visibleMeshBladeLength: maxFinite(visibleMeshBladeLengths),
       palmTargetToSocket: maxFinite(palmTargetSocketDistances),
       palmTargetToAppliedHilt: maxFinite(palmTargetHiltDistances),
     },
@@ -718,15 +847,16 @@ async function main() {
     },
     maxWeaponOrientationErrorDeg: {
       blade: maxFinite(weaponBladeDirectionErrorsDeg),
+      visibleMeshBlade: maxFinite(weaponMeshBladeDirectionErrorsDeg),
       up: maxFinite(weaponUpDirectionErrorsDeg),
     },
     reproducesLiveRed,
-    expectedVisibleState: 'full body skeleton plus right-hand raw hand, WeaponR sword FK bone, displaced stable WeaponGrip child, applied hilt, and real sabre mesh visible in the same offline sheet',
+    expectedVisibleState: 'full body skeleton plus right-hand raw hand, WeaponR sword FK bone, authored WeaponGrip socket, applied hilt, and real sabre mesh visible in the same offline sheet',
     actualVisibleRead: generatedClipResolved
       ? (reproducesLiveRed
           ? 'offline renderer proves the hilt is pinned to WeaponGrip, but still reproduces the live red displacement or blade-orientation mismatch'
-          : 'offline renderer resolves the generated ready clip, proves the sabre mesh is owned by displaced WeaponGrip under WeaponR FK, and proves the visible blade direction matches mapped FPS Weapon.R')
-      : 'offline renderer shows the actual GLB pose fallback and weapon hierarchy, but cannot yet resolve the browser-generated ready clip offline',
+          : 'offline renderer resolves the generated Pose Lab clip, proves the sabre mesh visible hilt matches the authored WeaponGrip FK socket, and proves the visible blade direction matches mapped FPS Weapon.R')
+      : 'offline renderer shows the actual GLB pose fallback and weapon hierarchy, but cannot yet resolve the requested browser-generated Pose Lab clip offline',
     ok,
     artifacts: {
       png: 'pose_weapon_render.png',
@@ -763,7 +893,7 @@ async function main() {
   if (args.assertRepro && !reproducesLiveRed) {
     throw new Error(`offline pose+weapon render did not reproduce the live red marker disparity; see ${path.relative(projectRoot, jsonPath)}`);
   }
-  console.log(JSON.stringify({ ok, reproducesLiveRed, path: path.relative(projectRoot, jsonPath), png: path.relative(projectRoot, pngPath), generatedClipResolved }, null, 2));
+  console.log(JSON.stringify({ ok, reproducesLiveRed, path: path.relative(projectRoot, jsonPath), png: path.relative(projectRoot, pngPath), generatedClipResolved, injectedFaults }, null, 2));
 }
 
 main().catch((error) => {

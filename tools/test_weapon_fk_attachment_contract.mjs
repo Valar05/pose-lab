@@ -1,79 +1,53 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
-const js = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
-const weaponRules = fs.readFileSync(path.join(projectRoot, 'src', 'weapon-runtime-rules.mjs'), 'utf8');
-const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
+const toolPath = path.join(projectRoot, 'tools', 'pose_lab_offline_render.mjs');
+const fixedOut = path.join(projectRoot, 'generated', 'test_runs', `weapon-fk-contract-fixed-${process.pid}`);
+const faultOut = path.join(projectRoot, 'generated', 'test_runs', `weapon-fk-contract-fault-${process.pid}`);
+const poseLabSource = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
+const weaponRulesSource = fs.readFileSync(path.join(projectRoot, 'src', 'weapon-runtime-rules.mjs'), 'utf8');
+const profilesSource = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
 const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
 
-const meshyStart = profiles.indexOf('meshyCharacter:');
-const meshyEnd = profiles.indexOf('\n  meshyStatic:', meshyStart);
-const meshy = profiles.slice(meshyStart, meshyEnd > meshyStart ? meshyEnd : undefined);
-const playerStart = profiles.indexOf('player:');
-const playerEnd = profiles.indexOf('\n  meshyCharacter:', playerStart);
-const player = profiles.slice(playerStart, playerEnd > playerStart ? playerEnd : undefined);
-const converterStart = js.indexOf('function buildFpsUpperKeyConvertClips');
-const converterEnd = js.indexOf('function findBoneCanonical', converterStart);
-const converter = converterStart >= 0 && converterEnd > converterStart ? js.slice(converterStart, converterEnd) : '';
+function render(args) {
+  const output = execFileSync('node', [toolPath, ...args], { cwd: projectRoot, encoding: 'utf8' });
+  const result = JSON.parse(output.slice(output.indexOf('{')));
+  const artifact = JSON.parse(fs.readFileSync(path.join(projectRoot, result.path), 'utf8'));
+  return { result, artifact };
+}
 
-assert(meshy.includes("parentMode: 'synthetic-source-socket'") && meshy.includes("syntheticSourceSocketBone: 'WeaponR'"), 'Meshy weapon should mirror FPS as RightHand -> synthetic WeaponR -> WeaponGrip');
-assert(meshy.includes("positionMode: 'right-hand'"), 'Meshy WeaponGrip should remain a one-hand socket');
-assert(meshy.includes('handLocalOffset: [0.095, 0.035, -0.01]'), 'Meshy rig-local hand offset must remain unchanged');
-assert(meshy.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]'), 'Meshy rig-local model offset must remain unchanged');
-assert(meshy.includes('rotationDeg: [90, 0, -55.145]'), 'Meshy rig-local attachment rotation must preserve the hard-won manual visual orientation');
-assert(meshy.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy rig-local grip landmark must remain unchanged');
-assert(meshy.includes('weaponKeyConvert: {') && meshy.includes('enabled: true') && meshy.includes("targetWeapon: 'WeaponR'"), 'active Meshy ready path should generate authored FPS Weapon.R basis onto synthetic WeaponR');
+const fixed = render(['--out', fixedOut, '--samples', '3']);
+const fault = render(['--out', faultOut, '--samples', '2', '--fault', 'collapse-displacement']);
 
-assert(player.includes("sourceSocketBone: 'WeaponR'"), 'FPS Arms weapon should still inherit authored WeaponR FK');
-assert(player.includes('modelLocalOffset: [0.00424, -0.0167, 0.01744]'), 'FPS manual model offset must remain unchanged');
-assert(player.includes('rotationDeg: [-179.998, -4.747, 111.678]'), 'FPS manual attachment rotation must remain unchanged');
+assert(!poseLabSource.includes("weaponConfig.targetWeapon || 'WeaponGrip'"), 'generated weapon tracks must not default to animating WeaponGrip');
+assert(poseLabSource.includes("weaponConfig.targetWeapon || 'WeaponR'"), 'generated weapon tracks should default to synthetic/source WeaponR');
+assert(weaponRulesSource.includes('const allowAnimatedGrip = animatedSocketRotation && config.allowAnimatedSocketAnimation === true'), 'synthetic source sockets should ignore accidental WeaponGrip tracks unless explicitly opted in');
+assert(weaponRulesSource.includes('if (!allowAnimatedGrip) proxy.root.quaternion.copy(proxy.syntheticFkLocalQuaternion);'), 'WeaponGrip should keep the manual local quaternion under animated WeaponR');
+assert(profilesSource.includes("placementAuthority: 'manual-golden'") && profilesSource.includes('allowAnimatedSocketAnimation: false'), 'Meshy profile should declare manual placement authority and forbid animated WeaponGrip placement');
 
-assert(!profiles.includes('copiedSourceLayer') && !js.includes('syncCopiedSourceLayer'), 'Meshy weapon review must not use a copied FPS actor overlay');
-assert(js.includes("config.parentMode === 'synthetic-source-socket'") && js.includes('syntheticSourceSocket.add(root);'), 'Meshy sockets should be parented as RightHand -> synthetic WeaponR -> WeaponGrip');
-assert(js.includes("const handFk = config.parentMode === 'hand-fk'") && js.includes('else if (handFk) rightHand.add(root);'), 'legacy hand-FK sockets should remain available for non-source-socket tools');
-assert(js.includes("from './weapon-runtime-rules.mjs?v=pose-editor-180'"), 'pose-lab browser runtime should use the shared weapon runtime rules module');
-assert(weaponRules.includes("config.parentMode === 'hand-fk'") && weaponRules.includes('fkLocalPosition') && weaponRules.includes('fkLocalQuaternion'), 'hand-FK socket should maintain a true hand-local transform');
-assert(weaponRules.includes('socketParent.position.copy(vectorFromArray(THREE, config.handLocalOffset))') && weaponRules.includes('syntheticGripLocal.add(vectorFromArray(THREE, config.modelLocalOffset))') && weaponRules.includes('socketParent.getWorldScale') && weaponRules.includes('proxy.root.position.copy(proxy.syntheticFkLocalPosition);') && !weaponRules.includes('socketParent.worldToLocal(targetWorld.clone())'), 'synthetic source sockets should keep handLocalOffset on animated WeaponR, then preserve WeaponGrip as a stable displaced local child');
-assert(js.includes('function weaponProxyPlacementSignature(config = {}, context = {})'), 'hand-FK placement cache should accept visual pose context');
-assert(js.includes("clipKey: context.clipKey || ''") && js.includes("restPose: context.restPose || ''"), 'hand-FK placement cache should be invalidated by active clip/rest pose changes');
-assert(js.includes("clipKey: this.activeAction?._clip ? clipKey(this.activeAction._clip) : ''") && js.includes("restPose: this.currentRestPose || ''"), 'hand-FK socket should recalibrate when the active clip or rest pose changes');
-assert(weaponRules.includes('proxy.fkLocalPosition = socketWorldPosition.clone().applyMatrix4(proxy.rightHand.matrixWorld.clone().invert());'), 'hand-FK socket should derive local position from the right hand inverse matrix');
-assert(weaponRules.includes('proxy.fkLocalQuaternion = weaponWorldQuaternion(THREE, proxy.rightHand).invert().multiply(socketWorldQuaternion).normalize();'), 'hand-FK socket should derive local rotation from the right hand inverse quaternion');
-assert(weaponRules.includes('proxy.root.position.copy(proxy.fkLocalPosition);') && weaponRules.includes('proxy.root.quaternion.copy(proxy.fkLocalQuaternion);'), 'hand-FK socket should apply the calibrated hand-local transform to the child bone');
-assert(js.includes('syncWeaponVisualAttachment(options = {})'), 'weapon visual sync should be centralized instead of split between playback and edit tools');
-assert(js.includes('const forceSocket = options.forceSocket === true;'), 'shared weapon sync should only force hand-FK recalculation when explicitly requested');
-assert(js.includes('updateWeaponProxyVisibility() {\n    this.syncWeaponVisualAttachment();'), 'normal playback visibility must let the hand-FK child socket ride the animated hand');
-assert(!js.includes("this.syncWeaponVisualAttachment({ forceSocket: this.weaponProxy?.config?.parentMode === 'hand-fk' });"), 'normal playback must not force-rebuild hand-FK placement every frame');
-assert(!js.includes("visible-attachment-mount") && !js.includes('attachmentMount.add(child);'), 'hand-FK weapon should not use a detached model-space visible mount');
-assert(js.includes("displayRoot.name = root.name + '-display-root'") && js.includes('root.add(displayRoot);'), 'hand-FK weapon should use a socket-child display root, not an actor-root mirror');
-assert(js.includes('displayRoot.add(weaponRoot);') && js.includes('displayRoot.add(tip);'), 'real weapon model and tip marker should be children of WeaponDisplayRoot under WeaponGrip');
-assert(js.includes('this.weaponProxy = { root, displayRoot, arc') && js.includes('displayParent: proxy.displayRoot?.parent?.name'), 'weapon debug snapshot should report the display root parent chain');
-assert(weaponRules.includes("proxy?.config?.parentMode === 'hand-fk' || proxy?.config?.parentMode === 'synthetic-source-socket'") && weaponRules.includes('socketScaleCompensation.set('), 'socket-child display root should compensate inherited hand-bone scale instead of disappearing');
-assert(weaponRules.includes('displayRoot.scale.copy(socketScaleCompensation);') && weaponRules.includes('weaponRoot.scale.setScalar(attachmentScale);'), 'display root should own inherited-scale compensation while the model keeps attachment scale');
-assert(weaponRules.includes('pinWeaponLocalPointToDisplay(THREE, weaponRoot, displayRoot, config.gripLocalPosition') && weaponRules.includes('const correction = actualLocal.sub(target);') && weaponRules.includes('weaponRoot.position.sub(correction);'), 'weapon attachment should post-pin the configured hilt local point to the display/socket origin after all transforms');
-assert(weaponRules.includes('const fallbackVisible = !(proxy?.model && proxy?.attachmentConfig?.url)') && weaponRules.includes('fallbackHiddenWithRealWeapon'), 'real weapon attachments should hide fallback blade/hilt and report layer state');
-assert(!js.includes('syncWeaponAttachmentMount') && js.includes('actor?.syncWeaponVisualAttachment?.({ forceSocket: true });'), 'weapon pose tool may explicitly rebuild hand-FK placement after config edits without a detached mount sync');
-assert(js.includes("const frame = proxy?.config?.parentMode === 'hand-fk'\n      ? actor?.model") && js.includes('weaponWorldDeltaToOffsetFrame(actor, world)'), 'hand-FK Move should edit modelLocalOffset in actor/model space');
-assert(js.includes('ensureBoneOverlayForBone(bone)') && js.includes('this.ensureBoneOverlayForBone(root);'), 'synthetic WeaponGrip should get a visible bone overlay handle');
-assert(js.includes('this.mixer.update(dt);\n    this.reapplyBoneEdits();\n    this.applyGrounding();\n    this.updateWeaponProxyVisibility();'), 'frame update should sync the visible weapon after pose edits and grounding, not before them');
-assert(js.includes('updateWeaponFallbackFromTipRuntime(THREE, this.weaponProxy)') || js.includes('this.updateWeaponFallbackFromTip();'), 'visible fallback/debug blade should refresh from the configured attachment tip marker');
-assert(weaponRules.includes('tipLocal = proxy?.tipMarker') || js.includes('fallbackEnd.position.copy(tip.position)'), 'fallback/debug blade should use WeaponGrip_end rather than an independent local +Z direction');
-assert(js.includes("group.name = 'weapon-visual-sync-overlay'") && js.includes("line.name = 'weapon-overlay-socket-tip-line'"), 'weapon gizmo/debug overlay should expose the visible socket-to-tip line');
-assert(!js.includes('updateWeaponGizmo() {\n    return;\n  }'), 'weapon gizmo update must not be a no-op');
-assert(js.includes('debugWeaponFollow(sampleArgs = [])') && js.includes("schema: 'pose-lab-live-weapon-follow-v1'"), 'live debug tooling should sample whether the visible weapon follows the animated hand');
-assert(js.includes('debugWeaponVisualFollow(sampleArgs = [])') && js.includes("schema: 'pose-lab-live-weapon-visual-follow-v1'"), 'live debug tooling should capture a rendered visual weapon follow contact sheet');
-assert(js.includes('&& checks.fallbackHiddenWithRealWeapon') && js.includes('&& checks.realWeaponVisible'), 'visual follow pass/fail should reject fake fallback weapon layers over a real sabre');
-assert(js.includes("case 'weapon-follow':") && js.includes("if (subcommand === 'follow'"), 'debug CLI should expose weapon follow checks without screenshots');
-assert(js.includes("case 'weapon-visual-follow':") && js.includes("subcommand === 'visual-follow'"), 'debug CLI should expose visual weapon follow checks without Android screencap');
-assert(js.includes('if (forceVisible) {\n      actor.updateWeaponProxyVisibility?.();') && js.includes('if (proxy.model) proxy.model.visible = true;'), 'weapon tooling visibility should resync and show the socket-attached weapon model');
-assert(weaponRules.includes("if (config.parentMode === 'hand-fk')") && weaponRules.includes("return { handled: true, mode: 'hand-fk'"), 'hand-FK update should return before legacy model-space quaternion solving');
-assert(js.includes('this.weaponProxy.root.visible = true;'), 'weapon sockets must stay visible instead of hiding behind clip-pattern gates');
-assert(converter.includes('const weaponTrackEnabled = weaponConfig.enabled === true'), 'weapon socket track generation should be explicit opt-in');
-assert(converter.includes('if (weaponTrackEnabled && sourceWeaponTrack)'), 'synthetic WeaponR quaternion tracks should only be emitted when explicitly enabled');
+assert(fixed.artifact.schema === 'pose-lab-offline-pose-weapon-render-v1', 'fixed render should use canonical offline schema');
+assert(fixed.artifact.ok === true, `fixed render should prove Meshy sword FK is green: ${JSON.stringify(fixed.artifact.checks)}`);
+assert(fixed.artifact.checks?.parentChainMatchesFpsArmsShape === true, `Meshy weapon should mirror FPS chain shape: ${JSON.stringify(fixed.artifact.sampleData?.[0]?.parentChain)}`);
+assert(fixed.artifact.sampleData?.every((sample) => sample.parentChain.join('>') === 'Meshy French Revolution Sabre>WeaponGrip-display-root>WeaponGrip>WeaponR>RightHand'), 'each sample should keep model -> displayRoot -> WeaponGrip -> WeaponR -> RightHand ownership');
+assert(fixed.artifact.checks?.weaponGripLocalStableUnderWeaponR === true, `WeaponGrip should stay locally stable under animated WeaponR: ${JSON.stringify(fixed.artifact.maxLocalDrift)}`);
+assert(fixed.artifact.checks?.weaponGripDisplacedFromWeaponR === true, `WeaponGrip should preserve authored displacement from WeaponR: ${JSON.stringify(fixed.artifact.maxDistances)}`);
+assert(fixed.artifact.checks?.appliedHiltPinnedToWeaponGrip === true, `applied hilt should stay pinned to WeaponGrip: ${JSON.stringify(fixed.artifact.hiltSocketDistances)}`);
+assert(fixed.artifact.checks?.appliedHiltAwayFromRawHand === true, `applied hilt should not collapse onto the raw hand: ${JSON.stringify(fixed.artifact.maxDistances)}`);
+assert(fixed.artifact.checks?.weaponBladeDirectionMatchesFpsSource === true, `visible blade should match mapped FPS Weapon.R: ${JSON.stringify(fixed.artifact.maxWeaponOrientationErrorDeg)}`);
+assert(Number(fixed.artifact.maxDistances?.rawHandToAppliedHilt) >= Number(fixed.artifact.thresholds?.displacementMinDistance || 0.05), `raw hand to applied hilt distance should exceed displacement threshold: ${JSON.stringify(fixed.artifact.maxDistances)}`);
+
+assert(fault.artifact.injectedFaults?.some((entry) => entry.name === 'collapse-displacement'), 'fault render should record injected collapsed-displacement fault');
+assert(fault.artifact.ok === false, 'collapsed-displacement fault should not pass the FK contract');
+assert(fault.artifact.checks?.weaponGripDisplacedFromWeaponR === false, `fault should collapse WeaponGrip displacement: ${JSON.stringify(fault.artifact.maxDistances)}`);
+assert(fault.artifact.checks?.appliedHiltAwayFromRawHand === false, `fault should collapse hilt onto raw hand/wrist: ${JSON.stringify(fault.artifact.maxDistances)}`);
+assert(fault.artifact.reproducesLiveRed === true, 'collapsed-displacement fault should reproduce the red-build class');
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({
-  checked: ['meshy-saber-follows-synthetic-weapongripsource-bone', 'hand-fk-cache-includes-clip-rest-context', 'synthetic-source-socket-authored-model-space-offset', 'weapon-display-root-under-weapongrip', 'socket-scale-compensated-weapon-visible', 'weapon-move-forces-socket-recalc', 'live-weapon-follow-debug', 'live-weapon-visual-follow-debug', 'synthetic-weapongrip-handle-visible', 'active-ready-keys-synthetic-weaponr', 'manual-weapon-values-preserved'],
+  checked: ['offline-fk-chain-shape', 'visible-hilt-displacement', 'weaponr-local-stability', 'collapse-displacement-negative-control'],
+  fixed: fixed.result.path,
+  fault: fault.result.path,
 }, null, 2));

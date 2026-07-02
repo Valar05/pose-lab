@@ -9,6 +9,7 @@ const source = fs.readFileSync(toolPath, 'utf8');
 const poseSource = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
 const readySource = fs.readFileSync(path.join(projectRoot, 'src', 'meshy-ready-runtime.mjs'), 'utf8');
 const failures = [];
+const expectedAttachmentBladeLocal = [-0.73438, 0.33396, 0.59089];
 
 function assert(condition, message) {
   if (!condition) failures.push(message);
@@ -29,12 +30,14 @@ assert(source.includes('--assert-repro') && source.includes('reproducesLiveRed')
 assert(source.includes('generatedClipResolved'), 'offline renderer must explicitly report whether the browser-generated ready clip was resolved offline');
 assert(source.includes('FK close-up') && source.includes('white=WeaponR sword FK bone'), 'offline renderer must draw a screenshot-comparable FK close-up panel with unambiguous sword-bone labels');
 assert(!/screencap|-p\s+\/storage\/emulated\/0\/Pictures|debugBridge|termux-open-url|am start/.test(source), 'offline renderer must not depend on browser bridge, Android screencap, or URL launch');
-assert(poseSource.includes("from './weapon-runtime-rules.mjs?v=pose-editor-180'"), 'browser runtime must import the shared weapon runtime module');
-assert(poseSource.includes("from './meshy-ready-runtime.mjs?v=pose-editor-180'"), 'browser runtime must import the shared Meshy ready runtime module with the current cache token');
+const cacheToken = poseSource.match(/const LAB_CACHE_TOKEN = '([^']+)'/)?.[1] || '';
+assert(cacheToken, 'browser runtime must declare a cache token');
+assert(poseSource.includes(`from './weapon-runtime-rules.mjs?v=${cacheToken}'`), 'browser runtime must import the shared weapon runtime module with the current cache token');
+assert(poseSource.includes(`from './meshy-ready-runtime.mjs?v=${cacheToken}'`), 'browser runtime must import the shared Meshy ready runtime module with the current cache token');
 assert(readySource.includes("sourceHand: 'Hand.R'") && readySource.includes("targetHand: 'RightHand'") && readySource.includes('targetLocalAxis: [0, -1, 0]') && readySource.includes('rollOffsetDeg: -120'), 'shared ready builder should keep the accepted right-hand rest correction axis');
 assert(!readySource.includes("sourceHand: 'Hand.L', sourceLocalAxis") && !readySource.includes("targetHand: 'LeftHand', targetLocalAxis"), 'shared ready builder must not apply a hidden left-hand rest-roll override');
 assert(!readySource.includes('attachment-local-blade-frame') && !readySource.includes('targetAttachmentRotationDeg: [90, 0, -55.145]'), 'ready builder must not use the Meshy sabre attachment-local blade-frame solve that moved the pin');
-assert(readySource.includes("targetWeapon: 'WeaponR'") && readySource.includes('fps-weaponr-frame-solve') && readySource.includes('targetBladeLocal: [-0.4871, -0.0452, 0.87218]'), 'ready builder must frame-solve synthetic WeaponR against the restored manual Meshy sabre blade axis');
+assert(readySource.includes('deriveAttachmentBladeLocal') && readySource.includes("targetWeapon: 'WeaponR'") && readySource.includes('fps-weaponr-frame-solve'), 'ready builder must frame-solve synthetic WeaponR against the current manual Meshy sabre attachment axis');
 assert(!readySource.includes("targetWeapon: 'WeaponGrip'"), 'generated ready must not animate WeaponGrip; WeaponGrip owns the fixed manual hilt socket');
 assert(readySource.includes("weaponTrackTarget: weaponTrack ? 'WeaponR' : null"), 'generated ready metadata must report WeaponR as the weapon track target');
 
@@ -44,6 +47,10 @@ const jsonPath = path.join(projectRoot, result.path);
 const pngPath = path.join(projectRoot, result.png);
 const summaryPath = path.join(path.dirname(jsonPath), 'pose_weapon_render_summary.md');
 const artifact = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+const faultOut = path.join(projectRoot, 'generated', 'test_runs', `offline-pose-render-fault-${process.pid}`);
+const faultOutput = execFileSync('node', [toolPath, '--out', faultOut, '--samples', '2', '--fault', 'collapse-displacement'], { cwd: projectRoot, encoding: 'utf8' });
+const faultResult = JSON.parse(faultOutput.slice(faultOutput.indexOf('{')));
+const faultArtifact = JSON.parse(fs.readFileSync(path.join(projectRoot, faultResult.path), 'utf8'));
 
 assert(fs.existsSync(jsonPath), `missing JSON artifact ${jsonPath}`);
 assert(fs.existsSync(pngPath), `missing PNG artifact ${pngPath}`);
@@ -57,7 +64,7 @@ assert(artifact.generatedClipStats?.sourceKeyCount === 31 && artifact.generatedC
 assert(artifact.generatedClipStats?.droppedInitialRestKey === true && artifact.generatedClipStats?.weaponTrackEnabled === true, `generated ready metadata missing rest-key drop or WeaponR track: ${JSON.stringify(artifact.generatedClipStats)}`);
 assert(artifact.generatedClipStats?.weaponTrackTarget === 'WeaponR', `generated ready must target WeaponR, not WeaponGrip: ${JSON.stringify(artifact.generatedClipStats)}`);
 assert(artifact.generatedClipStats?.weaponOrientationMode === 'fps-weaponr-frame-solve', `generated ready should frame-solve synthetic WeaponR from FPS blade/up directions: ${JSON.stringify(artifact.generatedClipStats)}`);
-assert(JSON.stringify(artifact.generatedClipStats?.weaponTargetBladeLocal) === JSON.stringify([-0.4871, -0.0452, 0.87218]), `generated ready should declare the restored manual Meshy sabre blade axis: ${JSON.stringify(artifact.generatedClipStats)}`);
+assert(JSON.stringify(artifact.generatedClipStats?.weaponTargetBladeLocal) === JSON.stringify(expectedAttachmentBladeLocal), `generated ready should declare the current manual Meshy sabre blade axis: ${JSON.stringify(artifact.generatedClipStats)}`);
 assert(artifact.generatedClipStats?.rightRollOffsetDeg === -120 && artifact.generatedClipStats?.leftRollOffsetDeg === -90, `generated ready final rolls changed: ${JSON.stringify(artifact.generatedClipStats)}`);
 assert(JSON.stringify(artifact.generatedClipStats?.rightRestTargetLocalAxis) === JSON.stringify([0, -1, 0]), `right rest target axis should match accepted T-pose helper: ${JSON.stringify(artifact.generatedClipStats)}`);
 assert(artifact.generatedClipStats?.leftRestRollOverride === false, `left rest roll override should be absent: ${JSON.stringify(artifact.generatedClipStats)}`);
@@ -90,12 +97,18 @@ assert(artifact.sampleData.every((sample) => sample.weapon?.rightHand && sample.
 assert(artifact.sampleData.every((sample) => sample.weaponPinning?.checks?.appliedHiltPinnedToSocket === true), 'each sample should include shared weapon pinning checks');
 assert(artifact.sampleData.every((sample) => sample.weaponPinning?.local?.socketInSourceSocket && sample.weaponPinning?.local?.socketQuaternionInSourceSocket), 'each sample should include WeaponGrip local transform under WeaponR');
 assert(artifact.sampleData.every((sample) => sample.closeupPanel?.blueRightHand && sample.closeupPanel?.whiteHandBaseline && sample.closeupPanel?.magentaAppliedHilt), 'each sample should include close-up marker metadata');
-assert(String(artifact.actualVisibleRead || '').includes('displaced WeaponGrip under WeaponR FK') && String(artifact.actualVisibleRead || '').includes('visible blade direction matches'), `artifact should report fixed FK ownership, displacement, and blade direction, got: ${artifact.actualVisibleRead}`);
+assert(String(artifact.actualVisibleRead || '').includes('visible hilt matches the authored WeaponGrip FK socket') && String(artifact.actualVisibleRead || '').includes('visible blade direction matches'), `artifact should report fixed FK ownership, visible hilt, and blade direction, got: ${artifact.actualVisibleRead}`);
+assert(faultArtifact.injectedFaults?.some((entry) => entry.name === 'collapse-displacement'), 'fault artifact should report the collapsed-displacement negative control');
+assert(faultArtifact.ok === false, 'collapsed-displacement negative control must fail fixed-mode acceptance');
+assert(faultArtifact.checks?.weaponGripDisplacedFromWeaponR === false, `fault artifact should prove WeaponGrip displacement collapse is caught: ${JSON.stringify(faultArtifact.maxDistances)}`);
+assert(faultArtifact.checks?.appliedHiltAwayFromRawHand === false, `fault artifact should prove hilt-to-wrist collapse is caught: ${JSON.stringify(faultArtifact.maxDistances)}`);
+assert(faultArtifact.reproducesLiveRed === true, 'collapsed-displacement negative control should reproduce the visual red class');
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({
   checked: ['offline-pose-weapon-render-contract', 'shared-runtime-imports', 'diagnostic-artifacts'],
   artifact: result.path,
+  fault: faultResult.path,
   png: result.png,
   generatedClipResolved: artifact.generatedClipResolved,
 }, null, 2));

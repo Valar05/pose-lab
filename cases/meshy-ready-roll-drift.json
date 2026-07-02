@@ -1,0 +1,64 @@
+{
+  "schema": "pose-lab-case-v1",
+  "id": "meshy-ready-roll-drift",
+  "title": "Meshy Ready Roll Drift",
+  "family": "meshy_fps_retarget",
+  "priority": "p0",
+  "route": {
+    "kind": "pose-retarget",
+    "actor": "meshyCharacter",
+    "clip": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
+    "mode": "standard",
+    "query": {
+      "weaponDebug": "1"
+    }
+  },
+  "expectedVisibleBehavior": [
+    "The ready clip uses the accepted right -120 and left -90 roll mapping.",
+    "The rest/T-pose calibration remains target-minus-T-pose.",
+    "No extra stacked -120 offset is applied."
+  ],
+  "contracts": [
+    "contracts/golden/meshy_ready_rolls.json"
+  ],
+  "evidenceArtifacts": [
+    "generated/workflow_state/meshy_fps_accepted_baseline.json",
+    "generated/ready_pose_workbench/onehand_ready_authored_fpsref_artifact.json",
+    "generated/visual_parity/meshy_onehand_ready/visual_parity.json"
+  ],
+  "checks": [
+    {
+      "id": "route",
+      "kind": "route",
+      "required": true
+    },
+    {
+      "id": "workflow-status",
+      "kind": "command",
+      "command": "node tools/pose_lab_workflow_status.mjs",
+      "default": true
+    },
+    {
+      "id": "ready-relation-audit",
+      "kind": "command",
+      "command": "node tools/test_meshy_fps_ready_relation_audit.mjs",
+      "default": false
+    },
+    {
+      "id": "visual-parity",
+      "kind": "command",
+      "command": "node tools/test_meshy_onehand_ready_visual_parity.mjs",
+      "default": false
+    }
+  ],
+  "acceptance": [
+    "Accepted baseline remains present.",
+    "Ready relation audit is green.",
+    "Visual parity artifact exists before promoting ready-pose changes."
+  ],
+  "forbiddenProof": [
+    "one-size roll sweep candidates",
+    "target-minus-ready calibration",
+    "unpromoted generated candidate replacing the accepted record"
+  ]
+}

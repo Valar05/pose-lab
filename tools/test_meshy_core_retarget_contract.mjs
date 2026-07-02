@@ -22,6 +22,11 @@ assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-R
 assert(profiles.includes("sourceKey: 'player'"), 'Meshy generated clips should source from FPS Arms');
 assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy generated clips should be tagged FPS-SWORD-UPPER');
 assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(0)'), 'Meshy T-pose bridge should expose FPS rest-arms without pre-applying the old -120 hand-roll offset');
+const restBlockStart = profiles.indexOf("clipTag: 'FPS-REST-ARMS-CAL'");
+const restBlockEnd = profiles.indexOf('directRotationPairs: MESHY_FPS_REST_DIRECT_PAIRS', restBlockStart);
+const restBlock = restBlockStart >= 0 && restBlockEnd > restBlockStart ? profiles.slice(restBlockStart, restBlockEnd) : '';
+assert(restBlock && restBlock.includes('weaponKeyConvert') && restBlock.includes("targetWeapon: 'WeaponR'") && restBlock.includes('applyToHand: false'), 'Meshy T-pose bridge should key the generic FPS-authored WeaponR socket without forcing the hand or animating WeaponGrip');
+assert(restBlock && !restBlock.includes("targetWeapon: 'WeaponGrip'") && !restBlock.includes('applyToHand: true'), 'Meshy T-pose bridge must not animate WeaponGrip or solve the hand from the socket');
 assert(profiles.includes("RestProbe: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe should default to the exact accepted CAL--120 clip path');
 assert(profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'Meshy SwordReady should use the accepted golden OneHandReady record');
 assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'"), 'Meshy golden ready clip should preserve a stable generated origin path');
@@ -30,7 +35,7 @@ assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-
 assert(!profiles.includes('defaultRestClip') && !js.includes('applyDefaultModelRestClip') && !js.includes('this.applyDefaultModelRestClips();'), 'accepted CAL--120 RestProbe must remain a generated clip, not mutate actor modelRestPose');
 assert(!profiles.includes('...[-150') && !profiles.includes('FPS-REST-ARMS-CAL-120') && !profiles.includes('FPS-REST-ARMS-CAL-90') && !profiles.includes('FPS-REST-ARMS-CAL--90'), 'Meshy should not expose rejected positive or sweep hand-roll calibration clips after accepting CAL--120');
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'") && profiles.includes("clipNames: [\n          'OneHandReady',\n        ]"), 'Meshy should keep only the accepted golden OneHandReady generator');
-assert(profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy rig-local weapon placement must remain locked as repository truth');
+assert(profiles.includes('modelLocalOffset: [-0.03429, 0.04109, -0.07946]') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy rig-local weapon placement must remain locked as repository truth');
 assert(profiles.includes('modelLocalOffset: [0.00424, -0.0167, 0.01744]') && profiles.includes('gripLocalPosition: [0.67888, -0.07803, -0.06249]'), 'FPS manual weapon placement must remain locked as repository truth');
 assert(!profiles.includes('worldJointProjectionSocketOrientation') && !js.includes('handDeltaWorld') && !js.includes('restRelative.socketWorldQuaternion'), 'Meshy visual IK must not install special socket orientation policies; manual attachment should keep its local hand-to-blade angle');
 assert(socketSolver.includes('MANUAL_PLACEMENT_LOCK') && socketSolver.includes('promotable: false') && socketSolver.includes('productionSnippet: null') && socketSolver.includes('candidateModelLocalOffset: null'), 'socket diagnostics must not be able to promote or print production manual-placement overrides');

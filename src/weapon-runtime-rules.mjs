@@ -33,6 +33,22 @@ function placementConfigSignature(config = {}) {
   });
 }
 
+function authoredWeaponGripLocal(THREE, config = {}, parent = null, model = null) {
+  const local = new THREE.Vector3();
+  if (Array.isArray(config.modelLocalOffset)) local.add(vectorFromArray(THREE, config.modelLocalOffset));
+  if (Array.isArray(config.gripOffset)) local.add(vectorFromArray(THREE, config.gripOffset));
+  if (parent && model && config.compensateParentScale !== false) {
+    const modelWorldScale = model.getWorldScale(new THREE.Vector3());
+    const parentWorldScale = parent.getWorldScale(new THREE.Vector3());
+    local.multiply(new THREE.Vector3(
+      modelWorldScale.x / Math.max(0.000001, Math.abs(parentWorldScale.x)),
+      modelWorldScale.y / Math.max(0.000001, Math.abs(parentWorldScale.y)),
+      modelWorldScale.z / Math.max(0.000001, Math.abs(parentWorldScale.z))
+    ));
+  }
+  return local;
+}
+
 export function applyWeaponSocketRuntimeRules(THREE, {
   model,
   proxy,
@@ -44,10 +60,10 @@ export function applyWeaponSocketRuntimeRules(THREE, {
   if (!model || !proxy?.root) return { handled: false, reason: 'missing-proxy' };
   const config = proxy.config || {};
   if (proxy.sourceSocket) {
-    proxy.root.position.set(0, 0, 0);
-    if (Array.isArray(config.modelLocalOffset)) proxy.root.position.add(vectorFromArray(THREE, config.modelLocalOffset));
-    if (Array.isArray(config.gripOffset)) proxy.root.position.add(vectorFromArray(THREE, config.gripOffset));
-    return { handled: true, mode: 'source-socket', local: proxy.root.position.clone() };
+    proxy.root.position.copy(authoredWeaponGripLocal(THREE, config));
+    proxy.root.updateMatrixWorld(true);
+    if (proxy.rightHand) proxy.socketHandBaselineLocal = proxy.rightHand.worldToLocal(weaponWorldPosition(THREE, proxy.root).clone());
+    return { handled: true, mode: 'source-socket', local: proxy.root.position.clone(), root: proxy.root };
   }
   if (!proxy.rightHand) return { handled: false, reason: 'missing-right-hand' };
 
@@ -67,6 +83,7 @@ export function applyWeaponSocketRuntimeRules(THREE, {
     const socketParent = proxy.syntheticSourceSocket;
     const fkSignature = placementConfigSignature(config);
     const fallbackSocketWorldQuaternion = weaponWorldQuaternion(THREE, model).multiply(quaternionFromDeg(THREE, config.rotationDeg)).normalize();
+    const allowAnimatedGrip = animatedSocketRotation && config.allowAnimatedSocketAnimation === true;
     if (Array.isArray(config.handLocalOffset)) socketParent.position.copy(vectorFromArray(THREE, config.handLocalOffset));
     else socketParent.position.set(0, 0, 0);
     if (!animatedSourceSocketRotation) {
@@ -74,18 +91,8 @@ export function applyWeaponSocketRuntimeRules(THREE, {
     }
     socketParent.updateMatrixWorld(true);
     if (force || proxy.syntheticFkSignature !== fkSignature || !proxy.syntheticFkLocalPosition || !proxy.syntheticFkLocalQuaternion) {
-      const syntheticGripLocal = new THREE.Vector3();
-      if (Array.isArray(config.modelLocalOffset)) syntheticGripLocal.add(vectorFromArray(THREE, config.modelLocalOffset));
-      if (Array.isArray(config.gripOffset)) syntheticGripLocal.add(vectorFromArray(THREE, config.gripOffset));
-      const modelWorldScale = model.getWorldScale(new THREE.Vector3());
-      const socketWorldScale = socketParent.getWorldScale(new THREE.Vector3());
-      syntheticGripLocal.multiply(new THREE.Vector3(
-        modelWorldScale.x / Math.max(0.000001, Math.abs(socketWorldScale.x)),
-        modelWorldScale.y / Math.max(0.000001, Math.abs(socketWorldScale.y)),
-        modelWorldScale.z / Math.max(0.000001, Math.abs(socketWorldScale.z))
-      ));
-      proxy.root.position.copy(syntheticGripLocal);
-      if (!animatedSocketRotation) proxy.root.quaternion.identity();
+      proxy.root.position.copy(authoredWeaponGripLocal(THREE, config, socketParent, model));
+      if (!allowAnimatedGrip) proxy.root.quaternion.identity();
       proxy.root.updateMatrixWorld(true);
       proxy.syntheticFkLocalPosition = proxy.root.position.clone();
       proxy.syntheticFkLocalQuaternion = proxy.root.quaternion.clone().normalize();
@@ -93,7 +100,7 @@ export function applyWeaponSocketRuntimeRules(THREE, {
       proxy.socketHandBaselineSignature = fkSignature;
     }
     proxy.root.position.copy(proxy.syntheticFkLocalPosition);
-    if (!animatedSocketRotation) proxy.root.quaternion.copy(proxy.syntheticFkLocalQuaternion);
+    if (!allowAnimatedGrip) proxy.root.quaternion.copy(proxy.syntheticFkLocalQuaternion);
     proxy.root.updateMatrixWorld(true);
     proxy.socketHandBaselineLocal = proxy.rightHand.worldToLocal(weaponWorldPosition(THREE, proxy.root).clone());
     return {
@@ -111,12 +118,13 @@ export function applyWeaponSocketRuntimeRules(THREE, {
   }
 
   if (config.parentMode === 'hand-fk') {
-    if (force || proxy.fkPlacementSignature !== placementSignature || !proxy.fkLocalPosition || !proxy.fkLocalQuaternion) {
+    const fkSignature = placementConfigSignature(config);
+    if (force || proxy.fkPlacementSignature !== fkSignature || !proxy.fkLocalPosition || !proxy.fkLocalQuaternion) {
       const socketWorldPosition = model.localToWorld(local.clone());
       proxy.fkLocalPosition = socketWorldPosition.clone().applyMatrix4(proxy.rightHand.matrixWorld.clone().invert());
       const socketWorldQuaternion = weaponWorldQuaternion(THREE, model).multiply(quaternionFromDeg(THREE, config.rotationDeg)).normalize();
       proxy.fkLocalQuaternion = weaponWorldQuaternion(THREE, proxy.rightHand).invert().multiply(socketWorldQuaternion).normalize();
-      proxy.fkPlacementSignature = placementSignature;
+      proxy.fkPlacementSignature = fkSignature;
       proxy.root.position.copy(proxy.fkLocalPosition);
       proxy.root.quaternion.copy(proxy.fkLocalQuaternion);
     }
@@ -143,6 +151,32 @@ export function pinWeaponLocalPointToDisplay(THREE, weaponRoot, displayRoot, loc
   weaponRoot.position.sub(correction);
   weaponRoot.updateMatrixWorld(true);
   return correction;
+}
+
+export function findVisibleMeshHiltLocalPoint(THREE, weaponRoot, displayRoot) {
+  if (!weaponRoot || !displayRoot) return null;
+  displayRoot.updateMatrixWorld(true);
+  weaponRoot.updateMatrixWorld(true);
+  const target = new THREE.Vector3();
+  let best = null;
+  let bestDistance = Infinity;
+  weaponRoot.traverse?.((object) => {
+    if (!object.isMesh || !object.geometry?.attributes?.position) return;
+    const attr = object.geometry.attributes.position;
+    const step = Math.max(1, Math.floor(attr.count / 1200));
+    for (let i = 0; i < attr.count; i += step) {
+      const world = new THREE.Vector3().fromBufferAttribute(attr, i);
+      if (object.isSkinnedMesh && typeof object.boneTransform === 'function') object.boneTransform(i, world);
+      object.localToWorld(world);
+      const displayLocal = displayRoot.worldToLocal(world.clone());
+      const distance = displayLocal.distanceTo(target);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        best = weaponRoot.worldToLocal(world.clone());
+      }
+    }
+  });
+  return best ? { localPoint: best, distance: bestDistance } : null;
 }
 
 export function applyWeaponAttachmentRuntimeRules(THREE, {
@@ -190,6 +224,7 @@ export function applyWeaponAttachmentRuntimeRules(THREE, {
     weaponRoot.position.sub(localGrip);
     pinWeaponLocalPointToDisplay(THREE, weaponRoot, displayRoot, config.gripLocalPosition, config.position || [0, 0, 0]);
   }
+  proxy.visibleMeshHiltPin = findVisibleMeshHiltLocalPoint(THREE, weaponRoot, displayRoot);
   if (tip) {
     if (Array.isArray(config.tipLocalPosition)) {
       const localTip = vectorFromArray(THREE, config.tipLocalPosition);
@@ -289,6 +324,10 @@ export function captureWeaponRuntimeLandmarks(THREE, proxy) {
     if (!proxy?.model || !Array.isArray(proxy?.attachmentConfig?.gripLocalPosition)) return null;
     return proxy.model.localToWorld(vectorFromArray(THREE, proxy.attachmentConfig.gripLocalPosition));
   })();
+  const visibleMeshHilt = (() => {
+    if (!proxy?.model || !proxy?.visibleMeshHiltPin?.localPoint) return null;
+    return proxy.model.localToWorld(proxy.visibleMeshHiltPin.localPoint.clone());
+  })();
   const fallbackBlade = proxy?.displayRoot?.children?.find((entry) => entry.userData?.weaponFallbackBlade) || null;
   const fallbackHilt = proxy?.displayRoot?.children?.find((entry) => entry.userData?.weaponFallbackHilt) || null;
   fallbackBlade?.updateMatrixWorld?.(true);
@@ -303,6 +342,7 @@ export function captureWeaponRuntimeLandmarks(THREE, proxy) {
     displayRoot: proxy?.displayRoot ? weaponWorldPosition(THREE, proxy.displayRoot) : null,
     model: proxy?.model ? weaponWorldPosition(THREE, proxy.model) : null,
     configuredGrip,
+    visibleMeshHilt,
     appliedHilt: configuredGrip,
     tip: proxy?.tipMarker ? weaponWorldPosition(THREE, proxy.tipMarker) : null,
     fallbackBlade: fallbackBlade ? weaponWorldPosition(THREE, fallbackBlade) : null,

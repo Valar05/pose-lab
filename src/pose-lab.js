@@ -4,7 +4,7 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-180';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-186';
 import {
   applyWeaponAttachmentRuntimeRules,
   applyWeaponSocketRuntimeRules,
@@ -12,14 +12,14 @@ import {
   captureWeaponPinningRuntimeState,
   pinWeaponLocalPointToDisplay as pinWeaponLocalPointToDisplayRuntime,
   updateWeaponFallbackFromTipRuntime,
-} from './weapon-runtime-rules.mjs?v=pose-editor-180';
-import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-180';
+} from './weapon-runtime-rules.mjs?v=pose-editor-186';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-186';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
 
 const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget';
-const LAB_CACHE_TOKEN = 'pose-editor-180';
+const LAB_CACHE_TOKEN = 'pose-editor-186';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
@@ -847,7 +847,7 @@ function clipHasQuaternionTrackForBone(clip, boneName) {
   });
 }
 
-function weaponProxyPlacementSignature(config = {}, context = {}) {
+function weaponProxyPlacementSignature(config = {}) {
   return JSON.stringify({
     parentMode: config.parentMode || '',
     positionMode: config.positionMode || '',
@@ -855,8 +855,6 @@ function weaponProxyPlacementSignature(config = {}, context = {}) {
     modelLocalOffset: config.modelLocalOffset || null,
     gripOffset: config.gripOffset || null,
     rotationDeg: config.rotationDeg || null,
-    clipKey: context.clipKey || '',
-    restPose: context.restPose || '',
   });
 }
 
@@ -1705,7 +1703,7 @@ function buildFpsWorldJointProjectionClips(sharedClips, sourceRoot, targetRoot, 
       }
     }
     const sourceWeapon = weaponTrackEnabled ? findBoneCanonical(sourceClone, weaponConfig.sourceWeapon || 'Weapon.R') : null;
-    const targetWeapon = weaponTrackEnabled ? findNamedObject(targetClone, weaponConfig.targetWeapon || 'WeaponGrip') : null;
+    const targetWeapon = weaponTrackEnabled ? findNamedObject(targetClone, weaponConfig.targetWeapon || 'WeaponR') : null;
     const sourceWeaponFrame = weaponTrackEnabled ? findBoneCanonical(sourceClone, weaponConfig.sourceFrame || weaponConfig.sourceChest || 'ShoulderCenter') : null;
     const targetWeaponFrame = weaponTrackEnabled ? findBoneCanonical(targetClone, weaponConfig.targetFrame || weaponConfig.targetChest || 'Spine02') : null;
     const weaponValues = sourceWeapon && targetWeapon ? new Float32Array(outputTimes.length * 4) : null;
@@ -2127,7 +2125,7 @@ function buildFpsUpperKeyConvertClips(sharedClips, sourceRoot, targetRoot, optio
     const sourceWeaponName = weaponConfig.sourceWeapon || 'Weapon.R';
     const sourceHandName = weaponConfig.sourceHand || 'Hand.R';
     const targetHandName = weaponConfig.targetHand || 'RightHand';
-    const targetWeaponName = weaponConfig.targetWeapon || 'WeaponGrip';
+    const targetWeaponName = weaponConfig.targetWeapon || 'WeaponR';
     const sourceWeaponFrameName = weaponConfig.sourceFrame || weaponConfig.sourceChest || 'ShoulderCenter';
     const targetWeaponFrameName = weaponConfig.targetFrame || weaponConfig.targetChest || 'Spine02';
     const weaponTrackEnabled = weaponConfig.enabled === true;
@@ -4440,10 +4438,7 @@ class PoseActor {
     const animatedSourceSocketRotation = proxy.syntheticSourceSocket
       ? clipHasQuaternionTrackForBone(this.activeAction?._clip, proxy.syntheticSourceSocket.name)
       : false;
-    const signature = weaponProxyPlacementSignature(proxy.config, {
-      clipKey: this.activeAction?._clip ? clipKey(this.activeAction._clip) : '',
-      restPose: this.currentRestPose || '',
-    });
+    const signature = weaponProxyPlacementSignature(proxy.config);
     const result = applyWeaponSocketRuntimeRules(THREE, {
       model: this.model,
       proxy,
@@ -4453,6 +4448,7 @@ class PoseActor {
       placementSignature: signature,
     });
     if (!result?.handled) return;
+    if (!force) return;
     for (const object of [result.socketParent, result.root, proxy.root]) {
       if (!object?.name) continue;
       const rest = this.boneRest.get(object.name);

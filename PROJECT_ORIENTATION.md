@@ -2,6 +2,10 @@
 
 This is a standalone browser Pose Lab seeded from the newer `gravity-fist-threejs` pose lab. It is for inspecting imported GLB/Blend animation assets before they become runtime actors.
 
+## Agent Failure Contract
+
+Before any more Meshy saber/FK work, read `docs/POSE_LAB_AGENT_FAILURE_CONTRACT.md`. The current Meshy saber state is not accepted as fixed. The controlling instruction is: Meshy must be FPS weapon FK plus authored offsets, nothing else. Do not tune offsets or document success until FK architecture parity is proven.
+
 ## Entry Points
 
 - `pose-lab.html`: browser lab UI.
@@ -24,6 +28,27 @@ This is a standalone browser Pose Lab seeded from the newer `gravity-fist-threej
 - `assets/source/meshy_character_sheet/`: original Meshy download zip and extracted animated GLBs for provenance.
 - `assets/source/arcane/Player.tscn`: Arcane Manifold scene reference for active player model and AnimationPlayer wiring.
 - `assets/asset_manifest.json`: asset source and processing notes.
+
+## Reorganization Migration
+
+Pose Lab is migrating toward named visual-truth cases with explicit ownership boundaries:
+
+- `app/`: future browser app shell ownership; root HTML and `src/pose-lab.js` remain in place during migration.
+- `core/`: future pure pose/rig/weapon/clip rules shared by browser and offline tools.
+- `evidence/`: route verification, offline/browser evidence, artifact mining, and case reports.
+- `contracts/`: accepted manual/golden behavior that diagnostics cannot overwrite.
+- `cases/`: named problems with actor, clip, route, contracts, expected visible behavior, and verifier commands.
+
+The current case front door is:
+
+```sh
+node tools/pose_lab_case.mjs list
+node tools/pose_lab_case.mjs verify --case meshy-weapon-fk-pinning
+node tools/pose_lab_doctor.mjs
+```
+
+Case verification writes evidence under `generated/cases/<case-id>/latest/`. Use `--run-checks` when the case should execute its declared verifier commands.
+See `docs/TOOL_INDEX.md`, `docs/VISUAL_EVIDENCE_REFRESH.md`, and `docs/GENERATED_ARTIFACT_POLICY.md` before adding more diagnostic tools or generated output.
 
 ## Run
 
@@ -51,7 +76,7 @@ If the session already exists, do not restart it unnecessarily unless a visual r
 
 When Pose Lab looks wrong, do not collapse multiple failures into one diagnosis. Check them in this order:
 
-1. Inspect the newest screenshot or contact sheet first. Treat it as the source of truth for the visible state.
+1. Inspect the newest screenshot or contact sheet first. Treat it as the red-build report for the visible state.
 2. Confirm the browser is on the intended entry path and mode, including any query-string overrides such as `actor`, `qaActor`, `clip`, `mode`, or visual-QA flags.
 3. Verify the selected actor in the startup resolver before chasing panel visibility or clip search logic. In critique mode, the default should be Ares if it is available.
 4. Check whether a syntax error or module failure is preventing the UI from finishing its render pass.
@@ -79,12 +104,17 @@ Use the visual QA harness or a fresh Android screenshot from the live browser wh
 
 Use `node tools/pose_lab_offline_render.mjs` when Meshy pose/weapon behavior must be verified without Android browser capture, debug bridge, or screencap. It loads the Meshy actor GLB and sabre GLB, applies the shared browser weapon runtime rules from `src/weapon-runtime-rules.mjs`, samples full-body pose chains plus weapon landmarks, draws the real sabre mesh point cloud, and writes `pose_weapon_render.png`, `pose_weapon_render.json`, and `pose_weapon_render_summary.md`.
 
-Run `node tools/test_pose_lab_offline_render_contract.mjs` after changing pose or weapon runtime code. `--assert-repro` is the red-build mode: it passes only when the offline renderer reproduces Meshy weapon behavior where the hilt collapses onto the wrist, drifts away from its captured hand-local target, or the visible blade cannot align to mapped FPS `Weapon.R`. `--assert-fixed` intentionally fails unless the requested clip is actually resolved offline, the applied hilt stays pinned to `WeaponGrip`, the hilt remains visibly displaced from the raw wrist/hand origin by the authored `modelLocalOffset`, and the visible hilt-to-tip blade direction matches mapped FPS `Weapon.R`. For Meshy synthetic sockets, `WeaponR` carries blade orientation while `WeaponGrip` is a stable displaced local child under `WeaponR`; compensate inherited bone scale when applying `modelLocalOffset` so the world-space hilt displacement does not shrink to the wrist. The configured hand-local palm target is diagnostic only; do not treat fallback GLB-clip output, palm marker coincidence, or hilt-to-socket pinning alone as proof that a browser-generated ready clip is fixed.
+Run `node tools/test_pose_lab_offline_render_contract.mjs` after changing pose or weapon runtime code. `--assert-repro` is the red-build mode: it passes only when the offline renderer reproduces Meshy weapon behavior where the hilt collapses onto the wrist, drifts away from its captured hand-local target, the real mesh hilt diverges from the authored grip, or the visible blade cannot align to mapped FPS `Weapon.R`. `--assert-fixed` intentionally fails unless the requested clip is actually resolved offline, the authored grip stays pinned to `WeaponGrip`, the measured visible mesh hilt matches that authored grip, the hilt remains visibly displaced from the raw wrist/hand origin by the authored `modelLocalOffset`, and the visible hilt-to-tip blade direction matches mapped FPS `Weapon.R`. For Meshy synthetic sockets, `WeaponR` carries blade orientation while `WeaponGrip` is the authored FK socket under `WeaponR`; inherited bone scale is compensated when applying `modelLocalOffset` so the world-space hilt displacement does not shrink to the wrist. The configured hand-local palm target is diagnostic only; do not treat fallback GLB-clip output, palm marker coincidence, or hilt-to-socket pinning alone as proof that a browser-generated ready clip is fixed.
+
+For bug routing, start with `node tools/pose_lab_route.mjs --kind weapon-fk --json` and follow `docs/POSE_LAB_EVIDENCE_PROTOCOL.md`. For Meshy saber FK, refresh `generated/visual_red_build/pose_lab_latest.json` with `node tools/refresh_pose_lab_offline_visual_evidence.mjs`; offline renderer evidence is the tier-one acceptance truth. Source-string tests are support-only for visual bugs; they do not close a red build.
+For recurring problems, prefer `node tools/pose_lab_case.mjs verify --case <case-id>` because it records the route, contracts, artifacts, and verdict together.
 
 ## Validation
 
 ```sh
 node --check src/pose-lab.js
+node tools/test_pose_lab_agent_failure_contract.mjs
+node tools/test_pose_lab_case_contract.mjs
 python3 -m json.tool assets/asset_manifest.json >/dev/null
 ```
 
@@ -148,3 +178,7 @@ Promotion requires `tools/promote_pose_candidate.mjs` with fresh visual evidence
 Any manual fix authored by the user is the golden standard. Do not overwrite it from solver output, generated candidates, retarget diagnostics, semantic landmark output, metric reports, tests, cleanup scripts, or automated promotion unless the user explicitly asks to replace that exact manual fix and confirms the replacement separately. Diagnostics may produce candidate artifacts, but manual repo values remain production truth until that separate confirmation happens.
 
 This is enforced by `node tools/test_manual_weapon_placement_lock.mjs`. The current concrete locked surface is weapon placement, but the rule is general: manual animation, pose, socket, camera, UI, material, asset, and runtime fixes outrank diagnostics. The socket solver must remain diagnostic-only: it may report an error/correction for analysis, but it must not mark that correction promotable or emit a production snippet for `src/rig-profiles.js`.
+
+For Meshy FPS sword retargeting, the manual saber calibration is now bedrock: generated clips may animate synthetic `WeaponR` to carry the mapped FPS `Weapon.R` blade basis, but `WeaponGrip` remains the authored FK socket and the real sabre mesh is positioned under it by locked attachment offsets. A missing `targetWeapon` default must resolve to `WeaponR`, not `WeaponGrip`; accidental `WeaponGrip` animation is ignored unless a future experiment explicitly opts in.
+
+The screenshot-visible proof gate is now `offline-pose-render` evidence. If offline FK evidence is green but the newest user screenshot shows the real saber out of the hand, the correct diagnosis is an offline/runtime truth mismatch. Do not close the weapon case or tune offsets again until `node tools/refresh_pose_lab_offline_visual_evidence.mjs` and `node tools/test_pose_lab_visual_red_build_contract.mjs` prove the same visible layer.

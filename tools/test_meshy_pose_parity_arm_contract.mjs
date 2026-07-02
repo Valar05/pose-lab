@@ -3,6 +3,7 @@ import path from 'node:path';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const js = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
+const weaponRuntimeRules = fs.readFileSync(path.join(projectRoot, 'src', 'weapon-runtime-rules.mjs'), 'utf8');
 const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
 const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
@@ -16,7 +17,7 @@ assert(js.includes('sourceWeaponTrack.times.slice()'), 'synthetic WeaponR should
 assert(!profiles.includes("retargetMode: 'position-guided-arm',\n        clipTag: 'FPS-SWORD-UPPER'"), 'accepted Meshy FPS-SWORD-UPPER path must not use sampled position-guided IK');
 assert(!profiles.includes('copiedSourceLayer') && !js.includes('syncCopiedSourceLayer'), 'Meshy ready review should not create a copied FPS actor overlay');
 assert(profiles.includes("parentMode: 'synthetic-source-socket'") && profiles.includes("syntheticSourceSocketBone: 'WeaponR'") && js.includes('syntheticSourceSocket.add(root);'), 'Meshy WeaponGrip should be a child of synthetic WeaponR under RightHand');
-assert(js.includes('if (!animatedSocketRotation)') && js.includes('proxy.root.quaternion.copy(modelWorldQuat.multiply(worldQuaternionOf(proxy.rightHand))).normalize()'), 'legacy model-space socket update should still preserve animated socket rotation when present');
+assert(weaponRuntimeRules.includes('const allowAnimatedGrip = animatedSocketRotation && config.allowAnimatedSocketAnimation === true') && weaponRuntimeRules.includes('if (!allowAnimatedGrip) proxy.root.quaternion.copy(proxy.syntheticFkLocalQuaternion);'), 'WeaponGrip should stay a manual local child unless animated grip tracks are explicitly opted in');
 
 assert(profiles.includes("retargetMode: 'fps-upper-key-convert'"), 'Meshy FPS-SWORD-UPPER config should use source-key conversion');
 assert(profiles.includes('ikOrientationGuide: {') && profiles.includes("mode: 'source-key-correction'") && profiles.includes('replaceTracks: false'), 'Meshy FPS-SWORD-UPPER ready profile should use IK only as bounded source-key correction');

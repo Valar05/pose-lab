@@ -192,6 +192,25 @@ function quaternionFromBladeFrame(THREE, bladeDirection, upSeed = new THREE.Vect
   return new THREE.Quaternion().setFromRotationMatrix(worldBasis.multiply(localBasis.invert())).normalize();
 }
 
+export function deriveAttachmentBladeLocal(THREE, attachment = {}) {
+  const grip = Array.isArray(attachment.gripLocalPosition) ? attachment.gripLocalPosition : [0.6535, -0.02302, -0.07317];
+  const tip = Array.isArray(attachment.tipLocalPosition) ? attachment.tipLocalPosition : [-0.95561, 0.1368, 0];
+  const rotationDeg = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg : [121.031, -41.564, -13.871];
+  const blade = new THREE.Vector3(
+    Number(tip[0] || 0) - Number(grip[0] || 0),
+    Number(tip[1] || 0) - Number(grip[1] || 0),
+    Number(tip[2] || 0) - Number(grip[2] || 0)
+  );
+  if (blade.lengthSq() < 1e-8) blade.set(0, 0, 1);
+  const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(
+    THREE.MathUtils.degToRad(Number(rotationDeg[0] || 0)),
+    THREE.MathUtils.degToRad(Number(rotationDeg[1] || 0)),
+    THREE.MathUtils.degToRad(Number(rotationDeg[2] || 0)),
+    'XYZ'
+  ));
+  return blade.normalize().applyQuaternion(q).normalize();
+}
+
 function mapDirectionBetweenVisualFrames(direction, sourceFrame, targetFrame) {
   const local = new direction.constructor(direction.dot(sourceFrame.lateral), direction.dot(sourceFrame.up), direction.dot(sourceFrame.forward));
   return frameVectorWorld(targetFrame, local).normalize();
@@ -338,7 +357,7 @@ function buildWeaponTrack(THREE, sourceRoot, targetRoot, sourceClip, outputTimes
   const sourceWeapon = findNamedObject(sourceRoot, config.sourceWeapon || 'Weapon.R');
   const sourceFrame = findNamedBone(sourceRoot, config.sourceFrame || 'ShoulderCenter');
   const targetFrame = findNamedBone(targetRoot, config.targetFrame || 'Spine02');
-  if (!sourceWeaponTrack || !sourceWeapon || !targetWeapon || !sourceFrame || !targetFrame) return null;
+  if (!sourceWeapon || !targetWeapon || !sourceFrame || !targetFrame) return null;
   const targetClip = new THREE.AnimationClip('meshy-ready-target-arms-for-weaponr', outputTimes[outputTimes.length - 1] || 0.001, tracks);
   const values = new Float32Array(outputTimes.length * 4);
   for (let i = 0; i < sampleTimes.length; i += 1) {
@@ -368,6 +387,7 @@ function buildWeaponTrack(THREE, sourceRoot, targetRoot, sourceClip, outputTimes
     orientationMode: 'fps-weaponr-frame-solve',
     weaponTargetBladeLocal: config.targetBladeLocal || [0, 0, 1],
     weaponTargetUpLocal: config.targetUpLocal || [0, 1, 0],
+    synthesizedFromStaticSourcePose: !sourceWeaponTrack,
   };
   stabilizeQuaternionTrack(track);
   return track;
@@ -484,7 +504,7 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
     sourceUpAxis: [0, 1, 0],
     targetHand: 'RightHand',
     targetWeapon: 'WeaponR',
-    targetBladeLocal: [-0.4871, -0.0452, 0.87218],
+    targetBladeLocal: deriveAttachmentBladeLocal(THREE, options.weaponAttachment).toArray().map((value) => Number(value.toFixed(5))),
     targetUpLocal: [0, 1, 0],
   });
   if (weaponTrack) tracks.push(weaponTrack);

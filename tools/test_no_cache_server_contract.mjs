@@ -20,6 +20,8 @@ assert(cacheToken, 'runtime should expose current cache token');
 assert(html.includes(`./src/rig-profiles.js?v=${cacheToken}`), 'HTML should cache-bust rig profile module with current token');
 assert(html.includes(`./src/pose-lab.js?v=${cacheToken}`), 'HTML should cache-bust Pose Lab runtime module with current token');
 assert(js.includes(`./rig-profiles.js?v=${cacheToken}`), 'runtime import should use current rig profile token');
+assert(js.includes(`./weapon-runtime-rules.mjs?v=${cacheToken}`), 'runtime import should cache-bust shared weapon runtime module with current token');
+assert(js.includes(`./meshy-ready-runtime.mjs?v=${cacheToken}`), 'runtime import should cache-bust shared Meshy ready runtime module with current token');
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({

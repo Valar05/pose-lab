@@ -1,0 +1,26 @@
+{
+  "schema": "pose-lab-golden-contract-v1",
+  "id": "meshy-ready-rolls-contract",
+  "title": "Meshy FPS Ready Roll Contract",
+  "status": "accepted",
+  "owner": "manual-golden",
+  "actor": "meshyCharacter",
+  "clips": [
+    "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+    "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]"
+  ],
+  "contract": [
+    "Rest calibration is target minus T-pose, not target minus ready.",
+    "The accepted ready record uses right-hand roll -120 and left-hand roll -90.",
+    "Do not stack multiple -120 offsets.",
+    "Generated candidates must not replace the accepted ready record without promotion evidence."
+  ],
+  "protectedSurfaces": [
+    "src/rig-profiles.js",
+    "src/meshy-ready-runtime.mjs",
+    "generated/workflow_state/meshy_fps_accepted_baseline.json"
+  ],
+  "evidenceCases": [
+    "meshy-ready-roll-drift"
+  ]
+}

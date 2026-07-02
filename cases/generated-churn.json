@@ -1,0 +1,62 @@
+{
+  "schema": "pose-lab-case-v1",
+  "id": "generated-churn",
+  "title": "Generated Churn",
+  "family": "workflow_hygiene_and_generated_churn",
+  "priority": "p1",
+  "route": {
+    "kind": "cache-server",
+    "actor": "meshyCharacter",
+    "clip": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
+    "mode": "standard",
+    "query": {}
+  },
+  "expectedVisibleBehavior": [
+    "Evidence-producing tools write stable latest or case-scoped paths.",
+    "Process-id scratch output is not treated as canonical evidence.",
+    "Artifact mining can explain keep/review/delete decisions."
+  ],
+  "contracts": [
+    "generated/artifact_mining_index.json",
+    "generated/artifact_manifest_review.md"
+  ],
+  "evidenceArtifacts": [
+    "generated/artifact_manifest.json",
+    "generated/artifact_mining_index.json",
+    "generated/artifact_manifest_review.md"
+  ],
+  "checks": [
+    {
+      "id": "route",
+      "kind": "route",
+      "required": true
+    },
+    {
+      "id": "manifest-json",
+      "kind": "command",
+      "command": "python3 -m json.tool generated/artifact_manifest.json",
+      "default": true
+    },
+    {
+      "id": "mining-json",
+      "kind": "command",
+      "command": "python3 -m json.tool generated/artifact_mining_index.json",
+      "default": true
+    },
+    {
+      "id": "delete-bucket-empty",
+      "kind": "command",
+      "command": "node -e \"const m=require('./generated/artifact_manifest.json'); if (m.entries.some(e => e.retention === 'delete')) process.exit(1);\"",
+      "default": true
+    }
+  ],
+  "acceptance": [
+    "Manifest JSON is valid.",
+    "Mining index JSON is valid.",
+    "No delete bucket remains after cleanup."
+  ],
+  "forbiddenProof": [
+    "unreviewed process-id folders treated as durable baselines",
+    "cleanup that deletes review/mixed artifacts without visual review"
+  ]
+}

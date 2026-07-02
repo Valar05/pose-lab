@@ -1,0 +1,61 @@
+{
+  "schema": "pose-lab-case-v1",
+  "id": "meshy-saber-live-in-hand",
+  "title": "Meshy Saber Offline In Hand",
+  "family": "visual_truth_and_capture",
+  "priority": "p0",
+  "route": {
+    "kind": "weapon-fk",
+    "actor": "meshyCharacter",
+    "clip": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+    "mode": "standard",
+    "query": {
+      "weaponDebug": "1",
+      "cacheBust": "case-meshy-saber-live-in-hand"
+    }
+  },
+  "expectedVisibleBehavior": [
+    "The real saber mesh hilt is inside the authored hand/hilt region in the offline renderer.",
+    "The blade visibly emerges from the hand rather than stretching across the torso.",
+    "A magenta/debug marker near the wrist does not count as proof unless the real saber mesh is also in hand."
+  ],
+  "contracts": [
+    "contracts/golden/meshy_weapon_fk.json",
+    "docs/POSE_LAB_EVIDENCE_PROTOCOL.md"
+  ],
+  "evidenceArtifacts": [
+    "generated/pose_lab_offline_render/visual_red_build_tpose/pose_weapon_render.json",
+    "generated/pose_lab_offline_render/visual_red_build_tpose/pose_weapon_render.png",
+    "generated/visual_red_build/pose_lab_latest.json"
+  ],
+  "checks": [
+    {
+      "id": "route",
+      "kind": "route",
+      "required": true
+    },
+    {
+      "id": "offline-visual-contract",
+      "kind": "command",
+      "command": "node tools/test_pose_lab_visual_red_build_contract.mjs",
+      "default": true
+    },
+    {
+      "id": "offline-render-contract",
+      "kind": "command",
+      "command": "node tools/test_meshy_tpose_weapon_orientation_contract.mjs",
+      "default": true
+    }
+  ],
+  "acceptance": [
+    "The offline visual red-build contract reports ok=true.",
+    "The evidence uses the current cache token and the exact Meshy T-pose clip.",
+    "The offline evidence proves the real saber mesh hilt is in hand, not only a debug marker."
+  ],
+  "forbiddenProof": [
+    "live/browser capture as Meshy saber acceptance evidence",
+    "debug marker or fallback hilt used as a substitute for the real saber mesh",
+    "stale visual evidence cache token",
+    "deprecated standalone screencap as acceptance evidence"
+  ]
+}

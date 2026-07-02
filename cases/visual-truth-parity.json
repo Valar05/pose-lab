@@ -1,0 +1,66 @@
+{
+  "schema": "pose-lab-case-v1",
+  "id": "visual-truth-parity",
+  "title": "Visual Truth Parity",
+  "family": "visual_truth_and_capture",
+  "priority": "p0",
+  "route": {
+    "kind": "weapon-fk",
+    "actor": "meshyCharacter",
+    "clip": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+    "mode": "standard",
+    "query": {
+      "weaponDebug": "1",
+      "cacheBust": "case-visual-truth"
+    }
+  },
+  "expectedVisibleBehavior": [
+    "The offline renderer and evidence report describe the same actor and clip.",
+    "A red-build screenshot cannot be closed by telemetry or source-string checks alone.",
+    "The report states the renderer, cache token, artifact paths, and limitations."
+  ],
+  "contracts": [
+    "docs/POSE_LAB_EVIDENCE_PROTOCOL.md"
+  ],
+  "evidenceArtifacts": [
+    "generated/pose_lab_offline_render/visual_red_build_tpose/pose_weapon_render.json",
+    "generated/visual_red_build/pose_lab_latest.json",
+    "generated/pose_lab_offline_render/visual_red_build_tpose/pose_weapon_render.png"
+  ],
+  "checks": [
+    {
+      "id": "route",
+      "kind": "route",
+      "required": true
+    },
+    {
+      "id": "route-contract",
+      "kind": "command",
+      "command": "node tools/test_pose_lab_route_contract.mjs",
+      "default": true
+    },
+    {
+      "id": "visual-red-build-contract",
+      "kind": "command",
+      "command": "node tools/test_pose_lab_visual_red_build_contract.mjs",
+      "default": true
+    },
+    {
+      "id": "offline-render-contract",
+      "kind": "command",
+      "command": "node tools/test_pose_lab_offline_render_contract.mjs",
+      "default": false
+    }
+  ],
+  "acceptance": [
+    "Route contract is green.",
+    "Visual red-build contract is green.",
+    "Current evidence artifacts are named in the verdict."
+  ],
+  "forbiddenProof": [
+    "debug bridge output as Meshy saber acceptance evidence",
+    "browser capture as Meshy saber acceptance evidence",
+    "stale browser tab without cache token",
+    "deprecated standalone screencap as acceptance evidence"
+  ]
+}

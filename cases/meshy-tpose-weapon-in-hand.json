@@ -1,0 +1,69 @@
+{
+  "schema": "pose-lab-case-v1",
+  "id": "meshy-tpose-weapon-in-hand",
+  "title": "Meshy T-Pose Weapon In Hand",
+  "family": "weapon_pinning_and_fk",
+  "priority": "p0",
+  "route": {
+    "kind": "weapon-fk",
+    "actor": "meshyCharacter",
+    "clip": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+    "mode": "standard",
+    "query": {
+      "weaponDebug": "1"
+    }
+  },
+  "expectedVisibleBehavior": [
+    "The accepted FPS rest-arms T-pose clip resolves without falling back to a Meshy GLB walking clip.",
+    "The real sabre mesh is visible and follows the same RightHand -> WeaponR -> WeaponGrip FK ownership as Ready.",
+    "The screenshot-visible hilt marker and real hilt remain in the authored hand/grip region rather than drifting to an unrelated socket-only proof point."
+  ],
+  "contracts": [
+    "contracts/golden/meshy_weapon_fk.json",
+    "contracts/golden/meshy_ready_rolls.json"
+  ],
+  "evidenceArtifacts": [
+    "generated/pose_lab_offline_render/visual_red_build_tpose/pose_weapon_render.json",
+    "generated/pose_lab_offline_render/visual_red_build_tpose/pose_weapon_render.png",
+    "generated/visual_red_build/pose_lab_latest.json"
+  ],
+  "checks": [
+    {
+      "id": "route",
+      "kind": "route",
+      "required": true
+    },
+    {
+      "id": "tpose-offline-render",
+      "kind": "command",
+      "command": "node tools/test_meshy_tpose_weapon_orientation_contract.mjs",
+      "default": true
+    },
+    {
+      "id": "weapon-fk-contract",
+      "kind": "command",
+      "command": "node tools/test_weapon_fk_attachment_contract.mjs",
+      "default": false
+    },
+    {
+      "id": "manual-lock",
+      "kind": "command",
+      "command": "node tools/test_manual_weapon_placement_lock.mjs",
+      "default": false
+    }
+  ],
+  "acceptance": [
+    "Route resolves actor and T-pose clip exactly.",
+    "Offline renderer rebuilds the generated T-pose clip instead of applying a Meshy GLB fallback clip.",
+    "The real sabre mesh is visible.",
+    "The hilt/hand visible relationship is asserted directly and is not inferred from hilt-to-socket pinning alone.",
+    "Fresh offline visual evidence uses the current cache token before this case can be called user-facing green."
+  ],
+  "forbiddenProof": [
+    "source-string tests as final proof",
+    "deprecated standalone screencap as acceptance evidence",
+    "fallback GLB walking clip evidence for the generated T-pose",
+    "hilt-to-socket pinning without a screenshot-visible hilt-to-hand-region check",
+    "offline green proof that does not expose the screenshot-visible hilt-to-hand relationship"
+  ]
+}
