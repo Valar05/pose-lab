@@ -5,7 +5,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
 import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-131';
-import { applyWeaponAttachmentTruthTransform, updateSyntheticWeaponSocketTransform } from './ready-weapon-truth.mjs?v=pose-editor-131';
+import { applyWeaponAttachmentTruthTransform, classifyWeaponVisibility, updateSyntheticWeaponSocketTransform } from './ready-weapon-truth.mjs?v=pose-editor-131';
 import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-131';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
@@ -3968,10 +3968,14 @@ class PoseActor {
     if (!this.weaponProxy?.root) return;
     this.updateWeaponSocketTransform();
     const clip = this.activeAction?._clip;
-    const patterns = this.weaponProxy.config.visibleClipPatterns || ['\\[FPS-SWORD-UPPER\\]', 'OneHand'];
-    const active = Boolean(weaponDebugForceVisible() || clip?.userData?.weaponPathIk || patterns.some((pattern) => new RegExp(pattern).test(clip?.name || '')));
-    this.weaponProxy.root.visible = active;
-    this.updateWeaponArc(clip, active);
+    const visibility = classifyWeaponVisibility({
+      clipName: clip?.name || '',
+      clipUserData: clip?.userData || {},
+      config: this.weaponProxy.config,
+      weaponDebug: weaponDebugForceVisible(),
+    });
+    this.weaponProxy.root.visible = visibility.visible;
+    this.updateWeaponArc(clip, visibility.visible);
   }
 
   addHelpers() {

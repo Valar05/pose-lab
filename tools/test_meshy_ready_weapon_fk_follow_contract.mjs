@@ -40,6 +40,8 @@ assert(!verifier.includes('const observedWebTruth = {'), 'offline verifier must 
 assert(runtime.includes('updateSyntheticWeaponSocketTransform(THREE'), 'runtime socket transform should call shared truth function');
 assert(runtime.includes('applyWeaponAttachmentTruthTransform(THREE'), 'runtime weapon attachment should call shared truth function');
 assert(fs.readFileSync(sharedTruthPath, 'utf8').includes('classifyWeaponVisibility'), 'shared truth should model runtime weapon visibility');
+assert(runtime.includes('classifyWeaponVisibility({'), 'browser runtime should classify weapon visibility through shared truth');
+assert(!runtime.includes("patterns.some((pattern) => new RegExp(pattern).test(clip?.name || ''))"), 'browser runtime must not duplicate weapon visibility pattern matching');
 const run = JSON.parse(execFileSync('node', [verifierPath], { cwd: projectRoot, encoding: 'utf8' }));
 const artifactPath = path.join(projectRoot, run.artifact || '');
 const sheetPath = path.join(projectRoot, run.sheet || '');
