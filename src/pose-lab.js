@@ -6297,7 +6297,10 @@ class PoseLab {
     const frame = this.weaponMoveOffsetFrame(actor);
     if (!frame?.object || !worldDelta) return worldDelta?.clone?.() || new THREE.Vector3();
     frame.object.updateMatrixWorld(true);
-    return worldDelta.clone().applyQuaternion(worldQuaternionOf(frame.object).invert());
+    const origin = frame.object.getWorldPosition(new THREE.Vector3());
+    const start = frame.object.worldToLocal(origin.clone());
+    const end = frame.object.worldToLocal(origin.clone().add(worldDelta));
+    return end.sub(start);
   }
 
   beginWeaponMultiTouchGesture(event = null) {
