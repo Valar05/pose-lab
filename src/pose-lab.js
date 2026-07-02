@@ -1654,7 +1654,7 @@ function buildFpsWorldJointProjectionClips(sharedClips, sourceRoot, targetRoot, 
   const sides = projectionConfig.chains || options.chains || [];
   const rollConfig = options.rollCorrection || {};
   const weaponConfig = options.weaponKeyConvert || {};
-  const weaponTrackEnabled = weaponConfig.enabled === true;
+  const weaponTrackEnabled = weaponConfig.enabled === true && weaponConfig.experimentalWeaponSwing === true;
   const built = [];
   let failures = 0;
   for (const clip of sharedClips || []) {
@@ -1839,6 +1839,7 @@ function buildFpsWorldJointProjectionClips(sharedClips, sourceRoot, targetRoot, 
         maxProjectionError: Number(maxProjectionError.toFixed(6)),
         weaponFrameSolve: Boolean(weaponValues && weaponConfig.frameSolve !== false),
         weaponTrackEnabled,
+        experimentalWeaponSwing: weaponTrackEnabled,
         weaponDoesNotOverwriteHand: weaponConfig.applyToHand === false,
         solvedWeaponFrames,
         loopSeamClosed: Boolean(options.preserveLoopSeam),
@@ -2118,7 +2119,7 @@ function buildFpsUpperKeyConvertClips(sharedClips, sourceRoot, targetRoot, optio
     const targetWeaponName = weaponConfig.targetWeapon || 'WeaponR';
     const sourceWeaponFrameName = weaponConfig.sourceFrame || weaponConfig.sourceChest || 'ShoulderCenter';
     const targetWeaponFrameName = weaponConfig.targetFrame || weaponConfig.targetChest || 'Spine02';
-    const weaponTrackEnabled = weaponConfig.enabled === true;
+    const weaponTrackEnabled = weaponConfig.enabled === true && weaponConfig.experimentalWeaponSwing === true;
     const sourceWeaponTrack = sourceTrackByName.get(canonicalBoneName(sourceWeaponName));
     if (weaponTrackEnabled && sourceWeaponTrack) {
       const sourceClone = cloneSkinnedObject(sourceRoot);

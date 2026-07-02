@@ -111,7 +111,6 @@ function localMatrixToParent(THREE, parent, child) {
 function captureNodeMatrices(THREE, proxy) {
   const chain = [
     ['RightHand', proxy.rightHand],
-    ['WeaponR', proxy.syntheticSourceSocket],
     ['WeaponGrip', proxy.root],
     ['displayRoot', proxy.displayRoot],
     ['weaponMesh', proxy.model],
@@ -163,12 +162,9 @@ function createWeaponProxy(THREE, actorRoot, sabreRoot, config) {
   const rightHand = findRuntimeNode(actorRoot, config.proxy.handBone);
   const leftHand = findRuntimeNode(actorRoot, config.proxy.leftHandBone);
   if (!rightHand) throw new Error(`missing right hand ${config.proxy.handBone}`);
-  const syntheticSourceSocket = new THREE.Bone();
-  syntheticSourceSocket.name = config.proxy.syntheticSourceSocketBone || 'WeaponR';
-  rightHand.add(syntheticSourceSocket);
   const root = new THREE.Bone();
   root.name = config.proxy.socketBone || 'WeaponGrip';
-  syntheticSourceSocket.add(root);
+  rightHand.add(root);
   const displayRoot = new THREE.Group();
   displayRoot.name = root.name + '-display-root';
   root.add(displayRoot);
@@ -184,7 +180,7 @@ function createWeaponProxy(THREE, actorRoot, sabreRoot, config) {
     config: config.proxy,
     rightHand,
     leftHand,
-    syntheticSourceSocket,
+    syntheticSourceSocket: null,
     model,
     tipMarker,
     attachmentConfig: config.attachment,
@@ -192,7 +188,7 @@ function createWeaponProxy(THREE, actorRoot, sabreRoot, config) {
     fkLocalPosition: null,
     fkLocalQuaternion: null,
   };
-  applyWeaponSocketRuntimeRules(THREE, { model: actorRoot, proxy, placementSignature: 'diagnostic-init', force: true });
+  applyWeaponSocketRuntimeRules(THREE, { model: actorRoot, proxy, force: true });
   applyWeaponAttachmentRuntimeRules(THREE, { actorModel: actorRoot, proxy, config: config.attachment });
   return proxy;
 }
@@ -231,20 +227,20 @@ async function inspectClip(THREE, GLTFLoader, cloneSkinnedObject, config, clipNa
   const duration = Math.max(0.001, Number(clip.duration || 0.001));
   const times = Array.from({ length: sampleCount }, (_, index) => duration * (index / Math.max(1, sampleCount - 1)));
   const trackSummary = {
-    WeaponR: clipTracksFor(clip, 'WeaponR'),
-    WeaponGrip: clipTracksFor(clip, 'WeaponGrip'),
+      WeaponGrip: clipTracksFor(clip, 'WeaponGrip'),
+      WeaponR: clipTracksFor(clip, 'WeaponR'),
     RightHand: clipTracksFor(clip, 'RightHand'),
     LeftHand: clipTracksFor(clip, 'LeftHand'),
   };
   const samples = [];
   for (const [index, time] of times.entries()) {
     applyClipPoseAtTime(THREE, actor.scene, clip, time);
-    const animatedSourceSocketRotation = hasQuaternionTrack(clip, proxy.syntheticSourceSocket?.name || 'WeaponR');
+    const animatedSourceSocketRotation = hasQuaternionTrack(clip, 'WeaponR');
     const animatedSocketRotation = hasQuaternionTrack(clip, proxy.root?.name || 'WeaponGrip');
-    const force = index === 0;
+    const force = false;
     const signature = weaponPlacementConfigSignature(THREE, proxy.config, {
       model: actor.scene,
-      parent: proxy.syntheticSourceSocket || proxy.rightHand || null,
+      parent: proxy.rightHand || null,
     });
     const result = applyWeaponSocketRuntimeRules(THREE, {
       model: actor.scene,
@@ -267,17 +263,16 @@ async function inspectClip(THREE, GLTFLoader, cloneSkinnedObject, config, clipNa
       animatedSourceSocketRotation,
       animatedSocketRotation,
       syntheticFkSignature: proxy.syntheticFkSignature || '',
+      fkPlacementSignature: proxy.fkPlacementSignature || '',
       socketHandBaselineLocal: proxy.socketHandBaselineLocal ? [proxy.socketHandBaselineLocal.x, proxy.socketHandBaselineLocal.y, proxy.socketHandBaselineLocal.z].map((value) => Number(value.toFixed(6))) : null,
       matrices: captureNodeMatrices(THREE, proxy),
       landmarks: {
         rightHand: vectorArray(landmarks.rightHand),
-        weaponR: vectorArray(landmarks.syntheticSourceSocket),
         weaponGrip: vectorArray(landmarks.socket),
         appliedHilt: vectorArray(landmarks.appliedHilt),
         visibleMeshHilt: vectorArray(landmarks.visibleMeshHilt),
       },
       handLocalLandmarks: {
-        weaponR: pointInNodeLocal(proxy.rightHand, landmarks.syntheticSourceSocket),
         weaponGrip: pointInNodeLocal(proxy.rightHand, landmarks.socket),
         appliedHilt: pointInNodeLocal(proxy.rightHand, landmarks.appliedHilt),
         visibleMeshHilt: pointInNodeLocal(proxy.rightHand, landmarks.visibleMeshHilt),
@@ -287,13 +282,11 @@ async function inspectClip(THREE, GLTFLoader, cloneSkinnedObject, config, clipNa
     });
   }
   const drift = {
-    WeaponR: compareSampleDrift(samples, 'WeaponR'),
     WeaponGrip: compareSampleDrift(samples, 'WeaponGrip'),
     displayRoot: compareSampleDrift(samples, 'displayRoot'),
     weaponMesh: compareSampleDrift(samples, 'weaponMesh'),
   };
   const handLocalDrift = {
-    weaponR: compareVectorDrift(samples, 'handLocalLandmarks', 'weaponR'),
     weaponGrip: compareVectorDrift(samples, 'handLocalLandmarks', 'weaponGrip'),
     appliedHilt: compareVectorDrift(samples, 'handLocalLandmarks', 'appliedHilt'),
     visibleMeshHilt: compareVectorDrift(samples, 'handLocalLandmarks', 'visibleMeshHilt'),
@@ -306,7 +299,9 @@ async function inspectClip(THREE, GLTFLoader, cloneSkinnedObject, config, clipNa
       sourceName: clip.userData?.sourceName || null,
       sourceKeyCount: generated.sourceKeyCount || null,
       targetKeyCount: generated.targetKeyCount || null,
+      weaponTrackEnabled: clip.userData?.keyConvert?.weaponTrackEnabled === true,
       weaponTrackTarget: clip.userData?.keyConvert?.weaponTrackTarget || null,
+      experimentalWeaponSwing: clip.userData?.keyConvert?.experimentalWeaponSwing === true,
       droppedInitialRestKey: clip.userData?.keyConvert?.droppedInitialRestKey ?? null,
       trimmedInitialRestTime: clip.userData?.keyConvert?.trimmedInitialRestTime ?? null,
       rightRollOffsetDeg: clip.userData?.keyConvert?.rightRollOffsetDeg ?? null,
@@ -331,7 +326,7 @@ function compareReports(ready, tpose) {
   for (const node of ['WeaponR', 'WeaponGrip', 'RightHand', 'LeftHand']) {
     if (!sameArray(ready.trackSummary[node], tpose.trackSummary[node])) blockers.push(`track-summary-differs:${node}`);
   }
-  for (const field of ['runtimeMode', 'animatedSourceSocketRotation', 'animatedSocketRotation', 'placementSignature']) {
+  for (const field of ['runtimeMode', 'animatedSourceSocketRotation', 'animatedSocketRotation', 'fkPlacementSignature']) {
     const readyValues = [...new Set(ready.samples.map((sample) => JSON.stringify(sample[field])))];
     const tposeValues = [...new Set(tpose.samples.map((sample) => JSON.stringify(sample[field])))];
     if (!sameArray(readyValues, tposeValues)) blockers.push(`runtime-field-differs:${field}`);
@@ -342,7 +337,7 @@ function compareReports(ready, tpose) {
     if (readyStable !== tposeStable) blockers.push(`local-matrix-stability-differs:${child}`);
   }
   const crossClipHandLocalDelta = {};
-  for (const point of ['weaponR', 'weaponGrip', 'appliedHilt', 'visibleMeshHilt']) {
+  for (const point of ['weaponGrip', 'appliedHilt', 'visibleMeshHilt']) {
     const readyFirst = ready.samples[0]?.handLocalLandmarks?.[point] || null;
     const tposeFirst = tpose.samples[0]?.handLocalLandmarks?.[point] || null;
     const delta = vectorDelta(readyFirst, tposeFirst);

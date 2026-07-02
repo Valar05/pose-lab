@@ -495,18 +495,20 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
     stabilizeQuaternionTrack(track);
     return track;
   });
-  const weaponTrack = buildWeaponTrack(THREE, sourceClone, targetClone, sourceClip, outputTimes, sampleTimes, tracks, {
-    sourceHand: 'Hand.R',
-    sourceWeapon: 'Weapon.R',
-    sourceFrame: 'ShoulderCenter',
-    targetFrame: 'Spine02',
-    sourceTipLocal: [0.00854, 0.57786, 0.00995],
-    sourceUpAxis: [0, 1, 0],
-    targetHand: 'RightHand',
-    targetWeapon: 'WeaponR',
-    targetBladeLocal: deriveAttachmentBladeLocal(THREE, options.weaponAttachment).toArray().map((value) => Number(value.toFixed(5))),
-    targetUpLocal: [0, 1, 0],
-  });
+  const weaponConfig = options.weaponKeyConvert || {};
+  const experimentalWeaponTrack = weaponConfig.enabled === true && weaponConfig.experimentalWeaponSwing === true;
+  const weaponTrack = experimentalWeaponTrack ? buildWeaponTrack(THREE, sourceClone, targetClone, sourceClip, outputTimes, sampleTimes, tracks, {
+    sourceHand: weaponConfig.sourceHand || 'Hand.R',
+    sourceWeapon: weaponConfig.sourceWeapon || 'Weapon.R',
+    sourceFrame: weaponConfig.sourceFrame || 'ShoulderCenter',
+    targetFrame: weaponConfig.targetFrame || 'Spine02',
+    sourceTipLocal: weaponConfig.sourceTipLocal || [0.00854, 0.57786, 0.00995],
+    sourceUpAxis: weaponConfig.sourceUpAxis || [0, 1, 0],
+    targetHand: weaponConfig.targetHand || 'RightHand',
+    targetWeapon: weaponConfig.targetWeapon || 'WeaponR',
+    targetBladeLocal: weaponConfig.targetBladeLocal || deriveAttachmentBladeLocal(THREE, options.weaponAttachment).toArray().map((value) => Number(value.toFixed(5))),
+    targetUpLocal: weaponConfig.targetUpLocal || [0, 1, 0],
+  }) : null;
   if (weaponTrack) tracks.push(weaponTrack);
   const clipName = options.clipName || 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]';
   const duration = outputTimes[outputTimes.length - 1] || Math.max(0.001, sourceClip.duration - firstSampleTime);
@@ -522,6 +524,7 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
       trimmedInitialRestTime: Number(firstSampleTime.toFixed(6)),
       weaponTrackEnabled: Boolean(weaponTrack),
       weaponTrackTarget: weaponTrack ? 'WeaponR' : null,
+      experimentalWeaponSwing: experimentalWeaponTrack,
       weaponOrientationMode: weaponTrack?.userData?.orientationMode || null,
       weaponTargetBladeLocal: weaponTrack?.userData?.weaponTargetBladeLocal || null,
       weaponTargetUpLocal: weaponTrack?.userData?.weaponTargetUpLocal || null,

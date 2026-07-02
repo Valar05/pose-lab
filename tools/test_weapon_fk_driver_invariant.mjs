@@ -159,8 +159,8 @@ async function main() {
   const restBlockStart = profilesSource.indexOf("clipTag: 'FPS-REST-ARMS-CAL'");
   const restBlockEnd = profilesSource.indexOf('directRotationPairs: MESHY_FPS_REST_DIRECT_PAIRS', restBlockStart);
   const restBlock = restBlockStart >= 0 && restBlockEnd > restBlockStart ? profilesSource.slice(restBlockStart, restBlockEnd) : '';
-  assert(restBlock && restBlock.includes('weaponKeyConvert') && restBlock.includes("targetWeapon: 'WeaponR'") && restBlock.includes('applyToHand: false'), 'T-pose rest bridge must key the generic FPS-authored WeaponR socket without forcing the hand');
-  assert(restBlock && !restBlock.includes("targetWeapon: 'WeaponGrip'") && !restBlock.includes('applyToHand: true'), 'T-pose rest bridge must not animate WeaponGrip or solve the hand from the socket');
+  assert(restBlock && !restBlock.includes('weaponKeyConvert'), 'T-pose rest bridge must not generate Meshy weapon tracks for normal FK clips');
+  assert(profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy weapon proxy must use direct RightHand FK');
 
   ensureBrowserShim();
   const threeDir = ensureThreeSandbox();
@@ -169,13 +169,6 @@ async function main() {
   const config = resolvePoseLabActorRuntimeConfig('meshyCharacter');
   const actorPath = path.join(projectRoot, config.actor.url);
   const weaponPath = path.join(projectRoot, config.attachment.url);
-
-  const syntheticActor = await loadGlb(GLTFLoader, actorPath);
-  fitModelToHeight(THREE, syntheticActor.scene, config.actor.targetHeight);
-  const syntheticWeapon = await loadGlb(GLTFLoader, weaponPath);
-  const syntheticProxy = makeProxy(THREE, syntheticActor.scene, syntheticWeapon.scene, config, 'synthetic-source-socket');
-  syncWeapon(THREE, syntheticActor.scene, syntheticProxy, config.attachment, { force: true });
-  const weaponRDrift = assertRigidUnderDriver(THREE, syntheticActor.scene, syntheticProxy, config.attachment, syntheticProxy.syntheticSourceSocket, { animatedSourceSocketRotation: true });
 
   const handActor = await loadGlb(GLTFLoader, actorPath);
   fitModelToHeight(THREE, handActor.scene, config.actor.targetHeight);
@@ -200,7 +193,6 @@ async function main() {
   const handFkRigidDrift = assertRigidUnderDriver(THREE, handActor.scene, handProxy, config.attachment, handProxy.rightHand);
 
   const tolerance = 0.00001;
-  assert(weaponRDrift.hiltDrift <= tolerance && weaponRDrift.tipDrift <= tolerance, `WeaponR FK driver did not preserve hilt/tip local space: ${JSON.stringify(weaponRDrift)}`);
   assert(handFkLocalDrift <= tolerance, `hand-fk socket local transform changed when only the clip signature changed: ${handFkLocalDrift}`);
   assert(clipLocalDrifts.every((entry) => entry.drift <= tolerance), `FK placement changed for a clip label: ${JSON.stringify(clipLocalDrifts)}`);
   assert(handFkRigidDrift.hiltDrift <= tolerance && handFkRigidDrift.tipDrift <= tolerance, `RightHand FK driver did not preserve hilt/tip local space: ${JSON.stringify(handFkRigidDrift)}`);
@@ -208,7 +200,6 @@ async function main() {
   if (failures.length) throw new Error(failures.join('\n'));
   console.log(JSON.stringify({
     checked: 'weapon-fk-driver-invariant',
-    weaponRDrift,
     clipLocalDrifts,
     handFkLocalDrift,
     handFkRigidDrift,

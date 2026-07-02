@@ -70,6 +70,17 @@ export function weaponProxyTopologySignature(config = {}, proxy = {}) {
   });
 }
 
+function weaponFkAuthoringConfigSignature(config = {}) {
+  return JSON.stringify({
+    positionMode: config.positionMode || '',
+    handLocalOffset: numericArray(config.handLocalOffset),
+    modelLocalOffset: numericArray(config.modelLocalOffset),
+    gripOffset: numericArray(config.gripOffset),
+    rotationDeg: numericArray(config.rotationDeg),
+    compensateParentScale: config.compensateParentScale !== false,
+  });
+}
+
 function ensureProxyTopology(config, proxy) {
   const signature = weaponProxyTopologySignature(config, proxy);
   if (!proxy.topologySignature) {
@@ -176,16 +187,31 @@ export function applyWeaponSocketRuntimeRules(THREE, {
 
   if (config.parentMode === 'hand-fk') {
     const fkSignature = weaponPlacementConfigSignature(THREE, config, { model, parent: proxy.rightHand });
-    if (force || proxy.fkPlacementSignature !== fkSignature || !proxy.fkLocalPosition || !proxy.fkLocalQuaternion) {
+    const fkAuthoringSignature = weaponFkAuthoringConfigSignature(config);
+    if (force || proxy.fkAuthoringSignature !== fkAuthoringSignature || !proxy.fkLocalPosition || !proxy.fkLocalQuaternion) {
       const socketWorldPosition = model.localToWorld(local.clone());
       proxy.fkLocalPosition = socketWorldPosition.clone().applyMatrix4(proxy.rightHand.matrixWorld.clone().invert());
       const socketWorldQuaternion = weaponWorldQuaternion(THREE, model).multiply(quaternionFromDeg(THREE, config.rotationDeg)).normalize();
       proxy.fkLocalQuaternion = weaponWorldQuaternion(THREE, proxy.rightHand).invert().multiply(socketWorldQuaternion).normalize();
+      proxy.fkAuthoringSignature = fkAuthoringSignature;
       proxy.fkPlacementSignature = fkSignature;
-      proxy.root.position.copy(proxy.fkLocalPosition);
-      proxy.root.quaternion.copy(proxy.fkLocalQuaternion);
     }
-    return { handled: true, mode: 'hand-fk', local, root: proxy.root };
+    proxy.fkCurrentPlacementSignature = fkSignature;
+    proxy.root.position.copy(proxy.fkLocalPosition);
+    proxy.root.quaternion.copy(proxy.fkLocalQuaternion);
+    proxy.root.updateMatrixWorld(true);
+    proxy.socketHandBaselineLocal = proxy.rightHand.worldToLocal(weaponWorldPosition(THREE, proxy.root).clone());
+    return {
+      handled: true,
+      mode: 'hand-fk',
+      local,
+      authoredSocketWorld: weaponWorldPosition(THREE, proxy.root),
+      targetSocketWorld: weaponWorldPosition(THREE, proxy.root),
+      socketHandBaselineLocal: proxy.socketHandBaselineLocal.clone(),
+      fkLocalPosition: proxy.fkLocalPosition.clone(),
+      fkLocalQuaternion: proxy.fkLocalQuaternion.clone(),
+      root: proxy.root,
+    };
   }
 
   if (!proxy.leftHand) return { handled: false, reason: 'missing-left-hand', local };
@@ -412,6 +438,9 @@ export function captureWeaponPinningRuntimeState(THREE, proxy) {
   const socketInHand = proxy?.rightHand && proxy?.root
     ? proxy.rightHand.worldToLocal(weaponWorldPosition(THREE, proxy.root).clone())
     : null;
+  const socketQuaternionInHand = proxy?.rightHand && proxy?.root
+    ? weaponLocalQuaternion(THREE, proxy.rightHand, proxy.root)
+    : null;
   const appliedHiltInHand = proxy?.rightHand && landmarks.appliedHilt
     ? proxy.rightHand.worldToLocal(landmarks.appliedHilt.clone())
     : null;
@@ -456,6 +485,7 @@ export function captureWeaponPinningRuntimeState(THREE, proxy) {
     landmarks,
     local: {
       socketInHand,
+      socketQuaternionInHand,
       appliedHiltInHand,
       socketHandBaseline: proxy?.socketHandBaselineLocal?.clone?.() || null,
       socketInPalmTarget,

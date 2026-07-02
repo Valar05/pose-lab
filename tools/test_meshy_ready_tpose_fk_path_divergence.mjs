@@ -16,7 +16,7 @@ assert(source.includes('placementSignature'), 'divergence tool must report the p
 assert(source.includes('parentLocalMatrix') && source.includes('maxParentLocalMatrixDrift'), 'divergence tool must compare local matrix drift, not just landmarks');
 assert(source.includes('track-summary-differs') && source.includes('runtime-field-differs'), 'divergence tool must classify path differences');
 assert(source.includes('handLocalLandmarks') && source.includes('right-hand-local-landmark-differs'), 'divergence tool must compare weapon landmarks in RightHand local space');
-assert(source.includes('acceptedAsFix: false'), 'divergence artifact must not present itself as a fix');
+assert(source.includes('acceptedAsFix: false'), 'divergence artifact must not present itself as browser-fixed evidence');
 
 const raw = execFileSync('node', [tool, '--out', out, '--samples', '3'], { cwd: projectRoot, encoding: 'utf8' });
 const summary = JSON.parse(raw.slice(raw.indexOf('{')));
@@ -24,28 +24,27 @@ const report = JSON.parse(fs.readFileSync(path.join(projectRoot, summary.path), 
 
 assert(report.schema === 'pose-lab-meshy-fk-path-divergence-v1', `unexpected schema ${report.schema}`);
 assert(report.diagnosticOnly === true && report.productionBehaviorModified === false, 'report must be diagnostic-only');
-assert(report.acceptedAsFix === false, 'report must not claim a fix');
+assert(report.acceptedAsFix === false, 'report must not claim browser-visible fix');
 assert(report.clips?.ready?.generatedClipResolved === true, 'Ready generated clip should resolve for comparison');
 assert(report.clips?.tpose?.generatedClipResolved === true, 'T-pose generated clip should resolve for comparison');
 for (const clip of [report.clips.ready, report.clips.tpose]) {
   assert(Array.isArray(clip.trackSummary?.WeaponR), `${clip.clip} missing WeaponR track summary`);
   assert(Array.isArray(clip.trackSummary?.WeaponGrip), `${clip.clip} missing WeaponGrip track summary`);
-  assert(clip.samples?.every((sample) => sample.matrices?.RightHand && sample.matrices?.WeaponR && sample.matrices?.WeaponGrip && sample.matrices?.displayRoot && sample.matrices?.weaponMesh), `${clip.clip} missing sampled FK matrices`);
+  assert(clip.samples?.every((sample) => sample.matrices?.RightHand && sample.matrices?.WeaponGrip && sample.matrices?.displayRoot && sample.matrices?.weaponMesh), `${clip.clip} missing sampled FK matrices`);
   assert(clip.samples?.every((sample) => sample.handLocalLandmarks?.weaponGrip && sample.handLocalLandmarks?.appliedHilt && sample.handLocalLandmarks?.visibleMeshHilt), `${clip.clip} missing RightHand-local landmark samples`);
   assert(clip.samples?.every((sample) => typeof sample.animatedSourceSocketRotation === 'boolean' && typeof sample.animatedSocketRotation === 'boolean'), `${clip.clip} missing runtime branch flags`);
+  assert(clip.trackSummary.WeaponR.length === 0 && clip.trackSummary.WeaponGrip.length === 0, `${clip.clip} should not contain normal Meshy weapon quaternion tracks: ${JSON.stringify(clip.trackSummary)}`);
 }
-assert(report.ok === false, 'current broken state should remain classified as divergent until the FK contract is actually shared');
-assert(report.comparison?.blockers?.length > 0, 'divergent report should name blockers');
-assert(report.comparison.blockers.some((item) => item.startsWith('track-summary-differs:') || item.startsWith('runtime-field-differs:') || item.startsWith('right-hand-local-landmark-differs:')), `expected track/runtime/hand-local divergence blocker, got ${JSON.stringify(report.comparison.blockers)}`);
-assert(report.comparison?.crossClipHandLocalDelta?.appliedHilt > 0.001, 'report should measure the applied hilt mismatch in RightHand local space');
+assert(report.ok === true, `Ready and T-pose should now share the pure FK weapon path: ${JSON.stringify(report.comparison?.blockers)}`);
+assert(report.comparison?.blockers?.length === 0, `shared FK report should not name blockers: ${JSON.stringify(report.comparison?.blockers)}`);
+assert(report.comparison?.crossClipHandLocalDelta?.appliedHilt <= 0.001, `applied hilt should stay stable in RightHand local space: ${JSON.stringify(report.comparison?.crossClipHandLocalDelta)}`);
 
 const asserted = spawnSync('node', [tool, '--out', path.join(out, 'assert-shared'), '--samples', '3', '--assert-shared'], { cwd: projectRoot, encoding: 'utf8' });
-assert(asserted.status !== 0, '--assert-shared should fail while Ready and T-pose consume divergent FK paths');
-assert(String(asserted.stderr || asserted.stdout).includes('do not consume the same FK path'), '--assert-shared failure should explain the path divergence');
+assert(asserted.status === 0, `--assert-shared should pass for pure FK clips: ${asserted.stderr || asserted.stdout}`);
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({
-  checked: ['meshy-ready-tpose-fk-path-divergence', 'matrix-level-fk-path-report', 'assert-shared-negative-control'],
+  checked: ['meshy-ready-tpose-shared-fk-path', 'matrix-level-fk-path-report', 'assert-shared-positive-control'],
   report: summary.path,
   blockers: report.comparison.blockers,
 }, null, 2));

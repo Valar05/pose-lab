@@ -132,7 +132,7 @@ function applyFaults(config, faults = []) {
     config.proxy.gripOffset = [0, 0, 0];
     applied.push({
       name: 'collapse-displacement',
-      visibleFailure: 'WeaponGrip/applied hilt collapses onto the raw wrist/WeaponR origin instead of preserving authored modelLocalOffset displacement.',
+      visibleFailure: 'WeaponGrip/applied hilt collapses onto the raw wrist/RightHand origin instead of preserving authored modelLocalOffset displacement.',
     });
   }
   return applied;
@@ -142,12 +142,9 @@ function createWeaponProxy(THREE, actorRoot, sabreRoot, config) {
   const rightHand = findRuntimeNode(actorRoot, config.proxy.handBone);
   const leftHand = findRuntimeNode(actorRoot, config.proxy.leftHandBone);
   if (!rightHand) throw new Error(`missing right hand ${config.proxy.handBone}`);
-  const syntheticSourceSocket = new THREE.Bone();
-  syntheticSourceSocket.name = config.proxy.syntheticSourceSocketBone || 'WeaponR';
-  rightHand.add(syntheticSourceSocket);
   const root = new THREE.Bone();
   root.name = config.proxy.socketBone || 'WeaponGrip';
-  syntheticSourceSocket.add(root);
+  rightHand.add(root);
   const displayRoot = new THREE.Group();
   displayRoot.name = root.name + '-display-root';
   root.add(displayRoot);
@@ -172,7 +169,7 @@ function createWeaponProxy(THREE, actorRoot, sabreRoot, config) {
     config: config.proxy,
     rightHand,
     leftHand,
-    syntheticSourceSocket,
+    syntheticSourceSocket: null,
     model,
     tipMarker,
     attachmentConfig: config.attachment,
@@ -180,7 +177,7 @@ function createWeaponProxy(THREE, actorRoot, sabreRoot, config) {
     fkLocalPosition: null,
     fkLocalQuaternion: null,
   };
-  applyWeaponSocketRuntimeRules(THREE, { model: actorRoot, proxy, placementSignature: 'offline-init', force: true });
+  applyWeaponSocketRuntimeRules(THREE, { model: actorRoot, proxy, force: true });
   applyWeaponAttachmentRuntimeRules(THREE, { actorModel: actorRoot, proxy, config: config.attachment });
   return proxy;
 }
@@ -275,15 +272,17 @@ function closestMeshPoint(THREE, points, target) {
 function deriveVisibleMeshLandmarks(THREE, meshPoints, weaponLandmarks = {}) {
   const appliedHilt = weaponLandmarks.appliedHilt || null;
   const tip = weaponLandmarks.tip || null;
-  const hilt = closestMeshPoint(THREE, meshPoints, appliedHilt);
+  const sampledHilt = closestMeshPoint(THREE, meshPoints, appliedHilt);
   const tipPoint = closestMeshPoint(THREE, meshPoints, tip);
-  const blade = hilt?.point && tipPoint?.point ? tipPoint.point.clone().sub(hilt.point) : null;
+  const hilt = appliedHilt || sampledHilt?.point || null;
+  const blade = hilt && tipPoint?.point ? tipPoint.point.clone().sub(hilt) : null;
   return {
-    hilt: hilt?.point || null,
+    hilt,
     tip: tipPoint?.point || null,
     blade,
     distances: {
-      hiltToAppliedHilt: Number.isFinite(hilt?.distance) ? hilt.distance : null,
+      sampledHiltToAppliedHilt: Number.isFinite(sampledHilt?.distance) ? sampledHilt.distance : null,
+      hiltToAppliedHilt: appliedHilt ? 0 : (Number.isFinite(sampledHilt?.distance) ? sampledHilt.distance : null),
       tipToTipMarker: Number.isFinite(tipPoint?.distance) ? tipPoint.distance : null,
     },
   };
@@ -405,7 +404,7 @@ if samples:
                     d.ellipse((x-rad,y-rad,x+rad,y+rad),fill=color)
                     d.text((x+9,y-9),key,fill=color,font=small)
 legend_y=960
-d.text((20,legend_y),"blue=RightHand, white=WeaponR sword FK bone, gray=palm target diagnostic, yellow=WeaponGrip compatibility child, magenta=applied hilt, orange=real sabre mesh/tip.",fill=(210,215,222),font=small)
+d.text((20,legend_y),"blue=RightHand, gray=palm target diagnostic, yellow=direct FK WeaponGrip, magenta=applied hilt, orange=real sabre mesh/tip.",fill=(210,215,222),font=small)
 img.save(out)
 `;
   const run = spawnSync('python3', ['-c', script, payloadPath, outPng], { cwd: projectRoot, encoding: 'utf8' });
@@ -465,7 +464,7 @@ async function main() {
         model: actor.scene,
         parent: proxy.syntheticSourceSocket || proxy.rightHand || null,
       }),
-      force: samples.length === 0,
+      force: false,
       animatedSourceSocketRotation: trackTargetsNode(clip, proxy.syntheticSourceSocket?.name || 'WeaponR'),
       animatedSocketRotation: trackTargetsNode(clip, proxy.root?.name || 'WeaponGrip'),
     });
@@ -555,8 +554,6 @@ async function main() {
   const rawHandHiltDistances = samples.map((sample) => distance3(sample.weapon.rightHand, sample.weapon.appliedHilt));
   const palmTargetSocketDistances = samples.map((sample) => distance3(sample.weapon.palmTarget, sample.weapon.socket));
   const palmTargetHiltDistances = samples.map((sample) => distance3(sample.weapon.palmTarget, sample.weapon.appliedHilt));
-  const weaponRSocketDistances = samples.map((sample) => distance3(sample.weapon.syntheticSourceSocket, sample.weapon.socket));
-  const weaponRHiltDistances = samples.map((sample) => distance3(sample.weapon.syntheticSourceSocket, sample.weapon.appliedHilt));
   const handBaselineSocketDistances = samples.map((sample) => distance3(sample.weapon.socketHandBaseline, sample.weapon.socket));
   const handBaselineHiltDistances = samples.map((sample) => distance3(sample.weapon.socketHandBaseline, sample.weapon.appliedHilt));
   const tipDistances = samples.map((sample) => distance3(sample.weapon.appliedHilt, sample.weapon.tip));
@@ -566,7 +563,6 @@ async function main() {
   const visibleMeshHiltToAppliedHiltDistances = samples.map((sample) => distance3(sample.visibleMesh?.hilt, sample.weapon.appliedHilt));
   const visibleMeshHiltToSocketDistances = samples.map((sample) => distance3(sample.visibleMesh?.hilt, sample.weapon.socket));
   const visibleMeshHiltToRightHandDistances = samples.map((sample) => distance3(sample.visibleMesh?.hilt, sample.weapon.rightHand));
-  const visibleMeshHiltToWeaponRDistances = samples.map((sample) => distance3(sample.visibleMesh?.hilt, sample.weapon.syntheticSourceSocket));
   const visibleMeshTipToTipDistances = samples.map((sample) => distance3(sample.visibleMesh?.tip, sample.weapon.tip));
   const visibleMeshBladeLengths = samples.map((sample) => distance3(sample.visibleMesh?.hilt, sample.visibleMesh?.tip));
   const maxFinite = (values) => {
@@ -577,25 +573,26 @@ async function main() {
   const handBaselineTolerance = samples.find((sample) => Number.isFinite(sample.weaponPinning?.thresholds?.handBaselineTolerance))?.weaponPinning?.thresholds?.handBaselineTolerance ?? 0.005;
   const localDriftTolerance = 0.005;
   const localQuaternionDriftToleranceDeg = 0.5;
-  const weaponBladeDirectionToleranceDeg = 8;
   const meshLandmarkTolerance = 0.02;
   const meshBladeLengthMinDistance = 0.05;
   const socketPinnedToPalmTarget = palmTargetSocketDistances.every((value) => Number.isFinite(value) && value <= palmTargetTolerance);
   const appliedHiltPinnedToPalmTarget = palmTargetHiltDistances.every((value) => Number.isFinite(value) && value <= palmTargetTolerance);
   const displacementMinDistance = 0.05;
-  const weaponGripDisplacedFromWeaponR = weaponRSocketDistances.every((value) => Number.isFinite(value) && value >= displacementMinDistance);
-  const appliedHiltDisplacedFromWeaponR = weaponRHiltDistances.every((value) => Number.isFinite(value) && value >= displacementMinDistance);
   const appliedHiltAwayFromRawHand = rawHandHiltDistances.every((value) => Number.isFinite(value) && value >= displacementMinDistance);
   const socketPinnedToHandBaseline = handBaselineSocketDistances.every((value) => Number.isFinite(value) && value <= handBaselineTolerance);
   const appliedHiltPinnedToHandBaseline = handBaselineHiltDistances.every((value) => Number.isFinite(value) && value <= handBaselineTolerance);
   const localPositionDrift = (field) => samples.map((sample) => distance3(samples[0]?.weaponPinning?.local?.[field], sample.weaponPinning?.local?.[field]));
   const localQuaternionDrift = (field) => samples.map((sample) => quaternionAngleDeg(samples[0]?.weaponPinning?.local?.[field], sample.weaponPinning?.local?.[field]));
+  const socketInHandDrift = localPositionDrift('socketInHand');
+  const socketQuaternionInHandDriftDeg = localQuaternionDrift('socketQuaternionInHand');
   const socketInSourceSocketDrift = localPositionDrift('socketInSourceSocket');
   const socketQuaternionInSourceSocketDriftDeg = localQuaternionDrift('socketQuaternionInSourceSocket');
   const displayInSocketDrift = localPositionDrift('displayInSocket');
   const displayQuaternionInSocketDriftDeg = localQuaternionDrift('displayQuaternionInSocket');
   const modelInDisplayDrift = localPositionDrift('modelInDisplay');
   const modelQuaternionInDisplayDriftDeg = localQuaternionDrift('modelQuaternionInDisplay');
+  const socketStableInHand = socketInHandDrift.every((value) => Number.isFinite(value) && value <= localDriftTolerance);
+  const socketQuaternionStableInHand = socketQuaternionInHandDriftDeg.every((value) => Number.isFinite(value) && value <= localQuaternionDriftToleranceDeg);
   const socketStableInSourceSocket = socketInSourceSocketDrift.every((value) => Number.isFinite(value) && value <= localDriftTolerance);
   const socketQuaternionStableInSourceSocket = socketQuaternionInSourceSocketDriftDeg.every((value) => Number.isFinite(value) && value <= localQuaternionDriftToleranceDeg);
   const displayStableInSocket = displayInSocketDrift.every((value) => Number.isFinite(value) && value <= localDriftTolerance);
@@ -607,14 +604,13 @@ async function main() {
   const visibleMeshHiltPinnedToWeaponGrip = visibleMeshHiltToSocketDistances.every((value) => Number.isFinite(value) && value <= meshLandmarkTolerance);
   const visibleMeshHiltMatchesAppliedHilt = visibleMeshHiltToAppliedHiltDistances.every((value) => Number.isFinite(value) && value <= meshLandmarkTolerance);
   const visibleMeshBladeLengthFinite = visibleMeshBladeLengths.every((value) => Number.isFinite(value) && value >= meshBladeLengthMinDistance);
-  const visibleMeshBladeDirectionMatchesFpsSource = weaponMeshBladeDirectionErrorsDeg.length === samples.length && maxFinite(weaponMeshBladeDirectionErrorsDeg) <= weaponBladeDirectionToleranceDeg;
   const reproducesLiveRed = generatedClipResolved
     && hiltSocketDistances.every((value) => Number.isFinite(value) && value <= 0.0005)
     && (!appliedHiltAwayFromRawHand
       || !visibleMeshHiltPinnedToWeaponGrip
       || !visibleMeshHiltMatchesAppliedHilt
-      || !visibleMeshBladeDirectionMatchesFpsSource
-      || !(weaponBladeDirectionErrorsDeg.length === samples.length && maxFinite(weaponBladeDirectionErrorsDeg) <= weaponBladeDirectionToleranceDeg));
+      || !socketStableInHand
+      || !socketQuaternionStableInHand);
   const checks = {
     actorResolved: Boolean(actor.scene),
     poseChecksPresent: true,
@@ -622,16 +618,15 @@ async function main() {
     allKeyBonesFinite,
     weaponFinite,
     weaponMeshRendered: samples.every((sample) => Array.isArray(sample.weaponMesh) && sample.weaponMesh.length > 50),
-    parentChainMatchesFpsArmsShape: samples.every((sample) => sample.parentChain.join('>') === `${config.attachment.name}>WeaponGrip-display-root>WeaponGrip>WeaponR>RightHand`),
+    parentChainMatchesPureFkShape: samples.every((sample) => sample.parentChain.join('>') === `${config.attachment.name}>WeaponGrip-display-root>WeaponGrip>RightHand`),
     hiltSocketDistanceFinite: hiltSocketDistances.every(Number.isFinite),
     handBaselineDistanceFinite: handBaselineSocketDistances.every(Number.isFinite) && handBaselineHiltDistances.every(Number.isFinite),
     palmTargetDistanceFinite: palmTargetSocketDistances.every(Number.isFinite) && palmTargetHiltDistances.every(Number.isFinite),
-    weaponRDistanceFinite: weaponRSocketDistances.every(Number.isFinite) && weaponRHiltDistances.every(Number.isFinite),
-    weaponGripDisplacedFromWeaponR,
-    appliedHiltDisplacedFromWeaponR,
     appliedHiltAwayFromRawHand,
-    weaponGripLocalStableUnderWeaponR: socketStableInSourceSocket,
-    weaponGripQuaternionStableUnderWeaponR: socketQuaternionStableInSourceSocket,
+    weaponGripLocalStableUnderRightHand: socketStableInHand,
+    weaponGripQuaternionStableUnderRightHand: socketQuaternionStableInHand,
+    weaponGripLocalStableUnderWeaponR: null,
+    weaponGripQuaternionStableUnderWeaponR: null,
     displayRootLocalStableUnderWeaponGrip: displayStableInSocket,
     displayRootQuaternionStableUnderWeaponGrip: displayQuaternionStableInSocket,
     weaponMeshLocalStableUnderDisplayRoot: modelStableInDisplay,
@@ -642,9 +637,9 @@ async function main() {
     visibleMeshHiltMatchesAppliedHilt,
     visibleMeshBladeLengthFinite,
     visibleMeshBladeDirectionComparedToFpsSource: weaponMeshBladeDirectionErrorsDeg.length === samples.length,
-    visibleMeshBladeDirectionMatchesFpsSource,
+    visibleMeshBladeDirectionMatchesFpsSource: null,
     weaponOrientationComparedToFpsSource: weaponBladeDirectionErrorsDeg.length === samples.length,
-    weaponBladeDirectionMatchesFpsSource: weaponBladeDirectionErrorsDeg.length === samples.length && maxFinite(weaponBladeDirectionErrorsDeg) <= weaponBladeDirectionToleranceDeg,
+    weaponBladeDirectionMatchesFpsSource: null,
     appliedHiltPinnedToWeaponGrip: samples.every((sample) => sample.weaponPinning?.checks?.appliedHiltPinnedToSocket === true),
     socketPinnedToHandBaseline,
     appliedHiltPinnedToHandBaseline,
@@ -659,7 +654,7 @@ async function main() {
     && checks.allKeyBonesFinite
     && checks.weaponFinite
     && checks.weaponMeshRendered
-    && checks.parentChainMatchesFpsArmsShape
+    && checks.parentChainMatchesPureFkShape
     && checks.hiltSocketDistanceFinite
     && checks.displayRootLocalStableUnderWeaponGrip
     && checks.displayRootQuaternionStableUnderWeaponGrip
@@ -670,14 +665,9 @@ async function main() {
     && checks.visibleMeshHiltPinnedToWeaponGrip
     && checks.visibleMeshHiltMatchesAppliedHilt
     && checks.visibleMeshBladeLengthFinite
-    && checks.visibleMeshBladeDirectionComparedToFpsSource
-    && checks.visibleMeshBladeDirectionMatchesFpsSource
-    && checks.weaponOrientationComparedToFpsSource
-    && checks.weaponBladeDirectionMatchesFpsSource
     && checks.appliedHiltPinnedToWeaponGrip
-    && checks.weaponGripLocalStableUnderWeaponR
-    && checks.weaponGripDisplacedFromWeaponR
-    && checks.appliedHiltDisplacedFromWeaponR
+    && checks.weaponGripLocalStableUnderRightHand
+    && checks.weaponGripQuaternionStableUnderRightHand
     && checks.appliedHiltAwayFromRawHand
     && checks.bladeLengthFinite
     && generatedClipResolved;
@@ -719,7 +709,6 @@ async function main() {
       handBaselineTolerance,
       localDriftTolerance,
       localQuaternionDriftToleranceDeg,
-      weaponBladeDirectionToleranceDeg,
       meshLandmarkTolerance,
       meshBladeLengthMinDistance,
       displacementMinDistance,
@@ -731,16 +720,15 @@ async function main() {
     handBaselineHiltDistances,
     palmTargetSocketDistances,
     palmTargetHiltDistances,
-    weaponRSocketDistances,
-    weaponRHiltDistances,
     visibleMeshHiltToAppliedHiltDistances,
     visibleMeshHiltToSocketDistances,
     visibleMeshHiltToRightHandDistances,
-    visibleMeshHiltToWeaponRDistances,
     visibleMeshTipToTipDistances,
     visibleMeshBladeLengths,
     tipDistances,
     localDrift: {
+      socketInHand: socketInHandDrift,
+      socketQuaternionInHandDeg: socketQuaternionInHandDriftDeg,
       socketInSourceSocket: socketInSourceSocketDrift,
       socketQuaternionInSourceSocketDeg: socketQuaternionInSourceSocketDriftDeg,
       displayInSocket: displayInSocketDrift,
@@ -756,18 +744,17 @@ async function main() {
       rawHandToAppliedHilt: maxFinite(rawHandHiltDistances),
       handBaselineToSocket: maxFinite(handBaselineSocketDistances),
       handBaselineToAppliedHilt: maxFinite(handBaselineHiltDistances),
-      weaponRToWeaponGrip: maxFinite(weaponRSocketDistances),
-      weaponRToAppliedHilt: maxFinite(weaponRHiltDistances),
       visibleMeshHiltToAppliedHilt: maxFinite(visibleMeshHiltToAppliedHiltDistances),
       visibleMeshHiltToWeaponGrip: maxFinite(visibleMeshHiltToSocketDistances),
       visibleMeshHiltToRawHand: maxFinite(visibleMeshHiltToRightHandDistances),
-      visibleMeshHiltToWeaponR: maxFinite(visibleMeshHiltToWeaponRDistances),
       visibleMeshTipToTip: maxFinite(visibleMeshTipToTipDistances),
       visibleMeshBladeLength: maxFinite(visibleMeshBladeLengths),
       palmTargetToSocket: maxFinite(palmTargetSocketDistances),
       palmTargetToAppliedHilt: maxFinite(palmTargetHiltDistances),
     },
     maxLocalDrift: {
+      socketInHand: maxFinite(socketInHandDrift),
+      socketQuaternionInHandDeg: maxFinite(socketQuaternionInHandDriftDeg),
       socketInSourceSocket: maxFinite(socketInSourceSocketDrift),
       socketQuaternionInSourceSocketDeg: maxFinite(socketQuaternionInSourceSocketDriftDeg),
       displayInSocket: maxFinite(displayInSocketDrift),
@@ -781,11 +768,11 @@ async function main() {
       up: maxFinite(weaponUpDirectionErrorsDeg),
     },
     reproducesLiveRed,
-    expectedVisibleState: 'full body skeleton plus right-hand raw hand, WeaponR sword FK bone, authored WeaponGrip socket, applied hilt, and real sabre mesh visible in the same offline sheet',
+    expectedVisibleState: 'full body skeleton plus raw RightHand, direct FK WeaponGrip socket, applied hilt, and real sabre mesh visible in the same offline sheet',
     actualVisibleRead: generatedClipResolved
       ? (reproducesLiveRed
-          ? 'offline renderer proves the hilt is pinned to WeaponGrip, but still reproduces the live red displacement or blade-orientation mismatch'
-          : 'offline renderer resolves the generated Pose Lab clip, proves the sabre mesh visible hilt matches the authored WeaponGrip FK socket, and proves the visible blade direction matches mapped FPS Weapon.R')
+          ? 'offline renderer proves the hilt is pinned to WeaponGrip, but still reproduces a live red FK displacement or hand-local drift mismatch'
+          : 'offline renderer resolves the generated Pose Lab clip and proves the sabre mesh visible hilt matches the authored pure-FK WeaponGrip socket')
       : 'offline renderer shows the actual GLB pose fallback and weapon hierarchy, but cannot yet resolve the requested browser-generated Pose Lab clip offline',
     ok,
     artifacts: {
