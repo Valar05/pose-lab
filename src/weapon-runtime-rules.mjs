@@ -70,17 +70,6 @@ export function weaponProxyTopologySignature(config = {}, proxy = {}) {
   });
 }
 
-function weaponFkAuthoringConfigSignature(config = {}) {
-  return JSON.stringify({
-    positionMode: config.positionMode || '',
-    handLocalOffset: numericArray(config.handLocalOffset),
-    modelLocalOffset: numericArray(config.modelLocalOffset),
-    gripOffset: numericArray(config.gripOffset),
-    rotationDeg: numericArray(config.rotationDeg),
-    compensateParentScale: config.compensateParentScale !== false,
-  });
-}
-
 function ensureProxyTopology(config, proxy) {
   const signature = weaponProxyTopologySignature(config, proxy);
   if (!proxy.topologySignature) {
@@ -135,6 +124,31 @@ export function applyWeaponSocketRuntimeRules(THREE, {
   }
   if (!proxy.rightHand) return { handled: false, reason: 'missing-right-hand' };
 
+  if (config.parentMode === 'hand-fk') {
+    const fkSignature = weaponPlacementConfigSignature(THREE, config, { model, parent: proxy.rightHand });
+    proxy.root.position.copy(vectorFromArray(THREE, config.handLocalOffset));
+    proxy.root.position.add(vectorFromArray(THREE, config.modelLocalOffset));
+    proxy.root.position.add(vectorFromArray(THREE, config.gripOffset));
+    proxy.root.quaternion.copy(quaternionFromDeg(THREE, config.rotationDeg));
+    proxy.fkLocalPosition = proxy.root.position.clone();
+    proxy.fkLocalQuaternion = proxy.root.quaternion.clone().normalize();
+    proxy.fkPlacementSignature = fkSignature;
+    proxy.fkCurrentPlacementSignature = fkSignature;
+    proxy.root.updateMatrixWorld(true);
+    proxy.socketHandBaselineLocal = proxy.root.position.clone();
+    return {
+      handled: true,
+      mode: 'hand-fk',
+      local: proxy.root.position.clone(),
+      authoredSocketWorld: weaponWorldPosition(THREE, proxy.root),
+      targetSocketWorld: weaponWorldPosition(THREE, proxy.root),
+      socketHandBaselineLocal: proxy.socketHandBaselineLocal.clone(),
+      fkLocalPosition: proxy.fkLocalPosition.clone(),
+      fkLocalQuaternion: proxy.fkLocalQuaternion.clone(),
+      root: proxy.root,
+    };
+  }
+
   model.updateMatrixWorld(true);
   const rightWorld = Array.isArray(config.handLocalOffset)
     ? proxy.rightHand.localToWorld(vectorFromArray(THREE, config.handLocalOffset))
@@ -181,35 +195,6 @@ export function applyWeaponSocketRuntimeRules(THREE, {
       syntheticFkLocalPosition: proxy.syntheticFkLocalPosition.clone(),
       syntheticFkLocalQuaternion: proxy.syntheticFkLocalQuaternion.clone(),
       socketParent,
-      root: proxy.root,
-    };
-  }
-
-  if (config.parentMode === 'hand-fk') {
-    const fkSignature = weaponPlacementConfigSignature(THREE, config, { model, parent: proxy.rightHand });
-    const fkAuthoringSignature = weaponFkAuthoringConfigSignature(config);
-    if (force || proxy.fkAuthoringSignature !== fkAuthoringSignature || !proxy.fkLocalPosition || !proxy.fkLocalQuaternion) {
-      const socketWorldPosition = model.localToWorld(local.clone());
-      proxy.fkLocalPosition = socketWorldPosition.clone().applyMatrix4(proxy.rightHand.matrixWorld.clone().invert());
-      const socketWorldQuaternion = weaponWorldQuaternion(THREE, model).multiply(quaternionFromDeg(THREE, config.rotationDeg)).normalize();
-      proxy.fkLocalQuaternion = weaponWorldQuaternion(THREE, proxy.rightHand).invert().multiply(socketWorldQuaternion).normalize();
-      proxy.fkAuthoringSignature = fkAuthoringSignature;
-      proxy.fkPlacementSignature = fkSignature;
-    }
-    proxy.fkCurrentPlacementSignature = fkSignature;
-    proxy.root.position.copy(proxy.fkLocalPosition);
-    proxy.root.quaternion.copy(proxy.fkLocalQuaternion);
-    proxy.root.updateMatrixWorld(true);
-    proxy.socketHandBaselineLocal = proxy.rightHand.worldToLocal(weaponWorldPosition(THREE, proxy.root).clone());
-    return {
-      handled: true,
-      mode: 'hand-fk',
-      local,
-      authoredSocketWorld: weaponWorldPosition(THREE, proxy.root),
-      targetSocketWorld: weaponWorldPosition(THREE, proxy.root),
-      socketHandBaselineLocal: proxy.socketHandBaselineLocal.clone(),
-      fkLocalPosition: proxy.fkLocalPosition.clone(),
-      fkLocalQuaternion: proxy.fkLocalQuaternion.clone(),
       root: proxy.root,
     };
   }

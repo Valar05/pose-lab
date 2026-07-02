@@ -25,7 +25,10 @@ const fault = render(['--out', faultOut, '--samples', '2', '--fault', 'collapse-
 assert(!poseLabSource.includes("weaponConfig.targetWeapon || 'WeaponGrip'"), 'generated weapon tracks must not default to animating WeaponGrip');
 assert(poseLabSource.includes('experimentalWeaponSwing === true'), 'Meshy generated weapon tracks must be quarantined behind an explicit experimental flag');
 assert(weaponRulesSource.includes('const allowAnimatedGrip = animatedSocketRotation && config.allowAnimatedSocketAnimation === true'), 'synthetic source sockets should ignore accidental WeaponGrip tracks unless explicitly opted in');
-assert(weaponRulesSource.includes('proxy.root.quaternion.copy(proxy.fkLocalQuaternion);'), 'hand-fk runtime must restore the cached local WeaponGrip quaternion every frame');
+assert(weaponRulesSource.includes('proxy.root.position.copy(vectorFromArray(THREE, config.handLocalOffset));'), 'hand-fk runtime must assign WeaponGrip local position from handLocalOffset');
+assert(weaponRulesSource.includes('proxy.root.position.add(vectorFromArray(THREE, config.modelLocalOffset));'), 'hand-fk runtime must add modelLocalOffset directly in RightHand-local space');
+assert(weaponRulesSource.includes('proxy.root.position.add(vectorFromArray(THREE, config.gripOffset));'), 'hand-fk runtime must add gripOffset directly in RightHand-local space');
+assert(weaponRulesSource.includes('proxy.root.quaternion.copy(quaternionFromDeg(THREE, config.rotationDeg));'), 'hand-fk runtime must assign WeaponGrip local quaternion from config without pose-derived cache');
 assert(profilesSource.includes("parentMode: 'hand-fk'") && profilesSource.includes("placementAuthority: 'manual-golden'") && profilesSource.includes('allowAnimatedSocketAnimation: false'), 'Meshy profile should declare pure FK manual placement authority and forbid animated WeaponGrip placement');
 
 assert(fixed.artifact.schema === 'pose-lab-offline-pose-weapon-render-v1', 'fixed render should use canonical offline schema');
@@ -35,12 +38,12 @@ assert(fixed.artifact.sampleData?.every((sample) => sample.parentChain.join('>')
 assert(fixed.artifact.checks?.weaponGripLocalStableUnderRightHand === true, `WeaponGrip should stay locally stable under RightHand: ${JSON.stringify(fixed.artifact.maxLocalDrift)}`);
 assert(fixed.artifact.checks?.weaponGripQuaternionStableUnderRightHand === true, `WeaponGrip local quaternion should stay stable under RightHand: ${JSON.stringify(fixed.artifact.maxLocalDrift)}`);
 assert(fixed.artifact.checks?.appliedHiltPinnedToWeaponGrip === true, `applied hilt should stay pinned to WeaponGrip: ${JSON.stringify(fixed.artifact.hiltSocketDistances)}`);
-assert(fixed.artifact.checks?.appliedHiltAwayFromRawHand === true, `applied hilt should not collapse onto the raw hand: ${JSON.stringify(fixed.artifact.maxDistances)}`);
-assert(Number(fixed.artifact.maxDistances?.rawHandToAppliedHilt) >= Number(fixed.artifact.thresholds?.displacementMinDistance || 0.05), `raw hand to applied hilt distance should exceed displacement threshold: ${JSON.stringify(fixed.artifact.maxDistances)}`);
+assert(fixed.artifact.checks?.appliedHiltInHandRegion === true, `applied hilt should stay in the hand region: ${JSON.stringify(fixed.artifact.maxDistances)}`);
+assert(Number(fixed.artifact.maxDistances?.rawHandToAppliedHilt) <= Number(fixed.artifact.thresholds?.handRegionMaxDistance || 0.025), `raw hand to applied hilt distance should stay within hand-region threshold: ${JSON.stringify(fixed.artifact.maxDistances)}`);
 
 assert(fault.artifact.injectedFaults?.some((entry) => entry.name === 'collapse-displacement'), 'fault render should record injected collapsed-displacement fault');
 assert(fault.artifact.ok === false, 'collapsed-displacement fault should not pass the FK contract');
-assert(fault.artifact.checks?.appliedHiltAwayFromRawHand === false, `fault should collapse hilt onto raw hand/wrist: ${JSON.stringify(fault.artifact.maxDistances)}`);
+assert(fault.artifact.checks?.appliedHiltInHandRegion === false, `fault should move hilt out of the hand region: ${JSON.stringify(fault.artifact.maxDistances)}`);
 assert(fault.artifact.reproducesLiveRed === true, 'collapsed-displacement fault should reproduce the red-build class');
 
 if (failures.length) throw new Error(failures.join('\n'));

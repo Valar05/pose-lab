@@ -22,7 +22,7 @@ assert(source.includes('diagnosticOnly: true') && source.includes('productionBeh
 assert(source.includes('poseChecksPresent') && source.includes('weaponChecksPresent'), 'offline renderer must assert both pose and weapon checks');
 assert(source.includes('parentChainMatchesPureFkShape'), 'offline renderer must check the pure FK weapon parent chain');
 assert(source.includes('captureWeaponPinningRuntimeState') && source.includes('appliedHiltPinnedToWeaponGrip'), 'offline renderer must use shared pinning state and fail unless the applied hilt is pinned to WeaponGrip');
-assert(source.includes('appliedHiltAwayFromRawHand') && source.includes('weaponGripLocalStableUnderRightHand'), 'offline renderer must fail if the authored hilt displacement collapses or the RightHand-local FK pose drifts');
+assert(source.includes('appliedHiltInHandRegion') && source.includes('weaponGripLocalStableUnderRightHand'), 'offline renderer must fail if the authored hilt leaves the hand region or the RightHand-local FK pose drifts');
 assert(source.includes('weaponMeshRendered') && source.includes('collectMeshWorldPoints'), 'offline renderer must draw the real sabre mesh, not only synthetic markers');
 assert(source.includes('--assert-repro') && source.includes('reproducesLiveRed'), 'offline renderer must have a red-build reproduction mode for the live marker disparity');
 assert(source.includes('generatedClipResolved'), 'offline renderer must explicitly report whether the browser-generated ready clip was resolved offline');
@@ -71,7 +71,7 @@ assert(artifact.checks?.allKeyBonesFinite === true, 'artifact did not prove key 
 assert(artifact.checks?.weaponFinite === true, 'artifact did not prove weapon landmarks finite');
 assert(artifact.checks?.weaponMeshRendered === true, 'artifact did not render the real sabre mesh point cloud');
 assert(artifact.checks?.appliedHiltPinnedToWeaponGrip === true, `offline render did not prove hilt pinning to WeaponGrip: ${JSON.stringify(artifact.hiltSocketDistances)}`);
-assert(artifact.checks?.appliedHiltAwayFromRawHand === true, `offline render did not prove applied hilt stays away from the raw wrist/hand origin: ${JSON.stringify(artifact.maxDistances)}`);
+assert(artifact.checks?.appliedHiltInHandRegion === true, `offline render did not prove applied hilt stays in the hand region: ${JSON.stringify(artifact.maxDistances)}`);
 assert(artifact.checks?.parentChainMatchesPureFkShape === true, `offline render did not prove direct FK hierarchy: ${JSON.stringify(artifact.sampleData?.[0]?.parentChain)}`);
 assert(artifact.checks?.weaponGripLocalStableUnderRightHand === true, `WeaponGrip should stay locally stable under RightHand: ${JSON.stringify(artifact.maxLocalDrift)}`);
 assert(artifact.checks?.weaponGripQuaternionStableUnderRightHand === true, `WeaponGrip rotation should stay locally stable under RightHand: ${JSON.stringify(artifact.maxLocalDrift)}`);
@@ -93,7 +93,7 @@ assert(artifact.sampleData.every((sample) => sample.closeupPanel?.blueRightHand 
 assert(String(artifact.actualVisibleRead || '').includes('visible hilt matches the authored pure-FK WeaponGrip socket'), `artifact should report fixed FK ownership and visible hilt, got: ${artifact.actualVisibleRead}`);
 assert(faultArtifact.injectedFaults?.some((entry) => entry.name === 'collapse-displacement'), 'fault artifact should report the collapsed-displacement negative control');
 assert(faultArtifact.ok === false, 'collapsed-displacement negative control must fail fixed-mode acceptance');
-assert(faultArtifact.checks?.appliedHiltAwayFromRawHand === false, `fault artifact should prove hilt-to-wrist collapse is caught: ${JSON.stringify(faultArtifact.maxDistances)}`);
+assert(faultArtifact.checks?.appliedHiltInHandRegion === false, `fault artifact should prove hilt leaving the hand region is caught: ${JSON.stringify(faultArtifact.maxDistances)}`);
 assert(faultArtifact.reproducesLiveRed === true, 'collapsed-displacement negative control should reproduce the visual red class');
 
 if (failures.length) throw new Error(failures.join('\n'));

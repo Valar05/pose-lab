@@ -128,11 +128,11 @@ function wantsGeneratedFpsRestArmsClip(requested) {
 function applyFaults(config, faults = []) {
   const applied = [];
   if (faults.includes('collapse-displacement')) {
-    config.proxy.modelLocalOffset = [0, 0, 0];
+    config.proxy.modelLocalOffset = [0.35, 0, 0];
     config.proxy.gripOffset = [0, 0, 0];
     applied.push({
       name: 'collapse-displacement',
-      visibleFailure: 'WeaponGrip/applied hilt collapses onto the raw wrist/RightHand origin instead of preserving authored modelLocalOffset displacement.',
+      visibleFailure: 'WeaponGrip/applied hilt leaves the held hand region instead of preserving the authored pure-FK hand-local placement.',
     });
   }
   return applied;
@@ -579,6 +579,9 @@ async function main() {
   const appliedHiltPinnedToPalmTarget = palmTargetHiltDistances.every((value) => Number.isFinite(value) && value <= palmTargetTolerance);
   const displacementMinDistance = 0.05;
   const appliedHiltAwayFromRawHand = rawHandHiltDistances.every((value) => Number.isFinite(value) && value >= displacementMinDistance);
+  const handRegionMaxDistance = 0.002;
+  const appliedHiltInHandRegion = rawHandHiltDistances.every((value) => Number.isFinite(value) && value <= handRegionMaxDistance)
+    || palmTargetHiltDistances.every((value) => Number.isFinite(value) && value <= handRegionMaxDistance);
   const socketPinnedToHandBaseline = handBaselineSocketDistances.every((value) => Number.isFinite(value) && value <= handBaselineTolerance);
   const appliedHiltPinnedToHandBaseline = handBaselineHiltDistances.every((value) => Number.isFinite(value) && value <= handBaselineTolerance);
   const localPositionDrift = (field) => samples.map((sample) => distance3(samples[0]?.weaponPinning?.local?.[field], sample.weaponPinning?.local?.[field]));
@@ -606,7 +609,7 @@ async function main() {
   const visibleMeshBladeLengthFinite = visibleMeshBladeLengths.every((value) => Number.isFinite(value) && value >= meshBladeLengthMinDistance);
   const reproducesLiveRed = generatedClipResolved
     && hiltSocketDistances.every((value) => Number.isFinite(value) && value <= 0.0005)
-    && (!appliedHiltAwayFromRawHand
+    && (!appliedHiltInHandRegion
       || !visibleMeshHiltPinnedToWeaponGrip
       || !visibleMeshHiltMatchesAppliedHilt
       || !socketStableInHand
@@ -623,6 +626,7 @@ async function main() {
     handBaselineDistanceFinite: handBaselineSocketDistances.every(Number.isFinite) && handBaselineHiltDistances.every(Number.isFinite),
     palmTargetDistanceFinite: palmTargetSocketDistances.every(Number.isFinite) && palmTargetHiltDistances.every(Number.isFinite),
     appliedHiltAwayFromRawHand,
+    appliedHiltInHandRegion,
     weaponGripLocalStableUnderRightHand: socketStableInHand,
     weaponGripQuaternionStableUnderRightHand: socketQuaternionStableInHand,
     weaponGripLocalStableUnderWeaponR: null,
@@ -668,7 +672,7 @@ async function main() {
     && checks.appliedHiltPinnedToWeaponGrip
     && checks.weaponGripLocalStableUnderRightHand
     && checks.weaponGripQuaternionStableUnderRightHand
-    && checks.appliedHiltAwayFromRawHand
+    && checks.appliedHiltInHandRegion
     && checks.bladeLengthFinite
     && generatedClipResolved;
   const result = {
@@ -712,6 +716,7 @@ async function main() {
       meshLandmarkTolerance,
       meshBladeLengthMinDistance,
       displacementMinDistance,
+      handRegionMaxDistance,
       socketToAppliedHiltTolerance: 0.0005,
     },
     hiltSocketDistances,

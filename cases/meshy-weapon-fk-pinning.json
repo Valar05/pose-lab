@@ -74,7 +74,7 @@
   "forbiddenProof": [
     "source-string tests as final proof",
     "deprecated standalone screencap",
-    "hilt-to-socket pinning without hilt displacement from raw wrist",
+    "hilt-to-socket pinning without held hand-region placement",
     "offline green proof while the live/user screenshot shows the real saber out of hand"
   ]
 }

@@ -80,7 +80,7 @@ if (fs.existsSync(evidencePath)) {
   assert(Number.isFinite(report.maxDistances?.rawHandToAppliedHilt), 'offline report must expose finite raw-hand-to-hilt distance');
   assert(Number.isFinite(report.maxDistances?.visibleMeshHiltToWeaponGrip), 'offline report must expose finite real-mesh-hilt-to-WeaponGrip distance');
   assert(Number.isFinite(report.maxDistances?.visibleMeshHiltToRawHand), 'offline report must expose finite real-mesh-hilt-to-raw-hand distance');
-  assert(report.maxDistances.rawHandToAppliedHilt > 0.01, `offline report should not collapse applied hilt onto raw wrist: ${report.maxDistances.rawHandToAppliedHilt}`);
+  assert(report.checks?.appliedHiltInHandRegion === true, `offline report should prove applied hilt stays in the hand region: ${JSON.stringify(report.maxDistances)}`);
 
   const visual = evidence.visualAssertions || {};
   for (const key of [

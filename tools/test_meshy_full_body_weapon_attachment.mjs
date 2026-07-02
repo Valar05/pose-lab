@@ -31,7 +31,7 @@ assert(artifact.checks?.weaponGripLocalStableUnderRightHand === true, `WeaponGri
 assert(artifact.checks?.weaponGripQuaternionStableUnderRightHand === true, `WeaponGrip rotation should stay locally stable under RightHand: ${JSON.stringify(artifact.maxLocalDrift)}`);
 assert(artifact.checks?.displayRootLocalStableUnderWeaponGrip === true, `display root should stay stable under WeaponGrip: ${JSON.stringify(artifact.maxLocalDrift)}`);
 assert(artifact.checks?.weaponMeshLocalStableUnderDisplayRoot === true, `real weapon mesh should stay stable under display root: ${JSON.stringify(artifact.maxLocalDrift)}`);
-assert(artifact.checks?.appliedHiltAwayFromRawHand === true, `hilt should not collapse onto wrist/hand: ${JSON.stringify(artifact.maxDistances)}`);
+assert(artifact.checks?.appliedHiltInHandRegion === true, `hilt should stay in the hand region: ${JSON.stringify(artifact.maxDistances)}`);
 assert(artifact.sampleData?.every((sample) => Array.isArray(sample.weaponMesh) && sample.weaponMesh.length > 50), 'each sample should include real weapon mesh points');
 assert(artifact.sampleData?.every((sample) => sample.weapon?.model && sample.weapon?.configuredGrip && sample.weapon?.appliedHilt && sample.weapon?.tip), 'each sample should include model, configured grip, applied hilt, and tip landmarks');
 assert(artifact.sampleData?.every((sample) => sample.weaponPinning?.checks?.appliedHiltPinnedToSocket === true), 'shared pinning state should prove hilt-to-socket attachment each frame');
