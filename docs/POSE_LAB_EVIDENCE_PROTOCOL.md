@@ -23,7 +23,7 @@ Change `--kind` to `cache-server`, `pose-retarget`, `ui-state`, `promotion`, or 
 
 ## Evidence Lanes
 
-- **Weapon FK / Meshy Sword:** `tools/pose_lab_offline_render.mjs` is the tier-one visual truth path. A green claim requires `node tools/refresh_pose_lab_offline_visual_evidence.mjs`, the real sabre mesh, current generated clip, `WeaponR -> WeaponGrip` parent chain, hilt displacement from raw hand, hilt pinning to `WeaponGrip`, local drift checks, visible blade direction parity, finite hand/hilt distances, and `node tools/test_pose_lab_visual_red_build_contract.mjs` passing. Browser capture, debug bridge, and standalone `screencap` are deprecated for Meshy saber acceptance.
+- **Weapon FK / Meshy Sword:** `tools/pose_lab_offline_render.mjs` is the tier-one visual truth path. A green claim requires `node tools/refresh_pose_lab_offline_visual_evidence.mjs`, the real sabre mesh, current generated clip, direct `RightHand -> WeaponGrip -> displayRoot -> sabre mesh` parent chain, hilt displacement from raw hand, hilt pinning to `WeaponGrip`, `WeaponGrip` local position/quaternion stability under `RightHand`, finite hand/hilt distances, no normal Meshy `WeaponR`/`WeaponGrip` weapon tracks, and `node tools/test_pose_lab_visual_red_build_contract.mjs` passing. FPS `Weapon.R` is reference-only for Meshy and must not gate green acceptance. Browser capture, debug bridge, and standalone `screencap` are deprecated for Meshy saber acceptance.
 - **Cache / Server:** `tools/test_no_cache_server_contract.mjs`, `tmux ls`, and `curl -I` prove served build identity. Do this before reasoning about stale browser visuals.
 - **Pose / Retarget:** `tools/pose_lab_workflow_status.mjs` and the relevant retarget contract decide whether a candidate may affect accepted surfaces.
 - **UI State:** live browser evidence, visual QA, or debug snapshots may diagnose panel/control problems. They do not decide Meshy saber FK acceptance.
@@ -53,4 +53,4 @@ The Meshy weapon route must reject this command:
 node tools/pose_lab_offline_render.mjs --fault collapse-displacement --samples 2
 ```
 
-It simulates the previous failure where the hilt collapsed onto the wrist/`WeaponR` origin. The artifact must report `ok: false`, `checks.appliedHiltAwayFromRawHand: false`, and `checks.weaponGripDisplacedFromWeaponR: false`.
+It simulates the previous failure where the hilt collapsed onto the wrist/`RightHand` origin. The artifact must report `ok: false` and `checks.appliedHiltAwayFromRawHand: false`.

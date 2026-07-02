@@ -14,10 +14,8 @@ const visualIkBlock = visualIkStart >= 0 && blockEnd > visualIkStart
   : '';
 const projectionStart = visualIkBlock.indexOf('worldJointProjection: {');
 const rollStart = visualIkBlock.indexOf('rollCorrection: {', projectionStart);
-const weaponStart = visualIkBlock.indexOf('weaponKeyConvert: {', rollStart);
 const projectionBlock = projectionStart >= 0 && rollStart > projectionStart ? visualIkBlock.slice(projectionStart, rollStart) : '';
-const rollBlock = rollStart >= 0 && weaponStart > rollStart ? visualIkBlock.slice(rollStart, weaponStart) : '';
-const weaponBlock = weaponStart >= 0 ? visualIkBlock.slice(weaponStart) : '';
+const rollBlock = rollStart >= 0 ? visualIkBlock.slice(rollStart) : '';
 
 assert(visualIkBlock, 'missing Meshy FPS-VISUAL-IK-GOLDEN profile block');
 assert(projectionBlock, 'missing Meshy FPS-VISUAL-IK-GOLDEN world-joint projection block');
@@ -31,8 +29,8 @@ assert(projectionBlock.includes("targetUpper: 'RightArm'"), 'active projection s
 assert(projectionBlock.includes("targetLower: 'RightForeArm'"), 'active projection should target the Meshy right forearm');
 assert(projectionBlock.includes("targetHand: 'RightHand'"), 'active projection should target the Meshy right hand');
 assert(projectionBlock.includes("sourceUpper: 'Arm.L'") && projectionBlock.includes("sourceLower: 'Forearm.L'") && projectionBlock.includes("sourceHand: 'Hand.L'"), 'active projection should also measure the complete left source arm chain');
-assert(weaponBlock.includes('enabled: true') && weaponBlock.includes("targetWeapon: 'WeaponR'") && weaponBlock.includes('applyToHand: false'), 'weapon solve should animate synthetic WeaponR without overwriting the hand canary or manual WeaponGrip attachment');
-assert(!visualIkBlock.includes("targetWeapon: 'WeaponGrip'") && !visualIkBlock.includes('applyToHand: true'), 'FPS-VISUAL-IK profile must remain hand-roll plus synthetic WeaponR, not a direct WeaponGrip animation path');
+assert(!visualIkBlock.includes('weaponKeyConvert'), 'FPS-VISUAL-IK normal profile must not generate WeaponR or WeaponGrip tracks');
+assert(!visualIkBlock.includes("targetWeapon: 'WeaponGrip'") && !visualIkBlock.includes("targetWeapon: 'WeaponR'"), 'FPS-VISUAL-IK profile must leave weapon attachment to pure FK');
 
 if (failures.length) throw new Error(failures.join('\\n'));
-console.log(JSON.stringify({ checked: ['meshy-golden-ready-roll-record', 'right-minus-120-left-minus-90', 'synthetic-weaponr-does-not-overwrite-hand'] }, null, 2));
+console.log(JSON.stringify({ checked: ['meshy-golden-ready-roll-record', 'right-minus-120-left-minus-90', 'pure-fk-weapon-untracked'] }, null, 2));

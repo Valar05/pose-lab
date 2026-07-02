@@ -23,7 +23,10 @@ assert(caseData.forbiddenProof.some((line) => /marker/i.test(line)), 'case shoul
 
 assert(refreshTool.includes('offline-pose-render') || redBuildContract.includes('offline-pose-render'), 'offline visual evidence must use captureKind offline-pose-render');
 assert(redBuildContract.includes('deprecated live capture evidence is not accepted'), 'offline visual contract should reject deprecated live capture evidence');
-assert(redBuildContract.includes('weaponBladeDirectionMatchesFpsSource'), 'offline visual contract should require blade direction parity');
+assert(redBuildContract.includes('parentChainMatchesPureFkShape'), 'offline visual contract should require pure FK parent-chain parity');
+assert(redBuildContract.includes('weaponGripLocalStableUnderRightHand'), 'offline visual contract should require WeaponGrip stability under RightHand');
+assert(redBuildContract.includes('weaponTrackTarget == null'), 'offline visual contract should require no normal Meshy weapon tracks');
+assert(!redBuildContract.includes('weaponBladeDirectionMatchesFpsSource === true'), 'offline visual contract should not require FPS Weapon.R blade parity');
 assert(redBuildContract.includes('rawHandToAppliedHilt'), 'offline visual contract should expose raw-hand-to-hilt distance');
 
 if (failures.length) throw new Error(failures.join('\n'));

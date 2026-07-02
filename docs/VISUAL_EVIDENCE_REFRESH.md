@@ -47,7 +47,7 @@ Refresh user-facing evidence without falling back to deprecated standalone `scre
    - `generated/pose_lab_offline_render/visual_red_build_tpose/pose_weapon_render.png`;
    - `generated/pose_lab_offline_render/visual_red_build_tpose/pose_weapon_render.json`.
 
-   The offline parity target is the authored `WeaponR -> WeaponGrip` FK chain plus the real sabre mesh. Raw hand and palm distances remain diagnostics to prove the hard-won displacement was not collapsed or hidden by a socket-only proof.
+   The offline parity target is the authored `RightHand -> WeaponGrip -> displayRoot -> sabre mesh` pure-FK chain plus the real sabre mesh. Raw hand and palm distances remain diagnostics to prove the hard-won displacement was not collapsed or hidden by a socket-only proof.
 
 5. Rerun:
 
@@ -59,7 +59,7 @@ Refresh user-facing evidence without falling back to deprecated standalone `scre
 
 `visual-truth-parity` can go green only when `visual-red-build-contract` passes and the case verdict names current evidence artifacts.
 
-For the Meshy saber, freshness alone is not enough. The offline evidence must show the real sabre mesh rendered, the generated clip resolved, the requested clip applied, the hilt pinned to `WeaponGrip`, finite hand/hilt distances, and blade direction matching mapped FPS `Weapon.R`.
+For the Meshy saber, freshness alone is not enough. The offline evidence must show the real sabre mesh rendered, the generated clip resolved, the requested clip applied, the hilt pinned to `WeaponGrip`, finite hand/hilt distances, `WeaponGrip` local position/quaternion stable under `RightHand`, and no normal generated `WeaponR` or `WeaponGrip` weapon tracks.
 
 ## Forbidden Shortcuts
 

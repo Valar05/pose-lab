@@ -25,8 +25,8 @@ assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('r
 const restBlockStart = profiles.indexOf("clipTag: 'FPS-REST-ARMS-CAL'");
 const restBlockEnd = profiles.indexOf('directRotationPairs: MESHY_FPS_REST_DIRECT_PAIRS', restBlockStart);
 const restBlock = restBlockStart >= 0 && restBlockEnd > restBlockStart ? profiles.slice(restBlockStart, restBlockEnd) : '';
-assert(restBlock && restBlock.includes('weaponKeyConvert') && restBlock.includes("targetWeapon: 'WeaponR'") && restBlock.includes('applyToHand: false'), 'Meshy T-pose bridge should key the generic FPS-authored WeaponR socket without forcing the hand or animating WeaponGrip');
-assert(restBlock && !restBlock.includes("targetWeapon: 'WeaponGrip'") && !restBlock.includes('applyToHand: true'), 'Meshy T-pose bridge must not animate WeaponGrip or solve the hand from the socket');
+assert(restBlock && !restBlock.includes('weaponKeyConvert'), 'Meshy T-pose bridge must not generate WeaponR/WeaponGrip tracks for normal pure-FK clips');
+assert(profiles.includes("parentMode: 'hand-fk'") && profiles.includes("syntheticSourceSocketBone: ''"), 'Meshy saber must use direct RightHand -> WeaponGrip pure FK');
 assert(profiles.includes("RestProbe: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe should default to the exact accepted CAL--120 clip path');
 assert(profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'Meshy SwordReady should use the accepted golden OneHandReady record');
 assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'"), 'Meshy golden ready clip should preserve a stable generated origin path');

@@ -25,9 +25,9 @@ assert(artifact.clipRequested === clip, `T-pose orientation test rendered the wr
 assert(artifact.generatedClipResolved === true, `T-pose must be rebuilt offline instead of falling back to a Meshy GLB clip: ${JSON.stringify(artifact.generatedClipStats)}`);
 assert(artifact.clipApplied === clip, `offline renderer applied ${artifact.clipApplied} instead of the requested generated T-pose clip`);
 assert(artifact.generatedClipStats?.sourceKeyCount === 1 && artifact.generatedClipStats?.targetKeyCount === 1, `T-pose should resolve as the single-key FPS rest pose: ${JSON.stringify(artifact.generatedClipStats)}`);
-assert(artifact.generatedClipStats?.weaponTrackEnabled === true && artifact.generatedClipStats?.weaponTrackTarget === 'WeaponR', `T-pose should synthesize a WeaponR socket from FPS Weapon.R rest pose: ${JSON.stringify(artifact.generatedClipStats)}`);
-assert(artifact.checks?.weaponOrientationComparedToFpsSource === true, `T-pose evidence must compare visible blade direction to FPS Weapon.R: ${JSON.stringify(artifact.maxWeaponOrientationErrorDeg)}`);
-assert(artifact.checks?.weaponBladeDirectionMatchesFpsSource === true, `T-pose visible blade should match mapped FPS Weapon.R: ${JSON.stringify(artifact.maxWeaponOrientationErrorDeg)}`);
+assert(artifact.generatedClipStats?.weaponTrackEnabled === false && artifact.generatedClipStats?.weaponTrackTarget == null, `T-pose should not synthesize WeaponR or WeaponGrip tracks for normal pure FK: ${JSON.stringify(artifact.generatedClipStats)}`);
+assert(artifact.checks?.parentChainMatchesPureFkShape === true, `T-pose evidence must prove RightHand -> WeaponGrip pure FK: ${JSON.stringify(artifact.checks)}`);
+assert(artifact.checks?.weaponGripLocalStableUnderRightHand === true && artifact.checks?.weaponGripQuaternionStableUnderRightHand === true, `T-pose WeaponGrip must stay stable under RightHand: ${JSON.stringify(artifact.maxLocalDrift)}`);
 assert(artifact.checks?.weaponMeshRendered === true, 'T-pose renderer must render the real sabre mesh, not only markers');
 assert(artifact.checks?.appliedHiltPinnedToWeaponGrip === true, `T-pose hilt must remain pinned to WeaponGrip: ${JSON.stringify(artifact.hiltSocketDistances)}`);
 assert(artifact.checks?.palmTargetDistanceFinite === true, `T-pose artifact must report palm/hand-region distance instead of hiding it: ${JSON.stringify(artifact.maxDistances)}`);

@@ -48,7 +48,7 @@ function routeFor(args) {
     'weapon-fk': {
       kind: 'weapon-fk',
       authoritativeEvidence: 'offline-render-artifact',
-      summary: 'Use the offline pose+weapon renderer as the first proof for Meshy/FPS weapon hierarchy, hilt displacement, blade direction, and parent-chain regressions.',
+      summary: 'Use the offline pose+weapon renderer as the first proof for Meshy pure-FK hierarchy, hilt displacement, hand-local stability, and parent-chain regressions.',
       commands: [
         command(`node tools/pose_lab_offline_render.mjs --actor ${actor} --clip ${JSON.stringify(clip)} --samples 4 --assert-fixed`),
         command('node tools/test_pose_lab_offline_render_contract.mjs'),
@@ -62,10 +62,11 @@ function routeFor(args) {
       ],
       acceptance: [
         'artifact.ok === true',
+        'checks.parentChainMatchesPureFkShape === true',
+        'checks.weaponGripLocalStableUnderRightHand === true',
+        'checks.weaponGripQuaternionStableUnderRightHand === true',
         'checks.appliedHiltPinnedToWeaponGrip === true',
         'checks.appliedHiltAwayFromRawHand === true',
-        'checks.weaponGripDisplacedFromWeaponR === true',
-        'checks.weaponBladeDirectionMatchesFpsSource === true',
         'maxDistances.rawHandToAppliedHilt >= thresholds.displacementMinDistance',
       ],
       forbiddenProof: commonForbidden,

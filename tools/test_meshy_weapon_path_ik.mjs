@@ -17,9 +17,9 @@ assert(profiles.includes("weaponAttachment: {") && profiles.includes("socketBone
 assert(profiles.includes('Saber handle-centered attachment for Meshy Character') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy Character should preserve the rig-local saber hilt candidate');
 assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy saber should rotate from the hand origin without shifting the socket');
 assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]') && profiles.includes('modelLocalOffset: [-0.03429, 0.04109, -0.07946]') && profiles.includes('rotationDeg: [121.031, -41.564, -13.871]'), 'Meshy saber should use the hard-won rig-local socket position and manual rotation');
-assert(profiles.includes("parentMode: 'synthetic-source-socket'") && profiles.includes("syntheticSourceSocketBone: 'WeaponR'"), 'Meshy saber should follow the right hand through a synthetic FPS-style WeaponR socket');
+assert(profiles.includes("parentMode: 'hand-fk'") && profiles.includes("syntheticSourceSocketBone: ''"), 'Meshy saber should follow the right hand through direct pure FK');
 assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy FPS-SWORD-UPPER remains available as an unpromoted weapon diagnostic');
-assert(profiles.includes("sourceWeapon: 'Weapon.R'") && profiles.includes("targetWeapon: 'WeaponR'") && profiles.includes('enabled: true'), 'FPS Weapon.R metadata should drive synthetic Meshy WeaponR while preserving WeaponGrip manual attachment offsets');
+assert(!profiles.includes('weaponKeyConvert') && !profiles.includes("targetWeapon: 'WeaponR'"), 'normal Meshy FPS clips must not drive runtime WeaponR tracks');
 assert(!profiles.includes("retargetMode: 'weapon-path-ik'"), 'Meshy active profile should not request the rejected weapon-path IK acceptance path');
 assert(!profiles.includes("clipTag: 'IB-MC'") && !profiles.includes("clipTag: 'RA-FULL'"), 'Meshy active profile should not generate rejected full-body/RA weapon clips');
 assert(!profiles.includes("pathMode: 'authored-diagonal-cut'"), 'the authored Scavenger fallback path should not remain in the active Meshy profile');

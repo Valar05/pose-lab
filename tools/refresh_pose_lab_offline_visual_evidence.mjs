@@ -40,17 +40,18 @@ const evidence = {
   reportPath: path.relative(projectRoot, reportPath),
   visualRead: report.actualVisibleRead,
   motionEvidencePending: false,
-  visualAssertions: {
+ visualAssertions: {
     offlineRendererIsTierOneTruth: true,
     generatedClipResolved: report.generatedClipResolved === true,
     clipAppliedEqualsRequested: report.clipApplied === report.clipRequested && report.clipRequested === clip,
     realMeshySabreRendered: report.checks?.weaponMeshRendered === true,
-    weaponRSocketImplemented: report.checks?.parentChainMatchesFpsArmsShape === true,
-    weaponGripPinnedToWeaponR: report.checks?.weaponGripLocalStableUnderWeaponR === true,
+    pureFkParentChainImplemented: report.checks?.parentChainMatchesPureFkShape === true,
+    weaponGripPinnedToRightHandFk: report.checks?.weaponGripLocalStableUnderRightHand === true
+      && report.checks?.weaponGripQuaternionStableUnderRightHand === true,
     appliedHiltPinnedToWeaponGrip: report.checks?.appliedHiltPinnedToWeaponGrip === true,
     visibleMeshHiltPinnedToWeaponGrip: report.checks?.visibleMeshHiltPinnedToWeaponGrip === true,
-    visibleMeshBladeDirectionMatchesFpsSource: report.checks?.visibleMeshBladeDirectionMatchesFpsSource === true,
-    bladeDirectionMatchesFpsSource: report.checks?.weaponBladeDirectionMatchesFpsSource === true,
+    fpsWeaponRReferenceOnly: report.generatedClipStats?.weaponTrackEnabled !== true
+      && report.generatedClipStats?.weaponTrackTarget == null,
     hiltHandRelationshipExposed: Number.isFinite(report.maxDistances?.rawHandToAppliedHilt)
       && Number.isFinite(report.maxDistances?.palmTargetToAppliedHilt)
       && Number.isFinite(report.maxDistances?.visibleMeshHiltToWeaponGrip)
@@ -64,11 +65,8 @@ const evidence = {
     maxDistances: {
       rawHandToAppliedHilt: report.maxDistances?.rawHandToAppliedHilt,
       palmTargetToAppliedHilt: report.maxDistances?.palmTargetToAppliedHilt,
-      weaponRToAppliedHilt: report.maxDistances?.weaponRToAppliedHilt,
-      weaponRToWeaponGrip: report.maxDistances?.weaponRToWeaponGrip,
       visibleMeshHiltToWeaponGrip: report.maxDistances?.visibleMeshHiltToWeaponGrip,
       visibleMeshHiltToRawHand: report.maxDistances?.visibleMeshHiltToRawHand,
-      visibleMeshHiltToWeaponR: report.maxDistances?.visibleMeshHiltToWeaponR,
       visibleMeshHiltToAppliedHilt: report.maxDistances?.visibleMeshHiltToAppliedHilt,
     },
     maxWeaponOrientationErrorDeg: report.maxWeaponOrientationErrorDeg,

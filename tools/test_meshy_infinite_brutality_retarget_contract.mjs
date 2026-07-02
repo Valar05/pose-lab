@@ -25,7 +25,7 @@ assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-
 assert(profiles.includes("{ from: 'Arm.R', to: 'RightArm', strength: 0.85 }"), 'right upper arm should be converted from authored FPS Arm.R keys');
 assert(profiles.includes("{ from: 'Forearm.R', to: 'RightForeArm', strength: 1.0 }"), 'right forearm should be converted from authored FPS Forearm.R keys');
 assert(profiles.includes("{ from: 'Hand.R', to: 'RightHand', strength: 1.0 }"), 'right hand should be converted from authored FPS Hand.R keys');
-assert(profiles.includes("sourceWeapon: 'Weapon.R'") && profiles.includes("targetWeapon: 'WeaponR'"), 'synthetic WeaponR should be converted from authored FPS Weapon.R keys');
+assert(!profiles.includes("sourceWeapon: 'Weapon.R'") && !profiles.includes("targetWeapon: 'WeaponR'"), 'normal Meshy retargets should not generate runtime WeaponR tracks; FPS Weapon.R is reference-only');
 for (const rejected of ["sourceKey: 'orc'", "clipTag: 'IB-MC'", "standing_melee_attack_horizontal -> meshyCharacter", "mixamorigHips", "mixamorigRightUpLeg", "to: 'LeftFoot'", "to: 'RightFoot'", "to: 'Head'"]) {
   assert(!profiles.includes(rejected), `Meshy sword profile must not retain rejected full-body token: ${rejected}`);
 }

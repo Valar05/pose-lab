@@ -15,7 +15,7 @@
   },
   "expectedVisibleBehavior": [
     "The accepted FPS rest-arms T-pose clip resolves without falling back to a Meshy GLB walking clip.",
-    "The real sabre mesh is visible and follows the same RightHand -> WeaponR -> WeaponGrip FK ownership as Ready.",
+    "The real sabre mesh is visible and follows the same RightHand -> WeaponGrip pure-FK ownership as Ready.",
     "The screenshot-visible hilt marker and real hilt remain in the authored hand/grip region rather than drifting to an unrelated socket-only proof point."
   ],
   "contracts": [

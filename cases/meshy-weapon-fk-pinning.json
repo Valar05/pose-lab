@@ -15,8 +15,9 @@
   },
   "expectedVisibleBehavior": [
     "The sabre hilt remains pinned to the authored WeaponGrip position, not the raw wrist.",
-    "The sabre follows the right hand through the clip as FK-like child motion.",
-    "The visible blade basis matches the mapped FPS Weapon.R direction."
+    "The sabre follows the right hand through direct FK child motion.",
+    "WeaponGrip local position and quaternion under RightHand remain constant across normal clips.",
+    "FPS Weapon.R is reference-only and does not gate runtime acceptance."
   ],
   "contracts": [
     "contracts/golden/meshy_weapon_fk.json",

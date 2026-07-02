@@ -26,7 +26,10 @@ assert(route.route?.authoritativeEvidence === 'offline-render-artifact', 'weapon
 assert(route.route?.commands?.some((entry) => entry.command.includes('tools/pose_lab_offline_render.mjs') && entry.command.includes('--assert-fixed')), 'weapon-fk route must run the fixed offline renderer');
 assert(route.route?.commands?.some((entry) => entry.command.includes('test_pose_lab_offline_render_contract.mjs')), 'weapon-fk route must run the offline render contract');
 assert(route.route?.acceptance?.includes('checks.appliedHiltAwayFromRawHand === true'), 'weapon-fk route must require hilt displacement from raw hand');
-assert(route.route?.acceptance?.includes('checks.weaponBladeDirectionMatchesFpsSource === true'), 'weapon-fk route must require visible blade direction parity');
+assert(route.route?.acceptance?.includes('checks.parentChainMatchesPureFkShape === true'), 'weapon-fk route must require pure FK parent-chain parity');
+assert(route.route?.acceptance?.includes('checks.weaponGripLocalStableUnderRightHand === true'), 'weapon-fk route must require WeaponGrip local position stability under RightHand');
+assert(route.route?.acceptance?.includes('checks.weaponGripQuaternionStableUnderRightHand === true'), 'weapon-fk route must require WeaponGrip local rotation stability under RightHand');
+assert(!route.route?.acceptance?.includes('checks.weaponBladeDirectionMatchesFpsSource === true'), 'weapon-fk route must not require FPS Weapon.R blade parity');
 assert(route.route?.forbiddenProof?.some((item) => item.includes('source-string tests')), 'route must explicitly demote source-string tests as final visual proof');
 assert(route.route?.forbiddenProof?.some((item) => item.includes('screencap')), 'route must forbid deprecated screencap acceptance');
 assert(route.route?.negativeControl?.command?.includes('--fault collapse-displacement'), 'weapon-fk route must include the collapsed-displacement negative control');

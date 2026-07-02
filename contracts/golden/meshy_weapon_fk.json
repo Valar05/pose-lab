@@ -11,9 +11,11 @@
   ],
   "contract": [
     "Manual weapon placement is production truth until explicitly replaced.",
-    "WeaponR carries blade orientation for Meshy synthetic sockets.",
-    "WeaponGrip is the authored FK socket under WeaponR; the real sabre mesh is positioned under it by authored attachment offsets only.",
-    "Generated Meshy FPS clips must target WeaponR for weapon orientation and must not animate WeaponGrip placement or rotation unless a separately named experiment explicitly opts in.",
+    "WeaponGrip is the authored pure FK socket directly under RightHand; the real sabre mesh is positioned under WeaponGrip/displayRoot by authored attachment offsets only.",
+    "Generated Meshy normal clips must not target WeaponGrip or WeaponR for weapon orientation, placement, or rotation.",
+    "FPS Weapon.R may be used only as an authoring/reference source; it is not a Meshy runtime acceptance target.",
+    "WeaponR may exist only in deprecated or explicitly experimental paths and must not gate green acceptance.",
+    "WeaponGrip local position and quaternion under RightHand must remain constant across T-pose, Ready, Walk, Run, and other normal non-weapon-swing clips.",
     "The configured grip and measured visible mesh hilt must agree; runtime must not post-pin a different mesh point to make diagnostics green.",
     "Browser and offline renderers must use the same weapon runtime rules before a visual fix is accepted."
   ],

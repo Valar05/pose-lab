@@ -67,20 +67,19 @@ if (fs.existsSync(evidencePath)) {
   assert(report.clipRequested === evidence.clipName, `offline report requested clip ${report.clipRequested || 'missing'} should match evidence clip ${evidence.clipName}`);
   assert(report.clipApplied === evidence.clipName, `offline report applied clip ${report.clipApplied || 'missing'} should match requested clip ${evidence.clipName}`);
   assert(report.checks?.weaponMeshRendered === true, 'offline report should prove the real sabre mesh rendered');
-  assert(report.checks?.parentChainMatchesFpsArmsShape === true, 'offline report should prove RightHand -> WeaponR -> WeaponGrip FK ownership');
+  assert(report.checks?.parentChainMatchesPureFkShape === true, 'offline report should prove RightHand -> WeaponGrip -> displayRoot pure FK ownership');
   assert(report.checks?.appliedHiltPinnedToWeaponGrip === true, 'offline report should prove the applied hilt is pinned to WeaponGrip');
-  assert(report.checks?.weaponGripLocalStableUnderWeaponR === true, 'offline report should prove WeaponGrip stays locally stable under WeaponR');
-  assert(report.checks?.weaponBladeDirectionMatchesFpsSource === true, 'offline report should prove blade direction matches mapped FPS Weapon.R');
+  assert(report.checks?.weaponGripLocalStableUnderRightHand === true, 'offline report should prove WeaponGrip position stays locally stable under RightHand');
+  assert(report.checks?.weaponGripQuaternionStableUnderRightHand === true, 'offline report should prove WeaponGrip rotation stays locally stable under RightHand');
+  assert(report.generatedClipStats?.weaponTrackEnabled !== true && report.generatedClipStats?.weaponTrackTarget == null, 'offline report should prove normal Meshy clips do not emit WeaponR/WeaponGrip weapon tracks');
   assert(report.checks?.visibleMeshHiltLandmarkPresent === true, 'offline report should expose a hilt landmark derived from the real sabre mesh');
   assert(report.checks?.visibleMeshTipLandmarkPresent === true, 'offline report should expose a tip landmark derived from the real sabre mesh');
   assert(report.checks?.visibleMeshHiltPinnedToWeaponGrip === true, 'offline report should prove the real mesh hilt is near WeaponGrip, not only the configured grip point');
   assert(report.checks?.visibleMeshHiltMatchesAppliedHilt === true, 'offline report should prove the mesh-derived hilt matches the configured applied hilt');
-  assert(report.checks?.visibleMeshBladeDirectionMatchesFpsSource === true, 'offline report should prove the real mesh blade direction matches mapped FPS Weapon.R');
   assert(Number.isFinite(report.maxDistances?.palmTargetToAppliedHilt), 'offline report must expose finite palm-target-to-hilt distance');
   assert(Number.isFinite(report.maxDistances?.rawHandToAppliedHilt), 'offline report must expose finite raw-hand-to-hilt distance');
   assert(Number.isFinite(report.maxDistances?.visibleMeshHiltToWeaponGrip), 'offline report must expose finite real-mesh-hilt-to-WeaponGrip distance');
   assert(Number.isFinite(report.maxDistances?.visibleMeshHiltToRawHand), 'offline report must expose finite real-mesh-hilt-to-raw-hand distance');
-  assert(Number.isFinite(report.maxWeaponOrientationErrorDeg?.visibleMeshBlade), 'offline report must expose real mesh blade orientation error');
   assert(report.maxDistances.rawHandToAppliedHilt > 0.01, `offline report should not collapse applied hilt onto raw wrist: ${report.maxDistances.rawHandToAppliedHilt}`);
 
   const visual = evidence.visualAssertions || {};
@@ -89,12 +88,11 @@ if (fs.existsSync(evidencePath)) {
     'generatedClipResolved',
     'clipAppliedEqualsRequested',
     'realMeshySabreRendered',
-    'weaponRSocketImplemented',
-    'weaponGripPinnedToWeaponR',
+    'pureFkParentChainImplemented',
+    'weaponGripPinnedToRightHandFk',
     'appliedHiltPinnedToWeaponGrip',
     'visibleMeshHiltPinnedToWeaponGrip',
-    'visibleMeshBladeDirectionMatchesFpsSource',
-    'bladeDirectionMatchesFpsSource',
+    'fpsWeaponRReferenceOnly',
     'hiltHandRelationshipExposed',
   ]) {
     assert(visual[key] === true, `offline visual assertion must be true: ${key}`);

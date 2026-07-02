@@ -5913,7 +5913,7 @@ class PoseLab {
         syncAt: Number(this.debugBridgeState?.syncAt || 0),
       },
       targetPolicy: {
-        intendedPinTarget: 'stable FK child transform under WeaponR',
+        intendedPinTarget: 'stable FK child transform under RightHand',
         palmTargetReportedAsDiagnosticOnly: true,
         handBaselineReportedAsDiagnosticOnly: true,
         rawRightHandReportedSeparately: true,
@@ -10777,13 +10777,14 @@ class PoseLab {
       displayMoves: motion.display > motionEpsilon,
       modelMoves: motion.model > motionEpsilon,
       tipMoves: motion.tip > motionEpsilon,
-      socketStableInHand: architecture === 'source-socket' ? true : relativeDrift.socketInHand < 0.005,
-      socketMayAnimateInHand: architecture === 'source-socket',
+      socketStableInHand: relativeDrift.socketInHand < 0.005,
+      socketQuaternionStableInHand: relativeDrift.socketQuaternionInHandDeg < 0.5,
+      socketMayAnimateInHand: false,
       displayStableInSocket: relativeDrift.displayInSocket < 0.005,
       modelStableInDisplay: relativeDrift.modelInDisplay < 0.005,
       parentChain: (sourceSocketParentOk && syntheticSocketParentOk && (proxy.sourceSocket || proxy.syntheticSourceSocket || directHandParentOk))
         && displayRoot.parent === proxy.root && model.parent === displayRoot && tip.parent === displayRoot,
-      fpsParityArchitecture: architecture === 'source-socket' || architecture === 'synthetic-source-socket',
+      fpsParityArchitecture: architecture === 'direct-hand-fk',
     };
     const passed = follows.handMoves
       && follows.socketMoves
@@ -10791,6 +10792,7 @@ class PoseLab {
       && follows.modelMoves
       && follows.tipMoves
       && follows.socketStableInHand
+      && follows.socketQuaternionStableInHand
       && follows.displayStableInSocket
       && follows.modelStableInDisplay
       && follows.parentChain
@@ -11158,11 +11160,16 @@ class PoseLab {
             ? proxy.syntheticSourceSocket.parent === hand && proxy.root.parent === proxy.syntheticSourceSocket
             : proxy.root.parent === hand
       ) && displayRoot.parent === proxy.root && model.parent === displayRoot && tip.parent === displayRoot,
-      fpsParityArchitecture: architecture === 'source-socket' || architecture === 'synthetic-source-socket',
-      socketStableInHand: architecture === 'source-socket' || architecture === 'synthetic-source-socket' ? true : relativeDrift.socketInHand < 0.005,
-      socketMayAnimateInHand: architecture === 'source-socket' || architecture === 'synthetic-source-socket',
-      socketStableInSourceSocket: relativeDrift.socketInSourceSocket < 0.005,
-      socketQuaternionStableInSourceSocket: relativeDrift.socketQuaternionInSourceSocketDeg < 0.5,
+      fpsParityArchitecture: architecture === 'direct-hand-fk',
+      socketStableInHand: relativeDrift.socketInHand < 0.005,
+      socketQuaternionStableInHand: relativeDrift.socketQuaternionInHandDeg < 0.5,
+      socketMayAnimateInHand: false,
+      socketStableInSourceSocket: architecture === 'source-socket' || architecture === 'synthetic-source-socket'
+        ? relativeDrift.socketInSourceSocket < 0.005
+        : null,
+      socketQuaternionStableInSourceSocket: architecture === 'source-socket' || architecture === 'synthetic-source-socket'
+        ? relativeDrift.socketQuaternionInSourceSocketDeg < 0.5
+        : null,
       displayStableInSocket: relativeDrift.displayInSocket < 0.005,
       displayQuaternionStableInSocket: relativeDrift.displayQuaternionInSocketDeg < 0.5,
       modelStableInDisplay: relativeDrift.modelInDisplay < 0.005,
@@ -11184,8 +11191,7 @@ class PoseLab {
     };
     const passed = checks.parentChain
       && checks.socketStableInHand
-      && checks.socketStableInSourceSocket
-      && checks.socketQuaternionStableInSourceSocket
+      && checks.socketQuaternionStableInHand
       && checks.displayStableInSocket
       && checks.displayQuaternionStableInSocket
       && checks.modelStableInDisplay
