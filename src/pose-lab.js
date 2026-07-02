@@ -6288,7 +6288,7 @@ class PoseLab {
   weaponMoveOffsetFrame(actor = this.selectedWeaponActor()) {
     const proxy = actor?.weaponProxy;
     const frame = proxy?.config?.parentMode === 'hand-fk'
-      ? actor?.model
+      ? proxy?.rightHand
       : (proxy?.root?.parent || actor?.model || null);
     return frame ? { object: frame, name: frame.name || 'weapon-parent' } : null;
   }

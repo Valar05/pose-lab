@@ -29,6 +29,7 @@ assert(js.includes('weaponGizmoScreenHit(event, actor)') && !js.includes('raycas
 assert(js.includes("this.weaponGizmoMode = mode === 'rotate' ? 'rotate' : (mode === 'scale' ? 'scale' : 'translate')"), 'weapon gizmo should expose move, rotate, and scale modes');
 assert(js.includes('proxy.config.modelLocalOffset = next'), 'translation gizmo should edit modelLocalOffset live');
 assert(js.includes('weaponMoveOffsetFrame(actor') && js.includes('weaponWorldDeltaToOffsetFrame(actor, world)'), 'translation should convert screen deltas through the weapon offset frame');
+assert(js.includes("proxy?.config?.parentMode === 'hand-fk'") && js.includes('? proxy?.rightHand'), 'hand-fk translation must author modelLocalOffset in RightHand-local space, matching boring FK runtime placement');
 assert(weaponRules.includes('if (Array.isArray(config.modelLocalOffset)) proxy.root.position.add') || weaponRules.includes('local.add(vectorFromArray(THREE, config.modelLocalOffset))'), 'source-socket weapons should apply modelLocalOffset so FPS Arms Move is visible');
 assert(weaponRules.includes('fallbackHiddenWithRealWeapon') && weaponRules.includes('fallbackVisible = !(proxy?.model && proxy?.attachmentConfig?.url)'), 'real attached weapons should hide fallback blade/hilt so visual debugging does not show a fake weapon');
 assert(js.includes('weaponGestureRotationSnapshot(actor') && js.includes('applyWeaponScreenRotation(actor'), 'rotation should use a socket-aware screen quaternion snapshot');
