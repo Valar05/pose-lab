@@ -43,7 +43,7 @@ const report = {
   },
   gate: {
     okToPromote: false,
-    reason: 'promotion requires tools/promote_pose_candidate.mjs with fresh visual and metric evidence',
+    reason: 'promotion requires tools/promote_pose_candidate.mjs with fixed offline/web parity evidence and metric evidence',
     selectionSurfaceMismatches: mismatches,
     protectedDirtyFiles: protectedDirty,
     latestEvidence: {
@@ -55,6 +55,11 @@ const report = {
       cacheToken: evidence.evidence?.cacheToken || '',
       runtimeBuild: evidence.evidence?.runtimeBuild || '',
       captureKind: evidence.evidence?.captureKind || '',
+      parityVerdict: (evidence.evidence?.promotionVerdict || evidence.evidence?.parity || {}).visualVerdict || '',
+      visibilityGate: evidence.evidence?.visibilityGate?.status || evidence.evidence?.offlineTruth?.visibilityGate?.status || '',
+      transformGate: evidence.evidence?.transformGate?.status || evidence.evidence?.offlineTruth?.transformGate?.status || '',
+      observedTruthAuthority: evidence.evidence?.observedTruth?.authority || '',
+      observedWebTruthPath: evidence.evidence?.observedWebTruthPath || '',
     },
     candidateArtifactDirs: candidateDirs,
   },

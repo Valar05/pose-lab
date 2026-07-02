@@ -2,72 +2,67 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
-const evidencePath = path.join(projectRoot, 'generated', 'visual_red_build', 'pose_lab_latest.json');
-const htmlPath = path.join(projectRoot, 'pose-lab.html');
+const evidencePath = path.join(projectRoot, 'generated', 'visual_red_build', 'meshy_ready_weapon_fk_follow_latest.json');
+const observedPath = path.join(projectRoot, 'generated', 'visual_red_build', 'meshy_ready_weapon_fk_follow_observed_web_truth.json');
+const runtimePath = path.join(projectRoot, 'src', 'pose-lab.js');
 const failures = [];
-
-function assert(condition, message) {
-  if (!condition) failures.push(message);
-}
-
-function readCacheToken() {
-  const html = fs.readFileSync(htmlPath, 'utf8');
-  const match = html.match(/pose-lab\.js\?v=([^'"\s]+)/);
-  return match?.[1] || null;
-}
-
+function assert(condition, message) { if (!condition) failures.push(message); }
 function readRuntimeBuild() {
-  const runtime = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
+  const runtime = fs.readFileSync(runtimePath, 'utf8');
   const match = runtime.match(/const\s+LAB_BUILD\s*=\s*['"]([^'"]+)['"]/);
   return match?.[1] || null;
 }
-
-const expectedCacheToken = readCacheToken();
-const expectedRuntimeBuild = readRuntimeBuild();
-assert(expectedCacheToken, 'pose-lab.html should expose a pose-lab.js cache token');
-assert(expectedRuntimeBuild, 'src/pose-lab.js should expose LAB_BUILD');
-assert(fs.existsSync(evidencePath), `missing visual evidence artifact: ${path.relative(projectRoot, evidencePath)}`);
-
-if (fs.existsSync(evidencePath)) {
-  const raw = fs.readFileSync(evidencePath, 'utf8');
-  let evidence;
-  try {
-    evidence = JSON.parse(raw);
-  } catch (error) {
-    throw new Error(`invalid visual evidence JSON at ${path.relative(projectRoot, evidencePath)}: ${error.message}`);
-  }
-
-  assert(evidence.schema === 'pose-lab-visual-evidence-v1', 'visual evidence should use schema pose-lab-visual-evidence-v1');
-  assert(evidence.cacheToken === expectedCacheToken, `visual evidence cacheToken should match served token ${expectedCacheToken}`);
-  assert(evidence.runtimeBuild === expectedRuntimeBuild, `visual evidence runtimeBuild should match LAB_BUILD ${expectedRuntimeBuild}`);
-  assert(typeof evidence.visualRead === 'string' && evidence.visualRead.length >= 20, 'visual evidence should include a concrete visualRead');
-
-  if (evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked') {
-      assert(false, 'missing fresh visual evidence: capture Meshy Character accepted T-pose calibration on the current cache token before promoting any OneHandReady candidate');
-  } else {
-    assert(['android-screenshot', 'visual-qa-capture'].includes(evidence.captureKind), 'visual evidence should record a supported capture kind');
-    assert(typeof evidence.capturePath === 'string' && fs.existsSync(evidence.capturePath), 'visual evidence should point at an existing capture image');
-    assert(typeof evidence.reportPath === 'string' && fs.existsSync(evidence.reportPath), 'visual evidence should point at an existing visual QA report');
-    const report = JSON.parse(fs.readFileSync(evidence.reportPath, 'utf8'));
-    assert(report.ok === true, 'visual QA report referenced by evidence should be green');
-    assert(report.loadedBuild === expectedRuntimeBuild, `visual QA loadedBuild should match LAB_BUILD ${expectedRuntimeBuild}`);
-    assert(report.buildInfo?.cacheTokens?.includes(expectedCacheToken), `visual QA report should include cache token ${expectedCacheToken}`);
-    assert(report.beacons?.some((beacon) => beacon.stage === 'rendered'), 'visual QA report should include a rendered beacon');
-    assert(report.captures?.length >= 1, 'visual QA report should include captured frames');
-
-    const visual = evidence.visualAssertions || {};
-    for (const key of ['moduleLoaded', 'actorRendered', 'clipActive', 'basicControlsVisible', 'uiRendered']) {
-      assert(visual[key] === true, `visual assertion must be true: ${key}`);
-    }
-    for (const key of ['meshyFpsSwordActorUpright', 'meshyFpsSwordNotCollapsed', 'landscapeCritiqueUsable', 'rightHandDisplacedFromIdle', 'upperBodySwordMotionReadable', 'lowerBodyNotAuthoredBySwordClip', 'realMeshySabreRequested', 'weaponRSocketImplemented']) {
-      assert(visual[key] === true, `visual assertion must be true: ${key}`);
-    }
-    assert(evidence.actorKey === 'meshyCharacter', 'visual evidence should cover Meshy Character');
-    assert(String(evidence.clipName || '').includes('0T-Pose'), 'visual evidence should cover accepted FPS/Meshy T-pose calibration');
-    assert(String(evidence.clipName || '').includes('[FPS-REST-ARMS'), 'visual evidence should cover the accepted [FPS-REST-ARMS] calibration clip');
-    assert(evidence.motionEvidencePending === false, 'usable-app evidence should include live visual capture, not defer motion evidence');
-  }
+function readCacheToken() {
+  const runtime = fs.readFileSync(runtimePath, 'utf8');
+  const match = runtime.match(/const\s+LAB_CACHE_TOKEN\s*=\s*['"]([^'"]+)['"]/);
+  return match?.[1] || null;
 }
+assert(fs.existsSync(observedPath), `missing observed web truth: ${path.relative(projectRoot, observedPath)}`);
+const observed = fs.existsSync(observedPath) ? JSON.parse(fs.readFileSync(observedPath, 'utf8')) : {};
+assert(observed.schema === 'pose-lab-ready-weapon-fk-observed-web-truth-v1', 'observed web truth schema mismatch');
+assert(observed.browserCaptureDeprecated === true, 'observed web truth must mark browser capture deprecated');
+assert(observed.visualClass === 'sword-rest-space', 'current human web truth should remain red');
+assert(observed.cacheToken === readCacheToken(), 'observed web truth cache token should match runtime');
+assert(observed.runtimeBuild === readRuntimeBuild(), 'observed web truth runtime build should match runtime');
+assert(Array.isArray(observed.capturePaths) && observed.capturePaths.length >= 1, 'observed web truth should preserve human evidence paths');
+for (const key of ['tPoseWeaponPlacementAccepted', 'readyHandsCorrected', 'readySwordNotFollowingFinalFk', 'browserCaptureRejectedAsAcceptance', 'expectedReadySwordFollowsFinalFk']) {
+  assert(observed.visualAssertions?.[key] === true, `observed web truth assertion should be true: ${key}`);
+}
+assert(!fs.readFileSync(path.join(projectRoot, 'tools', 'meshy_ready_weapon_offline_visual_truth.mjs'), 'utf8').includes("const observedWebTruth = {"), 'verifier must not hardcode observed web truth');
 
+assert(fs.existsSync(evidencePath), `missing offline/web parity gate: ${path.relative(projectRoot, evidencePath)}`);
+const evidence = fs.existsSync(evidencePath) ? JSON.parse(fs.readFileSync(evidencePath, 'utf8')) : {};
+assert(evidence.schema === 'pose-lab-ready-weapon-fk-offline-web-parity-gate-v1', 'red build gate should use offline/web parity schema');
+assert(evidence.browserCaptureDeprecated === true, 'browser/device capture must be deprecated as red-build proof');
+assert(String(evidence.browserCapturePolicy || '').includes('cannot close this red build'), 'browser capture policy should reject red-build closure');
+assert(evidence.currentFixCacheToken === readCacheToken(), 'evidence cache token should match runtime');
+assert(evidence.cacheToken === readCacheToken(), 'evidence promotion cache token should match runtime');
+assert(evidence.runtimeBuild === readRuntimeBuild(), 'evidence runtime build should match runtime');
+assert(evidence.sharedTruthModule === 'src/ready-weapon-truth.mjs', 'gate should require shared runtime/offline truth module');
+assert(evidence.observedWebTruthPath === path.relative(projectRoot, observedPath), 'gate should point to observed web truth artifact');
+assert(evidence.observedWebTruth?.visualClass === 'sword-rest-space', 'current human web truth should remain red context');
+assert(evidence.observedTruth?.authority === 'context-only', 'observed web truth should be context only');
+assert(evidence.visibilityPolicy === 'candidate-lane-only', 'Ready verifier should make candidate visible only in proof lane');
+assert(evidence.visibilityGate?.status === 'pass', 'offline visibility gate should pass inside the verifier candidate lane');
+assert(evidence.visibilityGate?.visibilityClass === 'weapon-visible', 'offline visibility gate should model Ready candidate visibility in verifier lane');
+assert(evidence.transformGate?.status === 'pass', 'transform gate should pass after boring FK is measured in candidate lane');
+assert(evidence.transformGate?.transformClass === 'sword-follows-fk', 'offline transform measurements should pass independently of observed truth');
+assert((evidence.promotionVerdict || evidence.parity)?.visualVerdict === 'fixed', 'current machine gate should be fixed when candidate visibility and transform pass');
+const offline = evidence.offlineVisualTruth || {};
+const artifactPath = path.join(projectRoot, offline.artifactPath || '');
+const sheetPath = path.join(projectRoot, offline.sheetPath || '');
+assert(fs.existsSync(artifactPath), `missing parity artifact ${offline.artifactPath}`);
+assert(fs.existsSync(sheetPath), `missing parity sheet ${offline.sheetPath}`);
+assert(fs.existsSync(sheetPath) && fs.statSync(sheetPath).size > 1000, 'parity sheet should be non-empty');
+const artifact = fs.existsSync(artifactPath) ? JSON.parse(fs.readFileSync(artifactPath, 'utf8')) : {};
+assert(artifact.schema === 'pose-lab-offline-web-truth-parity-ready-weapon-fk-v1', 'parity artifact schema mismatch');
+assert(artifact.browserCaptureDeprecated === true, 'parity artifact should reject browser capture as proof');
+assert(artifact.sharedTruthModule === 'src/ready-weapon-truth.mjs', 'parity artifact should name shared truth module');
+assert(artifact.observedWebTruthPath === path.relative(projectRoot, observedPath), 'parity artifact should name observed web truth artifact');
+assert(artifact.observedTruth?.authority === 'context-only', 'parity artifact should mark observed truth as context-only');
+assert(artifact.visibilityGate?.status === 'pass', 'parity artifact should expose the passing candidate visibility gate');
+assert(artifact.transformGate?.status === 'pass', 'parity artifact should expose the passing transform gate');
+assert(offline.result === artifact.result, 'gate result should mirror parity artifact result');
+assert((artifact.promotionVerdict || artifact.parity)?.visualVerdict === 'fixed', 'infrastructure check should accept machine truth while observed remains context-only');
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['pose-lab-visual-evidence'], evidencePath: path.relative(projectRoot, evidencePath), cacheToken: expectedCacheToken }, null, 2));
+console.log(JSON.stringify({ checked: ['pose-lab-candidate-lane-visibility-contract', 'observed-web-truth-context-only', 'runtime-default-visibility-protected'], evidencePath: path.relative(projectRoot, evidencePath), observed: evidence.observedWebTruth?.visualClass, offline: evidence.offlineTruth?.visualClass, result: artifact.result }, null, 2));

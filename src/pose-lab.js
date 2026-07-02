@@ -4,13 +4,15 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-129';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-131';
+import { applyWeaponAttachmentTruthTransform, classifyWeaponVisibility, updateSyntheticWeaponSocketTransform } from './ready-weapon-truth.mjs?v=pose-editor-131';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-131';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-128';
 
 const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget';
-const LAB_CACHE_TOKEN = 'pose-editor-129';
+const LAB_CACHE_TOKEN = 'pose-editor-131';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
@@ -3881,29 +3883,15 @@ class PoseActor {
     const proxy = this.weaponProxy;
     if (!proxy?.root) return;
     const animatedSocketRotation = clipHasQuaternionTrackForBone(this.activeAction?._clip, proxy.root.name);
-    if (proxy.sourceSocket) {
-      proxy.root.position.set(0, 0, 0);
-      if (Array.isArray(proxy.config.modelLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
-      if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
-      return;
-    }
-    if (!proxy.leftHand || !proxy.rightHand) return;
-    this.model.updateMatrixWorld(true);
-    const rightWorld = Array.isArray(proxy.config.handLocalOffset)
-      ? proxy.rightHand.localToWorld(new THREE.Vector3().fromArray(proxy.config.handLocalOffset))
-      : worldPositionOf(proxy.rightHand);
-    const leftWorld = worldPositionOf(proxy.leftHand);
-    const socketWorld = (proxy.config.positionMode || 'two-hand-center') === 'right-hand'
-      ? rightWorld.clone()
-      : rightWorld.clone().add(leftWorld).multiplyScalar(0.5);
-    const local = this.model.worldToLocal(socketWorld);
-    if (Array.isArray(proxy.config.modelLocalOffset)) local.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
-    if (Array.isArray(proxy.config.gripOffset)) local.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
-    proxy.root.position.copy(local);
-    if (!animatedSocketRotation) {
-      const modelWorldQuat = worldQuaternionOf(this.model).invert();
-      proxy.root.quaternion.copy(modelWorldQuat.multiply(worldQuaternionOf(proxy.rightHand))).normalize();
-    }
+    updateSyntheticWeaponSocketTransform(THREE, {
+      model: this.model,
+      root: proxy.root,
+      rightHand: proxy.rightHand,
+      leftHand: proxy.leftHand,
+      sourceSocket: proxy.sourceSocket,
+      config: proxy.config,
+      activeClipHasSocketRotation: animatedSocketRotation,
+    });
   }
 
   attachWeaponAttachment(weaponRoot, config = {}) {
@@ -3949,31 +3937,16 @@ class PoseActor {
     const weaponRoot = proxy?.model;
     const tip = proxy?.tipMarker;
     if (!weaponRoot || !config) return null;
-    weaponRoot.scale.setScalar(Number(config.scale ?? 1));
-    if (Array.isArray(config.rotationDeg)) weaponRoot.rotation.set(...config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
-    if (Array.isArray(config.position)) weaponRoot.position.fromArray(config.position);
-    else weaponRoot.position.set(0, 0, 0);
-    if (Array.isArray(config.gripLocalPosition)) {
-      const localGrip = new THREE.Vector3().fromArray(config.gripLocalPosition);
-      localGrip.multiplyScalar(Number(config.scale ?? 1));
-      localGrip.applyQuaternion(weaponRoot.quaternion);
-      weaponRoot.position.sub(localGrip);
-    }
-    if (tip) {
-      if (Array.isArray(config.tipLocalPosition)) {
-        const localTip = new THREE.Vector3().fromArray(config.tipLocalPosition);
-        localTip.multiplyScalar(Number(config.scale ?? 1));
-        localTip.applyQuaternion(weaponRoot.quaternion);
-        localTip.add(weaponRoot.position);
-        tip.position.copy(localTip);
-      } else {
-        tip.position.fromArray(config.tipOffset || this.info.weaponProxy?.tipOffset || [0, 0, 0.85]);
-      }
-      const rest = this.boneRest.get(tip.name);
-      if (rest) rest.position.copy(tip.position);
-    }
+    applyWeaponAttachmentTruthTransform(THREE, {
+      weaponRoot,
+      tip,
+      config,
+      fallbackTipOffset: this.info.weaponProxy?.tipOffset || [0, 0, 0.85],
+      boneRest: this.boneRest,
+    });
     return proxy;
   }
+
 
   updateWeaponArc(clip, active) {
     const arc = this.weaponProxy?.arc;
@@ -3995,10 +3968,14 @@ class PoseActor {
     if (!this.weaponProxy?.root) return;
     this.updateWeaponSocketTransform();
     const clip = this.activeAction?._clip;
-    const patterns = this.weaponProxy.config.visibleClipPatterns || ['\\[FPS-SWORD-UPPER\\]', 'OneHand'];
-    const active = Boolean(weaponDebugForceVisible() || clip?.userData?.weaponPathIk || patterns.some((pattern) => new RegExp(pattern).test(clip?.name || '')));
-    this.weaponProxy.root.visible = active;
-    this.updateWeaponArc(clip, active);
+    const visibility = classifyWeaponVisibility({
+      clipName: clip?.name || '',
+      clipUserData: clip?.userData || {},
+      config: this.weaponProxy.config,
+      weaponDebug: weaponDebugForceVisible(),
+    });
+    this.weaponProxy.root.visible = visibility.visible;
+    this.updateWeaponArc(clip, visibility.visible);
   }
 
   addHelpers() {
@@ -4568,10 +4545,11 @@ class PoseActor {
     this.activeAction = next;
     if (!this.applyCritiqueClipState(next._clip)) this.resetAllBoneEdits();
     this.mixer.setTime(0);
+    this.reapplyBoneEdits();
     this.applyGrounding();
+    this.updateWeaponProxyVisibility();
     this.updateDebugHelpers();
     this.updateBoneOverlay();
-    this.updateWeaponProxyVisibility();
     this.rememberClip(name);
   }
 
@@ -4628,9 +4606,9 @@ class PoseActor {
 
   update(dt) {
     this.mixer.update(dt);
-    this.updateWeaponProxyVisibility();
     this.reapplyBoneEdits();
     this.applyGrounding();
+    this.updateWeaponProxyVisibility();
     this.updateLegSymmetryOverlay();
     this.updateDebugHelpers();
     this.updateBoneOverlay();
@@ -6404,6 +6382,21 @@ class PoseLab {
               clipSuffix: spec.clipSuffix || ('-> ' + targetKey + ' [' + mappedTag + ']'),
               originPrefix: customOriginPrefix,
             })
+              : spec.retargetMode === 'meshy-fps-visual-ik-ready'
+              ? (() => {
+                const generated = buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source.model, target.model, sourceClips, {
+                  clipName: (spec.clipNames?.[0] || 'OneHandReady') + ' ' + (spec.clipSuffix || ('-> ' + targetKey + ' [' + mappedTag + ']')),
+                  sourceClipName: spec.clipNames?.[0] || 'OneHandReady',
+                  sourceRestClip: spec.sourceRestClip || '0T-Pose',
+                  timeSourceBone: spec.timeSourceBone || 'Hand.R',
+                  dropInitialRestKey: spec.dropInitialRestKey !== false,
+                  weaponAttachment: target.info?.weaponAttachment || {},
+                });
+                const built = generated?.clip ? [generated.clip] : [];
+                built.failures = generated?.clip ? 0 : 1;
+                built.fallback = !generated?.clip;
+                return built;
+              })()
               : spec.retargetMode === 'mapped-rotation'
               ? buildMappedRotationClips(sourceClips, source.model, target.model, {
               ...retargetOptions,
@@ -6711,7 +6704,12 @@ class PoseLab {
     this.updateReadout();
   }
 
+  bodyBoneViewportPickingEnabled() {
+    return this.activePanel === 'pose';
+  }
+
   bonePickObjects(actor = this.actors.get(this.selected)) {
+    if (!this.bodyBoneViewportPickingEnabled()) return [];
     if (!actor?.showBoneOverlay) return [];
     return [
       ...actor.boneHandles.values(),
@@ -6720,6 +6718,7 @@ class PoseLab {
   }
 
   pickBoneHandleHits(event, actor = this.actors.get(this.selected)) {
+    if (!this.bodyBoneViewportPickingEnabled()) return [];
     if (!actor?.showBoneOverlay) return [];
     const rect = UI.canvas.getBoundingClientRect();
     this.pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
@@ -6730,6 +6729,7 @@ class PoseLab {
   }
 
   pickTouchRigControlHits(event, actor = this.actors.get(this.selected)) {
+    if (!this.bodyBoneViewportPickingEnabled()) return [];
     if (!actor?.touchRigControls || !actor.showTouchRigControls) return [];
     const rect = UI.canvas.getBoundingClientRect();
     this.pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
@@ -6739,6 +6739,7 @@ class PoseLab {
   }
 
   pickNearestScreenBone(event, actor = this.actors.get(this.selected)) {
+    if (!this.bodyBoneViewportPickingEnabled()) return null;
     if (!actor) return null;
     const rect = UI.canvas.getBoundingClientRect();
     const point = { x: event.clientX, y: event.clientY };
@@ -6764,6 +6765,7 @@ class PoseLab {
   }
 
   pickTouchPoseTarget(event, actor = this.actors.get(this.selected)) {
+    if (!this.bodyBoneViewportPickingEnabled()) return null;
     if (!actor) return null;
     const controlHits = this.pickTouchRigControlHits(event, actor);
     const control = controlHits[0]?.object || null;
@@ -6784,6 +6786,10 @@ class PoseLab {
   }
 
   pickBoneHandle(event) {
+    if (!this.bodyBoneViewportPickingEnabled()) {
+      this.pointerDown = null;
+      return;
+    }
     if (!this.pointerDown) return;
     const dx = event.clientX - this.pointerDown.x;
     const dy = event.clientY - this.pointerDown.y;
@@ -7236,12 +7242,17 @@ class PoseLab {
   }
 
   handleTouchPosePointerDown(event) {
+    if (!this.bodyBoneViewportPickingEnabled()) {
+      this.pointerDown = null;
+      return false;
+    }
     this.trackTouchPointer(event);
     if (this.activeTouchPointers.size >= 2) return this.allowCameraMultiTouch(event);
     return this.beginTouchPoseDrag(event);
   }
 
   handleTouchPosePointerMove(event) {
+    if (!this.bodyBoneViewportPickingEnabled()) return false;
     this.updateTrackedTouchPointer(event);
     if (this.multiTouchPoseGesture) return;
     if (this.activeTouchPointers.size >= 2) {
@@ -7252,6 +7263,11 @@ class PoseLab {
   }
 
   handleTouchPosePointerUp(event) {
+    if (!this.bodyBoneViewportPickingEnabled()) {
+      this.pointerDown = null;
+      this.releaseTrackedTouchPointer(event);
+      return false;
+    }
     const wasMulti = Boolean(this.multiTouchPoseGesture);
     this.releaseTrackedTouchPointer(event);
     if (wasMulti) {
@@ -7265,12 +7281,18 @@ class PoseLab {
   }
 
   handleTouchPosePointerCancel(event) {
+    if (!this.bodyBoneViewportPickingEnabled()) {
+      this.pointerDown = null;
+      this.releaseTrackedTouchPointer(event);
+      return false;
+    }
     this.releaseTrackedTouchPointer(event);
     if (this.multiTouchPoseGesture) return this.cancelMultiTouchPoseGesture(event, true);
     return this.cancelTouchPoseDrag(event, true);
   }
 
   beginTouchPoseDrag(event) {
+    if (!this.bodyBoneViewportPickingEnabled()) return false;
     if (this.touchPoseDrag) this.cancelTouchPoseDrag(event, false);
     if (this.multiTouchPoseGesture) this.cancelMultiTouchPoseGesture(event, true);
     if (this.activeTouchPointers.size >= 2) return false;
@@ -9294,6 +9316,7 @@ class PoseLab {
     } else if (this.weaponGizmoDrag) {
       this.finishWeaponGizmoDrag();
     }
+    if (nextPanel !== 'pose') this.cancelAllTouchPoseGestures(null, false);
     if (elementPanel === 'cleanup') this.updateCleanupUi();
     if (nextPanel === 'pose' || this.labMode === 'critique') this.updateCritiqueDock(true);
     this.saveState();

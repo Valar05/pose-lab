@@ -18,7 +18,7 @@ This is a standalone browser Pose Lab seeded from the newer `gravity-fist-threej
 - `assets/models/ruined_air/Animations/Animation_*.fbx`: Ruined Air native walk/back/turn clips loaded onto the Ruined Air actor.
 - `assets/source/ruined_air/`: copied Ruined Air player scene and controller scripts for provenance and procedural-walk mining.
 - `assets/models/meshy_character_sheet/animated/`: animated Meshy biped GLBs used by the `Meshy Character` actor.
-- `Meshy Character` now prefers FPS Arms sword upper-body `[FPS-SWORD-UPPER]` clips converted from `FPSPlayer.glb` `OneHand*` authored keyframes onto the Meshy rig using `fps-upper-key-convert`. These clips preserve source key times, close generated quaternion seams so the authored cyclic wrap stays smooth, use IK only as a bounded source-key correction layer at those source keys, solve `WeaponGrip` from the mapped `Weapon.R` virtual blade frame instead of raw wrist-relative rotation, intentionally exclude hips/root/legs/feet/head, and do not bake locomotion or invented full-body motion; Meshy FPV uses a head-centered forward camera for parity with FPS Arms.
+- `Meshy Character` keeps the accepted FPS Arms baseline on the `0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]` calibration. Visual-IK `OneHandReady` output is candidate-only until the offline visibility gate and transform gate both pass promotion; it must not be selected by startup, `SwordReady`, `RestProbe`, or default weapon visibility surfaces. Meshy FPV uses a head-centered forward camera for parity with FPS Arms.
 - `assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb`: static PBR Meshy gun-sword/sabre prop attached to `WeaponGrip`; FPS Arms inherits `WeaponGrip` from authored `WeaponR`, while Meshy Character positions the synthetic socket on `RightHand` and drives its orientation from `Weapon.R` relative to `Hand.R`.
 - `assets/models/meshy_character_sheet/static/`: static full-PBR Meshy GLB used by the `Meshy Static PBR` reference actor and as the material source copied onto the animated Meshy `char1` skinned mesh at runtime.
 - `assets/source/meshy_character_sheet/`: original Meshy download zip and extracted animated GLBs for provenance.
@@ -51,29 +51,29 @@ If the session already exists, do not restart it unnecessarily unless a visual r
 
 When Pose Lab looks wrong, do not collapse multiple failures into one diagnosis. Check them in this order:
 
-1. Inspect the newest screenshot or contact sheet first. Treat it as the source of truth for the visible state.
-2. Confirm the browser is on the intended entry path and mode, including any query-string overrides such as `actor`, `qaActor`, `clip`, `mode`, or visual-QA flags.
-3. Verify the selected actor in the startup resolver before chasing panel visibility or clip search logic. In critique mode, the default should be Ares if it is available.
-4. Check whether a syntax error or module failure is preventing the UI from finishing its render pass.
-5. The visual-QA harness should emit a ready-to-view Android broadcast after the first rendered beacon so the browser can be reopened from automation without guessing.
+1. For animation, pose, and weapon-follow acceptance, run the repo-owned offline/web truth parity verifier first. Treat its JSON metrics plus contact sheet as the source of truth.
+2. Use the newest screenshot or browser contact sheet only as human-report context; it cannot close a red build on this device.
+3. Confirm the browser is on the intended entry path and mode only when debugging UI state, browser chrome, or human perception gaps.
+4. Verify the selected actor in the startup resolver before chasing panel visibility or clip search logic. In critique mode, the default should be Ares if it is available.
+5. Check whether a syntax error or module failure is preventing the UI from finishing its render pass.
 6. Check whether persistence is restoring an older actor, clip, or panel state after startup.
-7. Only after the page is visibly on the correct actor and module-loaded should you debug missing controls, hidden docks, or clip-list filtering.
+7. Only after offline/web parity and module-loaded state agree should you debug missing controls, hidden docks, or clip-list filtering.
 
-This order prevents a stale screenshot, a startup override, and a parse error from being treated as one bug.
+This order prevents stale screenshots, startup overrides, browser capture failures, and parse errors from being treated as one bug.
 
 ## Ritual Word
 
 When the user says `get motivated`, continue through implementation and verification instead of stopping after the first diagnosis. Anticipate the next likely failure, add the regression test, and close the loop before handing back the result.
 
-## Device Capture Standard
+## Device Capture Standard Deprecated
 
-Use the visual QA harness or a fresh Android screenshot from the live browser when you need visible proof.
+Browser screenshots, Android `screencap`, debug bridge state, and visual-QA browser capture are deprecated as acceptance proof for animation, pose, and weapon-follow work on this device. They are manual inspection aids only.
 
-1. Wake or launch the browser on the actual page URL.
-2. Wait for the page to finish loading and confirm the visible mode from the screenshot.
-3. Prefer the visual QA contact sheet for capture sequences and the newest Android screenshot for browser chrome or DOM state.
-4. Do not rely on the old standalone `screencap` path. It is not the source of truth for this workflow.
-5. If the page looks stale, bump the cache token or hard-refresh before changing animation logic.
+1. Use offline truth parity artifacts for red-build closure and promotion.
+2. Require repo-generated JSON metrics, a non-empty contact sheet from GLBs/profile data, and three explicit gates: offline visibility, offline transform, and observed human context.
+3. Offline weapon visibility must pass before transform parity can be promoted; if visibility is hidden, transform is recorded but blocked.
+4. Observed-web-truth artifacts are human report context only. They can explain perception gaps, but they are not parity authority.
+5. If browser state disagrees with offline truth, debug browser loading/cache/state separately instead of changing animation logic blindly.
 
 ## Validation
 
@@ -135,7 +135,7 @@ Meshy/FPS experiments now default to the candidate lane. Before editing startup 
 node tools/pose_lab_workflow_status.mjs
 ```
 
-Promotion requires `tools/promote_pose_candidate.mjs` with fresh visual evidence and metric evidence. The accepted baseline is recorded in `generated/workflow_state/meshy_fps_accepted_baseline.json`; blocked or stale evidence must fail. String/source tests are only support checks and must not be treated as visual acceptance.
+Promotion requires `tools/promote_pose_candidate.mjs` with fixed offline machine-gate evidence and metric evidence. The accepted baseline is recorded in `generated/workflow_state/meshy_fps_accepted_baseline.json`; blocked browser capture, stale screenshots, source-string checks, or observed-web-truth-only reports must fail. For Meshy Ready weapon follow, `tools/meshy_ready_weapon_offline_visual_truth.mjs` is the canonical proof path: visibility must pass, transform must pass numerically, and observed web truth must stay outside verifier source code as context only.
 
 ## Manual Fix Authority
 

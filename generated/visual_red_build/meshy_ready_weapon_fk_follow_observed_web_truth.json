@@ -1,0 +1,24 @@
+{
+  "schema": "pose-lab-ready-weapon-fk-observed-web-truth-v1",
+  "generatedAt": "2026-07-02T18:52:17.589Z",
+  "cacheToken": "pose-editor-131",
+  "runtimeBuild": "meshy-fps-sword-upper-body-retarget",
+  "actorKey": "meshyCharacter",
+  "clipName": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
+  "visualClass": "sword-rest-space",
+  "evidenceSource": "human-visible-red-build",
+  "browserCaptureDeprecated": true,
+  "capturePaths": [
+    "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130645.png",
+    "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130642.png",
+    "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-131830.png"
+  ],
+  "visualRead": "T-pose weapon placement reads correct; Ready hands improved, but the sabre remains visually rest-space / not following final FK. Browser capture is retained only as human-report context.",
+  "visualAssertions": {
+    "tPoseWeaponPlacementAccepted": true,
+    "readyHandsCorrected": true,
+    "readySwordNotFollowingFinalFk": true,
+    "browserCaptureRejectedAsAcceptance": true,
+    "expectedReadySwordFollowsFinalFk": true
+  }
+}

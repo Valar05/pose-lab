@@ -1,0 +1,799 @@
+{
+  "schema": "pose-lab-offline-web-truth-parity-ready-weapon-fk-v1",
+  "generatedAt": "2026-07-02T21:08:35.029Z",
+  "proofMode": "offline-web-truth-parity",
+  "visibilityPolicy": "candidate-lane-only",
+  "browserCaptureDeprecated": true,
+  "sourceActor": "FPS Arms",
+  "targetActor": "Meshy Character",
+  "actorKey": "meshyCharacter",
+  "clipName": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
+  "runtimeBuild": "meshy-fps-sword-upper-body-retarget",
+  "cacheToken": "pose-editor-131",
+  "sharedTruthModule": "src/ready-weapon-truth.mjs",
+  "observedWebTruthPath": "generated/visual_red_build/meshy_ready_weapon_fk_follow_observed_web_truth.json",
+  "manualPlacementPolicy": "locked literals; verifier reads rig profile and does not tune offsets",
+  "candidateVisibilityPolicy": "verifier may make FPS-VISUAL-IK Ready visible for proof without widening runtime/default UI visibleClipPatterns",
+  "observedWebTruth": {
+    "schema": "pose-lab-ready-weapon-fk-observed-web-truth-v1",
+    "generatedAt": "2026-07-02T18:52:17.589Z",
+    "cacheToken": "pose-editor-131",
+    "runtimeBuild": "meshy-fps-sword-upper-body-retarget",
+    "actorKey": "meshyCharacter",
+    "clipName": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
+    "visualClass": "sword-rest-space",
+    "evidenceSource": "human-visible-red-build",
+    "browserCaptureDeprecated": true,
+    "capturePaths": [
+      "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130645.png",
+      "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130642.png",
+      "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-131830.png"
+    ],
+    "visualRead": "T-pose weapon placement reads correct; Ready hands improved, but the sabre remains visually rest-space / not following final FK. Browser capture is retained only as human-report context.",
+    "visualAssertions": {
+      "tPoseWeaponPlacementAccepted": true,
+      "readyHandsCorrected": true,
+      "readySwordNotFollowingFinalFk": true,
+      "browserCaptureRejectedAsAcceptance": true,
+      "expectedReadySwordFollowsFinalFk": true
+    }
+  },
+  "observedTruth": {
+    "authority": "context-only",
+    "present": true,
+    "schema": "pose-lab-ready-weapon-fk-observed-web-truth-v1",
+    "visualClass": "sword-rest-space",
+    "visualRead": "T-pose weapon placement reads correct; Ready hands improved, but the sabre remains visually rest-space / not following final FK. Browser capture is retained only as human-report context.",
+    "capturePaths": [
+      "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130645.png",
+      "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130642.png",
+      "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-131830.png"
+    ],
+    "cacheToken": "pose-editor-131",
+    "runtimeBuild": "meshy-fps-sword-upper-body-retarget"
+  },
+  "offlineTruth": {
+    "visualClass": "sword-follows-fk",
+    "transformClass": "sword-follows-fk",
+    "visibilityClass": "weapon-visible",
+    "reasons": [],
+    "metrics": {
+      "hiltToHandDistance": 1.29193,
+      "bladeAxisChangeFromRestDeg": 0,
+      "socketToHandQuaternionErrorDeg": 83.385,
+      "socketQuaternionDeltaFromRestDeg": 0,
+      "socketPositionDeltaFromRest": 0,
+      "tipDeltaFromRest": 0
+    },
+    "visibility": {
+      "visible": true,
+      "visibilityClass": "weapon-visible",
+      "matchedPattern": "\\[FPS-VISUAL-IK",
+      "patterns": [
+        "\\[FPS-REST-ARMS",
+        "\\[FPS-VISUAL-IK"
+      ],
+      "reasons": [
+        "visible-pattern:\\[FPS-VISUAL-IK"
+      ]
+    },
+    "visibilityGate": {
+      "status": "pass",
+      "visible": true,
+      "visibilityClass": "weapon-visible",
+      "matchedPattern": "\\[FPS-VISUAL-IK",
+      "patterns": [
+        "\\[FPS-REST-ARMS",
+        "\\[FPS-VISUAL-IK"
+      ],
+      "reasons": [
+        "visible-pattern:\\[FPS-VISUAL-IK"
+      ],
+      "blockingReasons": []
+    },
+    "transformGate": {
+      "status": "pass",
+      "transformClass": "sword-follows-fk",
+      "reasons": [],
+      "blockingReasons": [],
+      "metrics": {
+        "hiltToHandDistance": 1.29193,
+        "bladeAxisChangeFromRestDeg": 0,
+        "socketToHandQuaternionErrorDeg": 83.385,
+        "socketQuaternionDeltaFromRestDeg": 0,
+        "socketPositionDeltaFromRest": 0,
+        "tipDeltaFromRest": 0
+      },
+      "thresholds": {
+        "maxHiltToHand": 0.18,
+        "minBladeAxisChangeDeg": 20,
+        "maxSocketHandQuaternionErrorDeg": 0.5
+      },
+      "coordinates": {
+        "ready": {
+          "hilt": [
+            -0.02012,
+            0.04273,
+            -0.02127
+          ],
+          "tip": [
+            -0.39458,
+            0.00798,
+            0.64922
+          ],
+          "bladeAxis": [
+            -0.4871,
+            -0.0452,
+            0.87218
+          ],
+          "socketPosition": [
+            -0.02012,
+            0.04273,
+            -0.02127
+          ],
+          "socketForward": [
+            0,
+            0,
+            1
+          ],
+          "socketQuaternion": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "hand": [
+            -0.35918,
+            1.26841,
+            0.20639
+          ],
+          "handQuaternion": [
+            0.593183,
+            0.135405,
+            -0.268703,
+            0.746725
+          ]
+        },
+        "rest": {
+          "hilt": [
+            -0.02012,
+            0.04273,
+            -0.02127
+          ],
+          "tip": [
+            -0.39458,
+            0.00798,
+            0.64922
+          ],
+          "bladeAxis": [
+            -0.4871,
+            -0.0452,
+            0.87218
+          ],
+          "socketPosition": [
+            -0.02012,
+            0.04273,
+            -0.02127
+          ],
+          "socketForward": [
+            0,
+            0,
+            1
+          ],
+          "socketQuaternion": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "hand": [
+            -0.39244,
+            0.91237,
+            0.00285
+          ],
+          "handQuaternion": [
+            0.986858,
+            -0.070594,
+            0.070594,
+            0.12706
+          ]
+        }
+      },
+      "deltas": {
+        "hiltToHandDistance": 1.29193,
+        "socketPositionDeltaFromRest": 0,
+        "tipDeltaFromRest": 0,
+        "bladeAxisChangeFromRestDeg": 0,
+        "socketToHandQuaternionErrorDeg": 83.385,
+        "socketQuaternionDeltaFromRestDeg": 0
+      }
+    }
+  },
+  "visibilityGate": {
+    "status": "pass",
+    "visible": true,
+    "visibilityClass": "weapon-visible",
+    "matchedPattern": "\\[FPS-VISUAL-IK",
+    "patterns": [
+      "\\[FPS-REST-ARMS",
+      "\\[FPS-VISUAL-IK"
+    ],
+    "reasons": [
+      "visible-pattern:\\[FPS-VISUAL-IK"
+    ],
+    "blockingReasons": []
+  },
+  "transformGate": {
+    "status": "pass",
+    "transformClass": "sword-follows-fk",
+    "reasons": [],
+    "blockingReasons": [],
+    "metrics": {
+      "hiltToHandDistance": 1.29193,
+      "bladeAxisChangeFromRestDeg": 0,
+      "socketToHandQuaternionErrorDeg": 83.385,
+      "socketQuaternionDeltaFromRestDeg": 0,
+      "socketPositionDeltaFromRest": 0,
+      "tipDeltaFromRest": 0
+    },
+    "thresholds": {
+      "maxHiltToHand": 0.18,
+      "minBladeAxisChangeDeg": 20,
+      "maxSocketHandQuaternionErrorDeg": 0.5
+    },
+    "coordinates": {
+      "ready": {
+        "hilt": [
+          -0.02012,
+          0.04273,
+          -0.02127
+        ],
+        "tip": [
+          -0.39458,
+          0.00798,
+          0.64922
+        ],
+        "bladeAxis": [
+          -0.4871,
+          -0.0452,
+          0.87218
+        ],
+        "socketPosition": [
+          -0.02012,
+          0.04273,
+          -0.02127
+        ],
+        "socketForward": [
+          0,
+          0,
+          1
+        ],
+        "socketQuaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "hand": [
+          -0.35918,
+          1.26841,
+          0.20639
+        ],
+        "handQuaternion": [
+          0.593183,
+          0.135405,
+          -0.268703,
+          0.746725
+        ]
+      },
+      "rest": {
+        "hilt": [
+          -0.02012,
+          0.04273,
+          -0.02127
+        ],
+        "tip": [
+          -0.39458,
+          0.00798,
+          0.64922
+        ],
+        "bladeAxis": [
+          -0.4871,
+          -0.0452,
+          0.87218
+        ],
+        "socketPosition": [
+          -0.02012,
+          0.04273,
+          -0.02127
+        ],
+        "socketForward": [
+          0,
+          0,
+          1
+        ],
+        "socketQuaternion": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "hand": [
+          -0.39244,
+          0.91237,
+          0.00285
+        ],
+        "handQuaternion": [
+          0.986858,
+          -0.070594,
+          0.070594,
+          0.12706
+        ]
+      }
+    },
+    "deltas": {
+      "hiltToHandDistance": 1.29193,
+      "socketPositionDeltaFromRest": 0,
+      "tipDeltaFromRest": 0,
+      "bladeAxisChangeFromRestDeg": 0,
+      "socketToHandQuaternionErrorDeg": 83.385,
+      "socketQuaternionDeltaFromRestDeg": 0
+    }
+  },
+  "promotionVerdict": {
+    "authority": "offline-machine-gates",
+    "observedTruthAuthority": "context-only",
+    "parityMatches": true,
+    "machineGatesPass": true,
+    "visualVerdict": "fixed",
+    "parityFailure": "",
+    "visibilityGate": {
+      "status": "pass",
+      "visible": true,
+      "visibilityClass": "weapon-visible",
+      "matchedPattern": "\\[FPS-VISUAL-IK",
+      "patterns": [
+        "\\[FPS-REST-ARMS",
+        "\\[FPS-VISUAL-IK"
+      ],
+      "reasons": [
+        "visible-pattern:\\[FPS-VISUAL-IK"
+      ],
+      "blockingReasons": []
+    },
+    "transformGate": {
+      "status": "pass",
+      "transformClass": "sword-follows-fk",
+      "reasons": [],
+      "blockingReasons": [],
+      "metrics": {
+        "hiltToHandDistance": 1.29193,
+        "bladeAxisChangeFromRestDeg": 0,
+        "socketToHandQuaternionErrorDeg": 83.385,
+        "socketQuaternionDeltaFromRestDeg": 0,
+        "socketPositionDeltaFromRest": 0,
+        "tipDeltaFromRest": 0
+      },
+      "thresholds": {
+        "maxHiltToHand": 0.18,
+        "minBladeAxisChangeDeg": 20,
+        "maxSocketHandQuaternionErrorDeg": 0.5
+      },
+      "coordinates": {
+        "ready": {
+          "hilt": [
+            -0.02012,
+            0.04273,
+            -0.02127
+          ],
+          "tip": [
+            -0.39458,
+            0.00798,
+            0.64922
+          ],
+          "bladeAxis": [
+            -0.4871,
+            -0.0452,
+            0.87218
+          ],
+          "socketPosition": [
+            -0.02012,
+            0.04273,
+            -0.02127
+          ],
+          "socketForward": [
+            0,
+            0,
+            1
+          ],
+          "socketQuaternion": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "hand": [
+            -0.35918,
+            1.26841,
+            0.20639
+          ],
+          "handQuaternion": [
+            0.593183,
+            0.135405,
+            -0.268703,
+            0.746725
+          ]
+        },
+        "rest": {
+          "hilt": [
+            -0.02012,
+            0.04273,
+            -0.02127
+          ],
+          "tip": [
+            -0.39458,
+            0.00798,
+            0.64922
+          ],
+          "bladeAxis": [
+            -0.4871,
+            -0.0452,
+            0.87218
+          ],
+          "socketPosition": [
+            -0.02012,
+            0.04273,
+            -0.02127
+          ],
+          "socketForward": [
+            0,
+            0,
+            1
+          ],
+          "socketQuaternion": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "hand": [
+            -0.39244,
+            0.91237,
+            0.00285
+          ],
+          "handQuaternion": [
+            0.986858,
+            -0.070594,
+            0.070594,
+            0.12706
+          ]
+        }
+      },
+      "deltas": {
+        "hiltToHandDistance": 1.29193,
+        "socketPositionDeltaFromRest": 0,
+        "tipDeltaFromRest": 0,
+        "bladeAxisChangeFromRestDeg": 0,
+        "socketToHandQuaternionErrorDeg": 83.385,
+        "socketQuaternionDeltaFromRestDeg": 0
+      }
+    },
+    "observedTruth": {
+      "authority": "context-only",
+      "present": true,
+      "schema": "pose-lab-ready-weapon-fk-observed-web-truth-v1",
+      "visualClass": "sword-rest-space",
+      "visualRead": "T-pose weapon placement reads correct; Ready hands improved, but the sabre remains visually rest-space / not following final FK. Browser capture is retained only as human-report context.",
+      "capturePaths": [
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130645.png",
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130642.png",
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-131830.png"
+      ],
+      "cacheToken": "pose-editor-131",
+      "runtimeBuild": "meshy-fps-sword-upper-body-retarget"
+    }
+  },
+  "parity": {
+    "authority": "offline-machine-gates",
+    "observedTruthAuthority": "context-only",
+    "parityMatches": true,
+    "machineGatesPass": true,
+    "visualVerdict": "fixed",
+    "parityFailure": "",
+    "visibilityGate": {
+      "status": "pass",
+      "visible": true,
+      "visibilityClass": "weapon-visible",
+      "matchedPattern": "\\[FPS-VISUAL-IK",
+      "patterns": [
+        "\\[FPS-REST-ARMS",
+        "\\[FPS-VISUAL-IK"
+      ],
+      "reasons": [
+        "visible-pattern:\\[FPS-VISUAL-IK"
+      ],
+      "blockingReasons": []
+    },
+    "transformGate": {
+      "status": "pass",
+      "transformClass": "sword-follows-fk",
+      "reasons": [],
+      "blockingReasons": [],
+      "metrics": {
+        "hiltToHandDistance": 1.29193,
+        "bladeAxisChangeFromRestDeg": 0,
+        "socketToHandQuaternionErrorDeg": 83.385,
+        "socketQuaternionDeltaFromRestDeg": 0,
+        "socketPositionDeltaFromRest": 0,
+        "tipDeltaFromRest": 0
+      },
+      "thresholds": {
+        "maxHiltToHand": 0.18,
+        "minBladeAxisChangeDeg": 20,
+        "maxSocketHandQuaternionErrorDeg": 0.5
+      },
+      "coordinates": {
+        "ready": {
+          "hilt": [
+            -0.02012,
+            0.04273,
+            -0.02127
+          ],
+          "tip": [
+            -0.39458,
+            0.00798,
+            0.64922
+          ],
+          "bladeAxis": [
+            -0.4871,
+            -0.0452,
+            0.87218
+          ],
+          "socketPosition": [
+            -0.02012,
+            0.04273,
+            -0.02127
+          ],
+          "socketForward": [
+            0,
+            0,
+            1
+          ],
+          "socketQuaternion": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "hand": [
+            -0.35918,
+            1.26841,
+            0.20639
+          ],
+          "handQuaternion": [
+            0.593183,
+            0.135405,
+            -0.268703,
+            0.746725
+          ]
+        },
+        "rest": {
+          "hilt": [
+            -0.02012,
+            0.04273,
+            -0.02127
+          ],
+          "tip": [
+            -0.39458,
+            0.00798,
+            0.64922
+          ],
+          "bladeAxis": [
+            -0.4871,
+            -0.0452,
+            0.87218
+          ],
+          "socketPosition": [
+            -0.02012,
+            0.04273,
+            -0.02127
+          ],
+          "socketForward": [
+            0,
+            0,
+            1
+          ],
+          "socketQuaternion": [
+            0,
+            0,
+            0,
+            1
+          ],
+          "hand": [
+            -0.39244,
+            0.91237,
+            0.00285
+          ],
+          "handQuaternion": [
+            0.986858,
+            -0.070594,
+            0.070594,
+            0.12706
+          ]
+        }
+      },
+      "deltas": {
+        "hiltToHandDistance": 1.29193,
+        "socketPositionDeltaFromRest": 0,
+        "tipDeltaFromRest": 0,
+        "bladeAxisChangeFromRestDeg": 0,
+        "socketToHandQuaternionErrorDeg": 83.385,
+        "socketQuaternionDeltaFromRestDeg": 0
+      }
+    },
+    "observedTruth": {
+      "authority": "context-only",
+      "present": true,
+      "schema": "pose-lab-ready-weapon-fk-observed-web-truth-v1",
+      "visualClass": "sword-rest-space",
+      "visualRead": "T-pose weapon placement reads correct; Ready hands improved, but the sabre remains visually rest-space / not following final FK. Browser capture is retained only as human-report context.",
+      "capturePaths": [
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130645.png",
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130642.png",
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-131830.png"
+      ],
+      "cacheToken": "pose-editor-131",
+      "runtimeBuild": "meshy-fps-sword-upper-body-retarget"
+    }
+  },
+  "result": "fixed",
+  "acceptance": {
+    "generatedReadyClipResolved": true,
+    "readyClipSampled": true,
+    "readyHandDisplacedFromRest": true,
+    "noGeneratedWeaponTracks": true,
+    "runtimeVisibilityModeled": true,
+    "manualSaberPlacementPreserved": true
+  },
+  "metrics": {
+    "readyHandDisplacement": 0.41757,
+    "readyDuration": 1.208333,
+    "targetKeyCount": 30,
+    "sourceKeyCount": 31,
+    "hiltToHandDistance": 1.29193,
+    "bladeAxisChangeFromRestDeg": 0,
+    "socketToHandQuaternionErrorDeg": 83.385,
+    "socketQuaternionDeltaFromRestDeg": 0,
+    "socketPositionDeltaFromRest": 0,
+    "tipDeltaFromRest": 0
+  },
+  "samples": [
+    {
+      "label": "ready-start",
+      "time": 0,
+      "hilt": [
+        -0.02012,
+        0.04273,
+        -0.02127
+      ],
+      "hand": [
+        -0.35956,
+        1.27299,
+        0.21078
+      ],
+      "tip": [
+        -0.39458,
+        0.00798,
+        0.64922
+      ],
+      "bladeAxis": [
+        -0.4871,
+        -0.0452,
+        0.87218
+      ],
+      "socketForward": [
+        0,
+        0,
+        1
+      ],
+      "socketQuaternion": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "handQuaternion": [
+        0.588801,
+        0.126358,
+        -0.277001,
+        0.748744
+      ],
+      "hiltToHandDistance": 1.29715
+    },
+    {
+      "label": "ready-mid",
+      "time": 0.604167,
+      "hilt": [
+        -0.02012,
+        0.04273,
+        -0.02127
+      ],
+      "hand": [
+        -0.35918,
+        1.26841,
+        0.20639
+      ],
+      "tip": [
+        -0.39458,
+        0.00798,
+        0.64922
+      ],
+      "bladeAxis": [
+        -0.4871,
+        -0.0452,
+        0.87218
+      ],
+      "socketForward": [
+        0,
+        0,
+        1
+      ],
+      "socketQuaternion": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "handQuaternion": [
+        0.593183,
+        0.135405,
+        -0.268703,
+        0.746725
+      ],
+      "hiltToHandDistance": 1.29193
+    },
+    {
+      "label": "ready-end",
+      "time": 1.208333,
+      "hilt": [
+        -0.02012,
+        0.04273,
+        -0.02127
+      ],
+      "hand": [
+        -0.35956,
+        1.27299,
+        0.21078
+      ],
+      "tip": [
+        -0.39458,
+        0.00798,
+        0.64922
+      ],
+      "bladeAxis": [
+        -0.4871,
+        -0.0452,
+        0.87218
+      ],
+      "socketForward": [
+        0,
+        0,
+        1
+      ],
+      "socketQuaternion": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "handQuaternion": [
+        0.588801,
+        0.126358,
+        -0.277001,
+        0.748744
+      ],
+      "hiltToHandDistance": 1.29715
+    }
+  ],
+  "sheet": "generated/offline_visual_truth/meshy_ready_weapon_fk_follow/visual_truth_sheet.svg"
+}
