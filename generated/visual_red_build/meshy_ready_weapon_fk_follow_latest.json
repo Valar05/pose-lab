@@ -1,32 +1,56 @@
 {
   "schema": "pose-lab-ready-weapon-fk-offline-web-parity-gate-v1",
-  "generatedAt": "2026-07-02T18:52:17.589Z",
+  "generatedAt": "2026-07-02T19:07:36.928Z",
   "currentFixCacheToken": "pose-editor-131",
+  "cacheToken": "pose-editor-131",
   "runtimeBuild": "meshy-fps-sword-upper-body-retarget",
   "actorKey": "meshyCharacter",
+  "clipName": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
   "readyClipName": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
   "proofMode": "offline-web-truth-parity",
   "browserCaptureDeprecated": true,
   "browserCapturePolicy": "Browser screenshots, debug bridge state, Android screencap, and visual-QA browser capture are manual inspection aids only and cannot close this red build.",
   "sharedTruthModule": "src/ready-weapon-truth.mjs",
+  "observedWebTruthPath": "generated/visual_red_build/meshy_ready_weapon_fk_follow_observed_web_truth.json",
   "observedWebTruth": {
+    "schema": "pose-lab-ready-weapon-fk-observed-web-truth-v1",
+    "generatedAt": "2026-07-02T18:52:17.589Z",
+    "cacheToken": "pose-editor-131",
+    "runtimeBuild": "meshy-fps-sword-upper-body-retarget",
+    "actorKey": "meshyCharacter",
+    "clipName": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
     "visualClass": "sword-rest-space",
-    "confidence": "human-visible-red-build",
-    "source": "user screenshots and red-build report, not browser automation",
-    "tPoseCapturePath": "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130645.png",
-    "readyCapturePaths": [
+    "evidenceSource": "human-visible-red-build",
+    "browserCaptureDeprecated": true,
+    "capturePaths": [
+      "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130645.png",
       "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130642.png",
       "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-131830.png"
     ],
-    "visualRead": "T-pose weapon placement reads correct; Ready hands improved, but the sabre remains visually rest-space / not following final FK."
+    "visualRead": "T-pose weapon placement reads correct; Ready hands improved, but the sabre remains visually rest-space / not following final FK. Browser capture is retained only as human-report context."
   },
   "offlineTruth": {
-    "visualClass": "sword-follows-fk",
-    "reasons": [],
+    "visualClass": "sword-hidden",
+    "transformClass": "sword-follows-fk",
+    "visibilityClass": "weapon-hidden",
+    "reasons": [
+      "weapon-not-visible-in-runtime"
+    ],
     "metrics": {
       "hiltToHandDistance": 0.11497,
       "bladeAxisChangeFromRestDeg": 97.29,
       "socketToHandQuaternionErrorDeg": 0
+    },
+    "visibility": {
+      "visible": false,
+      "visibilityClass": "weapon-hidden",
+      "matchedPattern": "",
+      "patterns": [
+        "\\[FPS-REST-ARMS"
+      ],
+      "reasons": [
+        "runtime-visibility-hidden"
+      ]
     }
   },
   "parity": {
@@ -52,6 +76,7 @@
       "readyClipSampled": true,
       "readyHandDisplacedFromRest": true,
       "noGeneratedWeaponTracks": true,
+      "runtimeVisibilityModeled": true,
       "manualSaberPlacementPreserved": true
     }
   }

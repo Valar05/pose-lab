@@ -8,32 +8,29 @@ import {
   applyWeaponAttachmentTruthTransform,
   buildReadyWeaponParityVerdict,
   classifyReadyWeaponTruth,
+  classifyWeaponVisibility,
   measureReadyWeaponTruth,
   updateSyntheticWeaponSocketTransform,
 } from '../src/ready-weapon-truth.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const defaultOut = path.join(projectRoot, 'generated', 'offline_visual_truth', 'meshy_ready_weapon_fk_follow');
-const observedWebTruth = {
-  visualClass: 'sword-rest-space',
-  confidence: 'human-visible-red-build',
-  source: 'user screenshots and red-build report, not browser automation',
-  tPoseCapturePath: '/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130645.png',
-  readyCapturePaths: [
-    '/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130642.png',
-    '/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-131830.png',
-  ],
-  visualRead: 'T-pose weapon placement reads correct; Ready hands improved, but the sabre remains visually rest-space / not following final FK.',
-};
+const defaultObserved = path.join(projectRoot, 'generated', 'visual_red_build', 'meshy_ready_weapon_fk_follow_observed_web_truth.json');
 
 function parseArgs(argv) {
-  const args = { out: defaultOut };
+  const args = { out: defaultOut, observed: defaultObserved, weaponDebug: false };
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--out') args.out = path.resolve(projectRoot, argv[++i] || args.out);
     else if (arg.startsWith('--out=')) args.out = path.resolve(projectRoot, arg.slice('--out='.length));
+    else if (arg === '--observed') args.observed = path.resolve(projectRoot, argv[++i] || args.observed);
+    else if (arg.startsWith('--observed=')) args.observed = path.resolve(projectRoot, arg.slice('--observed='.length));
+    else if (arg === '--weapon-debug' || arg === '--weaponDebug') args.weaponDebug = true;
   }
   return args;
+}
+function readJson(file) {
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 function ensureBrowserShim() {
   globalThis.ProgressEvent ||= class ProgressEvent { constructor(type, init = {}) { this.type = type; Object.assign(this, init); } };
@@ -126,12 +123,12 @@ function projectBounds(states) {
 function svgPoint(p, panel, bounds) {
   return [panel.x + panel.w / 2 + (p.x - bounds.cx) * bounds.scale, panel.y + panel.h / 2 - (p.y - bounds.cy) * bounds.scale];
 }
-function writeSheet(frames, file, offlineClass, verdict) {
+function writeSheet(frames, file, observedWebTruth, offlineTruth, verdict) {
   const W = 1200;
   const H = 455;
   const panelW = W / frames.length;
   const bounds = projectBounds(frames.map((f) => f.state));
-  const title = `Offline/web parity: observed=${observedWebTruth.visualClass} offline=${offlineClass.visualClass} verdict=${verdict.visualVerdict}`;
+  const title = `Offline/web parity: observed=${observedWebTruth.visualClass} offline=${offlineTruth.visualClass} visibility=${offlineTruth.visibilityClass} verdict=${verdict.visualVerdict}`;
   const parts = [`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">`, '<rect width="100%" height="100%" fill="#06090d"/>'];
   parts.push(`<text x="20" y="28" fill="#fff4c2" font-family="monospace" font-size="18">${title}</text>`);
   frames.forEach((frame, index) => {
@@ -139,17 +136,18 @@ function writeSheet(frames, file, offlineClass, verdict) {
     const h = svgPoint(frame.state.hilt, panel, bounds);
     const hand = svgPoint(frame.state.hand, panel, bounds);
     const tip = svgPoint(frame.state.tip, panel, bounds);
+    const opacity = offlineTruth.visibility?.visible ? 1 : 0.35;
     parts.push(`<rect x="${panel.x}" y="${panel.y}" width="${panel.w}" height="${panel.h}" fill="#0b1118" stroke="#344054"/>`);
     parts.push(`<text x="${panel.x + 8}" y="${panel.y + 22}" fill="#e5e7eb" font-family="monospace" font-size="13">${frame.label} t=${round(frame.time, 3)}</text>`);
-    parts.push(`<line x1="${h[0]}" y1="${h[1]}" x2="${tip[0]}" y2="${tip[1]}" stroke="#facc15" stroke-width="5"/>`);
+    parts.push(`<line x1="${h[0]}" y1="${h[1]}" x2="${tip[0]}" y2="${tip[1]}" stroke="#facc15" stroke-width="5" opacity="${opacity}"/>`);
     parts.push(`<line x1="${h[0]}" y1="${h[1]}" x2="${hand[0]}" y2="${hand[1]}" stroke="#38bdf8" stroke-width="2" stroke-dasharray="4 4"/>`);
     parts.push(`<circle cx="${hand[0]}" cy="${hand[1]}" r="7" fill="#22c55e"><title>RightHand</title></circle>`);
-    parts.push(`<circle cx="${h[0]}" cy="${h[1]}" r="6" fill="#ef4444"><title>WeaponGrip/hilt</title></circle>`);
-    parts.push(`<circle cx="${tip[0]}" cy="${tip[1]}" r="5" fill="#facc15"><title>Blade tip</title></circle>`);
+    parts.push(`<circle cx="${h[0]}" cy="${h[1]}" r="6" fill="#ef4444" opacity="${opacity}"><title>WeaponGrip/hilt</title></circle>`);
+    parts.push(`<circle cx="${tip[0]}" cy="${tip[1]}" r="5" fill="#facc15" opacity="${opacity}"><title>Blade tip</title></circle>`);
     parts.push(`<text x="${panel.x + 8}" y="${panel.y + panel.h - 16}" fill="#cbd5e1" font-family="monospace" font-size="12">hilt-hand=${round(frame.state.hiltToHandDistance, 4)}</text>`);
   });
-  parts.push('<text x="20" y="410" fill="#94a3b8" font-family="monospace" font-size="13">Green=RightHand, red=WeaponGrip/hilt, yellow=blade tip. Generated from repo GLBs/profile with the same shared truth module used by runtime.</text>');
-  parts.push('<text x="20" y="432" fill="#fca5a5" font-family="monospace" font-size="13">Red is expected until offline truth and human web truth agree on sword-follows-fk.</text>');
+  parts.push('<text x="20" y="410" fill="#94a3b8" font-family="monospace" font-size="13">Green=RightHand, red=WeaponGrip/hilt, yellow=blade tip. Dim weapon means runtime visibility hides this clip.</text>');
+  parts.push('<text x="20" y="432" fill="#fca5a5" font-family="monospace" font-size="13">Red is expected until observed web truth and offline runtime truth both agree on sword-follows-fk.</text>');
   parts.push('</svg>');
   fs.writeFileSync(file, parts.join('\n') + '\n');
 }
@@ -157,6 +155,20 @@ function readRuntimeField(name) {
   const runtime = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
   const match = runtime.match(new RegExp(`const\\s+${name}\\s*=\\s*['\"]([^'\"]+)['\"]`));
   return match?.[1] || '';
+}
+function validateObservedWebTruth(observed, { cacheToken, runtimeBuild, clipName }) {
+  const errors = [];
+  if (observed.schema !== 'pose-lab-ready-weapon-fk-observed-web-truth-v1') errors.push(`observed web truth schema ${observed.schema || 'missing'} is invalid`);
+  if (observed.cacheToken !== cacheToken) errors.push(`observed cacheToken ${observed.cacheToken || 'missing'} != ${cacheToken}`);
+  if (observed.runtimeBuild !== runtimeBuild) errors.push(`observed runtimeBuild ${observed.runtimeBuild || 'missing'} != ${runtimeBuild}`);
+  if (observed.actorKey !== 'meshyCharacter') errors.push(`observed actor ${observed.actorKey || 'missing'} != meshyCharacter`);
+  if (observed.clipName !== clipName) errors.push(`observed clip ${observed.clipName || 'missing'} != ${clipName}`);
+  if (!['sword-rest-space', 'sword-follows-fk', 'sword-hidden'].includes(observed.visualClass)) errors.push(`observed visualClass ${observed.visualClass || 'missing'} is invalid`);
+  if (observed.browserCaptureDeprecated !== true) errors.push('observed web truth must mark browser capture deprecated');
+  if (!String(observed.visualRead || '').trim()) errors.push('observed visualRead is required');
+  if (!Array.isArray(observed.capturePaths) || observed.capturePaths.length < 1) errors.push('observed capturePaths must list human evidence paths');
+  if (errors.length) throw new Error(errors.join('\n'));
+  return observed;
 }
 async function main() {
   const args = parseArgs(process.argv);
@@ -168,6 +180,8 @@ async function main() {
   const { buildMeshyFpsVisualIkReadyClip } = await import(pathToFileURL(path.join(projectRoot, 'src', 'meshy-ready-runtime.mjs')));
   const { RIG_PROFILES } = await import(pathToFileURL(path.join(projectRoot, 'src', 'rig-profiles.js')));
   const profile = RIG_PROFILES.meshyCharacter;
+  const runtimeBuild = readRuntimeField('LAB_BUILD');
+  const cacheToken = readRuntimeField('LAB_CACHE_TOKEN');
   const fps = await loadGlb(GLTFLoader, path.join(projectRoot, 'assets', 'models', 'FPSPlayer.glb'));
   const meshy = await loadGlb(GLTFLoader, path.join(projectRoot, 'assets', 'models', 'meshy_character_sheet', 'animated', 'Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb'));
   const sabre = await loadGlb(GLTFLoader, path.join(projectRoot, profile.weaponAttachment.url));
@@ -184,6 +198,7 @@ async function main() {
     weaponAttachment: profile.weaponAttachment,
   });
   if (!built.clip) throw new Error(`failed to build Ready clip: ${built.reason}`);
+  const observedWebTruth = validateObservedWebTruth(readJson(args.observed), { cacheToken, runtimeBuild, clipName: built.clip.name });
   const restPose = capturePose(targetRoot);
   const rightHand = requireNode(targetRoot, profile.weaponProxy.handBone || 'RightHand');
   const leftHand = profile.weaponProxy.leftHandBone ? find(targetRoot, profile.weaponProxy.leftHandBone) : null;
@@ -218,13 +233,14 @@ async function main() {
   const readyHand = rightHand.getWorldPosition(new THREE.Vector3());
   const readyHandDisplacement = restHand.distanceTo(readyHand);
   const clipHasWeaponTracks = built.clip.tracks.some((track) => /WeaponGrip|Weapon\.R|WeaponR/.test(track.name));
-  const offlineClass = classifyReadyWeaponTruth(THREE, { readyState: frames[1].state, restState });
-  const parity = buildReadyWeaponParityVerdict({ observedWebClass: observedWebTruth.visualClass, offlineClass: offlineClass.visualClass });
+  const visibility = classifyWeaponVisibility({ clipName: built.clip.name, clipUserData: built.clip.userData, config: profile.weaponProxy, weaponDebug: args.weaponDebug });
+  const offlineTruth = classifyReadyWeaponTruth(THREE, { readyState: frames[1].state, restState, visibility });
+  const parity = buildReadyWeaponParityVerdict({ observedWebClass: observedWebTruth.visualClass, offlineClass: offlineTruth.visualClass });
   const result = parity.visualVerdict;
   fs.mkdirSync(args.out, { recursive: true });
   const jsonPath = path.join(args.out, 'visual_truth.json');
   const sheetPath = path.join(args.out, 'visual_truth_sheet.svg');
-  writeSheet(frames, sheetPath, offlineClass, parity);
+  writeSheet(frames, sheetPath, observedWebTruth, offlineTruth, parity);
   const artifact = {
     schema: 'pose-lab-offline-web-truth-parity-ready-weapon-fk-v1',
     generatedAt: new Date().toISOString(),
@@ -232,13 +248,15 @@ async function main() {
     browserCaptureDeprecated: true,
     sourceActor: 'FPS Arms',
     targetActor: 'Meshy Character',
+    actorKey: 'meshyCharacter',
     clipName: built.clip.name,
-    runtimeBuild: readRuntimeField('LAB_BUILD'),
-    cacheToken: readRuntimeField('LAB_CACHE_TOKEN'),
+    runtimeBuild,
+    cacheToken,
     sharedTruthModule: 'src/ready-weapon-truth.mjs',
+    observedWebTruthPath: path.relative(projectRoot, args.observed),
     manualPlacementPolicy: 'locked literals; verifier reads rig profile and does not tune offsets',
     observedWebTruth,
-    offlineTruth: { visualClass: offlineClass.visualClass, reasons: offlineClass.reasons, metrics: offlineClass.metrics },
+    offlineTruth,
     parity,
     result,
     acceptance: {
@@ -246,16 +264,17 @@ async function main() {
       readyClipSampled: built.clip.name.includes('OneHandReady') && built.clip.duration > 0,
       readyHandDisplacedFromRest: readyHandDisplacement > 0.18,
       noGeneratedWeaponTracks: clipHasWeaponTracks === false,
+      runtimeVisibilityModeled: visibility.visibilityClass === 'weapon-visible' || visibility.visibilityClass === 'weapon-hidden',
       manualSaberPlacementPreserved: JSON.stringify(profile.weaponProxy.handLocalOffset) === JSON.stringify([0.095, 0.035, -0.01]) && JSON.stringify(profile.weaponProxy.modelLocalOffset) === JSON.stringify([-0.11512, 0.00773, -0.01127]) && JSON.stringify(profile.weaponAttachment.rotationDeg) === JSON.stringify([90, 0, -55.145]) && JSON.stringify(profile.weaponAttachment.gripLocalPosition) === JSON.stringify([0.6535, -0.02302, -0.07317]),
     },
-    metrics: { readyHandDisplacement: round(readyHandDisplacement), readyDuration: round(built.clip.duration, 6), targetKeyCount: built.targetKeyCount, sourceKeyCount: built.sourceKeyCount, ...offlineClass.metrics },
+    metrics: { readyHandDisplacement: round(readyHandDisplacement), readyDuration: round(built.clip.duration, 6), targetKeyCount: built.targetKeyCount, sourceKeyCount: built.sourceKeyCount, ...offlineTruth.metrics },
     samples: frames.map((frame) => ({ label: frame.label, time: round(frame.time, 6), hilt: point(frame.state.hilt), hand: point(frame.state.hand), tip: point(frame.state.tip), bladeAxis: point(frame.state.bladeAxis), socketForward: point(frame.state.socketForward), socketQuaternion: quatPoint(frame.state.socketQuaternion), handQuaternion: quatPoint(frame.state.handQuaternion), hiltToHandDistance: round(frame.state.hiltToHandDistance) })),
     sheet: path.relative(projectRoot, sheetPath),
   };
   fs.writeFileSync(jsonPath, JSON.stringify(artifact, null, 2) + '\n');
   const gatePath = path.join(projectRoot, 'generated', 'visual_red_build', 'meshy_ready_weapon_fk_follow_latest.json');
   fs.mkdirSync(path.dirname(gatePath), { recursive: true });
-  fs.writeFileSync(gatePath, JSON.stringify({ schema: 'pose-lab-ready-weapon-fk-offline-web-parity-gate-v1', generatedAt: artifact.generatedAt, currentFixCacheToken: artifact.cacheToken, runtimeBuild: artifact.runtimeBuild, actorKey: 'meshyCharacter', readyClipName: built.clip.name, proofMode: artifact.proofMode, browserCaptureDeprecated: true, browserCapturePolicy: 'Browser screenshots, debug bridge state, Android screencap, and visual-QA browser capture are manual inspection aids only and cannot close this red build.', sharedTruthModule: artifact.sharedTruthModule, observedWebTruth, offlineTruth: artifact.offlineTruth, parity: artifact.parity, offlineVisualTruth: { artifactPath: path.relative(projectRoot, jsonPath), sheetPath: path.relative(projectRoot, sheetPath), result: artifact.result, metrics: artifact.metrics, acceptance: artifact.acceptance } }, null, 2) + '\n');
-  console.log(JSON.stringify({ ok: result === 'fixed', result, observedWebClass: observedWebTruth.visualClass, offlineClass: offlineClass.visualClass, parityFailure: parity.parityFailure, artifact: path.relative(projectRoot, jsonPath), sheet: path.relative(projectRoot, sheetPath), metrics: artifact.metrics }, null, 2));
+  fs.writeFileSync(gatePath, JSON.stringify({ schema: 'pose-lab-ready-weapon-fk-offline-web-parity-gate-v1', generatedAt: artifact.generatedAt, currentFixCacheToken: artifact.cacheToken, cacheToken: artifact.cacheToken, runtimeBuild: artifact.runtimeBuild, actorKey: 'meshyCharacter', clipName: built.clip.name, readyClipName: built.clip.name, proofMode: artifact.proofMode, browserCaptureDeprecated: true, browserCapturePolicy: 'Browser screenshots, debug bridge state, Android screencap, and visual-QA browser capture are manual inspection aids only and cannot close this red build.', sharedTruthModule: artifact.sharedTruthModule, observedWebTruthPath: artifact.observedWebTruthPath, observedWebTruth, offlineTruth, parity: artifact.parity, offlineVisualTruth: { artifactPath: path.relative(projectRoot, jsonPath), sheetPath: path.relative(projectRoot, sheetPath), result: artifact.result, metrics: artifact.metrics, acceptance: artifact.acceptance } }, null, 2) + '\n');
+  console.log(JSON.stringify({ ok: result === 'fixed', result, observedWebClass: observedWebTruth.visualClass, offlineClass: offlineTruth.visualClass, transformClass: offlineTruth.transformClass, visibilityClass: offlineTruth.visibilityClass, parityFailure: parity.parityFailure, artifact: path.relative(projectRoot, jsonPath), sheet: path.relative(projectRoot, sheetPath), metrics: artifact.metrics }, null, 2));
 }
 main().catch((error) => { console.error(error?.stack || String(error)); process.exit(1); });

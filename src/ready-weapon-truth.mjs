@@ -69,6 +69,24 @@ export function applyWeaponAttachmentTruthTransform(THREE, { weaponRoot, tip = n
   return { attachmentUpdated: true };
 }
 
+export function classifyWeaponVisibility({ clipName = '', clipUserData = {}, config = {}, weaponDebug = false } = {}) {
+  const patterns = config.visibleClipPatterns || ['\\[FPS-SWORD-UPPER\\]', 'OneHand'];
+  const matchedPattern = patterns.find((pattern) => new RegExp(pattern).test(clipName || '')) || '';
+  const visible = Boolean(weaponDebug || clipUserData?.weaponPathIk || matchedPattern);
+  const reasons = [];
+  if (weaponDebug) reasons.push('weapon-debug-forced-visible');
+  if (clipUserData?.weaponPathIk) reasons.push('clip-userdata-weaponPathIk');
+  if (matchedPattern) reasons.push(`visible-pattern:${matchedPattern}`);
+  if (!visible) reasons.push('runtime-visibility-hidden');
+  return {
+    visible,
+    visibilityClass: visible ? 'weapon-visible' : 'weapon-hidden',
+    matchedPattern,
+    patterns,
+    reasons,
+  };
+}
+
 export function measureReadyWeaponTruth(THREE, { socket, rightHand, weaponRoot = null, tip = null, attachmentConfig = {} } = {}) {
   if (!socket || !rightHand) return null;
   socket.updateMatrixWorld(true);
@@ -100,8 +118,8 @@ export function measureReadyWeaponTruth(THREE, { socket, rightHand, weaponRoot =
   };
 }
 
-export function classifyReadyWeaponTruth(THREE, { readyState, restState, maxHiltToHand = 0.18, minBladeAxisChangeDeg = 20, maxSocketHandQuaternionErrorDeg = 0.5 } = {}) {
-  if (!readyState || !restState) return { visualClass: 'unknown', reasons: ['missing-state'] };
+export function classifyReadyWeaponTransform(THREE, { readyState, restState, maxHiltToHand = 0.18, minBladeAxisChangeDeg = 20, maxSocketHandQuaternionErrorDeg = 0.5 } = {}) {
+  if (!readyState || !restState) return { transformClass: 'unknown', reasons: ['missing-state'] };
   const bladeAxisChangeDeg = THREE.MathUtils.radToDeg(restState.bladeAxis.clone().normalize().angleTo(readyState.bladeAxis.clone().normalize()));
   const socketHandQuaternionErrorDeg = THREE.MathUtils.radToDeg(readyState.socketQuaternion.angleTo(readyState.handQuaternion));
   const follows = readyState.hiltToHandDistance <= maxHiltToHand
@@ -112,13 +130,28 @@ export function classifyReadyWeaponTruth(THREE, { readyState, restState, maxHilt
   if (bladeAxisChangeDeg < minBladeAxisChangeDeg) reasons.push('blade-rest-space');
   if (socketHandQuaternionErrorDeg > maxSocketHandQuaternionErrorDeg) reasons.push('socket-not-hand-frame');
   return {
-    visualClass: follows ? 'sword-follows-fk' : 'sword-rest-space',
+    transformClass: follows ? 'sword-follows-fk' : 'sword-rest-space',
     reasons,
     metrics: {
       hiltToHandDistance: Number(readyState.hiltToHandDistance.toFixed(5)),
       bladeAxisChangeFromRestDeg: Number(bladeAxisChangeDeg.toFixed(2)),
       socketToHandQuaternionErrorDeg: Number(socketHandQuaternionErrorDeg.toFixed(3)),
     },
+  };
+}
+
+export function classifyReadyWeaponTruth(THREE, { readyState, restState, visibility = null } = {}) {
+  const transform = classifyReadyWeaponTransform(THREE, { readyState, restState });
+  const visible = visibility?.visible !== false;
+  const reasons = [...(transform.reasons || [])];
+  if (!visible) reasons.push('weapon-not-visible-in-runtime');
+  return {
+    visualClass: visible ? transform.transformClass : 'sword-hidden',
+    transformClass: transform.transformClass,
+    visibilityClass: visibility?.visibilityClass || (visible ? 'weapon-visible' : 'weapon-hidden'),
+    reasons,
+    metrics: transform.metrics,
+    visibility,
   };
 }
 

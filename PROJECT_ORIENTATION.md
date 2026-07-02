@@ -70,7 +70,7 @@ When the user says `get motivated`, continue through implementation and verifica
 Browser screenshots, Android `screencap`, debug bridge state, and visual-QA browser capture are deprecated as acceptance proof for animation, pose, and weapon-follow work on this device. They are manual inspection aids only.
 
 1. Use offline/web truth parity artifacts for red-build closure and promotion.
-2. Require repo-generated JSON metrics plus a non-empty contact sheet from GLBs/profile data.
+2. Require repo-generated JSON metrics, a non-empty contact sheet from GLBs/profile data, and a separate observed-web-truth artifact for the human visual class.
 3. Use browser/manual screenshots only to explain human perception gaps after offline truth is known.
 4. If browser state disagrees with offline truth, debug browser loading/cache/state separately instead of changing animation logic blindly.
 
@@ -134,7 +134,7 @@ Meshy/FPS experiments now default to the candidate lane. Before editing startup 
 node tools/pose_lab_workflow_status.mjs
 ```
 
-Promotion requires `tools/promote_pose_candidate.mjs` with offline/web truth parity evidence and metric evidence. The accepted baseline is recorded in `generated/workflow_state/meshy_fps_accepted_baseline.json`; blocked browser capture, stale screenshots, or source-string checks must fail. For Meshy Ready weapon follow, `tools/meshy_ready_weapon_offline_visual_truth.mjs` is the canonical proof path.
+Promotion requires `tools/promote_pose_candidate.mjs` with offline/web truth parity evidence and metric evidence. The accepted baseline is recorded in `generated/workflow_state/meshy_fps_accepted_baseline.json`; blocked browser capture, stale screenshots, or source-string checks must fail. For Meshy Ready weapon follow, `tools/meshy_ready_weapon_offline_visual_truth.mjs` is the canonical proof path and its observed web truth input must stay outside verifier source code.
 
 ## Manual Fix Authority
 

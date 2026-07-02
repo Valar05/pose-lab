@@ -3,6 +3,7 @@ import path from 'node:path';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const evidencePath = path.join(projectRoot, 'generated', 'visual_red_build', 'meshy_ready_weapon_fk_follow_latest.json');
+const observedPath = path.join(projectRoot, 'generated', 'visual_red_build', 'meshy_ready_weapon_fk_follow_observed_web_truth.json');
 const runtimePath = path.join(projectRoot, 'src', 'pose-lab.js');
 const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
@@ -16,17 +17,30 @@ function readCacheToken() {
   const match = runtime.match(/const\s+LAB_CACHE_TOKEN\s*=\s*['"]([^'"]+)['"]/);
   return match?.[1] || null;
 }
+assert(fs.existsSync(observedPath), `missing observed web truth: ${path.relative(projectRoot, observedPath)}`);
+const observed = fs.existsSync(observedPath) ? JSON.parse(fs.readFileSync(observedPath, 'utf8')) : {};
+assert(observed.schema === 'pose-lab-ready-weapon-fk-observed-web-truth-v1', 'observed web truth schema mismatch');
+assert(observed.browserCaptureDeprecated === true, 'observed web truth must mark browser capture deprecated');
+assert(observed.visualClass === 'sword-rest-space', 'current human web truth should remain red');
+assert(observed.cacheToken === readCacheToken(), 'observed web truth cache token should match runtime');
+assert(observed.runtimeBuild === readRuntimeBuild(), 'observed web truth runtime build should match runtime');
+assert(Array.isArray(observed.capturePaths) && observed.capturePaths.length >= 1, 'observed web truth should preserve human evidence paths');
+assert(!fs.readFileSync(path.join(projectRoot, 'tools', 'meshy_ready_weapon_offline_visual_truth.mjs'), 'utf8').includes("const observedWebTruth = {"), 'verifier must not hardcode observed web truth');
+
 assert(fs.existsSync(evidencePath), `missing offline/web parity gate: ${path.relative(projectRoot, evidencePath)}`);
 const evidence = fs.existsSync(evidencePath) ? JSON.parse(fs.readFileSync(evidencePath, 'utf8')) : {};
 assert(evidence.schema === 'pose-lab-ready-weapon-fk-offline-web-parity-gate-v1', 'red build gate should use offline/web parity schema');
 assert(evidence.browserCaptureDeprecated === true, 'browser/device capture must be deprecated as red-build proof');
 assert(String(evidence.browserCapturePolicy || '').includes('cannot close this red build'), 'browser capture policy should reject red-build closure');
 assert(evidence.currentFixCacheToken === readCacheToken(), 'evidence cache token should match runtime');
+assert(evidence.cacheToken === readCacheToken(), 'evidence promotion cache token should match runtime');
 assert(evidence.runtimeBuild === readRuntimeBuild(), 'evidence runtime build should match runtime');
 assert(evidence.sharedTruthModule === 'src/ready-weapon-truth.mjs', 'gate should require shared runtime/offline truth module');
+assert(evidence.observedWebTruthPath === path.relative(projectRoot, observedPath), 'gate should point to observed web truth artifact');
 assert(evidence.observedWebTruth?.visualClass === 'sword-rest-space', 'current human web truth should remain red');
+assert(evidence.offlineTruth?.visibilityClass === 'weapon-hidden', 'offline truth should model current Ready weapon visibility as hidden');
+assert(evidence.offlineTruth?.transformClass === 'sword-follows-fk', 'offline transform truth should remain separate from visibility');
 assert(evidence.parity?.visualVerdict === 'red', 'current parity gate should be red until visual truth changes');
-assert(evidence.parity?.parityFailure === 'offline-web-visual-class-diverged' || evidence.offlineTruth?.visualClass === 'sword-rest-space', 'red gate should explain divergence or same-class visual red');
 const offline = evidence.offlineVisualTruth || {};
 const artifactPath = path.join(projectRoot, offline.artifactPath || '');
 const sheetPath = path.join(projectRoot, offline.sheetPath || '');
@@ -37,7 +51,8 @@ const artifact = fs.existsSync(artifactPath) ? JSON.parse(fs.readFileSync(artifa
 assert(artifact.schema === 'pose-lab-offline-web-truth-parity-ready-weapon-fk-v1', 'parity artifact schema mismatch');
 assert(artifact.browserCaptureDeprecated === true, 'parity artifact should reject browser capture as proof');
 assert(artifact.sharedTruthModule === 'src/ready-weapon-truth.mjs', 'parity artifact should name shared truth module');
+assert(artifact.observedWebTruthPath === path.relative(projectRoot, observedPath), 'parity artifact should name observed web truth artifact');
 assert(offline.result === artifact.result, 'gate result should mirror parity artifact result');
 assert(artifact.parity?.visualVerdict === 'red', 'infrastructure check should preserve the current red build');
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['pose-lab-offline-web-parity-red-build-contract'], evidencePath: path.relative(projectRoot, evidencePath), observed: evidence.observedWebTruth?.visualClass, offline: evidence.offlineTruth?.visualClass, result: artifact.result }, null, 2));
+console.log(JSON.stringify({ checked: ['pose-lab-offline-web-parity-red-build-contract', 'observed-web-truth-artifact', 'runtime-visibility-modeled'], evidencePath: path.relative(projectRoot, evidencePath), observed: evidence.observedWebTruth?.visualClass, offline: evidence.offlineTruth?.visualClass, result: artifact.result }, null, 2));

@@ -4,7 +4,7 @@ import { execFileSync } from 'node:child_process';
 
 export const projectRoot = path.resolve(import.meta.dirname, '..');
 export const baselinePath = path.join(projectRoot, 'generated', 'workflow_state', 'meshy_fps_accepted_baseline.json');
-export const latestEvidencePath = path.join(projectRoot, 'generated', 'visual_red_build', 'pose_lab_latest.json');
+export const latestEvidencePath = path.join(projectRoot, 'generated', 'visual_red_build', 'meshy_ready_weapon_fk_follow_latest.json');
 
 export function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -28,7 +28,7 @@ export function currentRuntimeBuild() {
 
 export function currentCommit() {
   try {
-    return execFileSync('git', ['rev-parse', '--short', 'HEAD'], { cwd: projectRoot, encoding: 'utf8' }).trim();
+    return execFileSync('git', ['-c', `safe.directory=${projectRoot}`, 'rev-parse', '--short', 'HEAD'], { cwd: projectRoot, encoding: 'utf8' }).trim();
   } catch (_err) {
     return '';
   }
@@ -36,7 +36,7 @@ export function currentCommit() {
 
 export function gitStatusLines() {
   try {
-    return execFileSync('git', ['status', '--short'], { cwd: projectRoot, encoding: 'utf8' })
+    return execFileSync('git', ['-c', `safe.directory=${projectRoot}`, 'status', '--short'], { cwd: projectRoot, encoding: 'utf8' })
       .split(/\r?\n/)
       .map((line) => line.trimEnd())
       .filter(Boolean);
@@ -92,6 +92,22 @@ export function compareSelectionSurfaces(baseline, current = currentMeshySelecti
   return mismatches;
 }
 
+export function evidenceCacheToken(evidence) {
+  return evidence.cacheToken || evidence.currentFixCacheToken || '';
+}
+
+export function evidenceClipName(evidence) {
+  return evidence.clipName || evidence.readyClipName || '';
+}
+
+export function isParityEvidence(evidence) {
+  return evidence?.schema === 'pose-lab-ready-weapon-fk-offline-web-parity-gate-v1';
+}
+
+export function isLegacyVisualEvidence(evidence) {
+  return evidence?.schema === 'pose-lab-visual-evidence-v1';
+}
+
 export function latestEvidenceStatus(file = latestEvidencePath) {
   if (!fs.existsSync(file)) return { exists: false, path: file, stale: true, blocked: true, errors: ['missing visual evidence'] };
   let evidence = null;
@@ -103,16 +119,26 @@ export function latestEvidenceStatus(file = latestEvidencePath) {
   const cacheToken = currentCacheToken();
   const runtimeBuild = currentRuntimeBuild();
   const errors = [];
-  if (evidence.cacheToken !== cacheToken) errors.push(`evidence cacheToken ${evidence.cacheToken || 'missing'} != current ${cacheToken || 'missing'}`);
+  const token = evidenceCacheToken(evidence);
+  if (token !== cacheToken) errors.push(`evidence cacheToken ${token || 'missing'} != current ${cacheToken || 'missing'}`);
   if (evidence.runtimeBuild !== runtimeBuild) errors.push(`evidence runtimeBuild ${evidence.runtimeBuild || 'missing'} != current ${runtimeBuild || 'missing'}`);
-  if (evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked') errors.push('evidence is blocked');
-  if (evidence.motionEvidencePending === true) errors.push('motion evidence is pending');
+  if (isParityEvidence(evidence)) {
+    if (evidence.browserCaptureDeprecated !== true) errors.push('parity evidence must deprecate browser capture');
+    if (evidence.parity?.visualVerdict !== 'fixed') errors.push(`parity evidence is ${evidence.parity?.visualVerdict || 'missing'}, not fixed`);
+    if (!evidence.offlineVisualTruth?.artifactPath) errors.push('parity evidence missing offline artifact path');
+    if (!evidence.observedWebTruthPath) errors.push('parity evidence missing observed web truth path');
+  } else if (isLegacyVisualEvidence(evidence)) {
+    if (evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked') errors.push('evidence is blocked');
+    if (evidence.motionEvidencePending === true) errors.push('motion evidence is pending');
+  } else {
+    errors.push(`visual evidence schema ${evidence.schema || 'missing'} is unsupported`);
+  }
   return {
     exists: true,
     path: file,
     evidence,
-    stale: evidence.cacheToken !== cacheToken || evidence.runtimeBuild !== runtimeBuild,
-    blocked: evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked',
+    stale: token !== cacheToken || evidence.runtimeBuild !== runtimeBuild,
+    blocked: isParityEvidence(evidence) ? evidence.parity?.visualVerdict !== 'fixed' : evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked',
     errors,
   };
 }
@@ -132,21 +158,36 @@ export function validateCandidatePromotion({ baseline, candidate, evidence, metr
   if (candidate.status !== 'candidate-only') warnings.push(`candidate status is ${candidate.status || 'missing'}, expected candidate-only before promotion`);
   if (candidate.promotable === true) warnings.push('candidate was already marked promotable before gate validation');
 
-  if (evidence.schema !== 'pose-lab-visual-evidence-v1') errors.push(`visual evidence schema ${evidence.schema || 'missing'} is not pose-lab-visual-evidence-v1`);
-  if (evidence.cacheToken !== cacheToken) errors.push(`visual evidence cacheToken ${evidence.cacheToken || 'missing'} does not match ${cacheToken || 'missing'}`);
+  const token = evidenceCacheToken(evidence);
+  const evidenceClip = evidenceClipName(evidence);
+  if (token !== cacheToken) errors.push(`visual evidence cacheToken ${token || 'missing'} does not match ${cacheToken || 'missing'}`);
   if (evidence.runtimeBuild !== runtimeBuild) errors.push(`visual evidence runtimeBuild ${evidence.runtimeBuild || 'missing'} does not match ${runtimeBuild || 'missing'}`);
   if (evidence.actorKey !== baseline.actorKey) errors.push(`visual evidence actor ${evidence.actorKey || 'missing'} does not match ${baseline.actorKey}`);
-  if (!String(evidence.clipName || '').includes(clipName) && !String(clipName).includes(String(evidence.clipName || '___missing___'))) {
-    errors.push(`visual evidence clip ${evidence.clipName || 'missing'} does not match candidate ${clipName}`);
+  if (!String(evidenceClip || '').includes(clipName) && !String(clipName).includes(String(evidenceClip || '___missing___'))) {
+    errors.push(`visual evidence clip ${evidenceClip || 'missing'} does not match candidate ${clipName}`);
   }
-  if (evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked') errors.push('visual evidence is blocked');
-  if (evidence.motionEvidencePending === true) errors.push('visual evidence still has motionEvidencePending=true');
-  if (!evidence.visualRead || String(evidence.visualRead).length < 20) errors.push('visual evidence needs a concrete visualRead');
-  if (!evidence.capturePath) {
-    errors.push('visual evidence capturePath is required');
+
+  if (isParityEvidence(evidence)) {
+    if (evidence.browserCaptureDeprecated !== true) errors.push('parity evidence must deprecate browser capture');
+    if (evidence.parity?.visualVerdict !== 'fixed') errors.push(`parity evidence visualVerdict ${evidence.parity?.visualVerdict || 'missing'} is not fixed`);
+    if (evidence.parity?.parityMatches !== true) errors.push('parity evidence must have parityMatches=true');
+    if (evidence.observedWebTruth?.visualClass !== 'sword-follows-fk') errors.push(`observed web truth ${evidence.observedWebTruth?.visualClass || 'missing'} is not sword-follows-fk`);
+    if (evidence.offlineTruth?.visualClass !== 'sword-follows-fk') errors.push(`offline truth ${evidence.offlineTruth?.visualClass || 'missing'} is not sword-follows-fk`);
+    if (evidence.offlineTruth?.visibilityClass !== 'weapon-visible') errors.push(`offline weapon visibility ${evidence.offlineTruth?.visibilityClass || 'missing'} is not weapon-visible`);
+    if (!evidence.offlineVisualTruth?.artifactPath) errors.push('parity evidence missing offline artifact path');
+    if (!evidence.offlineVisualTruth?.sheetPath) errors.push('parity evidence missing offline sheet path');
+  } else if (isLegacyVisualEvidence(evidence)) {
+    if (evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked') errors.push('visual evidence is blocked');
+    if (evidence.motionEvidencePending === true) errors.push('visual evidence still has motionEvidencePending=true');
+    if (!evidence.visualRead || String(evidence.visualRead).length < 20) errors.push('visual evidence needs a concrete visualRead');
+    if (!evidence.capturePath) {
+      errors.push('visual evidence capturePath is required');
+    } else {
+      const capturePath = path.isAbsolute(evidence.capturePath) ? evidence.capturePath : path.join(projectRoot, evidence.capturePath);
+      if (!fs.existsSync(capturePath)) errors.push(`visual evidence capturePath does not exist: ${evidence.capturePath}`);
+    }
   } else {
-    const capturePath = path.isAbsolute(evidence.capturePath) ? evidence.capturePath : path.join(projectRoot, evidence.capturePath);
-    if (!fs.existsSync(capturePath)) errors.push(`visual evidence capturePath does not exist: ${evidence.capturePath}`);
+    errors.push(`visual evidence schema ${evidence.schema || 'missing'} is unsupported`);
   }
 
   if (metrics.schema !== 'pose-lab-promotion-metrics-v1') errors.push(`metric evidence schema ${metrics.schema || 'missing'} is not pose-lab-promotion-metrics-v1`);
@@ -164,7 +205,7 @@ export function validateCandidatePromotion({ baseline, candidate, evidence, metr
   ]) {
     if (assertions[key] !== true) errors.push(`metric assertion must be true: ${key}`);
   }
-  if (candidate.weaponIncluded || metrics.weaponIncluded) {
+  if (candidate.weaponIncluded || metrics.weaponIncluded || isParityEvidence(evidence)) {
     for (const key of ['saberGripAtHandCenter', 'basketHiltFacesAwayFromBody', 'bladeLongAxisSane']) {
       if (assertions[key] !== true) errors.push(`weapon metric assertion must be true: ${key}`);
     }
