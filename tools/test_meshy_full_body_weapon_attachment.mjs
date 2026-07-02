@@ -5,6 +5,7 @@ const projectRoot = path.resolve(import.meta.dirname, '..');
 const js = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
 const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
 const manifest = fs.readFileSync(path.join(projectRoot, 'assets', 'asset_manifest.json'), 'utf8');
+const sharedTruth = fs.readFileSync(path.join(projectRoot, 'src', 'ready-weapon-truth.mjs'), 'utf8');
 const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
 
@@ -20,11 +21,11 @@ assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]'), 'Meshy weapo
 assert(profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]'), 'Meshy weapon socket should use the saved 3D gizmo model-space placement');
 assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy weapon socket should rotate from the hand origin without shifting the socket');
 assert(js.includes('const root = new THREE.Bone();') && js.includes('root.userData.syntheticWeaponBone = true') && js.includes('root.userData.twoHandCenteredWeaponBone = Boolean(leftHand && !sourceSocket') && js.includes('root.userData.positionMode = config.positionMode') && js.includes('root.userData.sourceSocketBone = sourceSocket?.name ||'), 'weapon socket should support synthetic sockets, selectable one-hand/two-hand positioning, and authored source-socket inheritance');
-assert(js.includes('proxy.rightHand.localToWorld(new THREE.Vector3().fromArray(proxy.config.handLocalOffset))'), 'weapon socket should support hand-local offsets for visual palm-center grip');
-assert(js.includes('proxy.config.modelLocalOffset') && js.includes('local.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset))'), 'weapon socket should support model-space offsets for screenshot-directed placement');
+assert(sharedTruth.includes('rightHand.localToWorld(new THREE.Vector3().fromArray(config.handLocalOffset))'), 'weapon socket should support hand-local offsets for visual palm-center grip through shared truth');
+assert(sharedTruth.includes('config.modelLocalOffset') && sharedTruth.includes('local.add(new THREE.Vector3().fromArray(config.modelLocalOffset))'), 'weapon socket should support model-space offsets for screenshot-directed placement through shared truth');
 assert(profiles.includes("positionMode: 'right-hand'"), 'Meshy one-hand saber should place WeaponGrip on the right hand instead of the two-hand midpoint');
 assert(js.includes('attachWeaponAttachment(weaponRoot, config = {})'), 'runtime should attach a real weapon model to the socket');
-assert(js.includes('visibleClipPatterns') && js.includes("patterns.some((pattern) => new RegExp(pattern).test(clip?.name || ''))"), 'weapon should be visible for configured sword clip patterns');
+assert(js.includes('classifyWeaponVisibility({') && sharedTruth.includes('visibleClipPatterns'), 'weapon should be visible through the shared configured visibility classifier');
 assert(js.includes('LAB_CACHE_TOKEN') && js.includes('cacheToken: LAB_CACHE_TOKEN'), 'live weapon diagnostics should report the loaded cache token so stale tabs are obvious');
 assert(js.includes('weaponDebugForceVisible()') && js.includes('weaponDebugForceVisible: weaponDebugForceVisible()'), 'live weapon diagnostics should report the explicit force-visible debug override');
 for (const metric of ['hiltToHandDistance', 'bladeLength', 'basketFrontErrorDeg', 'socketForwardToBladeErrorDeg']) {

@@ -224,7 +224,7 @@ const BASE_RIG_PROFILES = {
       MeshyWalk: ['own:Armature|walking_man|baselayer', 'Armature|walking_man|baselayer'],
       MeshyRun: ['own:Armature|running|baselayer', 'Armature|running|baselayer'],
       Idle: ['own:Armature|Idle', 'Armature|Idle', 'Idle'],
-      SwordReady: ['OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]', 'OneHandReady -> meshyCharacter:FPS-VISUAL-IK-GOLDEN', '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]'],
+      SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120', '0T-Pose'],
       RestProbe: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120', '0T-Pose'],
       WalkForward: ['own:Armature|Armature|walking_man|baselayer', 'Armature|Armature|walking_man|baselayer', 'own:Armature|walking_man|baselayer', 'Armature|walking_man|baselayer'],
       WalkBackward: ['own:Armature|Armature|Walk_Backward|baselayer', 'Armature|Armature|Walk_Backward|baselayer'],
@@ -352,7 +352,7 @@ const BASE_RIG_PROFILES = {
     troubleshooting: [
       'Use this actor for actual animation work. It is backed by the animated Meshy walking GLB because that file has a 24-bone skinned rig.',
       'The static full-PBR Meshy GLB is loaded separately as Meshy Static PBR; it has no bones, so it cannot directly receive combat clips.',
-      'Current accepted Meshy/FPS results are the [FPS-REST-ARMS roll -120] 0T-Pose calibration and the OneHandReady [FPS-VISUAL-IK R-120 L-90] pose candidate for visual review. Weapon placement remains the main baseline and is not changed by the Ready pose generator.',
+      'Current accepted Meshy/FPS result is the [FPS-REST-ARMS roll -120] 0T-Pose calibration. The OneHandReady [FPS-VISUAL-IK R-120 L-90] pose remains candidate-only until offline/web parity is fixed and promoted.',
       'Failed ready/swing experiments should remain unlinked from startup, aliases, and default clip visibility. Generate new ready candidates through the offline workbench and visual/metric gate before exposing them here.',
       'Future ready clips must remain upper-body overlays only: no hips, root, legs, feet, toes, head, translation, or invented full-body motion. Meshy native walk/run clips remain separate and direct.',
     ],

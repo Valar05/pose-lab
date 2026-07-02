@@ -15,7 +15,7 @@ for (const alias of ['SwordReadied', 'SwordAttack1', 'SwordAttack2', 'SwordAttac
   assert(!profiles.includes(`${alias}: [`), `Meshy should defer ${alias} alias until attack conversion resumes`);
 }
 assert(profiles.includes("sourceKey: 'player'"), 'Meshy generated sword clips should source from FPS Arms');
-assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy can still generate FPS-SWORD-UPPER for unpromoted diagnostics');
+assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy can still generate the Visual-IK Ready candidate for unpromoted diagnostics');
 for (const rejected of ["clipTag: 'IB-MC'", "clipTag: 'RA-FULL'", "clipTag: 'GRIP'", "clipTag: 'CORE'", "sourceKey: 'orc'", "sourceKey: 'ruinedAir'", 'Armature|Swing1 -> meshyCharacter']) {
   assert(!profiles.includes(rejected), `Meshy should not select rejected generated path: ${rejected}`);
 }

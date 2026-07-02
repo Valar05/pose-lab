@@ -11,11 +11,12 @@ const meshy = profiles.slice(meshyStart, meshyEnd > meshyStart ? meshyEnd : unde
 const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
 
-assert(html.includes('pose-editor-120'), 'entry page should use the cache token expected by live weapon diagnostics');
-assert(js.includes("const LAB_CACHE_TOKEN = 'pose-editor-120'"), 'runtime weapon diagnostics should expose the current cache token');
+const token = js.match(/const\s+LAB_CACHE_TOKEN\s*=\s*'([^']+)'/)?.[1] || '';
+assert(token, 'runtime weapon diagnostics should expose a cache token');
+assert(html.includes(`./src/pose-lab.js?v=${token}`), 'entry page should use the runtime cache token expected by live weapon diagnostics');
 assert(js.includes('function weaponDebugForceVisible()'), 'runtime should define an explicit saber visibility debug override');
 assert(js.includes("params.get('weaponDebug') === '1'") && js.includes("params.get('weaponDebug') === 'true'"), 'weaponDebug URL param should accept 1/true');
-assert(js.includes('weaponDebugForceVisible() || clip?.userData?.weaponPathIk'), 'debug override should force the weapon visible before clip-pattern gating');
+assert(js.includes('weaponDebug: weaponDebugForceVisible()'), 'debug override should feed the shared weapon visibility classifier');
 assert(js.includes('weaponDebugForceVisible: weaponDebugForceVisible()'), 'live weapon payload should report whether the override is active');
 assert(js.includes('cacheToken: LAB_CACHE_TOKEN'), 'live weapon payload should report the loaded cache token');
 assert(meshy.includes("visibleClipPatterns: ['\\\\[FPS-REST-ARMS']"), 'protected Meshy default visibility should remain accepted-baseline only');

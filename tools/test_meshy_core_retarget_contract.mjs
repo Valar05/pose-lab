@@ -20,7 +20,7 @@ assert(profiles.includes("sourceKey: 'player'"), 'Meshy generated clips should s
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy Ready generated clip should be tagged FPS-VISUAL-IK-GOLDEN');
 assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(-120)'), 'Meshy should expose the accepted FPS rest-arms CAL--120 clip');
 assert(profiles.includes("RestProbe: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe should default to the exact accepted CAL--120 clip path');
-assert(profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'Meshy SwordReady should point at the visual IK ready candidate for screenshot review');
+assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy SwordReady should stay on the accepted rest calibration until Ready is promoted');
 assert(!profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Meshy SwordReady must not point at the rejected FPS-SWORD-UPPER retarget path');
 assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe clip should preserve the accepted CAL--120 origin path');
 assert(!profiles.includes('defaultRestClip') && !js.includes('applyDefaultModelRestClip') && !js.includes('this.applyDefaultModelRestClips();'), 'accepted CAL--120 RestProbe must remain a generated clip, not mutate actor modelRestPose');

@@ -12,7 +12,7 @@ assert(js.includes("buildMeshyFpsVisualIkReadyClip"), 'runtime should import the
 assert(js.includes("spec.retargetMode === 'meshy-fps-visual-ik-ready'"), 'auto retarget dispatch should have an explicit pose-only Meshy Ready mode');
 assert(profiles.includes("retargetMode: 'meshy-fps-visual-ik-ready'"), 'Meshy Ready should use the pose-only visual IK mode');
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy Ready should be tagged as the visual IK golden candidate');
-assert(profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'SwordReady alias should target the visual IK ready candidate');
+assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'SwordReady alias should remain on the accepted baseline until visual IK Ready is promoted');
 assert(profiles.includes("timeSourceBone: 'Hand.R'") && profiles.includes('dropInitialRestKey: true'), 'Ready pose should preserve source-key timing while dropping the initial rest key');
 assert(profiles.includes("rightRollOffsetDeg: -120") && profiles.includes("leftRollOffsetDeg: -90"), 'Ready pose should preserve accepted right/left roll offsets');
 assert(!profiles.includes("targetWeapon: 'WeaponGrip'"), 'normal Meshy Ready generation must not key WeaponGrip');
