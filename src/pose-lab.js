@@ -4,7 +4,7 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-187';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-188';
 import {
   applyWeaponAttachmentRuntimeRules,
   applyWeaponSocketRuntimeRules,
@@ -13,14 +13,14 @@ import {
   pinWeaponLocalPointToDisplay as pinWeaponLocalPointToDisplayRuntime,
   updateWeaponFallbackFromTipRuntime,
   weaponPlacementConfigSignature,
-} from './weapon-runtime-rules.mjs?v=pose-editor-187';
-import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-187';
+} from './weapon-runtime-rules.mjs?v=pose-editor-188';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-188';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
 
 const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget';
-const LAB_CACHE_TOKEN = 'pose-editor-187';
+const LAB_CACHE_TOKEN = 'pose-editor-188';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
@@ -49,6 +49,13 @@ function validateAutoRetargetGenerationGroups(profiles) {
 }
 
 const ACTORS = RIG_PROFILES;
+function cloneProfileData(value) {
+  return value == null ? value : JSON.parse(JSON.stringify(value));
+}
+const REPO_WEAPON_TUNING = Object.fromEntries(Object.entries(ACTORS).map(([key, profile]) => [key, {
+  weaponProxy: cloneProfileData(profile.weaponProxy || null),
+  weaponAttachment: cloneProfileData(profile.weaponAttachment || null),
+}]));
 const STORAGE_KEY = 'pose-lab:last-state:v1';
 const CLEANUP_DRAFTS_KEY = 'pose-lab:cleanup-drafts:v1';
 const CRITIQUE_NOTES_KEY = 'pose-lab:critique-notes:v1';
@@ -383,6 +390,8 @@ const UI = {
   weaponGizmoRotate: document.getElementById('weaponGizmoRotate'),
   weaponGizmoScale: document.getElementById('weaponGizmoScale'),
   weaponGizmoSave: document.getElementById('weaponGizmoSave'),
+  weaponGizmoUseSaved: document.getElementById('weaponGizmoUseSaved'),
+  weaponGizmoClearSaved: document.getElementById('weaponGizmoClearSaved'),
   semanticLandmarkToggle: document.getElementById('semanticLandmarkToggle'),
   semanticLandmarkPickHilt: document.getElementById('semanticLandmarkPickHilt'),
   semanticLandmarkPickTip: document.getElementById('semanticLandmarkPickTip'),
@@ -5405,6 +5414,7 @@ class PoseLab {
     this.weaponGizmoDrag = null;
     this.weaponGesturePointers = new Map();
     this.weaponMultiTouchGesture = null;
+    this.weaponTuningSourceByActor = new Map();
     this.weaponGizmoStatusText = 'weapon gestures idle';
     this.semanticLandmarkEnabled = false;
     this.semanticLandmarkPickTarget = 'hilt';
@@ -5633,7 +5643,6 @@ class PoseLab {
     }
     this.applySavedActorState(actor);
     this.select(key);
-    this.applySavedWeaponGizmoTuning(actor, 'activateActor');
     if (options.viewMode) this.setViewMode(options.viewMode);
     if (this.viewMode === 'firstPerson' && !actor.info?.firstPersonCamera) this.setViewMode('orbit');
     const savedClip = options.preferSaved && this.savedState?.actorKey === key ? this.findSavedClip(actor, this.savedState) : null;
@@ -5757,11 +5766,126 @@ class PoseLab {
     }
   }
 
-  applySavedWeaponGizmoTuning(actor = this.selectedWeaponActor(), stage = 'apply-saved-weapon-gizmo') {
+  repoWeaponTuningValues(actor = this.selectedWeaponActor()) {
+    const repo = actor?.key ? REPO_WEAPON_TUNING[actor.key] : null;
+    const proxy = repo?.weaponProxy || {};
+    const attachment = repo?.weaponAttachment || {};
+    return {
+      actor: actor?.key || this.selected || '',
+      modelLocalOffset: [...(proxy.modelLocalOffset || [0, 0, 0])].map((value) => Number(Number(value || 0).toFixed(5))),
+      handLocalOffset: [...(proxy.handLocalOffset || [0, 0, 0])].map((value) => Number(Number(value || 0).toFixed(5))),
+      gripOffset: [...(proxy.gripOffset || [0, 0, 0])].map((value) => Number(Number(value || 0).toFixed(5))),
+      rotationDeg: [...(attachment.rotationDeg || [0, 0, 0])].map((value) => Number(Number(value || 0).toFixed(5))),
+      gripLocalPosition: [...(attachment.gripLocalPosition || [0, 0, 0])].map((value) => Number(Number(value || 0).toFixed(5))),
+      tipLocalPosition: [...(attachment.tipLocalPosition || [0, 0, 0.85])].map((value) => Number(Number(value || 0).toFixed(5))),
+      scale: Number(Number(attachment.scale ?? 1).toFixed(5)),
+    };
+  }
+
+  savedWeaponTuningValues(actor = this.selectedWeaponActor()) {
+    const saved = this.readSavedWeaponGizmoTuning();
+    const values = saved?.values || null;
+    if (!saved || saved.schema !== 'pose-lab-weapon-gizmo-tuning-v1' || !values || values.actor !== actor?.key) {
+      return { saved: saved || null, values: null };
+    }
+    return { saved, values };
+  }
+
+  weaponTuningValuesEqual(a, b) {
+    if (!a || !b) return false;
+    const keys = ['modelLocalOffset', 'handLocalOffset', 'gripOffset', 'rotationDeg', 'gripLocalPosition', 'tipLocalPosition'];
+    for (const key of keys) {
+      const av = Array.isArray(a[key]) ? a[key] : [];
+      const bv = Array.isArray(b[key]) ? b[key] : [];
+      if (av.length !== bv.length) return false;
+      for (let i = 0; i < av.length; i += 1) {
+        if (Math.abs(Number(av[i] || 0) - Number(bv[i] || 0)) > 0.0001) return false;
+      }
+    }
+    return Math.abs(Number(a.scale ?? 1) - Number(b.scale ?? 1)) <= 0.0001;
+  }
+
+  weaponObjectRotationDeg(object) {
+    if (!object?.rotation?.toArray) return null;
+    return object.rotation.toArray().slice(0, 3).map((value) => Number(THREE.MathUtils.radToDeg(Number(value || 0)).toFixed(3)));
+  }
+
+  classifyWeaponTuningSource(actor = this.selectedWeaponActor()) {
+    const active = this.weaponTuningValues(actor);
+    const repo = this.repoWeaponTuningValues(actor);
+    const savedState = this.savedWeaponTuningValues(actor);
+    const activeMatchesRepo = this.weaponTuningValuesEqual(active, repo);
+    const activeMatchesSaved = this.weaponTuningValuesEqual(active, savedState.values);
+    if (activeMatchesRepo) return { source: 'repo profile', activeMatchesRepo, activeMatchesSaved };
+    if (this.weaponTuningSourceByActor.get(actor?.key) === 'localStorage override' && activeMatchesSaved) {
+      return { source: 'localStorage override', activeMatchesRepo, activeMatchesSaved };
+    }
+    return { source: 'live unsaved edit', activeMatchesRepo, activeMatchesSaved };
+  }
+
+  weaponTuningTruth(actor = this.selectedWeaponActor()) {
+    const proxy = actor?.weaponProxy || null;
+    const repo = this.repoWeaponTuningValues(actor);
+    const active = this.weaponTuningValues(actor);
+    const savedState = this.savedWeaponTuningValues(actor);
+    const classified = this.classifyWeaponTuningSource(actor);
+    return {
+      schema: 'pose-lab-active-weapon-tuning-truth-v1',
+      source: classified.source,
+      repo: { weaponAttachment: { rotationDeg: repo.rotationDeg } },
+      localStorage: savedState.saved ? {
+        present: true,
+        actor: savedState.saved.values?.actor || '',
+        cacheToken: savedState.saved.cacheToken || '',
+        activeThisSession: classified.source === 'localStorage override',
+        weaponAttachment: { rotationDeg: savedState.values?.rotationDeg || null },
+      } : {
+        present: false,
+        actor: '',
+        cacheToken: '',
+        activeThisSession: false,
+        weaponAttachment: { rotationDeg: null },
+      },
+      active: {
+        proxyAttachmentConfig: {
+          rotationDeg: [...(proxy?.attachmentConfig?.rotationDeg || active.rotationDeg || [0, 0, 0])],
+        },
+        values: active,
+      },
+      actualSabreMesh: {
+        rotationDeg: this.weaponObjectRotationDeg(proxy?.model),
+        quaternion: weaponTraceQuaternion(proxy?.model),
+      },
+      checks: {
+        activeMatchesRepo: classified.activeMatchesRepo,
+        activeMatchesSaved: classified.activeMatchesSaved,
+        cacheBustControlsApplication: false,
+      },
+    };
+  }
+
+  weaponTuningTruthText(actor = this.selectedWeaponActor()) {
+    const truth = this.weaponTuningTruth(actor);
+    const savedRotation = truth.localStorage.weaponAttachment.rotationDeg;
+    return [
+      'active weapon tuning source: ' + truth.source,
+      'repo weaponAttachment.rotationDeg: [' + truth.repo.weaponAttachment.rotationDeg.join(', ') + ']',
+      'localStorage weaponAttachment.rotationDeg: ' + (Array.isArray(savedRotation) ? '[' + savedRotation.join(', ') + ']' : 'none') + (truth.localStorage.activeThisSession ? ' (active this session)' : ' (not active)'),
+      'active proxy.attachmentConfig.rotationDeg: [' + truth.active.proxyAttachmentConfig.rotationDeg.join(', ') + ']',
+      'actual sabre mesh rotationDeg: ' + (truth.actualSabreMesh.rotationDeg ? '[' + truth.actualSabreMesh.rotationDeg.join(', ') + ']' : 'none'),
+      'actual sabre mesh quaternion: ' + (truth.actualSabreMesh.quaternion ? '[' + truth.actualSabreMesh.quaternion.join(', ') + ']' : 'none'),
+    ].join('\n');
+  }
+
+  markWeaponTuningLiveEdit(actor = this.selectedWeaponActor()) {
+    if (actor?.key) this.weaponTuningSourceByActor.set(actor.key, 'live unsaved edit');
+  }
+
+  applySavedWeaponGizmoTuning(actor = this.selectedWeaponActor(), stage = 'apply-saved-weapon-gizmo', options = {}) {
     const proxy = actor?.weaponProxy;
     const saved = this.readSavedWeaponGizmoTuning();
     const values = saved?.values || {};
-    const cacheMatches = saved?.cacheToken === LAB_CACHE_TOKEN;
+    const explicit = options.explicit === true;
     const actorMatches = Boolean(actor?.key && values.actor === actor.key);
     weaponLiveTrace(stage + ' CHECK', {
       selected: this.selected,
@@ -5769,12 +5893,12 @@ class PoseLab {
       savedActor: values.actor || '',
       cacheToken: LAB_CACHE_TOKEN,
       savedCacheToken: saved?.cacheToken || '',
-      cacheMatches,
+      explicit,
       actorMatches,
       hasProxy: Boolean(proxy?.root),
       hasAttachment: Boolean(actor?.info?.weaponAttachment || proxy?.attachmentConfig),
     });
-    if (!saved || saved.schema !== 'pose-lab-weapon-gizmo-tuning-v1' || !cacheMatches || !actorMatches || !proxy?.root) return false;
+    if (!explicit || !saved || saved.schema !== 'pose-lab-weapon-gizmo-tuning-v1' || !actorMatches || !proxy?.root) return false;
     const attachment = actor.info.weaponAttachment || proxy.attachmentConfig || {};
     if (!actor.info.weaponAttachment) actor.info.weaponAttachment = attachment;
     if (Array.isArray(values.modelLocalOffset) && proxy.config) proxy.config.modelLocalOffset = [...values.modelLocalOffset];
@@ -5786,6 +5910,7 @@ class PoseLab {
     if (Array.isArray(values.tipLocalPosition)) attachment.tipLocalPosition = [...values.tipLocalPosition];
     proxy.attachmentConfig = attachment;
     actor.syncWeaponVisualAttachment?.({ forceSocket: true });
+    if (actor.key) this.weaponTuningSourceByActor.set(actor.key, 'localStorage override');
     weaponLiveTrace(stage + ' APPLIED', {
       selected: this.selected,
       actorKey: actor.key,
@@ -6168,6 +6293,7 @@ class PoseLab {
       schema: 'pose-lab-live-weapon-tuning-state-v1',
       build: LAB_BUILD,
       cacheToken: LAB_CACHE_TOKEN,
+      activeTruth: this.weaponTuningTruth(actor),
       currentValues: this.weaponTuningValues(actor),
       landmarks: this.weaponVisualMeshLandmarks(actor, { resync: false }),
       liveHiltState: this.debugLiveWeaponHiltState().live || null,
@@ -6199,8 +6325,9 @@ class PoseLab {
   }
 
   updateWeaponGizmoStatus(message = '') {
-    const values = this.weaponTuningValues();
-    const text = (message ? message + '\n' : '') + this.weaponTuningSnippet(values);
+    const actor = this.selectedWeaponActor();
+    const values = this.weaponTuningValues(actor);
+    const text = (message ? message + '\n' : '') + this.weaponTuningTruthText(actor) + '\n\n' + this.weaponTuningSnippet(values);
     this.weaponGizmoStatusText = text;
     if (UI.weaponGizmoStatus) UI.weaponGizmoStatus.textContent = text;
   }
@@ -6420,6 +6547,7 @@ class PoseLab {
     ];
     if (actor.info.weaponAttachment) actor.info.weaponAttachment.rotationDeg = next;
     if (proxy.attachmentConfig) proxy.attachmentConfig.rotationDeg = next;
+    this.markWeaponTuningLiveEdit(actor);
     weaponLiveTrace('setWeaponAttachmentLocalQuaternion AFTER', {
       selected: this.selected,
       actorKey: actor.key,
@@ -6448,6 +6576,7 @@ class PoseLab {
     const nextScale = Number(Math.max(0.02, Math.min(4, Number(scale || 1))).toFixed(5));
     if (actor.info.weaponAttachment) actor.info.weaponAttachment.scale = nextScale;
     if (proxy.attachmentConfig) proxy.attachmentConfig.scale = nextScale;
+    this.markWeaponTuningLiveEdit(actor);
     return nextScale;
   }
 
@@ -6579,6 +6708,7 @@ class PoseLab {
       next[1] = Number((Number(next[1] || 0) + offsetLocal.y).toFixed(5));
       next[2] = Number((Number(next[2] || 0) + offsetLocal.z).toFixed(5));
       proxy.config.modelLocalOffset = next;
+      this.markWeaponTuningLiveEdit(actor);
     } else if (drag.mode === 'scale') {
       this.setWeaponAttachmentScale(actor, Number(drag.startScale || 1) * Math.exp(-dy * 0.006));
     } else {
@@ -6644,7 +6774,6 @@ class PoseLab {
     };
     localStorage.setItem('poseLab.weaponGizmoTuning', JSON.stringify(payload, null, 2));
     navigator.clipboard?.writeText(payload.snippet).catch(() => {});
-    this.applySavedWeaponGizmoTuning(actor, 'saveWeaponGizmoTuning');
     weaponLiveTrace('saveWeaponGizmoTuning SAVED', {
       selected: this.selected,
       actorKey: actor?.key || '',
@@ -6654,6 +6783,23 @@ class PoseLab {
     });
     this.updateWeaponGizmoStatus('saved to localStorage + clipboard\n' + payload.snippet);
     return payload;
+  }
+
+  useSavedWeaponGizmoTuning() {
+    const actor = this.selectedWeaponActor();
+    const applied = this.applySavedWeaponGizmoTuning(actor, 'useSavedWeaponGizmoTuning', { explicit: true });
+    this.updateWeaponGizmoStatus(applied ? 'used saved weapon tuning for this session' : 'no matching saved weapon tuning for active actor');
+    return { ok: applied, command: 'weapon-use-saved-tuning', activeTruth: actor ? this.weaponTuningTruth(actor) : null, snapshot: this.debugSnapshot() };
+  }
+
+  clearSavedWeaponGizmoTuning() {
+    localStorage.removeItem('poseLab.weaponGizmoTuning');
+    const actor = this.selectedWeaponActor();
+    if (actor?.key && this.weaponTuningSourceByActor.get(actor.key) === 'localStorage override') {
+      this.weaponTuningSourceByActor.delete(actor.key);
+    }
+    this.updateWeaponGizmoStatus('cleared saved weapon tuning; active transform unchanged');
+    return { ok: true, command: 'weapon-clear-saved-tuning', activeTruth: actor ? this.weaponTuningTruth(actor) : null, snapshot: this.debugSnapshot() };
   }
 
   semanticLandmarkRoundVector(vec) {
@@ -6906,6 +7052,7 @@ class PoseLab {
     const field = key === 'tip' ? 'tipLocalPosition' : 'gripLocalPosition';
     attachment[field] = next;
     if (proxy.attachmentConfig) proxy.attachmentConfig[field] = next;
+    this.markWeaponTuningLiveEdit(actor);
     actor.syncWeaponVisualAttachment?.({ forceSocket: true });
     proxy.model.updateMatrixWorld(true);
     candidate[key].world = this.semanticLandmarkRoundVector(proxy.model.localToWorld(new THREE.Vector3().fromArray(next)));
@@ -7032,6 +7179,8 @@ class PoseLab {
     UI.weaponGizmoRotate?.addEventListener('click', () => { this.setWeaponGizmoEnabled(true); this.setWeaponGizmoMode('rotate'); });
     UI.weaponGizmoScale?.addEventListener('click', () => { this.setWeaponGizmoEnabled(true); this.setWeaponGizmoMode('scale'); });
     UI.weaponGizmoSave?.addEventListener('click', () => this.saveWeaponGizmoTuning());
+    UI.weaponGizmoUseSaved?.addEventListener('click', () => this.useSavedWeaponGizmoTuning());
+    UI.weaponGizmoClearSaved?.addEventListener('click', () => this.clearSavedWeaponGizmoTuning());
     UI.semanticLandmarkToggle?.addEventListener('click', () => this.setSemanticLandmarkEnabled());
     UI.semanticLandmarkPickHilt?.addEventListener('click', () => this.setSemanticLandmarkPickTarget('hilt'));
     UI.semanticLandmarkPickTip?.addEventListener('click', () => this.setSemanticLandmarkPickTarget('tip'));
@@ -7418,7 +7567,6 @@ class PoseLab {
         try {
           const weaponLoaded = await this.loadAsset(info.weaponAttachment.url);
           actor.attachWeaponAttachment(weaponLoaded.scene, info.weaponAttachment);
-          this.applySavedWeaponGizmoTuning(actor, 'loadActorProfile weaponAttachment');
         } catch (err) {
           console.warn('weapon attachment failed', info.weaponAttachment.url, err);
         }
@@ -8915,7 +9063,6 @@ class PoseLab {
     this.setUiValues(actor.values.posX || 0, actor.values.posY || 0, actor.values.posZ || 0, actor.values.x, actor.values.y, actor.values.z, actor.values.scale, actor.values.basisX || 0, actor.values.basisY || 0, actor.values.basisZ || 0);
     this.populateBoneSelect(actor);
     this.setBoneUiValues(actor.currentBoneEdit());
-    this.applySavedWeaponGizmoTuning(actor, 'select');
     if (UI.clipSearch) UI.clipSearch.value = actor.clipSearch || '';
     this.renderClipButtons();
     this.renderPoseIndexUi();
@@ -11710,6 +11857,8 @@ class PoseLab {
         if (subcommand === 'follow' || subcommand === 'follows') return this.debugWeaponFollow(spec.args.slice(1));
         if (subcommand === 'visual-follow' || subcommand === 'visual' || subcommand === 'visualfollow') return this.debugWeaponVisualFollow(spec.args.slice(1));
         if (subcommand === 'live-hilt-state' || subcommand === 'live-hilt' || subcommand === 'hilt-state') return this.debugLiveWeaponHiltState(spec.args.slice(1));
+        if (subcommand === 'use-saved-tuning' || subcommand === 'use-saved') return this.useSavedWeaponGizmoTuning();
+        if (subcommand === 'clear-saved-tuning' || subcommand === 'clear-saved') return this.clearSavedWeaponGizmoTuning();
         if (subcommand === 'tuning-state' || subcommand === 'tuning' || subcommand === 'mesh-landmarks') return this.debugWeaponTuningState();
         return this.debugWeaponState();
       }

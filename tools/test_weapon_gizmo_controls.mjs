@@ -11,7 +11,7 @@ const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
 
 assert(html.includes('data-panel="weapon"') && html.includes('id="weaponPanel"'), 'Weapon panel should be reachable from the phone tool dock');
-for (const id of ['weaponGizmoToggle', 'weaponGizmoTranslate', 'weaponGizmoRotate', 'weaponGizmoScale', 'weaponGizmoSave', 'weaponGizmoStatus']) {
+for (const id of ['weaponGizmoToggle', 'weaponGizmoTranslate', 'weaponGizmoRotate', 'weaponGizmoScale', 'weaponGizmoSave', 'weaponGizmoUseSaved', 'weaponGizmoClearSaved', 'weaponGizmoStatus']) {
   assert(html.includes(`id="${id}"`), `missing weapon gizmo control ${id}`);
 }
 for (const id of ['semanticLandmarkPickHilt', 'semanticLandmarkPickTip', 'semanticLandmarkApplyHilt', 'semanticLandmarkApplyTip']) {
@@ -39,6 +39,9 @@ assert(js.includes('weaponGestureRotationSnapshot(actor') && js.includes('applyW
 assert(js.includes('setWeaponAttachmentLocalQuaternion(actor, localQuat)'), 'rotation should write weaponAttachment.rotationDeg after quaternion conversion');
 assert(js.includes('Mesh Rotate edits attachment/model orientation'), 'weapon status should say Rotate edits the attachment/model layer');
 assert(js.includes('setWeaponAttachmentScale(actor, scale)'), 'scale should use a dedicated scale writer');
+assert(js.includes('active weapon tuning source: ') && js.includes('repo weaponAttachment.rotationDeg') && js.includes('active proxy.attachmentConfig.rotationDeg') && js.includes('actual sabre mesh quaternion'), 'weapon status should expose repo/localStorage/active/actual tuning truth');
+assert(js.includes("this.applySavedWeaponGizmoTuning(actor, 'useSavedWeaponGizmoTuning', { explicit: true })"), 'saved weapon tuning should only apply through an explicit Use Saved action');
+assert(!js.includes("this.applySavedWeaponGizmoTuning(actor, 'activateActor'") && !js.includes("this.applySavedWeaponGizmoTuning(actor, 'select'") && !js.includes("this.applySavedWeaponGizmoTuning(actor, 'loadActorProfile weaponAttachment'"), 'saved weapon tuning must not auto-apply on load/select/reload');
 assert(js.includes('applySemanticLandmarkCandidate(target =') && js.includes("const field = key === 'tip' ? 'tipLocalPosition' : 'gripLocalPosition'"), 'semantic landmark apply should let picked hilt/tip update live attachment landmarks');
 assert(js.includes("UI.semanticLandmarkApplyHilt?.addEventListener('click', () => this.applySemanticLandmarkCandidate('hilt'))"), 'Apply Hilt should wire to live gripLocalPosition updates');
 assert(js.includes("UI.semanticLandmarkApplyTip?.addEventListener('click', () => this.applySemanticLandmarkCandidate('tip'))"), 'Apply Tip should wire to live tipLocalPosition updates');
