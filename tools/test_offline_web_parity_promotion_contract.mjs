@@ -14,6 +14,14 @@ import {
 
 const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
+function writeJson(file, data) {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
+}
+function clone(value) { return JSON.parse(JSON.stringify(value)); }
+function validate(evidence, candidate, metrics, baseline) {
+  return validateCandidatePromotion({ baseline, candidate, evidence, metrics });
+}
 
 const baseline = readJson(baselinePath);
 const latest = latestEvidenceStatus();
@@ -44,6 +52,31 @@ const metrics = {
     bladeLongAxisSane: true,
   },
 };
+const observedPath = path.join(tmp, 'observed.json');
+const artifactPath = path.join(tmp, 'visual_truth.json');
+const sheetPath = path.join(tmp, 'visual_truth_sheet.svg');
+const observedWebTruth = {
+  schema: 'pose-lab-ready-weapon-fk-observed-web-truth-v1',
+  cacheToken: currentCacheToken(),
+  runtimeBuild: currentRuntimeBuild(),
+  actorKey: 'meshyCharacter',
+  clipName: candidate.clipName,
+  visualClass: 'sword-follows-fk',
+  evidenceSource: 'mock-human-approved-fixed-parity',
+  browserCaptureDeprecated: true,
+  capturePaths: [path.join(tmp, 'mock-fixed-capture.png')],
+  visualRead: 'Mock fixed visual truth for promotion validation: Ready sword visibly follows final FK.',
+  visualAssertions: {
+    tPoseWeaponPlacementAccepted: true,
+    readyHandsCorrected: true,
+    readySwordNotFollowingFinalFk: false,
+    browserCaptureRejectedAsAcceptance: true,
+    expectedReadySwordFollowsFinalFk: true,
+  },
+};
+fs.writeFileSync(observedWebTruth.capturePaths[0], 'mock fixed capture\n');
+writeJson(observedPath, observedWebTruth);
+fs.writeFileSync(sheetPath, '<svg xmlns="http://www.w3.org/2000/svg"><text>fixed parity mock</text></svg>\n');
 const fixedParityEvidence = {
   schema: 'pose-lab-ready-weapon-fk-offline-web-parity-gate-v1',
   cacheToken: currentCacheToken(),
@@ -53,28 +86,73 @@ const fixedParityEvidence = {
   clipName: candidate.clipName,
   readyClipName: candidate.clipName,
   browserCaptureDeprecated: true,
-  observedWebTruthPath: 'generated/visual_red_build/mock_observed_web_truth.json',
-  observedWebTruth: { visualClass: 'sword-follows-fk' },
+  observedWebTruthPath: observedPath,
+  observedWebTruth,
   offlineTruth: { visualClass: 'sword-follows-fk', transformClass: 'sword-follows-fk', visibilityClass: 'weapon-visible' },
   parity: { parityMatches: true, visualVerdict: 'fixed', parityFailure: '' },
-  offlineVisualTruth: { artifactPath: 'generated/offline_visual_truth/mock/visual_truth.json', sheetPath: 'generated/offline_visual_truth/mock/visual_truth_sheet.svg', result: 'fixed' },
+  offlineVisualTruth: { artifactPath, sheetPath, result: 'fixed' },
 };
-const redParityEvidence = JSON.parse(JSON.stringify(fixedParityEvidence));
+const offlineArtifact = {
+  schema: 'pose-lab-offline-web-truth-parity-ready-weapon-fk-v1',
+  cacheToken: fixedParityEvidence.cacheToken,
+  runtimeBuild: fixedParityEvidence.runtimeBuild,
+  actorKey: fixedParityEvidence.actorKey,
+  clipName: fixedParityEvidence.clipName,
+  observedWebTruthPath: fixedParityEvidence.observedWebTruthPath,
+  observedWebTruth: fixedParityEvidence.observedWebTruth,
+  offlineTruth: fixedParityEvidence.offlineTruth,
+  parity: fixedParityEvidence.parity,
+  result: fixedParityEvidence.offlineVisualTruth.result,
+  sheet: fixedParityEvidence.offlineVisualTruth.sheetPath,
+};
+writeJson(artifactPath, offlineArtifact);
+
+const fixedValidation = validate(fixedParityEvidence, candidate, metrics, baseline);
+assert(fixedValidation.ok === true, `fixed parity evidence should pass validation: ${fixedValidation.errors.join('; ')}`);
+
+const redParityEvidence = clone(fixedParityEvidence);
 redParityEvidence.parity = { parityMatches: false, visualVerdict: 'red', parityFailure: 'offline-web-visual-class-diverged' };
 redParityEvidence.offlineTruth.visibilityClass = 'weapon-hidden';
 redParityEvidence.offlineTruth.visualClass = 'sword-hidden';
-
-const fixedValidation = validateCandidatePromotion({ baseline, candidate, evidence: fixedParityEvidence, metrics });
-assert(fixedValidation.ok === true, `fixed parity evidence should pass validation: ${fixedValidation.errors.join('; ')}`);
-const redValidation = validateCandidatePromotion({ baseline, candidate, evidence: redParityEvidence, metrics });
+const redValidation = validate(redParityEvidence, candidate, metrics, baseline);
 assert(redValidation.ok === false && redValidation.errors.some((entry) => entry.includes('visualVerdict red')), 'red parity evidence must fail validation');
+
+const missingObserved = clone(fixedParityEvidence);
+missingObserved.observedWebTruthPath = path.join(tmp, 'missing-observed.json');
+assert(validate(missingObserved, candidate, metrics, baseline).errors.some((entry) => entry.includes('observedWebTruthPath does not exist')), 'missing observed truth file must fail');
+
+const mismatchedObserved = clone(fixedParityEvidence);
+const mismatchObservedPath = path.join(tmp, 'mismatch-observed.json');
+writeJson(mismatchObservedPath, { ...observedWebTruth, visualClass: 'sword-rest-space' });
+mismatchedObserved.observedWebTruthPath = mismatchObservedPath;
+assert(validate(mismatchedObserved, candidate, metrics, baseline).errors.some((entry) => entry.includes('embedded observedWebTruth does not match')), 'mismatched observed truth file must fail');
+
+const missingArtifact = clone(fixedParityEvidence);
+missingArtifact.offlineVisualTruth.artifactPath = path.join(tmp, 'missing-artifact.json');
+assert(validate(missingArtifact, candidate, metrics, baseline).errors.some((entry) => entry.includes('offlineVisualTruth.artifactPath does not exist')), 'missing offline artifact must fail');
+
+const mismatchedArtifact = clone(fixedParityEvidence);
+const mismatchArtifactPath = path.join(tmp, 'mismatch-artifact.json');
+writeJson(mismatchArtifactPath, { ...offlineArtifact, offlineTruth: { ...offlineArtifact.offlineTruth, visibilityClass: 'weapon-hidden' } });
+mismatchedArtifact.offlineVisualTruth.artifactPath = mismatchArtifactPath;
+assert(validate(mismatchedArtifact, candidate, metrics, baseline).errors.some((entry) => entry.includes('offline artifact offlineTruth does not match')), 'mismatched offline artifact must fail');
+
+const missingSheet = clone(fixedParityEvidence);
+missingSheet.offlineVisualTruth.sheetPath = path.join(tmp, 'missing-sheet.svg');
+assert(validate(missingSheet, candidate, metrics, baseline).errors.some((entry) => entry.includes('sheetPath does not exist')), 'missing sheet must fail');
+
+const emptySheet = clone(fixedParityEvidence);
+const emptySheetPath = path.join(tmp, 'empty-sheet.svg');
+fs.writeFileSync(emptySheetPath, '');
+emptySheet.offlineVisualTruth.sheetPath = emptySheetPath;
+assert(validate(emptySheet, candidate, metrics, baseline).errors.some((entry) => entry.includes('sheetPath is empty')), 'empty sheet must fail');
 
 const candidateFile = path.join(tmp, 'candidate.json');
 const evidenceFile = path.join(tmp, 'evidence.json');
 const metricsFile = path.join(tmp, 'metrics.json');
-fs.writeFileSync(candidateFile, JSON.stringify(candidate, null, 2));
-fs.writeFileSync(evidenceFile, JSON.stringify(fixedParityEvidence, null, 2));
-fs.writeFileSync(metricsFile, JSON.stringify(metrics, null, 2));
+writeJson(candidateFile, candidate);
+writeJson(evidenceFile, fixedParityEvidence);
+writeJson(metricsFile, metrics);
 const gate = spawnSync('node', ['tools/promote_pose_candidate.mjs', '--candidate', candidateFile, '--evidence', evidenceFile, '--metrics', metricsFile], {
   cwd: projectRoot,
   encoding: 'utf8',
@@ -84,4 +162,4 @@ const gateReport = JSON.parse(gate.stdout);
 assert(gateReport.ok === true && gateReport.apply === false, 'fixed parity dry-run should validate without applying');
 
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['latest-parity-status-red', 'fixed-parity-promotion-accepted', 'red-parity-promotion-rejected'] }, null, 2));
+console.log(JSON.stringify({ checked: ['latest-parity-status-red', 'fixed-parity-promotion-accepted', 'red-parity-promotion-rejected', 'linked-parity-artifacts-required'] }, null, 2));

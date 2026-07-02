@@ -108,6 +108,68 @@ export function isLegacyVisualEvidence(evidence) {
   return evidence?.schema === 'pose-lab-visual-evidence-v1';
 }
 
+
+export function resolveEvidencePath(file) {
+  if (!file) return '';
+  return path.isAbsolute(file) ? file : path.join(projectRoot, file);
+}
+
+function jsonEqual(a, b) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function readEvidenceJsonForValidation(file, label, errors) {
+  const resolved = resolveEvidencePath(file);
+  if (!file) {
+    errors.push(`parity evidence missing ${label}`);
+    return null;
+  }
+  if (!fs.existsSync(resolved)) {
+    errors.push(`parity evidence ${label} does not exist: ${file}`);
+    return null;
+  }
+  try {
+    return readJson(resolved);
+  } catch (error) {
+    errors.push(`parity evidence ${label} is invalid JSON: ${error.message}`);
+    return null;
+  }
+}
+
+export function validateParityEvidenceReadback(evidence) {
+  const errors = [];
+  if (!isParityEvidence(evidence)) return errors;
+  const observed = readEvidenceJsonForValidation(evidence.observedWebTruthPath, 'observedWebTruthPath', errors);
+  if (observed && !jsonEqual(observed, evidence.observedWebTruth)) {
+    errors.push('parity evidence embedded observedWebTruth does not match observedWebTruthPath file');
+  }
+  const offlineArtifactPath = evidence.offlineVisualTruth?.artifactPath || '';
+  const offline = readEvidenceJsonForValidation(offlineArtifactPath, 'offlineVisualTruth.artifactPath', errors);
+  if (offline) {
+    for (const key of ['cacheToken', 'runtimeBuild', 'actorKey', 'clipName', 'observedWebTruthPath', 'result']) {
+      if (!jsonEqual(offline[key], key === 'result' ? evidence.offlineVisualTruth?.result : evidence[key])) {
+        errors.push(`parity evidence offline artifact ${key} does not match wrapper`);
+      }
+    }
+    for (const key of ['observedWebTruth', 'offlineTruth', 'parity']) {
+      if (!jsonEqual(offline[key], evidence[key])) errors.push(`parity evidence offline artifact ${key} does not match wrapper`);
+    }
+    if (!jsonEqual(offline.sheet, evidence.offlineVisualTruth?.sheetPath)) {
+      errors.push('parity evidence offline artifact sheet does not match wrapper sheetPath');
+    }
+  }
+  const sheetPath = evidence.offlineVisualTruth?.sheetPath || '';
+  const resolvedSheet = resolveEvidencePath(sheetPath);
+  if (!sheetPath) {
+    errors.push('parity evidence missing offlineVisualTruth.sheetPath');
+  } else if (!fs.existsSync(resolvedSheet)) {
+    errors.push(`parity evidence sheetPath does not exist: ${sheetPath}`);
+  } else if (fs.statSync(resolvedSheet).size <= 0) {
+    errors.push(`parity evidence sheetPath is empty: ${sheetPath}`);
+  }
+  return errors;
+}
+
 export function latestEvidenceStatus(file = latestEvidencePath) {
   if (!fs.existsSync(file)) return { exists: false, path: file, stale: true, blocked: true, errors: ['missing visual evidence'] };
   let evidence = null;
@@ -125,8 +187,7 @@ export function latestEvidenceStatus(file = latestEvidencePath) {
   if (isParityEvidence(evidence)) {
     if (evidence.browserCaptureDeprecated !== true) errors.push('parity evidence must deprecate browser capture');
     if (evidence.parity?.visualVerdict !== 'fixed') errors.push(`parity evidence is ${evidence.parity?.visualVerdict || 'missing'}, not fixed`);
-    if (!evidence.offlineVisualTruth?.artifactPath) errors.push('parity evidence missing offline artifact path');
-    if (!evidence.observedWebTruthPath) errors.push('parity evidence missing observed web truth path');
+    errors.push(...validateParityEvidenceReadback(evidence));
   } else if (isLegacyVisualEvidence(evidence)) {
     if (evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked') errors.push('evidence is blocked');
     if (evidence.motionEvidencePending === true) errors.push('motion evidence is pending');
@@ -138,7 +199,7 @@ export function latestEvidenceStatus(file = latestEvidencePath) {
     path: file,
     evidence,
     stale: token !== cacheToken || evidence.runtimeBuild !== runtimeBuild,
-    blocked: isParityEvidence(evidence) ? evidence.parity?.visualVerdict !== 'fixed' : evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked',
+    blocked: isParityEvidence(evidence) ? evidence.parity?.visualVerdict !== 'fixed' || errors.length > 0 : evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked',
     errors,
   };
 }
@@ -174,8 +235,7 @@ export function validateCandidatePromotion({ baseline, candidate, evidence, metr
     if (evidence.observedWebTruth?.visualClass !== 'sword-follows-fk') errors.push(`observed web truth ${evidence.observedWebTruth?.visualClass || 'missing'} is not sword-follows-fk`);
     if (evidence.offlineTruth?.visualClass !== 'sword-follows-fk') errors.push(`offline truth ${evidence.offlineTruth?.visualClass || 'missing'} is not sword-follows-fk`);
     if (evidence.offlineTruth?.visibilityClass !== 'weapon-visible') errors.push(`offline weapon visibility ${evidence.offlineTruth?.visibilityClass || 'missing'} is not weapon-visible`);
-    if (!evidence.offlineVisualTruth?.artifactPath) errors.push('parity evidence missing offline artifact path');
-    if (!evidence.offlineVisualTruth?.sheetPath) errors.push('parity evidence missing offline sheet path');
+    errors.push(...validateParityEvidenceReadback(evidence));
   } else if (isLegacyVisualEvidence(evidence)) {
     if (evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked') errors.push('visual evidence is blocked');
     if (evidence.motionEvidencePending === true) errors.push('visual evidence still has motionEvidencePending=true');

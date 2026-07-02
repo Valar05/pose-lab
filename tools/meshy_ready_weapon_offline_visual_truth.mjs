@@ -167,6 +167,10 @@ function validateObservedWebTruth(observed, { cacheToken, runtimeBuild, clipName
   if (observed.browserCaptureDeprecated !== true) errors.push('observed web truth must mark browser capture deprecated');
   if (!String(observed.visualRead || '').trim()) errors.push('observed visualRead is required');
   if (!Array.isArray(observed.capturePaths) || observed.capturePaths.length < 1) errors.push('observed capturePaths must list human evidence paths');
+  const assertions = observed.visualAssertions || {};
+  for (const key of ['tPoseWeaponPlacementAccepted', 'readyHandsCorrected', 'readySwordNotFollowingFinalFk', 'browserCaptureRejectedAsAcceptance', 'expectedReadySwordFollowsFinalFk']) {
+    if (assertions[key] !== true) errors.push(`observed visual assertion must be true: ${key}`);
+  }
   if (errors.length) throw new Error(errors.join('\n'));
   return observed;
 }

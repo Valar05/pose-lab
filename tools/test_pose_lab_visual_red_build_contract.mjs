@@ -25,6 +25,9 @@ assert(observed.visualClass === 'sword-rest-space', 'current human web truth sho
 assert(observed.cacheToken === readCacheToken(), 'observed web truth cache token should match runtime');
 assert(observed.runtimeBuild === readRuntimeBuild(), 'observed web truth runtime build should match runtime');
 assert(Array.isArray(observed.capturePaths) && observed.capturePaths.length >= 1, 'observed web truth should preserve human evidence paths');
+for (const key of ['tPoseWeaponPlacementAccepted', 'readyHandsCorrected', 'readySwordNotFollowingFinalFk', 'browserCaptureRejectedAsAcceptance', 'expectedReadySwordFollowsFinalFk']) {
+  assert(observed.visualAssertions?.[key] === true, `observed web truth assertion should be true: ${key}`);
+}
 assert(!fs.readFileSync(path.join(projectRoot, 'tools', 'meshy_ready_weapon_offline_visual_truth.mjs'), 'utf8').includes("const observedWebTruth = {"), 'verifier must not hardcode observed web truth');
 
 assert(fs.existsSync(evidencePath), `missing offline/web parity gate: ${path.relative(projectRoot, evidencePath)}`);

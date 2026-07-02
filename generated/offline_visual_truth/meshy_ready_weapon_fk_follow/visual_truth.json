@@ -1,6 +1,6 @@
 {
   "schema": "pose-lab-offline-web-truth-parity-ready-weapon-fk-v1",
-  "generatedAt": "2026-07-02T19:07:36.928Z",
+  "generatedAt": "2026-07-02T19:19:28.834Z",
   "proofMode": "offline-web-truth-parity",
   "browserCaptureDeprecated": true,
   "sourceActor": "FPS Arms",
@@ -27,7 +27,14 @@
       "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-130642.png",
       "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260702-131830.png"
     ],
-    "visualRead": "T-pose weapon placement reads correct; Ready hands improved, but the sabre remains visually rest-space / not following final FK. Browser capture is retained only as human-report context."
+    "visualRead": "T-pose weapon placement reads correct; Ready hands improved, but the sabre remains visually rest-space / not following final FK. Browser capture is retained only as human-report context.",
+    "visualAssertions": {
+      "tPoseWeaponPlacementAccepted": true,
+      "readyHandsCorrected": true,
+      "readySwordNotFollowingFinalFk": true,
+      "browserCaptureRejectedAsAcceptance": true,
+      "expectedReadySwordFollowsFinalFk": true
+    }
   },
   "offlineTruth": {
     "visualClass": "sword-hidden",
