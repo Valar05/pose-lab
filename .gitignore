@@ -16,6 +16,20 @@ __pycache__/
 /generated/*.gif
 /generated/*.txt
 
+# generated scratch/evidence rerun outputs
+/generated/cases/
+/generated/pose_lab_offline_render/
+/generated/server_logs/
+/generated/test_runs/
+/generated/weapon_visual_follow/
+/generated/weapon_visual_repro_offline/
+
+# durable generated records that may be intentionally promoted
+!/generated/artifact_manifest.json
+!/generated/artifact_mining_index.json
+!/generated/workflow_state/
+!/generated/workflow_state/**
+
 # local server / editor noise
 .DS_Store
 
