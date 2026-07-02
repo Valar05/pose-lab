@@ -34,15 +34,21 @@ assert(status.gate?.okToPromote === false, 'status should never mark promotion o
 assert(Array.isArray(status.gate?.latestEvidence?.errors), 'status should explain latest evidence health');
 
 const stale = latestEvidenceStatus();
-assert(stale.errors.length >= 1, 'current latest evidence should not silently count as promotion evidence');
+assert(stale.exists === true, 'latest visual evidence should exist for workflow status');
 
-const staleCandidate = {
+const blockedCandidate = {
   status: 'candidate-only',
   promotable: false,
   actorKey: 'meshyCharacter',
   clipName: baseline.acceptedClip,
 };
-const staleMetrics = {
+const blockedEvidence = {
+  ...(stale.evidence || {}),
+  captureKind: 'visual-qa-blocked',
+  liveVisualQa: { status: 'blocked' },
+  motionEvidencePending: true,
+};
+const blockedMetrics = {
   schema: 'pose-lab-promotion-metrics-v1',
   actorKey: 'meshyCharacter',
   clipName: baseline.acceptedClip,
@@ -54,13 +60,13 @@ const staleMetrics = {
     rollDoesNotMoveJoints: true,
   },
 };
-const staleValidation = validateCandidatePromotion({
+const blockedValidation = validateCandidatePromotion({
   baseline,
-  candidate: staleCandidate,
-  evidence: stale.evidence || {},
-  metrics: staleMetrics,
+  candidate: blockedCandidate,
+  evidence: blockedEvidence,
+  metrics: blockedMetrics,
 });
-assert(staleValidation.ok === false, 'stale or blocked visual evidence must fail promotion validation');
+assert(blockedValidation.ok === false, 'blocked visual evidence must fail promotion validation');
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'pose-lab-promotion-'));
 const passingCandidate = {

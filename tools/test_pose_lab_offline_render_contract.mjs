@@ -23,6 +23,9 @@ assert(source.includes('poseChecksPresent') && source.includes('weaponChecksPres
 assert(source.includes('parentChainMatchesPureFkShape'), 'offline renderer must check the pure FK weapon parent chain');
 assert(source.includes('captureWeaponPinningRuntimeState') && source.includes('appliedHiltPinnedToWeaponGrip'), 'offline renderer must use shared pinning state and fail unless the applied hilt is pinned to WeaponGrip');
 assert(source.includes('appliedHiltInHandRegion') && source.includes('weaponGripLocalStableUnderRightHand'), 'offline renderer must fail if the authored hilt leaves the hand region or the RightHand-local FK pose drifts');
+assert(source.includes('appliedHiltAwayFromRawHandLocal') && source.includes('maxLocalDistances'), 'offline renderer must prove authored hilt displacement in RightHand-local coordinates, not only world-scaled distances');
+assert(source.includes('motionFromFirstFrame') && source.includes('readyWeaponMovesWithHand'), 'offline renderer must prove Ready weapon landmarks move with the sampled hand motion');
+assert(source.includes('truthLedger'), 'offline renderer must write a repo/runtime/visual/human truth ledger before any success claim');
 assert(source.includes('weaponMeshRendered') && source.includes('collectMeshWorldPoints'), 'offline renderer must draw the real sabre mesh, not only synthetic markers');
 assert(source.includes('--assert-repro') && source.includes('reproducesLiveRed'), 'offline renderer must have a red-build reproduction mode for the live marker disparity');
 assert(source.includes('generatedClipResolved'), 'offline renderer must explicitly report whether the browser-generated ready clip was resolved offline');
@@ -80,8 +83,13 @@ assert(artifact.checks?.displayRootQuaternionStableUnderWeaponGrip === true, `of
 assert(artifact.checks?.weaponMeshLocalStableUnderDisplayRoot === true, `offline render did not prove weapon mesh local position is stable under displayRoot: ${JSON.stringify(artifact.maxLocalDrift)}`);
 assert(artifact.checks?.weaponMeshQuaternionStableUnderDisplayRoot === true, `offline render did not prove weapon mesh local rotation is stable under displayRoot: ${JSON.stringify(artifact.maxLocalDrift)}`);
 assert(artifact.checks?.palmTargetDistanceFinite === true, `offline render did not report palm-target distances: ${JSON.stringify(artifact.maxDistances)}`);
+assert(artifact.checks?.rightHandLocalDistanceFinite === true, `offline render did not report RightHand-local distances: ${JSON.stringify(artifact.maxLocalDistances)}`);
+assert(artifact.checks?.appliedHiltAwayFromRawHandLocal === true, `offline render did not prove authored hilt displacement in RightHand-local coordinates: ${JSON.stringify(artifact.maxLocalDistances)}`);
+assert(artifact.checks?.socketAwayFromRawHandLocal === true, `offline render did not prove authored socket displacement in RightHand-local coordinates: ${JSON.stringify(artifact.maxLocalDistances)}`);
 assert(artifact.checks?.socketPinnedToHandBaseline === true, `hand baseline should report the stable RightHand/WeaponGrip socket target: ${JSON.stringify(artifact.maxDistances)}`);
 assert(artifact.checks?.appliedHiltPinnedToHandBaseline === true, `hand baseline should report the stable RightHand/applied hilt target: ${JSON.stringify(artifact.maxDistances)}`);
+assert(artifact.checks?.readyWeaponMovesWithHand === true, `Ready weapon landmarks should move with the sampled hand motion: ${JSON.stringify(artifact.motionFromFirstFrame)}`);
+assert(artifact.truthLedger?.repo && artifact.truthLedger?.runtime && artifact.truthLedger?.visual && artifact.truthLedger?.human, 'artifact should include a truth ledger');
 assert(artifact.reproducesLiveRed === false, `fixed artifact should no longer reproduce the known FK red: ${JSON.stringify(artifact.maxLocalDrift)}`);
 assert(artifact.ok === true, 'fixed artifact should claim the pure FK sword ownership state is green');
 assert(Array.isArray(artifact.sampleData) && artifact.sampleData.length === 3, 'artifact should contain three sampled pose frames');

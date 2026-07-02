@@ -30,6 +30,7 @@ const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
 
 const evidence = {
   schema: 'pose-lab-visual-evidence-v1',
+  generatedAt: new Date().toISOString(),
   captureKind: 'offline-pose-render',
   offlineTruthOnly: true,
   cacheToken: currentCacheToken(),
@@ -69,7 +70,14 @@ const evidence = {
       visibleMeshHiltToRawHand: report.maxDistances?.visibleMeshHiltToRawHand,
       visibleMeshHiltToAppliedHilt: report.maxDistances?.visibleMeshHiltToAppliedHilt,
     },
+    maxLocalDistances: {
+      rawHandToAppliedHilt: report.maxLocalDistances?.rawHandToAppliedHilt,
+      rawHandToSocket: report.maxLocalDistances?.rawHandToSocket,
+      socketToAppliedHilt: report.maxLocalDistances?.socketToAppliedHilt,
+    },
+    motionFromFirstFrame: report.motionFromFirstFrame,
     maxWeaponOrientationErrorDeg: report.maxWeaponOrientationErrorDeg,
+    truthLedger: report.truthLedger,
   },
 };
 

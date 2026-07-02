@@ -224,7 +224,7 @@ const BASE_RIG_PROFILES = {
       MeshyWalk: ['own:Armature|walking_man|baselayer', 'Armature|walking_man|baselayer'],
       MeshyRun: ['own:Armature|running|baselayer', 'Armature|running|baselayer'],
       Idle: ['own:Armature|Idle', 'Armature|Idle', 'Idle'],
-      SwordReady: ['OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]', 'OneHandReady -> meshyCharacter:FPS-VISUAL-IK-GOLDEN', '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]'],
+      SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120', '0T-Pose'],
       RestProbe: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120', '0T-Pose'],
       WalkForward: ['own:Armature|Armature|walking_man|baselayer', 'Armature|Armature|walking_man|baselayer', 'own:Armature|walking_man|baselayer', 'Armature|walking_man|baselayer'],
       WalkBackward: ['own:Armature|Armature|Walk_Backward|baselayer', 'Armature|Armature|Walk_Backward|baselayer'],
@@ -294,7 +294,7 @@ const BASE_RIG_PROFILES = {
       scale: 0.47493,
       position: [0, 0, 0],
       rotationDeg: [121.031, -41.564, -13.871],
-      gripLocalPosition: [0.6535, -0.02302, -0.07317],
+      gripLocalPosition: [0.69507, -0.02421, -0.06231],
       tipLocalPosition: [-0.95561, 0.1368, 0],
       sourceBounds: {
         min: [-0.955609, -0.40501, -0.200351],

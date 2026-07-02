@@ -14,7 +14,7 @@ assert(js.includes('attachWeaponAttachment(weaponRoot, config = {})'), 'runtime 
 assert(js.includes('updateWeaponProxyVisibility()'), 'weapon socket visibility should be runtime-controlled');
 assert(js.includes('this.weaponProxy.root.visible = true') && js.includes('this.weaponProxy.model.visible = true'), 'weapon should stay visible without clip-pattern gates');
 assert(profiles.includes("weaponAttachment: {") && profiles.includes("socketBone: 'WeaponGrip'") && profiles.includes("leftHandBone: 'LeftHand'"), 'Meshy profile should attach the real Meshy sabre to the centered WeaponGrip');
-assert(profiles.includes('Saber handle-centered attachment for Meshy Character') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy Character should preserve the rig-local saber hilt candidate');
+assert(profiles.includes('Saber handle-centered attachment for Meshy Character') && profiles.includes('gripLocalPosition: [0.69507, -0.02421, -0.06231]'), 'Meshy Character should preserve the user hilt oracle saber candidate');
 assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy saber should rotate from the hand origin without shifting the socket');
 assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]') && profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]') && profiles.includes('rotationDeg: [121.031, -41.564, -13.871]'), 'Meshy saber should use the hard-won rig-local socket position and manual rotation');
 assert(profiles.includes("parentMode: 'hand-fk'") && profiles.includes("syntheticSourceSocketBone: ''"), 'Meshy saber should follow the right hand through direct pure FK');

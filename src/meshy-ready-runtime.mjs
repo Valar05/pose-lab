@@ -193,7 +193,7 @@ function quaternionFromBladeFrame(THREE, bladeDirection, upSeed = new THREE.Vect
 }
 
 export function deriveAttachmentBladeLocal(THREE, attachment = {}) {
-  const grip = Array.isArray(attachment.gripLocalPosition) ? attachment.gripLocalPosition : [0.6535, -0.02302, -0.07317];
+  const grip = Array.isArray(attachment.gripLocalPosition) ? attachment.gripLocalPosition : [0.69507, -0.02421, -0.06231];
   const tip = Array.isArray(attachment.tipLocalPosition) ? attachment.tipLocalPosition : [-0.95561, 0.1368, 0];
   const rotationDeg = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg : [90, 0, -55.145];
   const blade = new THREE.Vector3(

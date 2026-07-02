@@ -16,6 +16,23 @@ function assert(condition, message) {
   if (!condition) failures.push(message);
 }
 
+function existingFileFromEvidence(value, label) {
+  if (typeof value !== 'string' || !value.trim()) {
+    assert(false, `offline visual evidence should include ${label}`);
+    return null;
+  }
+  const resolved = path.isAbsolute(value) ? value : path.join(projectRoot, value);
+  if (!fs.existsSync(resolved)) {
+    assert(false, `offline visual evidence ${label} should exist: ${value}`);
+    return null;
+  }
+  if (!fs.statSync(resolved).isFile()) {
+    assert(false, `offline visual evidence ${label} should be a file, got non-file path: ${value}`);
+    return null;
+  }
+  return resolved;
+}
+
 function readCacheToken() {
   const html = fs.readFileSync(htmlPath, 'utf8');
   const match = html.match(/pose-lab\.js\?v=([^'"\s]+)/);
@@ -55,11 +72,12 @@ if (fs.existsSync(evidencePath)) {
   assert(evidence.motionEvidencePending === false, 'offline visual evidence must not defer motion evidence to a live capture path');
   assert(evidence.liveVisualQa == null, 'offline visual evidence must not contain a liveVisualQa dependency');
 
-  assert(typeof evidence.capturePath === 'string' && fs.existsSync(path.isAbsolute(evidence.capturePath) ? evidence.capturePath : path.join(projectRoot, evidence.capturePath)), 'offline visual evidence should point at an existing rendered PNG');
-  assert(typeof evidence.reportPath === 'string' && fs.existsSync(path.isAbsolute(evidence.reportPath) ? evidence.reportPath : path.join(projectRoot, evidence.reportPath)), 'offline visual evidence should point at an existing offline render JSON');
+  const capturePath = existingFileFromEvidence(evidence.capturePath, 'capturePath');
+  const reportPath = existingFileFromEvidence(evidence.reportPath, 'reportPath');
 
-  const reportPath = path.isAbsolute(evidence.reportPath) ? evidence.reportPath : path.join(projectRoot, evidence.reportPath);
-  const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  let report = null;
+  if (reportPath) report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  if (!report) report = {};
   assert(report.schema === 'pose-lab-offline-pose-weapon-render-v1', 'offline report should use schema pose-lab-offline-pose-weapon-render-v1');
   assert(report.ok === true, 'offline pose+weapon report should be green');
   assert(report.generatedClipResolved === true, `offline report should resolve the generated Pose Lab clip: ${JSON.stringify(report.generatedClipStats)}`);
@@ -78,9 +96,12 @@ if (fs.existsSync(evidencePath)) {
   assert(report.checks?.visibleMeshHiltMatchesAppliedHilt === true, 'offline report should prove the mesh-derived hilt matches the configured applied hilt');
   assert(Number.isFinite(report.maxDistances?.palmTargetToAppliedHilt), 'offline report must expose finite palm-target-to-hilt distance');
   assert(Number.isFinite(report.maxDistances?.rawHandToAppliedHilt), 'offline report must expose finite raw-hand-to-hilt distance');
+  assert(Number.isFinite(report.maxLocalDistances?.rawHandToAppliedHilt), 'offline report must expose finite RightHand-local raw-hand-to-hilt distance');
   assert(Number.isFinite(report.maxDistances?.visibleMeshHiltToWeaponGrip), 'offline report must expose finite real-mesh-hilt-to-WeaponGrip distance');
   assert(Number.isFinite(report.maxDistances?.visibleMeshHiltToRawHand), 'offline report must expose finite real-mesh-hilt-to-raw-hand distance');
   assert(report.checks?.appliedHiltInHandRegion === true, `offline report should prove applied hilt stays in the hand region: ${JSON.stringify(report.maxDistances)}`);
+  assert(report.checks?.appliedHiltAwayFromRawHandLocal === true, `offline report should prove authored hilt displacement in RightHand-local coordinates: ${JSON.stringify(report.maxLocalDistances)}`);
+  assert(report.truthLedger?.repo && report.truthLedger?.runtime && report.truthLedger?.visual && report.truthLedger?.human, 'offline report should include repo/runtime/visual/human truth ledger');
 
   const visual = evidence.visualAssertions || {};
   for (const key of [

@@ -556,6 +556,9 @@ async function main() {
   const palmTargetHiltDistances = samples.map((sample) => distance3(sample.weapon.palmTarget, sample.weapon.appliedHilt));
   const handBaselineSocketDistances = samples.map((sample) => distance3(sample.weapon.socketHandBaseline, sample.weapon.socket));
   const handBaselineHiltDistances = samples.map((sample) => distance3(sample.weapon.socketHandBaseline, sample.weapon.appliedHilt));
+  const localRawHandHiltDistances = samples.map((sample) => distance3([0, 0, 0], sample.weaponPinning?.local?.appliedHiltInHand));
+  const localRawHandSocketDistances = samples.map((sample) => distance3([0, 0, 0], sample.weaponPinning?.local?.socketInHand));
+  const localSocketHiltDistances = samples.map((sample) => distance3(sample.weaponPinning?.local?.socketInHand, sample.weaponPinning?.local?.appliedHiltInHand));
   const tipDistances = samples.map((sample) => distance3(sample.weapon.appliedHilt, sample.weapon.tip));
   const weaponBladeDirectionErrorsDeg = samples.map((sample) => Number(sample.sourceWeaponOrientation?.bladeErrorDeg)).filter(Number.isFinite);
   const weaponMeshBladeDirectionErrorsDeg = samples.map((sample) => Number(sample.sourceWeaponOrientation?.meshBladeErrorDeg)).filter(Number.isFinite);
@@ -569,16 +572,22 @@ async function main() {
     const finite = values.filter(Number.isFinite);
     return finite.length ? Math.max(...finite) : null;
   };
+  const motionFromFirst = (field) => samples.map((sample) => distance3(samples[0]?.weapon?.[field], sample.weapon?.[field]));
   const palmTargetTolerance = samples.find((sample) => Number.isFinite(sample.weaponPinning?.thresholds?.palmTargetTolerance))?.weaponPinning?.thresholds?.palmTargetTolerance ?? 0.015;
   const handBaselineTolerance = samples.find((sample) => Number.isFinite(sample.weaponPinning?.thresholds?.handBaselineTolerance))?.weaponPinning?.thresholds?.handBaselineTolerance ?? 0.005;
   const localDriftTolerance = 0.005;
   const localQuaternionDriftToleranceDeg = 0.5;
   const meshLandmarkTolerance = 0.02;
   const meshBladeLengthMinDistance = 0.05;
+  const localAuthoredDisplacementMinDistance = 0.04;
+  const readySocketMotionMinDistance = 0.0005;
+  const readyTipMotionMinDistance = 0.005;
   const socketPinnedToPalmTarget = palmTargetSocketDistances.every((value) => Number.isFinite(value) && value <= palmTargetTolerance);
   const appliedHiltPinnedToPalmTarget = palmTargetHiltDistances.every((value) => Number.isFinite(value) && value <= palmTargetTolerance);
   const displacementMinDistance = 0.05;
   const appliedHiltAwayFromRawHand = rawHandHiltDistances.every((value) => Number.isFinite(value) && value >= displacementMinDistance);
+  const appliedHiltAwayFromRawHandLocal = localRawHandHiltDistances.every((value) => Number.isFinite(value) && value >= localAuthoredDisplacementMinDistance);
+  const socketAwayFromRawHandLocal = localRawHandSocketDistances.every((value) => Number.isFinite(value) && value >= localAuthoredDisplacementMinDistance);
   const handRegionMaxDistance = 0.002;
   const appliedHiltInHandRegion = rawHandHiltDistances.every((value) => Number.isFinite(value) && value <= handRegionMaxDistance)
     || palmTargetHiltDistances.every((value) => Number.isFinite(value) && value <= handRegionMaxDistance);
@@ -607,6 +616,20 @@ async function main() {
   const visibleMeshHiltPinnedToWeaponGrip = visibleMeshHiltToSocketDistances.every((value) => Number.isFinite(value) && value <= meshLandmarkTolerance);
   const visibleMeshHiltMatchesAppliedHilt = visibleMeshHiltToAppliedHiltDistances.every((value) => Number.isFinite(value) && value <= meshLandmarkTolerance);
   const visibleMeshBladeLengthFinite = visibleMeshBladeLengths.every((value) => Number.isFinite(value) && value >= meshBladeLengthMinDistance);
+  const rightHandMotion = motionFromFirst('rightHand');
+  const socketMotion = motionFromFirst('socket');
+  const appliedHiltMotion = motionFromFirst('appliedHilt');
+  const visibleMeshHiltMotion = samples.map((sample) => distance3(samples[0]?.visibleMesh?.hilt, sample.visibleMesh?.hilt));
+  const tipMotion = motionFromFirst('tip');
+  const isReadyClip = wantsGeneratedReadyClip(args.clip);
+  const readyWeaponMovesWithHand = !isReadyClip
+    || (
+      Number(maxFinite(rightHandMotion)) >= readySocketMotionMinDistance
+      && Number(maxFinite(socketMotion)) >= readySocketMotionMinDistance
+      && Number(maxFinite(appliedHiltMotion)) >= readySocketMotionMinDistance
+      && Number(maxFinite(visibleMeshHiltMotion)) >= readySocketMotionMinDistance
+      && Number(maxFinite(tipMotion)) >= readyTipMotionMinDistance
+    );
   const reproducesLiveRed = generatedClipResolved
     && hiltSocketDistances.every((value) => Number.isFinite(value) && value <= 0.0005)
     && (!appliedHiltInHandRegion
@@ -625,7 +648,10 @@ async function main() {
     hiltSocketDistanceFinite: hiltSocketDistances.every(Number.isFinite),
     handBaselineDistanceFinite: handBaselineSocketDistances.every(Number.isFinite) && handBaselineHiltDistances.every(Number.isFinite),
     palmTargetDistanceFinite: palmTargetSocketDistances.every(Number.isFinite) && palmTargetHiltDistances.every(Number.isFinite),
+    rightHandLocalDistanceFinite: localRawHandHiltDistances.every(Number.isFinite) && localRawHandSocketDistances.every(Number.isFinite),
     appliedHiltAwayFromRawHand,
+    appliedHiltAwayFromRawHandLocal,
+    socketAwayFromRawHandLocal,
     appliedHiltInHandRegion,
     weaponGripLocalStableUnderRightHand: socketStableInHand,
     weaponGripQuaternionStableUnderRightHand: socketQuaternionStableInHand,
@@ -650,6 +676,7 @@ async function main() {
     socketPinnedToPalmTarget,
     appliedHiltPinnedToPalmTarget,
     reproducesLiveRed,
+    readyWeaponMovesWithHand,
     bladeLengthFinite: tipDistances.every((value) => Number.isFinite(value) && value > 0.05),
   };
   const ok = checks.actorResolved
@@ -672,9 +699,13 @@ async function main() {
     && checks.appliedHiltPinnedToWeaponGrip
     && checks.weaponGripLocalStableUnderRightHand
     && checks.weaponGripQuaternionStableUnderRightHand
+    && checks.appliedHiltAwayFromRawHandLocal
+    && checks.socketAwayFromRawHandLocal
     && checks.appliedHiltInHandRegion
+    && checks.readyWeaponMovesWithHand
     && checks.bladeLengthFinite
     && generatedClipResolved;
+  const anyTruthRed = !ok;
   const result = {
     schema: 'pose-lab-offline-pose-weapon-render-v1',
     diagnosticOnly: true,
@@ -715,6 +746,9 @@ async function main() {
       localQuaternionDriftToleranceDeg,
       meshLandmarkTolerance,
       meshBladeLengthMinDistance,
+      localAuthoredDisplacementMinDistance,
+      readySocketMotionMinDistance,
+      readyTipMotionMinDistance,
       displacementMinDistance,
       handRegionMaxDistance,
       socketToAppliedHiltTolerance: 0.0005,
@@ -723,6 +757,9 @@ async function main() {
     rawHandHiltDistances,
     handBaselineSocketDistances,
     handBaselineHiltDistances,
+    localRawHandHiltDistances,
+    localRawHandSocketDistances,
+    localSocketHiltDistances,
     palmTargetSocketDistances,
     palmTargetHiltDistances,
     visibleMeshHiltToAppliedHiltDistances,
@@ -757,6 +794,18 @@ async function main() {
       palmTargetToSocket: maxFinite(palmTargetSocketDistances),
       palmTargetToAppliedHilt: maxFinite(palmTargetHiltDistances),
     },
+    maxLocalDistances: {
+      rawHandToAppliedHilt: maxFinite(localRawHandHiltDistances),
+      rawHandToSocket: maxFinite(localRawHandSocketDistances),
+      socketToAppliedHilt: maxFinite(localSocketHiltDistances),
+    },
+    motionFromFirstFrame: {
+      rightHand: maxFinite(rightHandMotion),
+      socket: maxFinite(socketMotion),
+      appliedHilt: maxFinite(appliedHiltMotion),
+      visibleMeshHilt: maxFinite(visibleMeshHiltMotion),
+      tip: maxFinite(tipMotion),
+    },
     maxLocalDrift: {
       socketInHand: maxFinite(socketInHandDrift),
       socketQuaternionInHandDeg: maxFinite(socketQuaternionInHandDriftDeg),
@@ -777,8 +826,21 @@ async function main() {
     actualVisibleRead: generatedClipResolved
       ? (reproducesLiveRed
           ? 'offline renderer proves the hilt is pinned to WeaponGrip, but still reproduces a live red FK displacement or hand-local drift mismatch'
-          : 'offline renderer resolves the generated Pose Lab clip and proves the sabre mesh visible hilt matches the authored pure-FK WeaponGrip socket')
+          : anyTruthRed
+            ? 'offline renderer resolves the generated Pose Lab clip but the truth ledger remains red; treat as diagnosis, not progress'
+            : 'offline renderer resolves the generated Pose Lab clip and proves the sabre mesh visible hilt matches the authored pure-FK WeaponGrip socket')
       : 'offline renderer shows the actual GLB pose fallback and weapon hierarchy, but cannot yet resolve the requested browser-generated Pose Lab clip offline',
+    truthLedger: {
+      repo: ok ? 'green: shared runtime/offline renderer produced schema evidence' : 'red: offline evidence failed acceptance checks',
+      runtime: checks.parentChainMatchesPureFkShape && checks.weaponGripLocalStableUnderRightHand && checks.weaponGripQuaternionStableUnderRightHand && checks.readyWeaponMovesWithHand
+        ? 'green: pure FK hierarchy and sampled motion checks pass'
+        : 'red: FK hierarchy, local stability, or Ready motion check failed',
+      visual: ok
+        ? 'green: offline pose+weapon sheet is current acceptance artifact'
+        : 'red: offline pose+weapon sheet is diagnostic only',
+      human: 'pending: user visual review not yet supplied for this artifact',
+      framing: ok ? 'progress' : 'diagnosis',
+    },
     ok,
     artifacts: {
       png: 'pose_weapon_render.png',
