@@ -1,6 +1,6 @@
 {
   "schema": "pose-lab-meshy-onehand-ready-visual-parity-v1",
-  "generatedAt": "2026-06-30T23:49:16.262Z",
+  "generatedAt": "2026-06-29T22:38:22.728Z",
   "sourceActor": "FPS Arms",
   "targetActor": "Meshy Character",
   "sourceClip": "OneHandReady",
@@ -89,16 +89,13 @@
       "firstFrameForearmReturnMargin": 0.0587,
       "avgTposeLeakAngleDeg": 54.05,
       "minTposeLeakAngleDeg": 53.82,
-      "avgDownErrorDeg": 17.73,
-      "maxDownErrorDeg": 19.1,
-      "minDownDot": 0.945,
-      "avgDownRollErrorBeforeDeg": 97.12,
-      "maxDownRollErrorBeforeDeg": 98.54,
-      "minDownRollDotBefore": -0.1485,
-      "avgDownRollErrorDeg": 0,
-      "maxDownRollErrorDeg": 0,
-      "minDownRollDot": 1,
-      "maxAppliedTwistDeg": 98.54,
+      "avgDownErrorDeg": 41.96,
+      "maxDownErrorDeg": 43.58,
+      "minDownDot": 0.7244,
+      "avgDownRollErrorDeg": 89.12,
+      "maxDownRollErrorDeg": 90.54,
+      "minDownRollDot": -0.0095,
+      "maxAppliedTwistDeg": 8,
       "maxUnclampedTwistDeg": 98.54,
       "maxPostRollPositionDrift": 0,
       "avgSourceStepTravel": 0.0005,
@@ -133,9 +130,6 @@
       "avgDownErrorDeg": 3.07,
       "maxDownErrorDeg": 6.53,
       "minDownDot": 0.9935,
-      "avgDownRollErrorBeforeDeg": 35.37,
-      "maxDownRollErrorBeforeDeg": 37.26,
-      "minDownRollDotBefore": 0.7959,
       "avgDownRollErrorDeg": 0,
       "maxDownRollErrorDeg": 0,
       "minDownRollDot": 1,
@@ -175,20 +169,20 @@
     ]
   },
   "runtimeProfile": {
-    "activeBlockFound": false,
+    "activeBlockFound": true,
     "activeClip": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK]",
-    "worldJointProjection": false,
-    "replacesTracks": false,
-    "restRelative": false,
-    "postRollDownDelta": false,
-    "rightArmCanary": false,
-    "leftArmBounded": false,
-    "fullRightChain": false,
-    "fullLeftChain": false,
-    "weaponDoesNotOverwriteHand": false
+    "worldJointProjection": true,
+    "replacesTracks": true,
+    "restRelative": true,
+    "postRollDownDelta": true,
+    "rightArmCanary": true,
+    "leftArmBounded": true,
+    "fullRightChain": true,
+    "fullLeftChain": true,
+    "weaponDoesNotOverwriteHand": true
   },
   "acceptance": {
-    "activeRuntimeUsesJointProjection": false,
+    "activeRuntimeUsesJointProjection": true,
     "exactSourceKeys": true,
     "initialRestKeyDeleted": true,
     "firstFrameReadyNotRest": true,
@@ -200,26 +194,11 @@
     "fkReadyShapeNotTpose": true,
     "leftDownRollNotInverted": true,
     "leftDownRollErrorBounded": true,
-    "rightHandRollImproved": true,
-    "rightDownRollErrorBounded": true,
-    "rightHandTwistBounded": true,
+    "rightHandTwistMinimal": true,
     "leftHandTwistBounded": true,
     "leftHandMaintainsPosition": true,
     "noLoopSnap": true,
     "realSabreMeasured": true
   },
-  "maxHandPositionDrift": 0,
-  "saberToHandRelationshipDrift": 0,
-  "rollErrorBeforeAfter": {
-    "right": {
-      "beforeDeg": 98.54,
-      "afterDeg": 0
-    },
-    "left": {
-      "beforeDeg": 37.26,
-      "afterDeg": 0
-    }
-  },
-  "visualClassification": "roll_improved_but_not_ready",
-  "ok": false
+  "ok": true
 }

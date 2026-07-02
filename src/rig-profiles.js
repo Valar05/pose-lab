@@ -272,7 +272,7 @@ const BASE_RIG_PROFILES = {
       allowAnimatedSocketAnimation: false,
       positionMode: 'right-hand',
       handLocalOffset: [0.095, 0.035, -0.01],
-      modelLocalOffset: [-0.03429, 0.04109, -0.07946],
+      modelLocalOffset: [-0.11512, 0.00773, -0.01127],
       gripOffset: [0, 0, 0],
       tipOffset: [0, 0, 0.85],
       visibleClipPatterns: ['\\[FPS-REST-ARMS'],
@@ -293,7 +293,7 @@ const BASE_RIG_PROFILES = {
       tipMarker: 'WeaponGrip_end',
       scale: 0.47493,
       position: [0, 0, 0],
-      rotationDeg: [121.031, -41.564, -13.871],
+      rotationDeg: [90, 0, -55.145],
       gripLocalPosition: [0.6535, -0.02302, -0.07317],
       tipLocalPosition: [-0.95561, 0.1368, 0],
       sourceBounds: {
