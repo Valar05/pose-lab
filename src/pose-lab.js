@@ -6711,7 +6711,12 @@ class PoseLab {
     this.updateReadout();
   }
 
+  bodyBoneViewportPickingEnabled() {
+    return this.activePanel === 'pose';
+  }
+
   bonePickObjects(actor = this.actors.get(this.selected)) {
+    if (!this.bodyBoneViewportPickingEnabled()) return [];
     if (!actor?.showBoneOverlay) return [];
     return [
       ...actor.boneHandles.values(),
@@ -6720,6 +6725,7 @@ class PoseLab {
   }
 
   pickBoneHandleHits(event, actor = this.actors.get(this.selected)) {
+    if (!this.bodyBoneViewportPickingEnabled()) return [];
     if (!actor?.showBoneOverlay) return [];
     const rect = UI.canvas.getBoundingClientRect();
     this.pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
@@ -6730,6 +6736,7 @@ class PoseLab {
   }
 
   pickTouchRigControlHits(event, actor = this.actors.get(this.selected)) {
+    if (!this.bodyBoneViewportPickingEnabled()) return [];
     if (!actor?.touchRigControls || !actor.showTouchRigControls) return [];
     const rect = UI.canvas.getBoundingClientRect();
     this.pointer.x = ((event.clientX - rect.left) / Math.max(1, rect.width)) * 2 - 1;
@@ -6739,6 +6746,7 @@ class PoseLab {
   }
 
   pickNearestScreenBone(event, actor = this.actors.get(this.selected)) {
+    if (!this.bodyBoneViewportPickingEnabled()) return null;
     if (!actor) return null;
     const rect = UI.canvas.getBoundingClientRect();
     const point = { x: event.clientX, y: event.clientY };
@@ -6764,6 +6772,7 @@ class PoseLab {
   }
 
   pickTouchPoseTarget(event, actor = this.actors.get(this.selected)) {
+    if (!this.bodyBoneViewportPickingEnabled()) return null;
     if (!actor) return null;
     const controlHits = this.pickTouchRigControlHits(event, actor);
     const control = controlHits[0]?.object || null;
@@ -6784,6 +6793,10 @@ class PoseLab {
   }
 
   pickBoneHandle(event) {
+    if (!this.bodyBoneViewportPickingEnabled()) {
+      this.pointerDown = null;
+      return;
+    }
     if (!this.pointerDown) return;
     const dx = event.clientX - this.pointerDown.x;
     const dy = event.clientY - this.pointerDown.y;
@@ -7236,12 +7249,17 @@ class PoseLab {
   }
 
   handleTouchPosePointerDown(event) {
+    if (!this.bodyBoneViewportPickingEnabled()) {
+      this.pointerDown = null;
+      return false;
+    }
     this.trackTouchPointer(event);
     if (this.activeTouchPointers.size >= 2) return this.allowCameraMultiTouch(event);
     return this.beginTouchPoseDrag(event);
   }
 
   handleTouchPosePointerMove(event) {
+    if (!this.bodyBoneViewportPickingEnabled()) return false;
     this.updateTrackedTouchPointer(event);
     if (this.multiTouchPoseGesture) return;
     if (this.activeTouchPointers.size >= 2) {
@@ -7252,6 +7270,11 @@ class PoseLab {
   }
 
   handleTouchPosePointerUp(event) {
+    if (!this.bodyBoneViewportPickingEnabled()) {
+      this.pointerDown = null;
+      this.releaseTrackedTouchPointer(event);
+      return false;
+    }
     const wasMulti = Boolean(this.multiTouchPoseGesture);
     this.releaseTrackedTouchPointer(event);
     if (wasMulti) {
@@ -7265,12 +7288,18 @@ class PoseLab {
   }
 
   handleTouchPosePointerCancel(event) {
+    if (!this.bodyBoneViewportPickingEnabled()) {
+      this.pointerDown = null;
+      this.releaseTrackedTouchPointer(event);
+      return false;
+    }
     this.releaseTrackedTouchPointer(event);
     if (this.multiTouchPoseGesture) return this.cancelMultiTouchPoseGesture(event, true);
     return this.cancelTouchPoseDrag(event, true);
   }
 
   beginTouchPoseDrag(event) {
+    if (!this.bodyBoneViewportPickingEnabled()) return false;
     if (this.touchPoseDrag) this.cancelTouchPoseDrag(event, false);
     if (this.multiTouchPoseGesture) this.cancelMultiTouchPoseGesture(event, true);
     if (this.activeTouchPointers.size >= 2) return false;
@@ -9294,6 +9323,7 @@ class PoseLab {
     } else if (this.weaponGizmoDrag) {
       this.finishWeaponGizmoDrag();
     }
+    if (nextPanel !== 'pose') this.cancelAllTouchPoseGestures(null, false);
     if (elementPanel === 'cleanup') this.updateCleanupUi();
     if (nextPanel === 'pose' || this.labMode === 'critique') this.updateCritiqueDock(true);
     this.saveState();
