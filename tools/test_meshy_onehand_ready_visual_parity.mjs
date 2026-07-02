@@ -66,7 +66,9 @@ assert(acceptance.leftDownRollNotInverted === true, `left down-vector roll axis 
 assert(acceptance.leftDownRollErrorBounded === true, `left down-vector roll error is visibly too high: ${JSON.stringify({
   leftMaxDownRollErrorDeg: artifact.sideMetrics?.left?.maxDownRollErrorDeg,
 })}`);
-assert(acceptance.rightHandTwistMinimal === true, `right hand should not need a large roll correction: ${JSON.stringify({
+assert(acceptance.rightHandRollImproved === true, `right hand roll did not improve enough: ${JSON.stringify(artifact.rollErrorBeforeAfter?.right)}`);
+assert(acceptance.rightDownRollErrorBounded === true, `right down-vector roll error is still visibly too high: ${JSON.stringify(artifact.rollErrorBeforeAfter?.right)}`);
+assert(acceptance.rightHandTwistBounded === true, `right hand roll solve is twisting the joint beyond the candidate bound: ${JSON.stringify({
   rightMaxAppliedTwistDeg: artifact.sideMetrics?.right?.maxAppliedTwistDeg,
   rightMaxUnclampedTwistDeg: artifact.sideMetrics?.right?.maxUnclampedTwistDeg,
 })}`);
@@ -84,6 +86,12 @@ assert(acceptance.noLoopSnap === true, `target loop snap exceeds source loop mot
   rightTargetLoopDelta: artifact.sideMetrics?.right?.targetLoopDelta,
 })}`);
 assert(acceptance.realSabreMeasured === true, `real Meshy sabre bounds were not measured correctly: ${JSON.stringify(artifact.sabreBounds)}`);
+assert(['rejected', 'roll_improved_but_not_ready', 'ready_for_review'].includes(artifact.visualClassification), `unexpected visual classification ${artifact.visualClassification}`);
+assert(artifact.visualClassification === 'ready_for_review', `roll candidate is not ready for review: ${artifact.visualClassification}`);
+assert(artifact.rollErrorBeforeAfter?.right?.afterDeg < artifact.rollErrorBeforeAfter?.right?.beforeDeg, `right roll before/after did not improve: ${JSON.stringify(artifact.rollErrorBeforeAfter?.right)}`);
+assert(artifact.rollErrorBeforeAfter?.left?.afterDeg <= artifact.rollErrorBeforeAfter?.left?.beforeDeg, `left roll regressed: ${JSON.stringify(artifact.rollErrorBeforeAfter?.left)}`);
+assert(artifact.maxHandPositionDrift < 0.0005, `roll-only candidate moved hand/joint positions: ${artifact.maxHandPositionDrift}`);
+assert(artifact.saberToHandRelationshipDrift === 0, `roll-only candidate changed saber-to-hand relationship: ${artifact.saberToHandRelationshipDrift}`);
 
 if (failures.length) {
   throw new Error([

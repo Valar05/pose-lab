@@ -205,7 +205,7 @@ async function main() {
   const rightRollBeforeDeg = deg(rightCurrentRoll.angleTo(rightDesiredRoll));
   const signedRightRoll = Math.atan2(new THREE.Vector3().crossVectors(rightCurrentRoll, rightDesiredRoll).dot(rightAxis), rightCurrentRoll.dot(rightDesiredRoll));
   const rightRollStrength = 1.0;
-  const acceptedRollOffsetDeg = -120;
+  const acceptedRollOffsetDeg = 0;
   const appliedRightRoll = (signedRightRoll * rightRollStrength) + THREE.MathUtils.degToRad(acceptedRollOffsetDeg);
   const rightTurn = new THREE.Quaternion().setFromAxisAngle(rightAxis, appliedRightRoll).normalize();
   setBoneWorldQuaternion(THREE, rightHand, rightTurn.multiply(worldQuaternion(THREE, rightHand)).normalize());

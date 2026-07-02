@@ -1,0 +1,80 @@
+{
+  "schema": "pose-lab-case-v1",
+  "id": "meshy-weapon-fk-pinning",
+  "title": "Meshy Weapon FK Pinning",
+  "family": "weapon_pinning_and_fk",
+  "priority": "p0",
+  "route": {
+    "kind": "weapon-fk",
+    "actor": "meshyCharacter",
+    "clip": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
+    "mode": "standard",
+    "query": {
+      "weaponDebug": "1"
+    }
+  },
+  "expectedVisibleBehavior": [
+    "The sabre hilt remains pinned to the authored WeaponGrip position, not the raw wrist.",
+    "The sabre follows the right hand through direct FK child motion.",
+    "WeaponGrip local position and quaternion under RightHand remain constant across normal clips.",
+    "FPS Weapon.R is reference-only and does not gate runtime acceptance."
+  ],
+  "contracts": [
+    "contracts/golden/meshy_weapon_fk.json",
+    "contracts/golden/meshy_ready_rolls.json"
+  ],
+  "evidenceArtifacts": [
+    "generated/pose_lab_offline_render/latest/pose_weapon_render.json",
+    "generated/pose_lab_offline_render/latest/pose_weapon_render.png",
+    "generated/visual_red_build/pose_lab_latest.json"
+  ],
+  "checks": [
+    {
+      "id": "route",
+      "kind": "route",
+      "required": true
+    },
+    {
+      "id": "offline-render-contract",
+      "kind": "command",
+      "command": "node tools/test_pose_lab_offline_render_contract.mjs",
+      "default": false
+    },
+    {
+      "id": "weapon-fk-contract",
+      "kind": "command",
+      "command": "node tools/test_weapon_fk_attachment_contract.mjs",
+      "default": false
+    },
+    {
+      "id": "manual-lock",
+      "kind": "command",
+      "command": "node tools/test_manual_weapon_placement_lock.mjs",
+      "default": false
+    },
+    {
+      "id": "fixed-offline-render",
+      "kind": "command",
+      "command": "node tools/pose_lab_offline_render.mjs --actor meshyCharacter --clip \"OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]\" --samples 4 --assert-fixed",
+      "default": false
+    },
+    {
+      "id": "offline-saber-in-hand-proof",
+      "kind": "command",
+      "command": "node tools/pose_lab_case.mjs verify --case meshy-saber-live-in-hand --json",
+      "default": true
+    }
+  ],
+  "acceptance": [
+    "Route resolves actor and clip exactly.",
+    "Offline render contract is green.",
+    "Manual weapon placement lock is green.",
+    "The offline Meshy saber in-hand case is green before claiming the user-facing issue is fixed."
+  ],
+  "forbiddenProof": [
+    "source-string tests as final proof",
+    "deprecated standalone screencap",
+    "hilt-to-socket pinning without hilt displacement from raw wrist",
+    "offline green proof while the live/user screenshot shows the real saber out of hand"
+  ]
+}

@@ -30,8 +30,26 @@ for (const snippet of [
   "case 'clip':",
   "case 'bone':",
   "case 'weapon':",
+  "case 'weapon-follow':",
+  "case 'weapon-visual-follow':",
+  "case 'weapon-live-hilt-state':",
+  "case 'weapon-tuning-state':",
   'debugWeaponState()',
+  'debugWeaponFollow(sampleArgs = [])',
+  'debugWeaponVisualFollow(sampleArgs = [])',
+  'debugLiveWeaponHiltState(sampleArgs = [])',
+  'debugWeaponTuningState()',
   "schema: 'pose-lab-live-weapon-state-v1'",
+  "schema: 'pose-lab-live-weapon-follow-v1'",
+  "schema: 'pose-lab-live-weapon-visual-follow-v1'",
+  "schema: 'pose-lab-live-weapon-hilt-state-v1'",
+  "schema: 'pose-lab-live-weapon-tuning-state-v1'",
+  "schema: 'pose-lab-weapon-mesh-landmarks-v1'",
+  "readSavedWeaponGizmoTuning()",
+  "weaponVisualMeshLandmarks(actor = this.selectedWeaponActor(), options = {})",
+  "savedIsPromotableEvidence",
+  "savedMatchesCurrentCache",
+  "savedDiffersFromCurrent",
   'basketFrontErrorDeg',
   'socketForwardToBladeErrorDeg',
   "case 'view':",
@@ -62,12 +80,13 @@ for (const snippet of [
   assert(source.includes(snippet), `missing debug CLI snippet: ${snippet}`);
 }
 
-for (const command of ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'weapon', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'fpv', 'beacon', 'capture', 'qa']) {
+for (const command of ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'weapon', 'weapon-follow', 'weapon-visual-follow', 'weapon-live-hilt-state', 'weapon-tuning-state', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'fpv', 'beacon', 'capture', 'qa']) {
   assert(source.includes(`'${command}'`), `missing command name in source: ${command}`);
 }
 
 assert(source.includes('debugBridgeUrl') && source.includes('debugBridgePollMs') && source.includes('debugBridgeTimeoutMs'), 'debug bridge config should read query-string bridge settings');
 assert(source.includes('window.location.href'), 'debug bridge should register the live browser URL');
+assert(source.includes('cacheToken: LAB_CACHE_TOKEN') && source.includes('pageUrl: window.location.href'), 'debug bridge and live hilt state should report loaded page/cache identity');
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({ checked: ['pose-lab-debug-console-contract', 'bone-select-rotate-contract'] }, null, 2));

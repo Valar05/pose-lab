@@ -21,14 +21,15 @@ assert(fn.includes('generatedHandRestLeakageMetrics(targetRoot, tracks, targetRe
 assert(fn.includes('options.absoluteSourcePose === true') && fn.includes('absoluteSourcePose: options.absoluteSourcePose === true'), 'converter should support an absolute rest-pose diagnostic mode');
 assert(fn.includes('sourceWeaponTrack.times.slice()'), 'converter should copy authored Weapon.R times directly');
 assert(fn.includes("ikMode === 'source-key-correction'") && fn.includes('solveTwoBoneIk(targetClone, upper, lower, hand, clampedTarget'), 'converter should use IK as a source-key correction layer');
-assert(fn.includes('quaternionFromBladeFrame(mappedBlade, mappedUp)') && fn.includes('weaponConfig.frameSolve !== false'), 'converter should solve WeaponGrip from mapped source blade/up frame instead of raw wrist-relative rotation');
+assert(fn.includes('quaternionFromBladeFrame(mappedBlade, mappedUp)') && fn.includes('weaponConfig.frameSolve !== false'), 'converter should retain opt-in WeaponGrip frame solve diagnostics');
+assert(fn.includes('const weaponTrackEnabled = weaponConfig.enabled === true && weaponConfig.experimentalWeaponSwing === true') && fn.includes('if (weaponTrackEnabled && sourceWeaponTrack)'), 'converter should emit weapon socket tracks only for explicitly experimental weapon swings');
 assert(fn.includes('closeQuaternionLoopSeams(tracks)') && fn.includes('loopSeamClosed'), 'converter should close generated quaternion seams while preserving source authored looping');
 assert(!fn.includes('clipSampleTimes('), 'accepted converter must not create a uniform sampled timeline');
 assert(!fn.includes('.optimize()'), 'accepted converter must not collapse or remove authored source keys');
 assert(profiles.includes("retargetMode: 'fps-upper-key-convert'"), 'Meshy profile should use the accepted converter');
 assert(profiles.includes('preserveLoopSeam: true'), 'Meshy FPS-SWORD-UPPER clips should preserve the authored cyclic return instead of clamping playback');
 assert(profiles.includes("sourceRestClip: '0T-Pose'") && profiles.includes("targetRestProvider: 'skin-bind'"), 'Meshy FPS-SWORD-UPPER should translate from FPS 0T-Pose rest into Meshy skin-bind rest');
-assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(-120)'), 'Meshy should generate the accepted FPS arm rest-pose CAL--120 clip');
+assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(0)'), 'Meshy T-pose bridge should not pre-apply the old -120 hand-roll offset');
 assert(profiles.includes("RestProbe: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe should select the exact accepted CAL--120 T-pose clip');
 assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe generated label should preserve the accepted CAL--120 origin path');
 assert(!profiles.includes('...[-150') && !profiles.includes('FPS-REST-ARMS-CAL-120') && !profiles.includes('FPS-REST-ARMS-CAL-90') && !profiles.includes('FPS-REST-ARMS-CAL--90'), 'Meshy should not generate rejected positive or sweep FPS arm rest-pose hand-roll clips');
@@ -36,7 +37,8 @@ assert(js.includes('preserveLoopSeam: spec.preserveLoopSeam === true'), 'auto re
 assert(profiles.includes("clipNames: [\n          'OneHandReady',\n        ]"), 'Meshy FPS-SWORD-UPPER should generate only OneHandReady in this slice');
 assert(profiles.includes('ikOrientationGuide: {') && profiles.includes("mode: 'source-key-correction'") && profiles.includes('replaceTracks: false'), 'active Meshy ready profile should use IK only as source-key correction');
 assert(profiles.includes("from: 'Hand.L', to: 'LeftHand'") && profiles.includes("from: 'Hand.R', to: 'RightHand'"), 'ready-only target should preserve mapped source hand keys');
-assert(profiles.includes('frameSolve: true') && profiles.includes('applyToHand: false'), 'Meshy profile should solve WeaponGrip without overriding the authored wrist');
+assert(!profiles.includes('weaponKeyConvert'), 'Meshy normal profile should not key synthetic WeaponR from source metadata');
+assert(profiles.includes("parentMode: 'hand-fk'") && profiles.includes("syntheticSourceSocketBone: ''"), 'Meshy WeaponGrip should follow RightHand through direct pure FK');
 assert(fn.includes('if (guidedTracks.length && !ikPreservesSourceTracks)') && fn.includes('ikCorrectedTrackCount'), 'source-key IK mode should correct existing tracks instead of replacing them');
 assert(profiles.includes("staticCorrectionClips: ['OneHandReady']"), 'held OneHandReady should use stable IK correction to avoid per-key twitch');
 assert(!profiles.includes("retargetMode: 'position-guided-arm',\n        clipTag: 'FPS-SWORD-UPPER'"), 'Meshy FPS-SWORD-UPPER must not dispatch sampled position-guided IK');

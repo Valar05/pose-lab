@@ -1,0 +1,33 @@
+{
+  "schema": "pose-lab-golden-contract-v1",
+  "id": "meshy-weapon-fk-contract",
+  "title": "Meshy Weapon FK Contract",
+  "status": "accepted",
+  "owner": "manual-golden",
+  "actor": "meshyCharacter",
+  "clips": [
+    "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+    "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]"
+  ],
+  "contract": [
+    "Manual weapon placement is production truth until explicitly replaced.",
+    "WeaponGrip is the authored pure FK socket directly under RightHand; the real sabre mesh is positioned under WeaponGrip/displayRoot by authored attachment offsets only.",
+    "Generated Meshy normal clips must not target WeaponGrip or WeaponR for weapon orientation, placement, or rotation.",
+    "FPS Weapon.R may be used only as an authoring/reference source; it is not a Meshy runtime acceptance target.",
+    "WeaponR may exist only in deprecated or explicitly experimental paths and must not gate green acceptance.",
+    "WeaponGrip local position and quaternion under RightHand must remain constant across T-pose, Ready, Walk, Run, and other normal non-weapon-swing clips.",
+    "The configured grip and measured visible mesh hilt must agree; runtime must not post-pin a different mesh point to make diagnostics green.",
+    "Browser and offline renderers must use the same weapon runtime rules before a visual fix is accepted."
+  ],
+  "protectedSurfaces": [
+    "src/rig-profiles.js",
+    "src/weapon-runtime-rules.mjs",
+    "src/meshy-ready-runtime.mjs",
+    "generated/workflow_state/meshy_fps_accepted_baseline.json"
+  ],
+  "evidenceCases": [
+    "meshy-tpose-weapon-in-hand",
+    "meshy-weapon-fk-pinning",
+    "visual-truth-parity"
+  ]
+}

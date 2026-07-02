@@ -4,6 +4,12 @@ import path from 'node:path';
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const evidencePath = path.join(projectRoot, 'generated', 'visual_red_build', 'pose_lab_latest.json');
 const htmlPath = path.join(projectRoot, 'pose-lab.html');
+const deprecatedCaptureKinds = new Set([
+  'android-screenshot',
+  'debug-bridge-visual-follow',
+  'visual-qa-blocked',
+  'visual-qa-capture',
+]);
 const failures = [];
 
 function assert(condition, message) {
@@ -41,33 +47,57 @@ if (fs.existsSync(evidencePath)) {
   assert(evidence.cacheToken === expectedCacheToken, `visual evidence cacheToken should match served token ${expectedCacheToken}`);
   assert(evidence.runtimeBuild === expectedRuntimeBuild, `visual evidence runtimeBuild should match LAB_BUILD ${expectedRuntimeBuild}`);
   assert(typeof evidence.visualRead === 'string' && evidence.visualRead.length >= 20, 'visual evidence should include a concrete visualRead');
+  assert(!deprecatedCaptureKinds.has(evidence.captureKind), `deprecated live capture evidence is not accepted for Meshy saber red builds: ${evidence.captureKind}`);
+  assert(evidence.captureKind === 'offline-pose-render', `visual red-build evidence must be offline-pose-render, got ${evidence.captureKind || 'missing'}`);
+  assert(evidence.actorKey === 'meshyCharacter', 'offline visual evidence should cover Meshy Character');
+  assert(String(evidence.clipName || '').includes('0T-Pose'), 'offline visual evidence should cover accepted FPS/Meshy T-pose calibration');
+  assert(String(evidence.clipName || '').includes('[FPS-REST-ARMS'), 'offline visual evidence should cover the accepted [FPS-REST-ARMS] calibration clip');
+  assert(evidence.motionEvidencePending === false, 'offline visual evidence must not defer motion evidence to a live capture path');
+  assert(evidence.liveVisualQa == null, 'offline visual evidence must not contain a liveVisualQa dependency');
 
-  if (evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked') {
-      assert(false, 'missing fresh visual evidence: capture Meshy Character accepted T-pose calibration on the current cache token before promoting any OneHandReady candidate');
-  } else {
-    assert(['android-screenshot', 'visual-qa-capture'].includes(evidence.captureKind), 'visual evidence should record a supported capture kind');
-    assert(typeof evidence.capturePath === 'string' && fs.existsSync(evidence.capturePath), 'visual evidence should point at an existing capture image');
-    assert(typeof evidence.reportPath === 'string' && fs.existsSync(evidence.reportPath), 'visual evidence should point at an existing visual QA report');
-    const report = JSON.parse(fs.readFileSync(evidence.reportPath, 'utf8'));
-    assert(report.ok === true, 'visual QA report referenced by evidence should be green');
-    assert(report.loadedBuild === expectedRuntimeBuild, `visual QA loadedBuild should match LAB_BUILD ${expectedRuntimeBuild}`);
-    assert(report.buildInfo?.cacheTokens?.includes(expectedCacheToken), `visual QA report should include cache token ${expectedCacheToken}`);
-    assert(report.beacons?.some((beacon) => beacon.stage === 'rendered'), 'visual QA report should include a rendered beacon');
-    assert(report.captures?.length >= 1, 'visual QA report should include captured frames');
+  assert(typeof evidence.capturePath === 'string' && fs.existsSync(path.isAbsolute(evidence.capturePath) ? evidence.capturePath : path.join(projectRoot, evidence.capturePath)), 'offline visual evidence should point at an existing rendered PNG');
+  assert(typeof evidence.reportPath === 'string' && fs.existsSync(path.isAbsolute(evidence.reportPath) ? evidence.reportPath : path.join(projectRoot, evidence.reportPath)), 'offline visual evidence should point at an existing offline render JSON');
 
-    const visual = evidence.visualAssertions || {};
-    for (const key of ['moduleLoaded', 'actorRendered', 'clipActive', 'basicControlsVisible', 'uiRendered']) {
-      assert(visual[key] === true, `visual assertion must be true: ${key}`);
-    }
-    for (const key of ['meshyFpsSwordActorUpright', 'meshyFpsSwordNotCollapsed', 'landscapeCritiqueUsable', 'rightHandDisplacedFromIdle', 'upperBodySwordMotionReadable', 'lowerBodyNotAuthoredBySwordClip', 'realMeshySabreRequested', 'weaponRSocketImplemented']) {
-      assert(visual[key] === true, `visual assertion must be true: ${key}`);
-    }
-    assert(evidence.actorKey === 'meshyCharacter', 'visual evidence should cover Meshy Character');
-    assert(String(evidence.clipName || '').includes('0T-Pose'), 'visual evidence should cover accepted FPS/Meshy T-pose calibration');
-    assert(String(evidence.clipName || '').includes('[FPS-REST-ARMS'), 'visual evidence should cover the accepted [FPS-REST-ARMS] calibration clip');
-    assert(evidence.motionEvidencePending === false, 'usable-app evidence should include live visual capture, not defer motion evidence');
+  const reportPath = path.isAbsolute(evidence.reportPath) ? evidence.reportPath : path.join(projectRoot, evidence.reportPath);
+  const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+  assert(report.schema === 'pose-lab-offline-pose-weapon-render-v1', 'offline report should use schema pose-lab-offline-pose-weapon-render-v1');
+  assert(report.ok === true, 'offline pose+weapon report should be green');
+  assert(report.generatedClipResolved === true, `offline report should resolve the generated Pose Lab clip: ${JSON.stringify(report.generatedClipStats)}`);
+  assert(report.actor === evidence.actorKey, `offline report actor ${report.actor || 'missing'} should match evidence actor ${evidence.actorKey}`);
+  assert(report.clipRequested === evidence.clipName, `offline report requested clip ${report.clipRequested || 'missing'} should match evidence clip ${evidence.clipName}`);
+  assert(report.clipApplied === evidence.clipName, `offline report applied clip ${report.clipApplied || 'missing'} should match requested clip ${evidence.clipName}`);
+  assert(report.checks?.weaponMeshRendered === true, 'offline report should prove the real sabre mesh rendered');
+  assert(report.checks?.parentChainMatchesPureFkShape === true, 'offline report should prove RightHand -> WeaponGrip -> displayRoot pure FK ownership');
+  assert(report.checks?.appliedHiltPinnedToWeaponGrip === true, 'offline report should prove the applied hilt is pinned to WeaponGrip');
+  assert(report.checks?.weaponGripLocalStableUnderRightHand === true, 'offline report should prove WeaponGrip position stays locally stable under RightHand');
+  assert(report.checks?.weaponGripQuaternionStableUnderRightHand === true, 'offline report should prove WeaponGrip rotation stays locally stable under RightHand');
+  assert(report.generatedClipStats?.weaponTrackEnabled !== true && report.generatedClipStats?.weaponTrackTarget == null, 'offline report should prove normal Meshy clips do not emit WeaponR/WeaponGrip weapon tracks');
+  assert(report.checks?.visibleMeshHiltLandmarkPresent === true, 'offline report should expose a hilt landmark derived from the real sabre mesh');
+  assert(report.checks?.visibleMeshTipLandmarkPresent === true, 'offline report should expose a tip landmark derived from the real sabre mesh');
+  assert(report.checks?.visibleMeshHiltPinnedToWeaponGrip === true, 'offline report should prove the real mesh hilt is near WeaponGrip, not only the configured grip point');
+  assert(report.checks?.visibleMeshHiltMatchesAppliedHilt === true, 'offline report should prove the mesh-derived hilt matches the configured applied hilt');
+  assert(Number.isFinite(report.maxDistances?.palmTargetToAppliedHilt), 'offline report must expose finite palm-target-to-hilt distance');
+  assert(Number.isFinite(report.maxDistances?.rawHandToAppliedHilt), 'offline report must expose finite raw-hand-to-hilt distance');
+  assert(Number.isFinite(report.maxDistances?.visibleMeshHiltToWeaponGrip), 'offline report must expose finite real-mesh-hilt-to-WeaponGrip distance');
+  assert(Number.isFinite(report.maxDistances?.visibleMeshHiltToRawHand), 'offline report must expose finite real-mesh-hilt-to-raw-hand distance');
+  assert(report.maxDistances.rawHandToAppliedHilt > 0.01, `offline report should not collapse applied hilt onto raw wrist: ${report.maxDistances.rawHandToAppliedHilt}`);
+
+  const visual = evidence.visualAssertions || {};
+  for (const key of [
+    'offlineRendererIsTierOneTruth',
+    'generatedClipResolved',
+    'clipAppliedEqualsRequested',
+    'realMeshySabreRendered',
+    'pureFkParentChainImplemented',
+    'weaponGripPinnedToRightHandFk',
+    'appliedHiltPinnedToWeaponGrip',
+    'visibleMeshHiltPinnedToWeaponGrip',
+    'fpsWeaponRReferenceOnly',
+    'hiltHandRelationshipExposed',
+  ]) {
+    assert(visual[key] === true, `offline visual assertion must be true: ${key}`);
   }
 }
 
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['pose-lab-visual-evidence'], evidencePath: path.relative(projectRoot, evidencePath), cacheToken: expectedCacheToken }, null, 2));
+console.log(JSON.stringify({ checked: ['pose-lab-offline-visual-evidence'], evidencePath: path.relative(projectRoot, evidencePath), cacheToken: expectedCacheToken }, null, 2));

@@ -80,11 +80,41 @@ Meshy/FPS ready, saber, and retarget experiments are candidate-only by default. 
 
 Do not wire a candidate to `startupClip`, `SwordReady`, `RestProbe`, or `visibleClipPatterns` manually. If a change needs to become user-facing, produce fresh visual evidence and metric evidence, then run the promotion gate. Source-string tests can support the change, but they cannot promote it.
 
+## Generated Clip Churn Control
+
+Generated clips must be owned by exact `generationGroup` metadata, not broad string prefixes. Replacing `mapped-arms:player->meshyCharacter:FPS-VISUAL-IK` must not delete `mapped-arms:player->meshyCharacter:FPS-SWORD-UPPER`, the accepted rest calibration, native Meshy clips, or any sibling candidate. Auto-retarget specs must declare both `clipTag` and `originPrefix`, and the runtime rejects prefix-related generated groups at startup.
+
+Diagnostic workspaces are evidence producers only. They may write generated reports and review artifacts, but they must not write `src/rig-profiles.js`, accepted workflow state, startup defaults, aliases, weapon visibility, manual socket/landmark values, or production-shaped override snippets. Use `node tools/test_generated_clip_group_replacement_does_not_delete_siblings.mjs` and `node tools/test_diagnostics_cannot_write_production_surfaces.mjs` before another Meshy retarget pass.
+
+## Weapon FK Attachment Rule
+
+For Meshy one-hand saber review, `WeaponGrip` follows `RightHand` through FK parenting. Active ready candidates must not emit `WeaponGrip.quaternion` tracks unless the experiment explicitly enables socket animation. The manually authored socket and attachment values remain the visual standard; the FK parent converts those saved offsets into hand-local placement once, then hand rotation drives the saber.
+
+`FPS-VISUAL-IK-GOLDEN` is the saved world-joint-projection record for `OneHandReady`: right-hand roll `-120`, left-hand roll `-90`. Do not re-add one-size roll sweep candidates unless the user explicitly asks for new comparison clips.
+
+Before asking for another browser retest on weapon attachment, run:
+
+```sh
+node tools/test_weapon_fk_follow_offline.mjs
+```
+
+This loads the actual Meshy animated GLB and Meshy sabre GLB, recreates the runtime `RightHand -> WeaponGrip -> WeaponGrip-display-root -> model/tip` hierarchy, samples animation, and writes `generated/test_runs/weapon-fk-follow-*/weapon_fk_follow_offline.json` plus an SVG trace. The test must prove the hand, socket, display root, model, and tip all move while socket/display/model local drift stays near zero.
+
+For live browser verification without Android `screencap`, start the debug bridge and run `weapon visual-follow` after selecting the Meshy actor and ready clip. Prefer the wrapper:
+
+```sh
+node tools/pose_lab_weapon_visual_follow.mjs --bridge http://127.0.0.1:8899 --out generated/weapon_visual_follow/meshy_ready
+```
+
+It saves a rendered contact-sheet PNG plus JSON with the loaded cache token, parent chain, screen-space motion, and relative-drift checks. `weapon follow` is still useful for quick transform narrowing, but it is not enough to close a visual red build.
+
+Do not use `weapon visual-follow probe` as acceptance evidence. Probe mode force-rotates `RightHand` after the weapon baseline has already been built, so it only proves the child hierarchy can respond to an injected transform; the real target is the non-probe ready-clip capture.
+
 ## Deep Ocean 2026-06-30: Meshy Saber Placement Pain
 
 ### Knowledge Capture
 
-- The accepted Meshy/FPS animation baseline remains `0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]`. Do not promote `OneHandReady`, attack clips, or retarget candidates by name-only edits.
+- The accepted Meshy/FPS animation baselines are `0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]` and `OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]`. Do not promote attack clips or new retarget candidates by name-only edits.
 - Saber placement must be tuned as a visible 3D attachment problem, not by repeated blind edits to `modelLocalOffset`, `gripLocalPosition`, or Euler values.
 - The real Meshy saber attachment has two distinct anchors: the synthetic socket (`WeaponGrip`) and the model-local grip landmark (`gripLocalPosition`). If the visible hand does not match the hilt/finger grip center, first expose a gizmo or landmark picker instead of guessing offsets.
 - Cache tokens are part of visual truth in this browser lab. After changing runtime JS/CSS/profile imports, bump the `pose-editor-*` token before asking for screenshot feedback.
@@ -134,7 +164,7 @@ Use the live browser plus the visual QA harness as the capture path.
 1. Start from the actual page URL in the Android browser.
 2. If the visible UI looks stale, refresh or bump the cache token before judging the change.
 3. Use the visual QA report for frame sequences and the newest Android screenshot for browser chrome or DOM visibility.
-4. Do not use the old standalone `screencap` path.
+4. Do not use the old standalone `screencap` path; it is deprecated for Pose Lab visual proof. Use a user-provided Android screenshot, the live browser, or the visual QA harness instead.
 
 ## UX Critique Skill
 

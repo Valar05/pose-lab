@@ -24,6 +24,7 @@ export function clipLabel(clip) {
   const sourceName = String(clip?.userData?.sourceName || clip?.name || 'clip');
   if (clip?.userData?.sourceReduction) return String(clip?.name || sourceName);
   if (origin.startsWith('cleanup:')) return sourceName + ' [clean]';
+  if (origin.startsWith('mapped-arms:') && /\[[^\]]+\]/.test(String(clip?.name || ''))) return String(clip.name);
   if (origin.startsWith('mapped-arms:')) return sourceName + ' -> ' + origin.split('->').pop();
   if (origin.startsWith('own:')) return sourceName;
   return String(clip?.name || sourceName);

@@ -1,39 +1,45 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
-const js = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
-const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
-const manifest = fs.readFileSync(path.join(projectRoot, 'assets', 'asset_manifest.json'), 'utf8');
+const toolPath = path.join(projectRoot, 'tools', 'pose_lab_offline_render.mjs');
+const out = path.join(projectRoot, 'generated', 'test_runs', `meshy-full-body-weapon-${process.pid}`);
 const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
 
-assert(fs.existsSync(path.join(projectRoot, 'assets/source/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb')), 'source Meshy sabre GLB should be preserved');
-assert(fs.existsSync(path.join(projectRoot, 'assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb')), 'runtime Meshy sabre GLB should exist');
-assert(profiles.includes("weaponAttachment: {"), 'Meshy profile should define a real weapon attachment');
-assert(profiles.includes("url: 'assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb'"), 'weapon attachment should use the downloaded Meshy sabre runtime GLB');
-assert(profiles.includes("socketBone: 'WeaponGrip'") && profiles.includes("tipMarker: 'WeaponGrip_end'"), 'weapon attachment should expose the centered WeaponGrip and WeaponGrip_end');
-assert(profiles.includes('scale: 0.47493') && profiles.includes('rotationDeg: [90, 0, -55.145]'), 'Meshy weapon attachment should use the saved 3D gizmo rotation');
-assert(profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]') && profiles.includes('tipLocalPosition: [-0.95561, 0.1368, 0]'), 'Meshy weapon attachment should preserve the semantic landmark hilt candidate and track the real blade tip');
-assert(profiles.includes('gripLocalPosition: [0.67888, -0.07803, -0.06249]'), 'FPS weapon attachment should preserve the semantic landmark hilt candidate');
-assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]'), 'Meshy weapon socket should move from wrist bone origin toward visual hand mesh and palm center');
-assert(profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]'), 'Meshy weapon socket should use the saved 3D gizmo model-space placement');
-assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy weapon socket should rotate from the hand origin without shifting the socket');
-assert(js.includes('const root = new THREE.Bone();') && js.includes('root.userData.syntheticWeaponBone = true') && js.includes('root.userData.twoHandCenteredWeaponBone = Boolean(leftHand && !sourceSocket') && js.includes('root.userData.positionMode = config.positionMode') && js.includes('root.userData.sourceSocketBone = sourceSocket?.name ||'), 'weapon socket should support synthetic sockets, selectable one-hand/two-hand positioning, and authored source-socket inheritance');
-assert(js.includes('proxy.rightHand.localToWorld(new THREE.Vector3().fromArray(proxy.config.handLocalOffset))'), 'weapon socket should support hand-local offsets for visual palm-center grip');
-assert(js.includes('proxy.config.modelLocalOffset') && js.includes('local.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset))'), 'weapon socket should support model-space offsets for screenshot-directed placement');
-assert(profiles.includes("positionMode: 'right-hand'"), 'Meshy one-hand saber should place WeaponGrip on the right hand instead of the two-hand midpoint');
-assert(js.includes('attachWeaponAttachment(weaponRoot, config = {})'), 'runtime should attach a real weapon model to the socket');
-assert(js.includes('visibleClipPatterns') && js.includes("patterns.some((pattern) => new RegExp(pattern).test(clip?.name || ''))"), 'weapon should be visible for configured sword clip patterns');
-assert(js.includes('LAB_CACHE_TOKEN') && js.includes('cacheToken: LAB_CACHE_TOKEN'), 'live weapon diagnostics should report the loaded cache token so stale tabs are obvious');
-assert(js.includes('weaponDebugForceVisible()') && js.includes('weaponDebugForceVisible: weaponDebugForceVisible()'), 'live weapon diagnostics should report the explicit force-visible debug override');
-for (const metric of ['hiltToHandDistance', 'bladeLength', 'basketFrontErrorDeg', 'socketForwardToBladeErrorDeg']) {
-  assert(js.includes(metric), `live weapon diagnostics should expose ${metric}`);
-}
-assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'") && profiles.includes("sourceHand: 'Hand.R'") && profiles.includes("leftHandBone: 'LeftHand'"), 'FPS-SWORD-UPPER should convert authored Hand.R/Weapon.R upper-body contribution and keep a Meshy socket');
-assert(!profiles.includes("{ from: 'mixamorigHips', to: 'Hips'"), 'rejected full-body hips mapping must not remain');
-assert(manifest.includes('meshy_french_revolution_sabre_runtime_glb') && manifest.includes('WeaponGrip'), 'asset manifest should document the Meshy sabre runtime socket');
-assert(manifest.includes('meshy_character_sheet_fps_sword_upper_clip_binding'), 'asset manifest should document the FPS sword upper-body Meshy clip binding');
+const sourceSabre = path.join(projectRoot, 'assets/source/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb');
+const runtimeSabre = path.join(projectRoot, 'assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb');
+assert(fs.existsSync(sourceSabre), 'source Meshy sabre GLB should be preserved');
+assert(fs.existsSync(runtimeSabre), 'runtime Meshy sabre GLB should exist');
+
+const output = execFileSync('node', [toolPath, '--out', out, '--samples', '3'], { cwd: projectRoot, encoding: 'utf8' });
+const result = JSON.parse(output.slice(output.indexOf('{')));
+const artifactPath = path.join(projectRoot, result.path);
+const pngPath = path.join(projectRoot, result.png);
+const artifact = JSON.parse(fs.readFileSync(artifactPath, 'utf8'));
+
+assert(fs.existsSync(artifactPath), `missing offline artifact ${artifactPath}`);
+assert(fs.existsSync(pngPath), `missing offline render PNG ${pngPath}`);
+assert(fs.statSync(pngPath).size > 1000, `offline render PNG should not be empty: ${pngPath}`);
+assert(artifact.actor === 'meshyCharacter', `artifact should render Meshy Character, got ${artifact.actor}`);
+assert(artifact.weaponAsset === 'assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb', `artifact should render the real Meshy sabre: ${artifact.weaponAsset}`);
+assert(artifact.checks?.weaponMeshRendered === true, 'artifact should render the real sabre mesh point cloud');
+assert(artifact.checks?.appliedHiltPinnedToWeaponGrip === true, `real sabre hilt should be pinned to WeaponGrip: ${JSON.stringify(artifact.hiltSocketDistances)}`);
+assert(artifact.checks?.parentChainMatchesPureFkShape === true, `weapon should use direct RightHand -> WeaponGrip pure FK hierarchy: ${JSON.stringify(artifact.sampleData?.[0]?.parentChain)}`);
+assert(artifact.checks?.weaponGripLocalStableUnderRightHand === true, `WeaponGrip should stay locally stable under RightHand: ${JSON.stringify(artifact.maxLocalDrift)}`);
+assert(artifact.checks?.weaponGripQuaternionStableUnderRightHand === true, `WeaponGrip rotation should stay locally stable under RightHand: ${JSON.stringify(artifact.maxLocalDrift)}`);
+assert(artifact.checks?.displayRootLocalStableUnderWeaponGrip === true, `display root should stay stable under WeaponGrip: ${JSON.stringify(artifact.maxLocalDrift)}`);
+assert(artifact.checks?.weaponMeshLocalStableUnderDisplayRoot === true, `real weapon mesh should stay stable under display root: ${JSON.stringify(artifact.maxLocalDrift)}`);
+assert(artifact.checks?.appliedHiltAwayFromRawHand === true, `hilt should not collapse onto wrist/hand: ${JSON.stringify(artifact.maxDistances)}`);
+assert(artifact.sampleData?.every((sample) => Array.isArray(sample.weaponMesh) && sample.weaponMesh.length > 50), 'each sample should include real weapon mesh points');
+assert(artifact.sampleData?.every((sample) => sample.weapon?.model && sample.weapon?.configuredGrip && sample.weapon?.appliedHilt && sample.weapon?.tip), 'each sample should include model, configured grip, applied hilt, and tip landmarks');
+assert(artifact.sampleData?.every((sample) => sample.weaponPinning?.checks?.appliedHiltPinnedToSocket === true), 'shared pinning state should prove hilt-to-socket attachment each frame');
+assert(artifact.ok === true, `full-body Meshy weapon attachment artifact should be green: ${JSON.stringify(artifact.checks)}`);
 
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['meshy-upper-body-fps-sword', 'real-sabre-weapongrip-attachment', 'manifested-sabre-provenance'] }, null, 2));
+console.log(JSON.stringify({
+  checked: ['meshy-full-body-real-sabre-rendered', 'hilt-pinned-to-weapongrip', 'right-hand-pure-fk-stability'],
+  artifact: result.path,
+  png: result.png,
+}, null, 2));
