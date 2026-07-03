@@ -125,15 +125,23 @@ async function downloadArtifact(runId) {
   const artifact = await artifactForRun(runId);
   const downloadUrl = artifact.archive_download_url;
   const response = await fetch(downloadUrl, { headers: githubHeaders(), redirect: 'follow' });
-  if (!response.ok) throw new Error(`artifact download failed ${response.status} ${response.statusText}`);
   fs.rmSync(outRoot, { recursive: true, force: true });
   fs.mkdirSync(outRoot, { recursive: true });
-  const zipPath = path.join(outRoot, 'firebase-visual-truth.zip');
-  fs.writeFileSync(zipPath, Buffer.from(await response.arrayBuffer()));
   const artifactDir = path.join(outRoot, 'artifact');
   fs.mkdirSync(artifactDir, { recursive: true });
-  run('unzip', ['-o', zipPath, '-d', artifactDir]);
-  return { artifact, zipPath, artifactDir };
+  const zipPath = path.join(outRoot, 'firebase-visual-truth.zip');
+  if (response.ok) {
+    fs.writeFileSync(zipPath, Buffer.from(await response.arrayBuffer()));
+    run('unzip', ['-o', zipPath, '-d', artifactDir]);
+    return { artifact, zipPath, artifactDir, downloadMethod: 'github-rest' };
+  }
+
+  if (response.status === 401 || response.status === 403) {
+    run('gh', ['run', 'download', String(runId), '--repo', repoFullName, '--name', 'firebase-visual-truth', '--dir', artifactDir]);
+    return { artifact, zipPath: '', artifactDir, downloadMethod: 'gh-run-download' };
+  }
+
+  throw new Error(`artifact download failed ${response.status} ${response.statusText}`);
 }
 
 function localPreflight() {
@@ -204,6 +212,7 @@ if (args.download) {
     size: downloaded.artifact.size_in_bytes,
     zipPath: downloaded.zipPath,
     artifactDir: downloaded.artifactDir,
+    downloadMethod: downloaded.downloadMethod,
   };
 }
 

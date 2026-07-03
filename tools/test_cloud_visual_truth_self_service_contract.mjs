@@ -14,7 +14,8 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.j
 assert(selfService.includes('pose-lab-cloud-visual-truth-self-service-v1'), 'self-service tool should write a stable ledger schema');
 assert(selfService.includes("run('git', ['push'])"), 'self-service tool should use git push to trigger the existing PR workflow');
 assert(!selfService.includes('gh workflow run'), 'self-service tool must not depend on gh workflow dispatch');
-assert(!selfService.includes("run('gh'"), 'self-service tool must not invoke gh workflow dispatch');
+assert(!selfService.includes("'workflow', 'run'"), 'self-service tool must not invoke gh workflow dispatch');
+assert(selfService.includes("'run', 'download'"), 'self-service tool should use authenticated gh artifact download fallback');
 assert(selfService.includes('actions/runs?head_sha='), 'self-service tool should poll workflow runs by commit SHA');
 assert(selfService.includes('firebase-visual-truth'), 'self-service tool should fetch the Firebase visual truth artifact');
 assert(selfService.includes('tools/inspect_firebase_visual_artifact.mjs'), 'self-service tool should call the artifact inspector');
