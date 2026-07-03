@@ -28,8 +28,9 @@ assert(captureScript.includes("url.searchParams.set('qaActor', 'meshyCharacter')
 assert(captureScript.includes('selected Meshy Character'), 'Firebase capture should wait for the hosted page to actually select Meshy Character');
 assert(captureScript.includes('null, { timeout: 120000 }'), 'Firebase capture should pass the wait timeout as Playwright options');
 assert(captureScript.includes('if (!evidence.ok) process.exitCode = 1'), 'Firebase capture should fail the workflow while preserving evidence');
-assert(workflow.includes('lfs: true') && workflow.includes('git lfs pull'), 'Firebase workflow must fetch Git LFS assets before staging');
-assert(workflow.includes('Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb') && workflow.includes('-gt 1000000'), 'Firebase workflow must fail if Meshy GLBs are LFS pointer files');
+assert(!workflow.includes('lfs: true'), 'Firebase workflow must not fetch every LFS object; legacy LFS history has missing objects');
+assert(workflow.includes('git lfs pull --include="assets/models/meshy_character_sheet/**,assets/models/meshy_sabre/**"'), 'Firebase workflow must fetch only Meshy runtime LFS assets before staging');
+assert(workflow.includes('Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb') && workflow.includes('Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb') && workflow.includes('-gt 1000000'), 'Firebase workflow must fail if Meshy GLBs are LFS pointer files');
 assert(gitignore.includes('/generated/firebase_hosting/'), 'generated Firebase staging output should stay untracked');
 assert(gitignore.includes('/generated/firebase_visual_truth/artifacts/'), 'Firebase screenshot artifacts should stay untracked');
 
