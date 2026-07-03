@@ -68,6 +68,9 @@ assert(ready?.cloudTelemetry?.visualFollow?.ok === true, 'Ready cloud evidence m
 assert(ready?.evaluation?.checks?.realWeaponVisible === true, 'Ready cloud evidence must prove real weapon visibility');
 assert(ready?.evaluation?.checks?.parentChain === true, 'Ready cloud evidence must prove FK parent chain');
 assert(ready?.evaluation?.checks?.hiltPinnedToSocket === true, 'Ready cloud evidence must prove hilt pinning');
+assert(ready?.evaluation?.checks?.handLocalGripOffsetVisible === true, 'Ready cloud evidence must prove hand-local grip offset is visibly separated from the raw wrist');
+assert(ready?.evaluation?.checks?.hiltAwayFromRawHand === true, 'Ready cloud evidence must prove the hilt has not collapsed onto the raw hand/wrist');
+assert(ready?.evaluation?.checks?.readyHandOrientationSane === true, 'Ready cloud evidence must prove the hand orientation/grip basis is visually sane');
 assert(ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true, 'Ready cloud evidence must prove hand and saber tip move together');
 assert(evidence.truthLedger?.tposeStableIdle === true, 'truth ledger must mark T-pose stable idle green');
 assert(evidence.truthLedger?.readyBoringFk === true, 'truth ledger must mark Ready boring FK green');

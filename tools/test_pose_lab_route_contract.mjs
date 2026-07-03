@@ -32,6 +32,8 @@ assert(route.route?.requiredArtifacts?.includes('generated/firebase_visual_truth
 assert(route.route?.acceptance?.includes('truthLedger.tposeStableIdle === true'), 'weapon-fk route must require T-pose stable idle cloud truth');
 assert(route.route?.acceptance?.includes('truthLedger.readyBoringFk === true'), 'weapon-fk route must require Ready boring FK cloud truth');
 assert(route.route?.acceptance?.includes('captures[ready].evaluation.checks.tipTracksHand === true'), 'weapon-fk route must require saber tip to track hand in cloud');
+assert(route.route?.acceptance?.includes('captures[ready].evaluation.checks.hiltAwayFromRawHand === true'), 'weapon-fk route must reject hilt collapse onto the raw hand/wrist');
+assert(route.route?.acceptance?.includes('captures[ready].evaluation.checks.readyHandOrientationSane === true'), 'weapon-fk route must reject Ready hand-orientation visual regressions');
 assert(route.route?.forbiddenProof?.some((item) => item.includes('source-string tests')), 'route must explicitly demote source-string tests as final visual proof');
 assert(route.route?.forbiddenProof?.some((item) => item.includes('screencap')), 'route must forbid deprecated screencap acceptance');
 assert(route.route?.forbiddenProof?.some((item) => item.includes('offline render')), 'route must forbid offline render acceptance');

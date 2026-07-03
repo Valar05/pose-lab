@@ -47,17 +47,17 @@ The evidence target is:
 generated/firebase_visual_truth/latest/visual_truth.json
 ```
 
-Screenshots and hosted debug telemetry are workflow artifacts, not local Android evidence. The artifact is the engineering gate for Meshy saber acceptance: `ok` may be true only when T-pose stable idle and Ready boring FK both pass in the hosted Firebase browser.
+Screenshots and hosted debug telemetry are workflow artifacts, not local Android evidence. The artifact is the engineering gate for Meshy saber acceptance: `ok` may be true only when T-pose stable idle and Ready boring FK both pass in the hosted Firebase browser. Ready must also prove the visible hand/grip basis is sane: the authored grip offset and applied hilt cannot collapse onto the raw wrist/hand, even if direct FK parent-chain telemetry is stable.
 
-Known working checkpoint:
+False-pass checkpoint preserved for regression:
 
-- Commit: `22e87926b73e5a4623154a39c8a682517af94f09`
-- GitHub Actions run: `28632638640`
-- Hosted preview: `https://pose-lab-visual-truth--visual-truth-28632638640-eprz32rp.web.app`
+- Commit: `9bf57c6da686c6baf7594ddcf5ce29237bd3b494`
+- GitHub Actions run: `28635928905`
+- Hosted preview: `https://pose-lab-visual-truth--visual-truth-28635928905-qd6mehpu.web.app`
 - Artifact: `firebase-visual-truth`
-- Captures: `tpose.png`, `ready.png`, `visual_truth.json`
-- Runtime route: Meshy Character selected for both configured clips.
+- Captures: `tpose.png`, `ready.png`, `ready_visual_follow.png`, `visual_truth.json`
+- Runtime route: Meshy Character selected for both configured clips, but human screenshot truth was red: Ready hand orientation/grip basis was wrong and the hilt/marker collapsed around the wrist. This run must never be treated as an accepted green.
 
 ## Rule
 
-Do not use Firebase/cloud screenshots to tune offsets blindly. Use them to establish hosted visual truth. If the hosted screenshot or telemetry is red, preserve the red evidence and fix the layer identified by the Firebase artifact. Offline render is diagnostic-only and cannot override Firebase truth.
+Do not use Firebase/cloud screenshots to tune offsets blindly. Use them to establish hosted visual truth. If the hosted screenshot or telemetry is red, preserve the red evidence and fix the layer identified by the Firebase artifact. Direct FK, marker pinning, or source-string tests cannot override a visible hand-orientation or grip-collapse failure. Offline render is diagnostic-only and cannot override Firebase truth.

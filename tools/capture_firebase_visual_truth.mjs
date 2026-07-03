@@ -112,7 +112,10 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
     && followChecks.socketQuaternionStableInHand === true
     && followChecks.displayStableInSocket === true
     && followChecks.modelStableInDisplay === true
+    && followChecks.handLocalGripOffsetVisible === true
     && followChecks.appliedHiltPinnedToAuthoredSocket === true
+    && followChecks.appliedHiltAwayFromRawHand === true
+    && followChecks.readyHandOrientationSane === true
     && followChecks.realWeaponVisible === true;
   if (!routeSelected) failures.push('hosted route did not select Meshy Character');
   if (weapon?.ok !== true) failures.push(`weapon debug failed: ${compactError(weapon?.error)}`);
@@ -125,6 +128,9 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
   if (followChecks.displayStableInSocket !== true || followChecks.modelStableInDisplay !== true) failures.push(`Ready display/model are not stable under FK layers: ${JSON.stringify(relativeDrift)}`);
   if (followChecks.socketTipLineVisible !== true || followChecks.visibleAppliedHiltMarker !== true) failures.push(`Ready visible hilt/tip markers failed: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.appliedHiltPinnedToAuthoredSocket !== true) failures.push(`Ready hilt is not pinned to authored socket: ${JSON.stringify(screenMetrics)}`);
+  if (followChecks.handLocalGripOffsetVisible !== true) failures.push(`Ready hand local grip offset is not visible; hand orientation/grip basis collapsed to raw wrist: ${JSON.stringify(screenMetrics)}`);
+  if (followChecks.appliedHiltAwayFromRawHand !== true) failures.push(`Ready hilt collapsed onto raw hand/wrist instead of the authored visible grip offset: ${JSON.stringify(screenMetrics)}`);
+  if (followChecks.readyHandOrientationSane !== true) failures.push(`Ready hand orientation/grip evidence is not visually sane: ${JSON.stringify(screenMetrics)}`);
   if (!staticDirectFkProof) {
     if (!isFiniteNumber(screenMotion.hand) || !isFiniteNumber(screenMotion.tip)) failures.push(`Ready motion metrics are not finite: ${JSON.stringify(screenMotion)}`);
     if (Number(screenMotion.hand) <= 0.25) failures.push(`Ready hand did not visibly move in cloud capture: ${JSON.stringify(screenMotion)}`);
@@ -143,6 +149,9 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
       displayStableInSocket: followChecks.displayStableInSocket === true,
       modelStableInDisplay: followChecks.modelStableInDisplay === true,
       hiltPinnedToSocket: followChecks.appliedHiltPinnedToAuthoredSocket === true,
+      handLocalGripOffsetVisible: followChecks.handLocalGripOffsetVisible === true,
+      hiltAwayFromRawHand: followChecks.appliedHiltAwayFromRawHand === true,
+      readyHandOrientationSane: followChecks.readyHandOrientationSane === true,
       socketTipLineVisible: followChecks.socketTipLineVisible === true,
       staticDirectFkProof,
       handMoves: Number(screenMotion.hand) > 0.25,

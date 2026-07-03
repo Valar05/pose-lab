@@ -70,6 +70,8 @@ function routeFor(args) {
         'captures[tpose].evaluation.checks.acceptedHiltOracle === true',
         'captures[tpose].evaluation.checks.realWeaponVisible === true',
         'captures[ready].evaluation.checks.realWeaponVisible === true',
+        'captures[ready].evaluation.checks.hiltAwayFromRawHand === true',
+        'captures[ready].evaluation.checks.readyHandOrientationSane === true',
         'captures[ready].evaluation.checks.handMoves === true',
         'captures[ready].evaluation.checks.tipTracksHand === true',
       ],

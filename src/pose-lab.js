@@ -11566,12 +11566,17 @@ class PoseLab {
       socketTipLineVisible: screenMetrics.minSocketToTipPx > 10,
       configuredGripScreenMetricPresent: Number.isFinite(Number(screenMetrics.maxHandToConfiguredGripPx)),
       appliedHiltScreenMetricPresent: Number.isFinite(Number(screenMetrics.maxHandToAppliedHiltPx)),
+      handLocalGripOffsetVisible: Number.isFinite(Number(screenMetrics.maxHandToConfiguredGripPx)) && screenMetrics.maxHandToConfiguredGripPx > 8,
       appliedHiltPinnedToAuthoredSocket: Number.isFinite(Number(screenMetrics.maxSocketToAppliedHiltPx)) && screenMetrics.maxSocketToAppliedHiltPx <= 8,
       socketPinnedToHandBaseline: Number.isFinite(Number(screenMetrics.maxHandBaselineToSocketPx)) && screenMetrics.maxHandBaselineToSocketPx <= 8,
       appliedHiltPinnedToHandBaseline: Number.isFinite(Number(screenMetrics.maxHandBaselineToAppliedHiltPx)) && screenMetrics.maxHandBaselineToAppliedHiltPx <= 8,
       socketPinnedToPalmTarget: Number.isFinite(Number(screenMetrics.maxPalmTargetToSocketPx)) && screenMetrics.maxPalmTargetToSocketPx <= 8,
       appliedHiltPinnedToPalmTarget: Number.isFinite(Number(screenMetrics.maxPalmTargetToAppliedHiltPx)) && screenMetrics.maxPalmTargetToAppliedHiltPx <= 8,
       appliedHiltAwayFromRawHand: Number.isFinite(Number(screenMetrics.maxHandToAppliedHiltPx)) && screenMetrics.maxHandToAppliedHiltPx > 8,
+      readyHandOrientationSane: Number.isFinite(Number(screenMetrics.maxHandToConfiguredGripPx))
+        && Number.isFinite(Number(screenMetrics.maxHandToAppliedHiltPx))
+        && screenMetrics.maxHandToConfiguredGripPx > 8
+        && screenMetrics.maxHandToAppliedHiltPx > 8,
       fallbackHiddenWithRealWeapon: screenMetrics.fallbackHiddenWithRealWeapon === true,
       realWeaponVisible: screenMetrics.realWeaponVisible === true,
       visibleAppliedHiltMarker: screenMetrics.appliedHiltMarkerDrawn === true,
@@ -11585,7 +11590,10 @@ class PoseLab {
       && checks.modelStableInDisplay
       && checks.modelQuaternionStableInDisplay
       && checks.socketTipLineVisible
+      && checks.handLocalGripOffsetVisible
       && checks.appliedHiltPinnedToAuthoredSocket
+      && checks.appliedHiltAwayFromRawHand
+      && checks.readyHandOrientationSane
       && checks.fallbackHiddenWithRealWeapon
       && checks.realWeaponVisible
       && checks.visibleAppliedHiltMarker

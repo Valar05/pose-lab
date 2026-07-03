@@ -27,6 +27,8 @@ assert(captureTool.includes('evaluateTpose') && captureTool.includes('evaluateRe
 assert(firebaseContract.includes('truthLedger?.tposeStableIdle === true'), 'Firebase contract should require stable T-pose truth');
 assert(firebaseContract.includes('truthLedger?.readyBoringFk === true'), 'Firebase contract should require Ready boring FK truth');
 assert(firebaseContract.includes('tipTracksHand'), 'Firebase contract should require saber tip to track hand');
+assert(firebaseContract.includes('hiltAwayFromRawHand'), 'Firebase contract should reject hilt collapse onto the raw hand/wrist');
+assert(firebaseContract.includes('readyHandOrientationSane'), 'Firebase contract should reject Ready hand-orientation visual regressions');
 assert(captureTool.includes("offlineRender: 'diagnostic-only'"), 'Firebase capture should demote offline render to diagnostic-only');
 
 if (failures.length) throw new Error(failures.join('\n'));
