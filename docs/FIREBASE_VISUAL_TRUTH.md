@@ -97,6 +97,8 @@ If the screenshots are missing, stale, too distant, cropped badly, or unreadable
 
 If the human reports the cloud visual as red, stop promotion and preserve the contradiction until the screenshots and gate explain it.
 
+The exact URL woken on Android Chrome is part of the Firebase review. If that phone-visible page disagrees with the artifact, the result is red even when the workflow concluded success. A common false-green is: the artifact JSON says Ready passed, but the device screenshot shows the Ready URL rendering T-pose/rest first, or later shows `REVIEW ROUTE READY` while the blade axis and grip still do not read as a sane human-held Ready pose. The next loop must make the artifact, the woken URL, and the human screenshot converge; do not answer with telemetry or distance metrics alone.
+
 The evidence target is:
 
 ```text
@@ -135,6 +137,15 @@ Cloud-screenshot false-green checkpoint preserved for regression:
 - Hosted preview: `https://pose-lab-visual-truth--visual-truth-28640974375-g6thxcam.web.app/`
 - Human and screenshot review were red: `ready.png` showed an unacceptable Ready pose, wrong right-hand/grip basis, a saber hanging down-left instead of reading as a sane ready grip, and inconsistent selected-clip UI. `ready_visual_follow.png` was too distant and marker-heavy to prove visual parity.
 - Follow-up rule: a Firebase run may not pass until the cloud screenshots themselves prove the visual claim. Telemetry, marker checks, and `ok: true` are insufficient.
+
+Phone-wake false-green checkpoint preserved for regression:
+
+- Commit: `a92fa0bb6dc5b83644688db2d8b04d7c9b2f56b5`
+- GitHub Actions run: `28649227859`
+- Hosted preview: `https://pose-lab-visual-truth--visual-truth-pr-28649227859-lqwd19b7.web.app/`
+- Human Android screenshots: `/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-094627.png` and `/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-094631.png`
+- Human review was red: the first screenshot shows the Ready URL with `REVIEW RED` because the active visible clip is T-pose/rest; the second screenshot shows `REVIEW ROUTE READY`, but the blade/hilt relationship still does not read as an accepted Ready hand-held saber pose.
+- Follow-up rule: artifact green is not sufficient if the phone-visible cloud URL hydrates to a contradictory or human-red state. The gate must prove the exact woken URL, highlighted clip row, review banner, body pose, hilt position, and blade axis agree.
 
 ## Rule
 

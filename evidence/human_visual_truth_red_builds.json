@@ -40,6 +40,19 @@
         "default visible surface is not an accepted good default"
       ],
       "notes": "This preserves the false-green Firebase workflow result for run 28642688436 and the two Android screenshots from 2026-07-03 01:40. It generalizes the failure: object, route, clip, and marker presence are not visual relationship truth."
+    },
+    {
+      "commit": "a92fa0bb6dc5b83644688db2d8b04d7c9b2f56b5",
+      "reportedAt": "2026-07-03",
+      "authority": "human-phone-visible-cloud-review",
+      "url": "https://pose-lab-visual-truth--visual-truth-pr-28649227859-lqwd19b7.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&clip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&qaClip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&weaponDebug=1&cacheBust=firebase-visual-truth-1783068340507",
+      "issues": [
+        "Android Chrome screenshot 20260703-094627 shows the Ready URL with REVIEW RED because the active visible clip is T-pose/rest",
+        "Android Chrome screenshot 20260703-094631 shows REVIEW ROUTE READY but the blade/hilt relationship still does not read as an accepted Ready hand-held saber pose",
+        "workflow green and distance metrics did not capture the human-visible route hydration and blade-axis failure",
+        "the exact woken cloud URL is contradicted by phone-visible screenshots"
+      ],
+      "notes": "This preserves the false-green Firebase workflow result for run 28649227859. Artifact green is insufficient when the phone-visible hosted URL hydrates to a contradictory or human-red state."
     }
   ]
 }

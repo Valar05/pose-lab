@@ -45,6 +45,7 @@ Change `--kind` to `cache-server`, `pose-retarget`, `ui-state`, `promotion`, or 
 - Logic regression to avoid: running Playwright locally against a hosted Firebase URL is permitted as cloud-page control; treating local Playwright, localhost, offline render, or generated staging output as truth is not permitted.
 - User screenshots remain valid red-build reports. The fix path is to make the Firebase hosted visual truth artifact reproduce and prove the same pose/weapon layer, not to spend more time on local capture.
 - Human cloud-visual contradiction is a stop condition. Preserve the contradiction, inspect the cloud screenshots, and fix the gate before another success claim.
+- The phone-visible hosted URL is part of cloud truth. If Android Chrome shows the Ready URL selecting T-pose/rest, or shows `REVIEW ROUTE READY` while the blade axis and grip still look wrong, the artifact is false-green. Fix route hydration and visible relationship proof before another success claim.
 - Every visual fix needs a positive artifact and, when practical, a negative control that proves the artifact would fail on the known bad state.
 - If offline evidence is green while the user screenshot shows the saber out of hand, classify it as an offline truth mismatch and fix the offline/runtime parity layer before changing offsets.
 - Generated artifacts under `generated/` are evidence output, not app code. Commit them only when a workflow explicitly declares the artifact durable.

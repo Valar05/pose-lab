@@ -16,6 +16,7 @@ That means the architecture must match FPS first. Do not tune offsets, markers, 
 - The agent accepted marker, socket, cache-token, and generated-artifact evidence while the user repeatedly reported unchanged screenshots.
 - The agent accepted Firebase telemetry and green workflow status before inspecting the cloud screenshots that were supposed to be the visual authority.
 - The agent later inspected the screenshots but still accepted object/clip/marker presence as visual proof while missing the visible relationship failures: mutated T-pose wrist/saber relationship and non-accepted Ready hand/sword relationship.
+- The agent treated a green Firebase artifact as equivalent to the phone-visible manual review, even though the user's screenshots showed the warmed browser first rendering the wrong active clip for the Ready URL and then labeling `REVIEW ROUTE READY` while the hand/hilt/blade relationship still looked unacceptable.
 - The agent edited placement literals before proving that Meshy and FPS shared the same weapon architecture.
 - The agent documented and implied fixed states before the user accepted the visual result.
 - The agent let tests encode the broken Meshy-specific design, then used those tests as proof.
@@ -31,6 +32,7 @@ That means the architecture must match FPS first. Do not tune offsets, markers, 
 - Do not use success language for visual work until the evidence type matches the failure type and the user has not contradicted it.
 - Do not use success language for cloud visual work until the actual cloud screenshots have been inspected and described.
 - Do not use success language for cloud visual work until the expected visible relationship and actual visible relationship are compared explicitly.
+- Do not use success language after waking the cloud URL until the phone-visible browser state agrees with the artifact: requested clip, highlighted clip row, review banner, body pose, hilt position, and blade axis must all tell the same story.
 - Do not write victory documentation for unaccepted visual changes.
 - In a dirty repo, label every touched surface as one of:
   - accepted production edit
@@ -78,3 +80,17 @@ It may only be called fixed after the runtime architecture matches the stated re
 For Firebase visual-truth work, the accepted evidence path is screenshot-first: inspect `generated/firebase_visual_truth/latest/tpose.png`, `ready.png`, and `ready_visual_follow.png` before citing `visual_truth.json`, telemetry, or CI. If the screenshots are red, missing, stale, too distant, or unreadable, the run is red or blocked.
 
 Visible relationship truth is mandatory. T-pose must preserve the accepted wrist/saber relationship and default surface. Ready must visibly read as the intended hand/hilt/blade relationship. A marker, hilt coordinate, selected clip, route, or visible weapon mesh does not satisfy either relationship.
+
+## Phone-Visible Cloud Review Rule
+
+The Firebase artifact is not the final word if the exact URL woken on the device shows a different state. Android Chrome screenshots from the hosted Firebase URL are valid red-build evidence for route hydration, persistent UI state, and human visual readability.
+
+An unacceptable phone-visible cloud review includes any of these:
+
+- The URL requests Ready but the active clip, highlighted row, or visible pose is T-pose/rest.
+- The UI says `REVIEW ROUTE READY` while the hand/hilt/blade relationship still reads wrong to a human.
+- The saber is present but its blade axis does not read as held by the posed hand.
+- A marker, hilt offset distance, or green JSON result is used to excuse a visually wrong grip.
+- A share sheet, browser overlay, stale tab, or post-wake state makes the supposed proof unreadable.
+
+When this happens, preserve the contradiction as human red-build evidence. The next implementation pass must fix the gate so the cloud artifact and phone-visible browser review converge before claiming progress.
