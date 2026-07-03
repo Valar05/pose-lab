@@ -5756,6 +5756,25 @@ class PoseLab {
     return state;
   }
 
+  enforceReviewRequestedClip(actor = this.actors.get(this.selected)) {
+    const requestedClip = this.visualQa?.clip || '';
+    if (!actor || !requestedClip) return null;
+    const activeClip = actor.activeClip?.() || actor.activeAction?._clip || null;
+    if (activeClip && (clipLabel(activeClip) === requestedClip || activeClip.name === requestedClip || clipKey(activeClip) === requestedClip)) return activeClip;
+    const clip = this.findClipByName(actor, requestedClip, { explicit: true });
+    if (!clip) return null;
+    actor.play(clipKey(clip));
+    setStatus('review route locked clip=' + clipLabel(clip));
+    return clip;
+  }
+
+  hideReviewObstructionSprites(actor = this.actors.get(this.selected)) {
+    if (!this.isReviewRoute() || !actor?.root) return;
+    actor.root.traverse((object) => {
+      if (object?.isSprite) object.visible = false;
+    });
+  }
+
   activateActor(key, options = {}) {
     const actor = this.actors.get(key);
     if (!actor) {
@@ -5770,8 +5789,9 @@ class PoseLab {
     const requestedClip = options.clipName ? this.findClipByName(actor, options.clipName, { explicit: true }) : null;
     const clip = requestedClip || this.preferredSabreClip(actor, savedClip || this.findStartupClip(actor) || actor.activeClip() || this.findFirstPlayableClip(actor));
     if (clip) actor.play(clipKey(clip));
+    this.hideReviewObstructionSprites(actor);
     this.renderClipButtons();
-    const fallbackPanel = this.labMode === 'critique' ? 'none' : (actor.info?.startupPanel || (UI.panels.cleanup?.classList.contains('open') ? 'cleanup' : 'clips'));
+    const fallbackPanel = this.isReviewRoute() ? 'none' : (this.labMode === 'critique' ? 'none' : (actor.info?.startupPanel || (UI.panels.cleanup?.classList.contains('open') ? 'cleanup' : 'clips')));
     this.setPanel(options.restoreSavedUi ? this.savedPanelForActor(key, fallbackPanel) : fallbackPanel);
     if (options.restoreSavedUi && this.savedState?.actorKey === key) this.applySavedViewAngle(this.savedState.viewAngle);
     this.updateCleanupUi(clip ? 'loaded ' + actor.info.label + ' | ' + clipLabel(clip) : 'loaded ' + actor.info.label);
@@ -10924,6 +10944,8 @@ class PoseLab {
   renderClipButtons() {
     const actor = this.actors.get(this.selected);
     if (!actor || !UI.clipButtons) return;
+    const reviewRequestedClip = this.visualQa?.clip || '';
+    if (reviewRequestedClip) this.enforceReviewRequestedClip(actor);
     const active = actor.activeAction ? clipKey(actor.activeAction._clip) : '';
     const query = String(actor.clipSearch || UI.clipSearch?.value || '').trim();
     if (UI.clipSearch && UI.clipSearch.value !== query) UI.clipSearch.value = query;
@@ -10932,7 +10954,16 @@ class PoseLab {
     stop.type = 'button';
     stop.className = 'stop-clip';
     stop.textContent = 'Stop pose';
-    stop.addEventListener('click', () => { actor.stop(); this.saveState(); this.renderClipButtons(); this.updateCleanupUi('stopped'); this.updateReadout(); });
+    stop.disabled = Boolean(reviewRequestedClip);
+    if (reviewRequestedClip) stop.title = 'Review route locked to ' + reviewRequestedClip;
+    stop.addEventListener('click', () => {
+      if (reviewRequestedClip) return;
+      actor.stop();
+      this.saveState();
+      this.renderClipButtons();
+      this.updateCleanupUi('stopped');
+      this.updateReadout();
+    });
     UI.clipButtons.append(stop);
     const entries = searchableClipEntries(actor.clips).map((entry) => ({ ...entry, key: clipKey(entry.clip) }));
     let visible = [];
@@ -10978,7 +11009,13 @@ class PoseLab {
       button.title = entry.key;
       button.dataset.clipKey = entry.key;
       button.classList.toggle('active', entry.key === active);
+      const isRequestedReviewClip = reviewRequestedClip && (entry.label === reviewRequestedClip || entry.clip?.name === reviewRequestedClip || entry.key === reviewRequestedClip);
+      if (reviewRequestedClip && !isRequestedReviewClip) {
+        button.disabled = true;
+        button.title = 'Review route locked to ' + reviewRequestedClip;
+      }
       button.addEventListener('click', () => {
+        if (reviewRequestedClip && !isRequestedReviewClip) return;
         actor.play(entry.key);
         actor.pauseActive(false);
         this.critiqueTransportMode = 'live';

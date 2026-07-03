@@ -67,6 +67,11 @@ assert(humanRedBuilds.includes('e6cc6635631c1f1a983932d01e3233f25640e933') && hu
 assert(preflightScript.includes('AUTHORITY_REVOKED_FALSE_GREEN') && preflightScript.includes('allowedNextAction'), 'preflight must revoke authority and provide the only allowed next action for false-green vetoes');
 assert(appSource.includes('reviewTruthState') && appSource.includes('REVIEW RED'), 'Pose Lab runtime must expose visible review truth in the UI');
 assert(appSource.includes('Meshy review UI fell back to walking-only clip inventory'), 'Pose Lab runtime must mark walking-only Meshy review inventory red');
+assert(appSource.includes('enforceReviewRequestedClip'), 'Pose Lab review route must force the requested clip if runtime state drifts');
+assert(appSource.includes('hideReviewObstructionSprites'), 'Pose Lab review route must hide obstructing actor label sprites');
+assert(appSource.includes("const fallbackPanel = this.isReviewRoute() ? 'none'"), 'Pose Lab review route must not open a phone-obstructing sheet by default');
+assert(appSource.includes('stop.disabled = Boolean(reviewRequestedClip)'), 'Pose Lab review route must disable Stop so the requested clip cannot be cleared');
+assert(appSource.includes('Review route locked to '), 'Pose Lab review route must visibly lock non-requested clip controls');
 
 if (!fs.existsSync(evidencePath)) {
   console.log(JSON.stringify({
