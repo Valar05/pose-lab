@@ -78,6 +78,7 @@ jobs:
       - name: Capture hosted Pose Lab truth
         env:
           GITHUB_SHA: '${{ github.sha }}'
+          GITHUB_HEAD_SHA: '${{ github.event.pull_request.head.sha || github.sha }}'
         run: node tools/capture_firebase_visual_truth.mjs --hosted-url "$HOSTED_URL"
 
       - name: Validate captured Firebase visual truth

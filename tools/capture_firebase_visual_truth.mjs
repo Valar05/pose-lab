@@ -137,6 +137,10 @@ function currentCommit() {
 }
 
 function currentHeadCommit() {
+  return process.env.GITHUB_HEAD_SHA || currentGitCommit() || currentCommit();
+}
+
+function currentGitCommit() {
   try {
     return fs.readFileSync(path.join(projectRoot, '.git', 'HEAD'), 'utf8').trim().startsWith('ref: ')
       ? fs.readFileSync(path.join(projectRoot, '.git', fs.readFileSync(path.join(projectRoot, '.git', 'HEAD'), 'utf8').trim().slice('ref: '.length)), 'utf8').trim()
@@ -147,7 +151,7 @@ function currentHeadCommit() {
 }
 
 function humanRedBuildForCommit(commit) {
-  const candidates = [commit, currentHeadCommit()].filter(Boolean);
+  const candidates = [commit, currentHeadCommit(), currentGitCommit()].filter(Boolean);
   if (!candidates.length || !fs.existsSync(HUMAN_RED_BUILDS_PATH)) return null;
   try {
     const payload = JSON.parse(fs.readFileSync(HUMAN_RED_BUILDS_PATH, 'utf8'));
@@ -514,6 +518,7 @@ const evidence = {
   hostingSite: 'pose-lab-visual-truth',
   hostedUrl,
   commit: currentCommit(),
+  headCommit: currentHeadCommit(),
   cacheToken: sourceMatch(/const\s+LAB_CACHE_TOKEN\s*=\s*['"]([^'"]+)['"]/),
   runtimeBuild: sourceMatch(/const\s+LAB_BUILD\s*=\s*['"]([^'"]+)['"]/),
   authority: 'firebase-hosted-cloud-browser',

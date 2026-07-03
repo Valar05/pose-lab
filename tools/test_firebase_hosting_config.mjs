@@ -47,6 +47,7 @@ assert(captureScript.includes('relationshipCloseup') && captureScript.includes('
 assert(captureScript.includes("url.searchParams.set('qaActor', 'meshyCharacter')"), 'Firebase capture should force the hosted actor through qaActor');
 assert(captureScript.includes('selected Meshy Character'), 'Firebase capture should wait for the hosted page to actually select Meshy Character');
 assert(captureScript.includes('autoLoadedMeshyFromColdUrl') && captureScript.includes('manualActorSelectionRequiredFalse'), 'Firebase capture should record cold URL Meshy auto-load and no manual actor selection proof');
+assert(captureScript.includes('headCommit: currentHeadCommit()'), 'Firebase capture should record PR headCommit separately from the workflow merge commit');
 assert(captureScript.includes('{ timeout: 120000 }'), 'Firebase capture should pass the wait timeout as Playwright options');
 assert(captureScript.includes('if (!evidence.ok) process.exitCode = 1'), 'Firebase capture should fail the workflow while preserving evidence');
 assert(captureScript.includes("id: 'landing'"), 'Firebase capture should include a human-review landing page capture');
@@ -67,6 +68,7 @@ const configStep = workflow.slice(workflow.indexOf('- name: Validate Firebase co
 assert(configStep && !configStep.includes('test_firebase_visual_truth_contract.mjs'), 'Firebase workflow must not validate stale visual-truth artifacts before capture refresh');
 const captureStep = workflow.slice(workflow.indexOf('- name: Capture hosted Pose Lab truth'), workflow.indexOf('- uses: actions/upload-artifact@v4'));
 assert(captureStep.includes('capture_firebase_visual_truth.mjs') && captureStep.includes('test_firebase_visual_truth_contract.mjs'), 'Firebase workflow must validate visual truth after the fresh cloud capture is written');
+assert(captureStep.includes('GITHUB_HEAD_SHA'), 'Firebase workflow must pass the PR head SHA into visual truth capture');
 assert(packageJson.devDependencies?.['@playwright/test'] && packageJson.devDependencies?.['firebase-tools'], 'package.json should declare Firebase/Playwright tool dependencies');
 assert(packageJson.scripts?.['cloud:preflight'], 'package.json should expose visual truth preflight');
 assert(firebaseDoc.includes('Sense Synthesis') && firebaseDoc.includes('human-visible'), 'Firebase docs should require Sense Synthesis / human-visible screenshot review');

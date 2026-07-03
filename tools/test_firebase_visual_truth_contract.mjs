@@ -48,11 +48,11 @@ if (evidence.cacheToken !== currentCacheToken() || evidence.runtimeBuild !== cur
   process.exit(0);
 }
 
-if (evidence.commit !== currentCommit()) {
+if (evidence.commit !== currentCommit() && evidence.headCommit !== currentCommit()) {
   console.log(JSON.stringify({
     checked: ['firebase-visual-truth-contract'],
     status: 'pending',
-    reason: `stale Firebase hosted visual truth evidence: commit ${evidence.commit || 'missing'} does not match current ${currentCommit()}`,
+    reason: `stale Firebase hosted visual truth evidence: commit ${evidence.commit || 'missing'} head ${evidence.headCommit || 'missing'} does not match current ${currentCommit()}`,
     evidencePath: path.relative(projectRoot, evidencePath),
   }, null, 2));
   process.exit(0);
@@ -64,6 +64,7 @@ assert(evidence.hostingSite === 'pose-lab-visual-truth', 'Firebase visual truth 
 assert(/^https:\/\/.+/.test(String(evidence.hostedUrl || '')), 'Firebase visual truth should include a hosted HTTPS URL');
 assert(evidence.cacheToken === currentCacheToken(), `Firebase visual truth cacheToken must match current ${currentCacheToken()}`);
 assert(evidence.runtimeBuild === currentRuntimeBuild(), `Firebase visual truth runtimeBuild must match current ${currentRuntimeBuild()}`);
+assert(evidence.commit === currentCommit() || evidence.headCommit === currentCommit(), 'Firebase visual truth must match the current commit or PR head commit');
 assert(evidence.authority === 'firebase-hosted-cloud-browser', 'Firebase visual truth should be the cloud-hosted browser authority');
 assert(evidence.senseSynthesis?.schema === 'pose-lab-sense-synthesis-v1', 'Firebase visual truth should include a top-level Sense Synthesis verdict');
 assert(evidence.senseSynthesis?.verdict === 'human-green', 'Firebase Sense Synthesis should be human-green for normal landing/T-pose/Ready captures');

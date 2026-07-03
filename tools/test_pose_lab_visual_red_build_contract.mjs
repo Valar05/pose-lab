@@ -83,12 +83,12 @@ if (evidence.cacheToken !== currentCacheToken()) {
   }, null, 2));
   process.exit(0);
 }
-if (evidence.commit !== currentCommit()) {
+if (evidence.commit !== currentCommit() && evidence.headCommit !== currentCommit()) {
   if (failures.length) throw new Error(failures.join('\n'));
   console.log(JSON.stringify({
     checked: ['pose-lab-cloud-visual-red-build-contract'],
     status: 'pending',
-    reason: `stale Firebase hosted visual truth evidence: commit ${evidence.commit || 'missing'} does not match current ${currentCommit()}`,
+    reason: `stale Firebase hosted visual truth evidence: commit ${evidence.commit || 'missing'} head ${evidence.headCommit || 'missing'} does not match current ${currentCommit()}`,
     evidencePath: path.relative(projectRoot, evidencePath),
   }, null, 2));
   process.exit(0);

@@ -148,7 +148,9 @@ if (evidence) {
   if (evidence.authority !== 'firebase-hosted-cloud-browser') failures.push(`unexpected authority: ${evidence.authority || 'missing'}`);
   if (evidence.cacheToken !== currentCacheToken()) failures.push(`stale cache token: artifact=${evidence.cacheToken || 'missing'} current=${currentCacheToken()}`);
   if (evidence.runtimeBuild !== currentRuntimeBuild()) failures.push(`stale runtime build: artifact=${evidence.runtimeBuild || 'missing'} current=${currentRuntimeBuild()}`);
-  if (!commitMatches(localCommit, evidence.commit)) failures.push(`artifact commit does not match current checkout: artifact=${evidence.commit || 'missing'} current=${localCommit || 'missing'}`);
+  if (!commitMatches(localCommit, evidence.commit) && !commitMatches(localCommit, evidence.headCommit)) {
+    failures.push(`artifact commit does not match current checkout: artifact=${evidence.commit || 'missing'} head=${evidence.headCommit || 'missing'} current=${localCommit || 'missing'}`);
+  }
   if (evidence.ok !== true) failures.push('visual_truth.ok is not true');
   requireSenseSynthesis(evidence, failures);
   for (const [key, expected] of Object.entries({
@@ -227,6 +229,7 @@ const report = {
   evidence: path.relative(projectRoot, args.evidence),
   currentCommit: localCommit,
   evidenceCommit: evidence?.commit || '',
+  evidenceHeadCommit: evidence?.headCommit || '',
   cacheToken: evidence?.cacheToken || '',
   runtimeBuild: evidence?.runtimeBuild || '',
   wakeUrl: capture(evidence, 'ready')?.url || '',
