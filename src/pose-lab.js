@@ -4,7 +4,7 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-194';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-195';
 import {
   applyWeaponAttachmentRuntimeRules,
   applyWeaponSocketRuntimeRules,
@@ -14,15 +14,20 @@ import {
   updateWeaponFallbackFromTipRuntime,
   weaponPlacementConfigSignature,
 } from './weapon-runtime-rules.mjs?v=pose-editor-194';
-import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-194';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-195';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
 
 const LAB_BUILD = 'meshy-fps-visual-ik-ready-review';
-const LAB_CACHE_TOKEN = 'pose-editor-194';
+const LAB_CACHE_TOKEN = 'pose-editor-195';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
+const MESHY_REVIEW_CLIPS = [
+  '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]',
+  'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
+  'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]',
+];
 
 function isMeshyReadyReviewClipName(name = '') {
   const value = String(name || '');
@@ -238,6 +243,7 @@ const UI = {
   canvas: document.getElementById('labCanvas'),
   loadState: document.getElementById('loadState'),
   status: document.getElementById('labStatus'),
+  reviewTruth: document.getElementById('reviewTruth'),
   clipButtons: document.getElementById('clipButtons'),
   playerTransportLabel: document.getElementById('playerTransportLabel'),
   playerPrevFrame: document.getElementById('playerPrevFrame'),
@@ -5657,6 +5663,87 @@ class PoseLab {
     return 'selected ' + actor.info.label + (clip ? ' clip=' + clipLabel(clip) : '') + ' extra=' + extraLoaded + '/' + extraConfigured + ' startup=' + (actor.info?.startupClip ? (startupResolved ? 'ok' : 'missing') : 'none');
   }
 
+  isReviewRoute() {
+    return Boolean(this.visualQa?.actor || this.visualQa?.clip || weaponDebugForceVisible());
+  }
+
+  reviewTruthState(actor = this.actors.get(this.selected), visibleEntries = null) {
+    const requestedActor = this.visualQa?.actor || '';
+    const requestedClip = this.visualQa?.clip || '';
+    const activeClip = actor?.activeClip?.() || actor?.activeAction?._clip || null;
+    const labels = actor?.clips?.map((entry) => clipLabel(entry)) || [];
+    const visibleLabels = Array.isArray(visibleEntries) ? visibleEntries.map((entry) => entry.label || clipLabel(entry.clip)) : [];
+    const failures = [];
+    const isMeshyReview = requestedActor === 'meshyCharacter' || actor?.key === 'meshyCharacter';
+    if (!this.isReviewRoute()) {
+      return {
+        ok: true,
+        active: false,
+        failures,
+        requestedActor,
+        requestedClip,
+        selectedActor: actor?.key || this.selected || '',
+        selectedClip: activeClip ? clipLabel(activeClip) : '',
+        clipInventoryCount: labels.length,
+        visibleClipCount: visibleLabels.length,
+        labels,
+        visibleLabels,
+      };
+    }
+    if (!actor) failures.push('review route has no selected actor');
+    if (requestedActor && actor?.key !== requestedActor) failures.push(`requested actor ${requestedActor} but selected ${actor?.key || 'none'}`);
+    if (requestedClip) {
+      const foundRequestedClip = actor?.clips?.some((clip) => clipLabel(clip) === requestedClip || clip.name === requestedClip || clipKey(clip) === requestedClip);
+      if (!foundRequestedClip) failures.push(`requested clip missing from visible actor inventory: ${requestedClip}`);
+      if (activeClip && clipLabel(activeClip) !== requestedClip && activeClip.name !== requestedClip && clipKey(activeClip) !== requestedClip) {
+        failures.push(`requested clip ${requestedClip} but active clip is ${clipLabel(activeClip)}`);
+      }
+    }
+    if (isMeshyReview) {
+      const missingReviewClips = MESHY_REVIEW_CLIPS.filter((name) => !labels.includes(name));
+      if (labels.length < 5) failures.push(`Meshy review inventory collapsed: ${labels.length} clips`);
+      if (missingReviewClips.length) failures.push(`Meshy review clips missing: ${missingReviewClips.join(', ')}`);
+      if (labels.length === 1 && labels[0]?.includes('walking_man')) failures.push('Meshy review UI fell back to walking-only clip inventory');
+      if (activeClip && clipLabel(activeClip).includes('walking_man')) failures.push('Meshy review route is playing walking_man fallback');
+      if (actor?.weaponProxy) {
+        if (actor.weaponProxy.model?.visible !== true || actor.weaponProxy.displayRoot?.visible !== true) failures.push('Meshy review weapon is not visibly attached');
+      } else {
+        failures.push('Meshy review actor has no weapon proxy');
+      }
+    }
+    return {
+      ok: failures.length === 0,
+      active: true,
+      failures,
+      requestedActor,
+      requestedClip,
+      selectedActor: actor?.key || this.selected || '',
+      selectedClip: activeClip ? clipLabel(activeClip) : '',
+      clipInventoryCount: labels.length,
+      visibleClipCount: visibleLabels.length,
+      labels,
+      visibleLabels,
+      weaponVisible: Boolean(actor?.weaponProxy?.model?.visible === true && actor?.weaponProxy?.displayRoot?.visible === true),
+    };
+  }
+
+  updateReviewTruthUi(state = this.reviewTruthState()) {
+    if (!UI.reviewTruth) return state;
+    UI.reviewTruth.classList.remove('review-red', 'review-ok');
+    if (!state.active) {
+      UI.reviewTruth.textContent = '';
+      return state;
+    }
+    if (state.ok) {
+      UI.reviewTruth.classList.add('review-ok');
+      UI.reviewTruth.textContent = 'REVIEW OK: ' + (state.selectedClip || state.selectedActor || 'route ready');
+      return state;
+    }
+    UI.reviewTruth.classList.add('review-red');
+    UI.reviewTruth.textContent = 'REVIEW RED: ' + state.failures.join(' | ');
+    return state;
+  }
+
   activateActor(key, options = {}) {
     const actor = this.actors.get(key);
     if (!actor) {
@@ -5684,6 +5771,7 @@ class PoseLab {
     this.updateReadout();
     this.saveState();
     setStatus(this.actorSelectionStatus(actor, clip));
+    this.updateReviewTruthUi();
   }
 
   selectStartupActor() {
@@ -10845,6 +10933,16 @@ class PoseLab {
       sf2DefaultCount = entries.filter((entry) => isSf2PoseClip(entry.clip)).length;
       if (UI.clipHint) UI.clipHint.textContent = sf2DefaultCount ? 'All clips: ' + visible.length + ' / ' + entries.length + ' | SF2 ' + sf2DefaultCount : 'All clips: ' + visible.length + ' / ' + entries.length;
     }
+    const reviewTruth = this.updateReviewTruthUi(this.reviewTruthState(actor, visible));
+    UI.clipHint?.classList.toggle('review-red', reviewTruth.active && !reviewTruth.ok);
+    if (reviewTruth.active && !reviewTruth.ok) {
+      const truth = document.createElement('button');
+      truth.type = 'button';
+      truth.className = 'empty-clip review-red';
+      truth.disabled = true;
+      truth.textContent = 'REVIEW RED: ' + reviewTruth.failures.join(' | ');
+      UI.clipButtons.append(truth);
+    }
     if (sf2DefaultCount) {
       const batch = document.createElement('button');
       batch.type = 'button';
@@ -11722,6 +11820,7 @@ class PoseLab {
       } : null,
       statusText: UI.status?.textContent || '',
       loadStateText: UI.loadState?.textContent || '',
+      reviewTruth: this.reviewTruthState(actor),
       visualQa: this.visualQa ? {
         enabled: Boolean(this.visualQa.enabled),
         beacon: Boolean(this.visualQa.beacon),

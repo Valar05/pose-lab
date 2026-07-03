@@ -70,6 +70,7 @@ for (const capture of evidence.captures || []) {
   assert(typeof capture.visibleRead === 'string' && capture.visibleRead.length >= 10, 'Firebase capture should include a human-readable visibleRead');
   assert(capture.cloudTelemetry?.weapon?.ok === true, `Firebase capture should include successful cloud weapon telemetry: ${capture.id}`);
   assert(capture.cloudTelemetry?.liveHilt?.ok === true, `Firebase capture should include successful cloud live hilt telemetry: ${capture.id}`);
+  assert(capture.cloudTelemetry?.weapon?.snapshot?.reviewTruth?.active === true, `Firebase capture should expose visible UI review truth: ${capture.id}`);
   if (evidence.humanRedBuild) {
     assert(capture.accepted === false, `human-red evidence must keep normal captures red: ${capture.id}`);
     assert(capture.evaluation?.ok === false, `human-red evidence must keep normal capture evaluations red: ${capture.id}`);
@@ -81,7 +82,9 @@ for (const capture of evidence.captures || []) {
 }
 const landing = evidence.captures.find((capture) => capture.id === 'landing');
 assert(landing?.evaluation?.checks?.reviewClipInventoryVisible === true, 'Landing cloud evidence must prove review clip inventory is visible');
-assert(landing?.evaluation?.checks?.loadFastEnough === true, 'Landing cloud evidence must prove review page load is usable');
+assert(landing?.evaluation?.checks?.reviewClipNotCollapsedToWalkingOnly === true, 'Landing cloud evidence must reject walking-only Meshy clip inventory');
+assert(landing?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Landing cloud evidence must accept only green visible UI truth');
+assert(Object.hasOwn(landing?.evaluation?.checks || {}, 'loadWarning'), 'Landing cloud evidence must record slow-load warning state');
 const tpose = evidence.captures.find((capture) => capture.id === 'tpose');
 assert(tpose?.evaluation?.checks?.acceptedHiltOracle === true, 'T-pose cloud evidence must preserve the accepted hilt oracle');
 assert(tpose?.evaluation?.checks?.acceptedAttachmentRotation === true, 'T-pose cloud evidence must preserve the accepted attachment rotation');
@@ -89,6 +92,7 @@ assert(tpose?.evaluation?.checks?.realWeaponVisible === true, 'T-pose cloud evid
 assert(tpose?.evaluation?.checks?.hiltPinnedToSocket === true, 'T-pose cloud evidence must prove hilt pinning');
 assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'tposeWristRelationshipAccepted'), 'T-pose cloud evidence must record wrist/saber visible relationship acceptance');
 assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'defaultSurfaceAccepted'), 'T-pose cloud evidence must record default visible surface acceptance');
+assert(tpose?.evaluation?.checks?.visibleUiTruthAccepted === true, 'T-pose cloud evidence must accept only green visible UI truth');
 assert(typeof tpose?.relationshipCloseup === 'string' && tpose.relationshipCloseup.endsWith('tpose_relationship_closeup.png'), 'T-pose cloud evidence must include wrist/saber close-up');
 const ready = evidence.captures.find((capture) => capture.id === 'ready');
 assert(typeof ready?.relationshipCloseup === 'string' && ready.relationshipCloseup.endsWith('ready_relationship_closeup.png'), 'Ready cloud evidence must include hand/hilt/blade close-up');
@@ -101,6 +105,7 @@ assert(ready?.evaluation?.checks?.handLocalGripOffsetVisible === true, 'Ready cl
 assert(ready?.evaluation?.checks?.hiltAwayFromRawHand === true, 'Ready cloud evidence must prove the hilt has not collapsed onto the raw hand/wrist');
 assert(ready?.evaluation?.checks?.readyHandOrientationSane === true, 'Ready cloud evidence must prove the hand orientation/grip basis is visually sane');
 assert(ready?.evaluation?.checks?.reviewClipInventoryVisible === true, 'Ready cloud evidence must prove review clip inventory is visible');
+assert(ready?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Ready cloud evidence must accept only green visible UI truth');
 assert(ready?.evaluation?.checks?.bodyPoseLandmarksPresent === true, 'Ready cloud evidence must expose body pose landmarks for hand-orientation review');
 assert(ready?.evaluation?.checks?.staticDirectFkProof === true || (ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true), 'Ready cloud evidence must prove static direct FK or hand/saber tip motion together');
 assert(Object.hasOwn(ready?.evaluation?.checks || {}, 'readyVisualRelationshipAccepted'), 'Ready cloud evidence must record hand/hilt/blade visible relationship acceptance');

@@ -12,6 +12,7 @@ const ACCEPTED_MESHY_ROTATION = [90, 0, -55.145];
 const LANDING_LOAD_MAX_MS = 20000;
 const LANDING_LOAD_WARN_MS = 20000;
 const HUMAN_RED_BUILDS_PATH = path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json');
+const MOBILE_REVIEW_VIEWPORT = { width: 430, height: 932 };
 
 function parseArgs(argv) {
   const args = { hostedUrl: '' };
@@ -79,8 +80,26 @@ function decodeDataUrl(dataUrl) {
   return match ? Buffer.from(match[1], 'base64') : null;
 }
 
+function relationshipCloseupClip(page) {
+  const viewport = page.viewportSize() || MOBILE_REVIEW_VIEWPORT;
+  const y = Math.min(260, Math.max(0, viewport.height - 360));
+  return {
+    x: 0,
+    y,
+    width: Math.min(viewport.width, 520),
+    height: Math.min(viewport.height - y, 520),
+  };
+}
+
 function compactError(value) {
   return String(value || '').replace(/\s+/g, ' ').slice(0, 300);
+}
+
+function reviewTruthFailures(snapshot) {
+  const truth = snapshot?.reviewTruth;
+  if (!truth?.active) return ['hosted page did not expose active review truth for this review route'];
+  if (truth.ok === true) return [];
+  return Array.isArray(truth.failures) && truth.failures.length ? truth.failures : ['hosted page review truth is red'];
 }
 
 function relationshipChecksFromTelemetry({ liveChecks = {}, liveDistances = {}, followChecks = {}, screenMetrics = {}, staticDirectFkProof = false } = {}) {
@@ -109,12 +128,25 @@ function currentCommit() {
   return process.env.GITHUB_SHA || '';
 }
 
+function currentHeadCommit() {
+  try {
+    return fs.readFileSync(path.join(projectRoot, '.git', 'HEAD'), 'utf8').trim().startsWith('ref: ')
+      ? fs.readFileSync(path.join(projectRoot, '.git', fs.readFileSync(path.join(projectRoot, '.git', 'HEAD'), 'utf8').trim().slice('ref: '.length)), 'utf8').trim()
+      : fs.readFileSync(path.join(projectRoot, '.git', 'HEAD'), 'utf8').trim();
+  } catch (_error) {
+    return '';
+  }
+}
+
 function humanRedBuildForCommit(commit) {
-  if (!commit || !fs.existsSync(HUMAN_RED_BUILDS_PATH)) return null;
+  const candidates = [commit, currentHeadCommit()].filter(Boolean);
+  if (!candidates.length || !fs.existsSync(HUMAN_RED_BUILDS_PATH)) return null;
   try {
     const payload = JSON.parse(fs.readFileSync(HUMAN_RED_BUILDS_PATH, 'utf8'));
     const builds = Array.isArray(payload?.redBuilds) ? payload.redBuilds : [];
-    return builds.find((entry) => String(entry?.commit || '').startsWith(commit) || commit.startsWith(String(entry?.commit || ''))) || null;
+    return builds.find((entry) => candidates.some((candidate) => (
+      String(entry?.commit || '').startsWith(candidate) || candidate.startsWith(String(entry?.commit || ''))
+    ))) || null;
   } catch (error) {
     return {
       commit,
@@ -135,11 +167,13 @@ async function debugExec(page, command) {
 function evaluateTpose({ routeSelected, weapon, liveHilt }) {
   const failures = [];
   const config = weapon?.weapon?.config || {};
+  const reviewFailures = reviewTruthFailures(weapon?.snapshot);
   const live = liveHilt?.live || liveHilt || {};
   const liveChecks = live?.checks || {};
   const liveDistances = live?.distances || {};
   const layers = live?.pinning?.layers || {};
   if (!routeSelected) failures.push('hosted route did not select Meshy Character');
+  failures.push(...reviewFailures.map((failure) => `T-pose UI truth red: ${failure}`));
   if (weapon?.ok !== true) failures.push(`weapon debug failed: ${compactError(weapon?.error)}`);
   if (liveHilt?.ok !== true) failures.push(`live hilt debug failed: ${compactError(liveHilt?.error)}`);
   if (weapon?.weapon?.clip !== TPOSE_CLIP) failures.push(`T-pose cloud clip mismatch: ${weapon?.weapon?.clip || 'missing'}`);
@@ -166,12 +200,14 @@ function evaluateTpose({ routeSelected, weapon, liveHilt }) {
       finiteHiltDistances: isFiniteNumber(liveDistances.handToAppliedHilt) && isFiniteNumber(liveDistances.socketToAppliedHilt),
       tposeWristRelationshipAccepted: relationship.tposeWristRelationshipAccepted,
       defaultSurfaceAccepted: relationship.defaultSurfaceAccepted,
+      visibleUiTruthAccepted: reviewFailures.length === 0,
     },
   };
 }
 
 function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
   const failures = [];
+  const reviewFailures = reviewTruthFailures(weapon?.snapshot);
   const followChecks = visualFollow?.checks || {};
   const screenMotion = visualFollow?.screenMotion || {};
   const relativeDrift = visualFollow?.relativeDrift || {};
@@ -194,6 +230,7 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
     && followChecks.readyHandOrientationSane === true
     && followChecks.realWeaponVisible === true;
   if (!routeSelected) failures.push('hosted route did not select Meshy Character');
+  failures.push(...reviewFailures.map((failure) => `Ready UI truth red: ${failure}`));
   if (weapon?.ok !== true) failures.push(`weapon debug failed: ${compactError(weapon?.error)}`);
   if (visualFollow?.ok !== true) failures.push(`Ready visual-follow failed: ${compactError(visualFollow?.error) || JSON.stringify(followChecks)}`);
   if (liveHilt?.ok !== true && !readyLiveHiltAnchorSane) failures.push(`Ready live hilt debug failed: ${compactError(liveHilt?.error)}`);
@@ -242,6 +279,7 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
       reviewClipInventoryVisible: Number(inventory.count) >= 5,
       bodyPoseLandmarksPresent: Boolean(weapon?.snapshot?.pose?.watch?.bones?.rh && weapon?.snapshot?.pose?.watch?.bones?.lh),
       readyVisualRelationshipAccepted: relationship.readyVisualRelationshipAccepted,
+      visibleUiTruthAccepted: reviewFailures.length === 0,
     },
   };
 }
@@ -271,7 +309,12 @@ const captures = [
 ];
 
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 });
+const page = await browser.newPage({
+  viewport: MOBILE_REVIEW_VIEWPORT,
+  deviceScaleFactor: 2,
+  isMobile: true,
+  hasTouch: true,
+});
 const captured = [];
 let failed = false;
 let fatalError = '';
@@ -299,28 +342,29 @@ try {
 const initialLoadMs = Date.now() - initialStartedAt;
 
 for (const capture of captures) {
-  let error = initialLoadError;
+  const captureUrl = capture.clip ? poseUrl(hostedUrl, capture.clip) : initialUrl;
+  let error = '';
   const startedAt = Date.now();
   let clipSwitch = null;
-  if (capture.clip && !initialLoadError) {
-    clipSwitch = await debugExec(page, `clip ${capture.clip}`);
-    if (clipSwitch?.ok !== true) error = clipSwitch?.error || `debug clip switch failed: ${capture.clip}`;
-    else {
-      try {
-        await waitForHostedMeshyPage(page, capture.clip);
-      } catch (caught) {
-        error = caught?.message || String(caught);
-      }
+  if (capture.id === 'landing') {
+    error = initialLoadError;
+  } else if (!initialLoadError) {
+    try {
+      await page.goto(captureUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
+      await waitForHostedMeshyPage(page, capture.clip);
+    } catch (caught) {
+      error = caught?.message || String(caught);
     }
+    clipSwitch = { ok: !error, command: 'cold-load-route', url: captureUrl };
   }
   const loadMs = capture.id === 'landing' ? initialLoadMs : Date.now() - startedAt;
   await page.waitForTimeout(1000);
-  const url = capture.clip ? poseUrl(hostedUrl, capture.clip) : page.url();
+  const url = capture.clip ? captureUrl : page.url();
   const screenshot = path.join(outDir, `${capture.id}.png`);
   const screenshotOk = await page.screenshot({ path: screenshot, fullPage: false }).then(() => true).catch(() => false);
   const closeup = capture.id === 'tpose' || capture.id === 'ready' ? path.join(outDir, `${capture.id}_relationship_closeup.png`) : '';
   const closeupOk = closeup
-    ? await page.screenshot({ path: closeup, fullPage: false, clip: { x: 360, y: 230, width: 420, height: 360 } }).then(() => true).catch(() => false)
+    ? await page.screenshot({ path: closeup, fullPage: false, clip: relationshipCloseupClip(page) }).then(() => true).catch(() => false)
     : false;
   const loadState = await page.locator('#loadState').textContent({ timeout: 5000 }).catch(() => '');
   const routeSelected = /selected Meshy Character/.test(loadState || '');
@@ -342,9 +386,14 @@ for (const capture of captures) {
   let evaluation;
   if (capture.id === 'landing') {
     const inventory = weapon?.snapshot?.clipInventory || {};
+    const reviewFailures = reviewTruthFailures(weapon?.snapshot);
+    const selectedClip = weapon?.snapshot?.activeClip?.name || weapon?.weapon?.clip || '';
     const failures = [];
     if (!routeSelected) failures.push('landing route did not select Meshy Character');
+    failures.push(...reviewFailures.map((failure) => `landing UI truth red: ${failure}`));
     if (!Number.isFinite(Number(inventory.count)) || Number(inventory.count) < 5) failures.push(`landing Meshy clip inventory is too small for human review: ${JSON.stringify(inventory)}`);
+    if (String(selectedClip).includes('walking_man')) failures.push(`landing selected walking clip instead of Meshy review clip: ${selectedClip}`);
+    if (weapon?.weapon?.modelVisible !== true || weapon?.weapon?.displayVisible !== true) failures.push('landing real sabre model/display is not visible for human review');
     evaluation = {
       ok: failures.length === 0,
       failures,
@@ -353,6 +402,9 @@ for (const capture of captures) {
         loadFastEnough: loadMs <= LANDING_LOAD_MAX_MS,
         loadWarning: loadMs > LANDING_LOAD_WARN_MS,
         reviewClipInventoryVisible: Number(inventory.count) >= 5,
+        reviewClipNotCollapsedToWalkingOnly: Number(inventory.count) >= 5 && !String(selectedClip).includes('walking_man'),
+        realWeaponVisible: weapon?.weapon?.modelVisible === true && weapon?.weapon?.displayVisible === true,
+        visibleUiTruthAccepted: reviewFailures.length === 0,
       },
     };
   } else {

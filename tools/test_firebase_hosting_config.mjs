@@ -35,8 +35,13 @@ assert(buildScript.includes('stagedBytes') && buildScript.includes('stagedFileLi
 const captureScript = fs.readFileSync(path.join(projectRoot, 'tools', 'capture_firebase_visual_truth.mjs'), 'utf8');
 assert(captureScript.includes('function assertCloudHostedUrl'), 'Firebase capture should reject localhost/offline/staged URLs before Playwright control');
 assert(captureScript.includes("role: 'controller-only'"), 'Firebase capture should label Playwright as controller-only, not visual truth authority');
-assert(captureScript.includes('await page.goto(initialUrl') && captureScript.includes('clipSwitch = await debugExec'), 'Firebase capture should load the hosted page once and switch clips through the debug API');
-assert(captureScript.includes("url.searchParams.set('qaClip', clip)") && captureScript.includes('const url = capture.clip ? poseUrl(hostedUrl, capture.clip) : page.url()'), 'Firebase capture artifacts must preserve exact clip route URLs for human review wakeup');
+assert(captureScript.includes('await page.goto(initialUrl') && captureScript.includes('await page.goto(captureUrl'), 'Firebase capture should cold-load each hosted review URL instead of only switching debug state');
+assert(captureScript.includes("url.searchParams.set('qaClip', clip)") && captureScript.includes('const captureUrl = capture.clip ? poseUrl(hostedUrl, capture.clip) : initialUrl'), 'Firebase capture artifacts must preserve exact clip route URLs for human review wakeup');
+assert(captureScript.includes('MOBILE_REVIEW_VIEWPORT') && captureScript.includes('isMobile: true'), 'Firebase capture should use a mobile review viewport so the gate matches the user review UI');
+assert(captureScript.includes('reviewTruthFailures') && captureScript.includes('visibleUiTruthAccepted'), 'Firebase capture should fail when hosted visible UI review truth is red');
+assert(captureScript.includes('relationshipCloseupClip(page)') && !captureScript.includes('x: 360, y: 230'), 'Firebase capture should not use desktop-only relationship close-up crop coordinates');
+assert(captureScript.includes('loadWarning: loadMs > LANDING_LOAD_WARN_MS'), 'Firebase capture should preserve slow hosted review load as diagnostic warning only');
+assert(!captureScript.includes('landing hosted review load exceeded'), 'Firebase capture must not fail visual truth solely because hosted review is slow');
 assert(captureScript.includes('relationshipCloseup') && captureScript.includes('`${capture.id}_relationship_closeup.png`'), 'Firebase capture should preserve id-scoped relationship close-up PNGs for T-pose and Ready');
 assert(captureScript.includes("url.searchParams.set('qaActor', 'meshyCharacter')"), 'Firebase capture should force the hosted actor through qaActor');
 assert(captureScript.includes('selected Meshy Character'), 'Firebase capture should wait for the hosted page to actually select Meshy Character');
