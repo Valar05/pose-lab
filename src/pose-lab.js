@@ -4,7 +4,7 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-202';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-203';
 import {
   applyWeaponAttachmentRuntimeRules,
   applyWeaponSocketRuntimeRules,
@@ -13,14 +13,14 @@ import {
   pinWeaponLocalPointToDisplay as pinWeaponLocalPointToDisplayRuntime,
   updateWeaponFallbackFromTipRuntime,
   weaponPlacementConfigSignature,
-} from './weapon-runtime-rules.mjs?v=pose-editor-202';
-import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-202';
+} from './weapon-runtime-rules.mjs?v=pose-editor-203';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-203';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
 
-const LAB_BUILD = 'meshy-fps-ready-blade-rotation';
-const LAB_CACHE_TOKEN = 'pose-editor-202';
+const LAB_BUILD = 'meshy-fps-ready-probe-truth';
+const LAB_CACHE_TOKEN = 'pose-editor-203';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 const MESHY_REVIEW_CLIPS = [
@@ -5747,7 +5747,7 @@ class PoseLab {
     }
     if (state.ok) {
       UI.reviewTruth.classList.add('review-ok');
-      UI.reviewTruth.textContent = 'REVIEW ROUTE READY: ' + (state.selectedClip || state.selectedActor || 'route ready');
+      UI.reviewTruth.textContent = 'REVIEW ROUTE OK: ' + (state.selectedClip || state.selectedActor || 'route ready');
       return state;
     }
     UI.reviewTruth.classList.add('review-red');
@@ -11799,6 +11799,7 @@ class PoseLab {
     const base = Array.isArray(effective.rotationDeg) ? effective.rotationDeg.map((value) => Number(value || 0)) : [0, 0, 0];
     const originalRotation = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg.slice() : null;
     const originalOverrides = Array.isArray(attachment.clipOverrides) ? JSON.parse(JSON.stringify(attachment.clipOverrides)) : null;
+    const originalProxyAttachmentConfig = proxy.attachmentConfig || null;
     const tileWidth = 320;
     const tileHeight = 240;
     const round = (value, digits = 3) => Number(Number(value || 0).toFixed(digits));
@@ -11830,7 +11831,13 @@ class PoseLab {
     const seen = new Set();
     const rows = [];
     const measure = (rotationDeg) => {
-      const config = { ...effective, rotationDeg };
+      const {
+        clipOverrides: _clipOverrides,
+        clipOverrideReason: _clipOverrideReason,
+        ...candidateBase
+      } = effective;
+      const config = { ...candidateBase, rotationDeg };
+      proxy.attachmentConfig = config;
       applyWeaponAttachmentRuntimeRules(THREE, { actorModel: actor.model, proxy, config });
       actor.model.updateMatrixWorld(true);
       proxy.root.updateMatrixWorld(true);
@@ -11868,6 +11875,7 @@ class PoseLab {
     } finally {
       if (originalRotation) attachment.rotationDeg = originalRotation;
       if (originalOverrides) attachment.clipOverrides = originalOverrides;
+      proxy.attachmentConfig = originalProxyAttachmentConfig || attachment;
       actor.updateWeaponAttachmentTransform(attachment);
       actor.model.updateMatrixWorld(true);
     }
