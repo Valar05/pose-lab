@@ -15,7 +15,7 @@ assert(js.includes('sourceWeaponRelativeToWrist') && js.includes("new THREE.Quat
 assert(js.includes('sourceWeaponTrack.times.slice()'), 'WeaponGrip should preserve authored Weapon.R key times');
 assert(!profiles.includes("retargetMode: 'position-guided-arm',\n        clipTag: 'FPS-SWORD-UPPER'"), 'accepted Meshy FPS-SWORD-UPPER path must not use sampled position-guided IK');
 assert(!profiles.includes('copiedSourceLayer') && !js.includes('syncCopiedSourceLayer'), 'Meshy ready review should not create a copied FPS actor overlay');
-assert(!profiles.includes("parentMode: 'hand-fk'") && !profiles.includes("syntheticSourceSocketBone: ''"), 'Meshy profile must not promote the failed direct hand-fk production override');
+assert(profiles.includes("parentMode: 'hand-fk'") && !profiles.includes("syntheticSourceSocketBone: ''"), 'Meshy profile must use direct hand-fk without an empty synthetic socket override');
 assert(!profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy profile must not promote the failed Visual-IK golden Ready path');
 
 assert(profiles.includes("retargetMode: 'fps-upper-key-convert'"), 'Meshy FPS-SWORD-UPPER config should use source-key conversion');
@@ -33,4 +33,4 @@ assert(!profiles.includes("pathMode: 'source-derived'"), 'failed live source-der
 assert(!js.includes('position-guided-source-derived-hand-delta'), 'failed live source-derived metadata must not return');
 
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['meshy-fps-upper-key-convert', 'authored-key-times', 'restored-weapongrip-frame-solve', 'failed-hand-fk-promotion-absent'] }, null, 2));
+console.log(JSON.stringify({ checked: ['meshy-fps-upper-key-convert', 'authored-key-times', 'restored-weapongrip-frame-solve', 'direct-hand-fk-required'] }, null, 2));

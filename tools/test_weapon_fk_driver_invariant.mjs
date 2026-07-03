@@ -28,7 +28,7 @@ assert(swordBlock.includes("originPrefix: 'mapped-arms:player->meshyCharacter'")
 assert(swordBlock.includes("sourceWeapon: 'Weapon.R'") && swordBlock.includes("targetWeapon: 'WeaponGrip'"), 'FPS-SWORD-UPPER should keep the restored source Weapon.R -> WeaponGrip bridge');
 assert(swordBlock.includes('frameSolve: true') && swordBlock.includes('applyToHand: false'), 'restored weapon bridge should solve the weapon frame without rewriting the hand track');
 
-assert(!profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must not use the failed direct hand-fk override');
+assert(profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must use direct hand-fk so hosted Firebase can prove boring FK');
 assert(!profilesSource.includes("syntheticSourceSocketBone: ''"), 'Meshy production profile must not force an empty synthetic socket');
 assert(!profilesSource.includes("placementAuthority: 'manual-golden'"), 'Meshy production profile must not keep the failed manual-golden authority label');
 assert(!profilesSource.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'failed Visual-IK Ready generator must not remain promoted');
@@ -38,5 +38,5 @@ if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({
   checked: 'restored-weapon-driver-invariant',
   restoredSwordBridge: true,
-  failedHandFkPromotionAbsent: true,
+  directHandFkRequired: true,
 }, null, 2));

@@ -67,9 +67,10 @@ async function debugExec(page, command) {
 function evaluateTpose({ routeSelected, weapon, liveHilt }) {
   const failures = [];
   const config = weapon?.weapon?.config || {};
-  const liveChecks = liveHilt?.checks || {};
-  const liveDistances = liveHilt?.distances || {};
-  const layers = liveHilt?.pinning?.layers || {};
+  const live = liveHilt?.live || liveHilt || {};
+  const liveChecks = live?.checks || {};
+  const liveDistances = live?.distances || {};
+  const layers = live?.pinning?.layers || {};
   if (!routeSelected) failures.push('hosted route did not select Meshy Character');
   if (weapon?.ok !== true) failures.push(`weapon debug failed: ${compactError(weapon?.error)}`);
   if (liveHilt?.ok !== true) failures.push(`live hilt debug failed: ${compactError(liveHilt?.error)}`);
@@ -103,7 +104,8 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
   const screenMotion = visualFollow?.screenMotion || {};
   const relativeDrift = visualFollow?.relativeDrift || {};
   const screenMetrics = visualFollow?.screenMetrics || {};
-  const liveChecks = liveHilt?.checks || {};
+  const live = liveHilt?.live || liveHilt || {};
+  const liveChecks = live?.checks || {};
   if (!routeSelected) failures.push('hosted route did not select Meshy Character');
   if (weapon?.ok !== true) failures.push(`weapon debug failed: ${compactError(weapon?.error)}`);
   if (visualFollow?.ok !== true) failures.push(`Ready visual-follow failed: ${compactError(visualFollow?.error) || JSON.stringify(followChecks)}`);

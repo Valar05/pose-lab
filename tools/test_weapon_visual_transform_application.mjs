@@ -164,7 +164,7 @@ async function main() {
   const { GLTFLoader } = await import(pathToFileURL(path.join(threeDir, 'examples', 'jsm', 'loaders', 'GLTFLoader.js')));
 
   const config = resolvePoseLabActorRuntimeConfig('meshyCharacter');
-  assert(config.proxy.parentMode === '', `Meshy restored baseline must not promote hand-fk for this contract, got ${config.proxy.parentMode}`);
+  assert(config.proxy.parentMode === 'hand-fk', `Meshy boring FK contract should parent WeaponGrip under RightHand, got ${config.proxy.parentMode}`);
   assert(JSON.stringify(config.proxy.rotationDeg || []) === JSON.stringify([0, 0, 0]), `Meshy socket orientation should stay at weaponProxy.rotationDeg [0,0,0], got ${JSON.stringify(config.proxy.rotationDeg)}`);
   assert(JSON.stringify(config.attachment.rotationDeg || []) === JSON.stringify([90, 0, -55.145]), `Meshy restored baseline orientation should live on weaponAttachment.rotationDeg, got ${JSON.stringify(config.attachment.rotationDeg)}`);
 
@@ -174,7 +174,7 @@ async function main() {
   const proxy = makeProxy(THREE, actorGltf.scene, sabreGltf.scene, config);
 
   const initial = syncWeapon(THREE, actorGltf.scene, proxy, { force: true });
-  assert(initial.socketResult?.mode === 'two-hand-center', `expected restored two-hand-center socket application, got ${JSON.stringify(initial.socketResult)}`);
+  assert(initial.socketResult?.mode === 'hand-fk', `expected direct hand-fk socket application, got ${initial.socketResult?.mode || 'missing'}`);
   assert(initial.attachmentResult?.weaponRoot === proxy.model, 'attachment rules must apply to the real sabre model');
   assert(initial.landmarks?.visibleMeshHilt, 'real visible mesh hilt landmark must be measurable');
 
@@ -241,7 +241,7 @@ async function main() {
     checked: 'weapon-visual-transform-application',
     actor: config.actorKey,
     rotationLayerContract: {
-      socketLayer: 'legacy weaponProxy two-hand-center placement / WeaponGrip local quaternion',
+      socketLayer: 'weaponProxy hand-fk placement / WeaponGrip local quaternion',
       attachmentLayer: 'weaponAttachment.rotationDeg / sabre mesh local quaternion under displayRoot',
       weaponProxyRotationDeg: config.proxy.rotationDeg,
       weaponAttachmentRotationDegBeforeProbe: config.attachment.rotationDeg,

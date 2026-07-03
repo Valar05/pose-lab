@@ -6214,6 +6214,7 @@ class PoseLab {
         weaponGripHasSourceSocketLocal: Boolean(pinningState.local?.socketInSourceSocket && pinningState.local?.socketQuaternionInSourceSocket),
         displayRootHasWeaponGripLocal: Boolean(pinningState.local?.displayInSocket && pinningState.local?.displayQuaternionInSocket),
         weaponMeshHasDisplayRootLocal: Boolean(pinningState.local?.modelInDisplay && pinningState.local?.modelQuaternionInDisplay),
+        weaponGripHasHandLocal: Boolean(pinningState.local?.socketInHand),
         socketPinnedToHandBaseline: pinningState.checks?.socketPinnedToHandBaseline === true && screenDistance(handBaselineWorld, socketWorld) !== null && screenDistance(handBaselineWorld, socketWorld) <= 8,
         appliedHiltPinnedToHandBaseline: pinningState.checks?.appliedHiltPinnedToHandBaseline === true && screenDistance(handBaselineWorld, appliedHiltWorld) !== null && screenDistance(handBaselineWorld, appliedHiltWorld) <= 8,
         socketPinnedToPalmTarget: pinningState.checks?.socketPinnedToPalmTarget === true && screenDistance(palmTargetWorld, socketWorld) !== null && screenDistance(palmTargetWorld, socketWorld) <= 8,
@@ -6262,7 +6263,7 @@ class PoseLab {
     };
     live.ok = Boolean(live.checks.sameLiveMarkerPoint
       && live.checks.appliedHiltPinnedToAuthoredSocket
-      && live.checks.weaponGripHasSourceSocketLocal
+      && (live.checks.weaponGripHasSourceSocketLocal || live.checks.weaponGripHasHandLocal)
       && live.checks.displayRootHasWeaponGripLocal
       && live.checks.weaponMeshHasDisplayRootLocal
       && live.checks.fallbackHiddenWithRealWeapon
@@ -11472,6 +11473,7 @@ class PoseLab {
     const relativeDrift = {
       socketInHand: round(drift('socketInHand')),
       socketInSourceSocket: round(drift('socketInSourceSocket')),
+      socketQuaternionInHandDeg: round(quaternionDriftDeg('socketQuaternionInSourceSocket'), 4),
       socketQuaternionInSourceSocketDeg: round(quaternionDriftDeg('socketQuaternionInSourceSocket'), 4),
       displayInSocket: round(drift('displayInSocket')),
       displayQuaternionInSocketDeg: round(quaternionDriftDeg('displayQuaternionInSocket'), 4),

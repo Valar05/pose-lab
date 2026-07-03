@@ -38,7 +38,7 @@ assert(profiles.includes("clipNames: [\n          'OneHandReady',\n        ]"), 
 assert(profiles.includes('ikOrientationGuide: {') && profiles.includes("mode: 'source-key-correction'") && profiles.includes('replaceTracks: false'), 'active Meshy ready profile should use IK only as source-key correction');
 assert(profiles.includes("from: 'Hand.L', to: 'LeftHand'") && profiles.includes("from: 'Hand.R', to: 'RightHand'"), 'ready-only target should preserve mapped source hand keys');
 assert(profiles.includes('weaponKeyConvert') && profiles.includes("targetWeapon: 'WeaponGrip'"), 'Meshy restored profile should key WeaponGrip from source metadata');
-assert(!profiles.includes("parentMode: 'hand-fk'") && !profiles.includes("syntheticSourceSocketBone: ''"), 'Meshy profile must not promote the failed direct hand-fk override');
+assert(profiles.includes("parentMode: 'hand-fk'") && !profiles.includes("syntheticSourceSocketBone: ''"), 'Meshy profile must use direct hand-fk without an empty synthetic socket override');
 assert(fn.includes('if (guidedTracks.length && !ikPreservesSourceTracks)') && fn.includes('ikCorrectedTrackCount'), 'source-key IK mode should correct existing tracks instead of replacing them');
 assert(profiles.includes("staticCorrectionClips: ['OneHandReady']"), 'held OneHandReady should use stable IK correction to avoid per-key twitch');
 assert(!profiles.includes("retargetMode: 'position-guided-arm',\n        clipTag: 'FPS-SWORD-UPPER'"), 'Meshy FPS-SWORD-UPPER must not dispatch sampled position-guided IK');

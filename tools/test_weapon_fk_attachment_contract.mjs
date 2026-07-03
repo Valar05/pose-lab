@@ -25,7 +25,7 @@ const fixed = render([
 
 assert(profilesSource.includes('rotationDeg: [90, 0, -55.145]'), 'Meshy sabre rotation must match the accepted pre-FK T-pose baseline');
 assert(profilesSource.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy sabre hilt oracle must match the accepted pre-FK T-pose baseline');
-assert(!profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must not promote the failed hand-fk override');
+assert(profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must use direct hand-fk for boring FK verification');
 assert(!profilesSource.includes("placementAuthority: 'manual-golden'"), 'Meshy production profile must not keep the failed manual-golden authority label');
 assert(!profilesSource.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'failed Visual-IK Ready generator must not be promoted');
 assert(profilesSource.includes("targetWeapon: 'WeaponGrip'"), 'restored FPS-SWORD-UPPER bridge should still target WeaponGrip for the legacy source weapon track');
@@ -45,6 +45,6 @@ assert(fixed.artifact.reproducesLiveRed === false, `accepted T-pose baseline mus
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({
-  checked: ['restored-tpose-weapon-baseline', 'no-failed-hand-fk-promotion', 'visible-real-sabre-hilt'],
+  checked: ['restored-tpose-weapon-baseline', 'direct-hand-fk-required', 'visible-real-sabre-hilt'],
   fixed: fixed.result.path,
 }, null, 2));

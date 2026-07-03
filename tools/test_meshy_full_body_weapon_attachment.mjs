@@ -20,11 +20,10 @@ assert(profiles.includes('gripLocalPosition: [0.67888, -0.07803, -0.06249]'), 'F
 assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]'), 'Meshy weapon socket should move from wrist bone origin toward visual hand mesh and palm center');
 assert(profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]'), 'Meshy weapon socket should use the saved 3D gizmo model-space placement');
 assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy weapon socket should rotate from the hand origin without shifting the socket');
-assert(!profiles.includes("parentMode: 'hand-fk'"), 'Meshy profile must not promote the failed hand-fk production override');
+assert(profiles.includes("parentMode: 'hand-fk'"), 'Meshy profile should use direct boring FK so WeaponGrip is parented under RightHand');
 assert(!profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy profile must not promote the failed FPS-VISUAL-IK-GOLDEN Ready path');
 assert(js.includes('const root = new THREE.Bone();') && js.includes('root.userData.syntheticWeaponBone = true') && js.includes('root.userData.twoHandCenteredWeaponBone = Boolean(leftHand && !sourceSocket') && js.includes('root.userData.positionMode = config.positionMode') && js.includes('root.userData.sourceSocketBone = sourceSocket?.name ||'), 'weapon socket should support synthetic sockets, selectable one-hand/two-hand positioning, and authored source-socket inheritance');
-assert(weaponRules.includes('proxy.rightHand.localToWorld(vectorFromArray(THREE, config.handLocalOffset))'), 'weapon socket should support hand-local offsets for visual palm-center grip');
-assert(weaponRules.includes('model.worldToLocal(socketWorld.clone())') && weaponRules.includes('local.add(vectorFromArray(THREE, config.modelLocalOffset))'), 'weapon socket should support model-space offsets for screenshot-directed placement');
+assert(weaponRules.includes("if (config.parentMode === 'hand-fk')") && weaponRules.includes('proxy.root.position.add(vectorFromArray(THREE, config.modelLocalOffset))'), 'weapon socket should support direct hand-local boring FK for visual palm-center grip');
 assert(profiles.includes("positionMode: 'right-hand'"), 'Meshy one-hand saber should place WeaponGrip on the right hand instead of the two-hand midpoint');
 assert(js.includes('attachWeaponAttachment(weaponRoot, config = {})'), 'runtime should attach a real weapon model to the socket');
 assert(profiles.includes('visibleClipPatterns') && js.includes('weaponDebugForceVisible()'), 'weapon should be visible for configured sword clip patterns and explicit debug proof routes');
@@ -40,4 +39,4 @@ assert(manifest.includes('meshy_french_revolution_sabre_runtime_glb') && manifes
 assert(manifest.includes('meshy_character_sheet_fps_sword_upper_clip_binding'), 'asset manifest should document the FPS sword upper-body Meshy clip binding');
 
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['meshy-upper-body-fps-sword', 'restored-real-sabre-weapongrip-attachment', 'failed-fk-promotion-absent'] }, null, 2));
+console.log(JSON.stringify({ checked: ['meshy-upper-body-fps-sword', 'restored-real-sabre-weapongrip-attachment', 'direct-hand-fk-required'] }, null, 2));

@@ -26,7 +26,7 @@ const restBlockStart = profiles.indexOf("clipTag: 'FPS-REST-ARMS-CAL'");
 const restBlockEnd = profiles.indexOf('directRotationPairs: MESHY_FPS_REST_DIRECT_PAIRS', restBlockStart);
 const restBlock = restBlockStart >= 0 && restBlockEnd > restBlockStart ? profiles.slice(restBlockStart, restBlockEnd) : '';
 assert(restBlock && !restBlock.includes('weaponKeyConvert'), 'Meshy T-pose bridge must not generate WeaponR/WeaponGrip tracks for normal pure-FK clips');
-assert(!profiles.includes("parentMode: 'hand-fk'") && !profiles.includes("syntheticSourceSocketBone: ''"), 'Meshy saber must not promote the failed direct hand-fk production override');
+assert(profiles.includes("parentMode: 'hand-fk'") && !profiles.includes("syntheticSourceSocketBone: ''"), 'Meshy saber must use direct hand-fk without an empty synthetic socket override');
 assert(profiles.includes("RestProbe: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe should default to the exact accepted CAL--120 clip path');
 assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120', '0T-Pose']"), 'Meshy SwordReady should stay on the protected accepted rest/T-pose surface until explicit promotion');
 assert(!profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'"), 'Meshy failed Visual-IK golden ready clip must not remain promoted');

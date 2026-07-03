@@ -88,7 +88,7 @@ Diagnostic workspaces are evidence producers only. They may write generated repo
 
 ## Weapon FK Attachment Rule
 
-For Meshy one-hand saber review, restore and protect the accepted T-pose/rest baseline before judging Ready. The currently accepted production surface uses the legacy Meshy `WeaponGrip` attachment path with the authored hilt oracle and attachment rotation; do not promote the failed direct `hand-fk` override or Visual-IK Ready generator as production truth.
+For Meshy one-hand saber review, restore and protect the accepted T-pose/rest baseline before judging Ready. The current production surface uses direct boring FK: `WeaponGrip` must be parented under `RightHand`, with the authored hilt oracle and attachment rotation preserved. Do not promote the failed Visual-IK Ready generator as production truth.
 
 `FPS-VISUAL-IK-GOLDEN` was a failed Ready candidate, not canonical truth. Keep any Visual-IK or Ready parity artifacts diagnostic-only until fresh evidence promotes them intentionally.
 
