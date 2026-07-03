@@ -35,16 +35,17 @@ for (const clip of [report.clips.ready, report.clips.tpose]) {
   assert(clip.samples?.every((sample) => typeof sample.animatedSourceSocketRotation === 'boolean' && typeof sample.animatedSocketRotation === 'boolean'), `${clip.clip} missing runtime branch flags`);
   assert(clip.trackSummary.WeaponR.length === 0 && clip.trackSummary.WeaponGrip.length === 0, `${clip.clip} should not contain normal Meshy weapon quaternion tracks: ${JSON.stringify(clip.trackSummary)}`);
 }
-assert(report.ok === true, `Ready and T-pose should now share the pure FK weapon path: ${JSON.stringify(report.comparison?.blockers)}`);
-assert(report.comparison?.blockers?.length === 0, `shared FK report should not name blockers: ${JSON.stringify(report.comparison?.blockers)}`);
-assert(report.comparison?.crossClipHandLocalDelta?.appliedHilt <= 0.001, `applied hilt should stay stable in RightHand local space: ${JSON.stringify(report.comparison?.crossClipHandLocalDelta)}`);
+assert(report.ok === false, 'Ready/T-pose divergence should remain red until Ready is deliberately restored');
+assert(report.acceptedAsFix === false, 'Ready/T-pose divergence report must stay diagnostic, not promotion evidence');
+assert(report.comparison?.blockers?.length > 0, 'diagnostic divergence report should name the remaining Ready blockers');
+assert(report.comparison?.crossClipHandLocalDelta?.appliedHilt > 0.001, `Ready should still differ from accepted T-pose in RightHand local space: ${JSON.stringify(report.comparison?.crossClipHandLocalDelta)}`);
 
 const asserted = spawnSync('node', [tool, '--out', path.join(out, 'assert-shared'), '--samples', '3', '--assert-shared'], { cwd: projectRoot, encoding: 'utf8' });
-assert(asserted.status === 0, `--assert-shared should pass for pure FK clips: ${asserted.stderr || asserted.stdout}`);
+assert(asserted.status !== 0, '--assert-shared should fail while Ready/T-pose parity is still diagnostic red');
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({
-  checked: ['meshy-ready-tpose-shared-fk-path', 'matrix-level-fk-path-report', 'assert-shared-positive-control'],
+  checked: ['meshy-ready-tpose-divergence-diagnostic', 'matrix-level-fk-path-report', 'assert-shared-negative-control'],
   report: summary.path,
   blockers: report.comparison.blockers,
 }, null, 2));

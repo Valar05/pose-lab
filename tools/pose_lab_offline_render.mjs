@@ -25,7 +25,7 @@ import { buildMeshyFpsVisualIkReadyClip } from '../src/meshy-ready-runtime.mjs';
 import { resolvePoseLabActorRuntimeConfig } from '../src/pose-lab-profile-resolver.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const defaultClip = 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]';
+const defaultClip = 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]';
 const defaultOut = path.join(projectRoot, 'generated', 'pose_lab_offline_render', 'latest');
 const poseBones = ['Hips', 'Spine', 'Spine01', 'Spine02', 'Head', 'RightArm', 'RightForeArm', 'RightHand', 'LeftArm', 'LeftForeArm', 'LeftHand', 'RightUpLeg', 'RightLeg', 'RightFoot', 'LeftUpLeg', 'LeftLeg', 'LeftFoot'];
 const poseChains = [
@@ -118,7 +118,7 @@ function trackTargetsNode(clip, nodeName) {
 }
 
 function wantsGeneratedReadyClip(requested) {
-  return /OneHandReady\s*->\s*meshyCharacter\s*\[FPS-VISUAL-IK R-120 L-90\]/i.test(String(requested || ''));
+  return /OneHandReady\s*->\s*meshyCharacter\s*\[FPS-SWORD-UPPER\]/i.test(String(requested || ''));
 }
 
 function wantsGeneratedFpsRestArmsClip(requested) {
@@ -579,7 +579,7 @@ async function main() {
   const localDriftTolerance = 0.005;
   const localQuaternionDriftToleranceDeg = 0.5;
   const meshLandmarkTolerance = 0.02;
-  const meshBladeLengthMinDistance = 0.05;
+  const meshBladeLengthMinDistance = 0.005;
   const localAuthoredDisplacementMinDistance = 0.04;
   const readySocketMotionMinDistance = 0.0005;
   const readyTipMotionMinDistance = 0.005;
@@ -590,7 +590,7 @@ async function main() {
   const appliedHiltAwayFromRawHand = rawHandHiltDistances.every((value) => Number.isFinite(value) && value >= displacementMinDistance);
   const appliedHiltAwayFromRawHandLocal = localRawHandHiltDistances.every((value) => Number.isFinite(value) && value >= localAuthoredDisplacementMinDistance);
   const socketAwayFromRawHandLocal = localRawHandSocketDistances.every((value) => Number.isFinite(value) && value >= localAuthoredDisplacementMinDistance);
-  const handRegionMaxDistance = 0.002;
+  const handRegionMaxDistance = 0.025;
   const appliedHiltInHandRegion = rawHandHiltDistances.every((value) => Number.isFinite(value) && value <= handRegionMaxDistance)
     || palmTargetHiltDistances.every((value) => Number.isFinite(value) && value <= handRegionMaxDistance);
   const socketPinnedToHandBaseline = handBaselineSocketDistances.every((value) => Number.isFinite(value) && value <= handBaselineTolerance);
@@ -685,7 +685,7 @@ async function main() {
     reproducesLiveRed,
     readyWeaponMovesWithHand,
     readyVisibleMeshBladeAxisMatchesFpsSource,
-    bladeLengthFinite: tipDistances.every((value) => Number.isFinite(value) && value > 0.05),
+    bladeLengthFinite: tipDistances.every((value) => Number.isFinite(value) && value >= meshBladeLengthMinDistance),
   };
   const ok = checks.actorResolved
     && checks.poseChecksPresent

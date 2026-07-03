@@ -7,7 +7,7 @@
   "actor": "meshyCharacter",
   "clips": [
     "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
-    "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]"
+    "OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]"
   ],
   "contract": [
     "Rest calibration is target minus T-pose, not target minus ready.",

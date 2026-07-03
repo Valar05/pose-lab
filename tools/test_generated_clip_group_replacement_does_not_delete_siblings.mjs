@@ -33,7 +33,7 @@ for (let i = 0; i < originGroups.length; i += 1) {
     assert(!originGroups[i].startsWith(originGroups[j]) && !originGroups[j].startsWith(originGroups[i]), `generated clip groups must not be prefix-related: ${originGroups[i]} vs ${originGroups[j]}`);
   }
 }
-assert(originGroups.includes('mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'), 'golden mixed right/left roll record should be protected by generated-group tests');
+assert(!originGroups.includes('mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'), 'failed Visual-IK golden group should not remain promoted in generated-group tests');
 assert(!originGroups.some((group) => /ROLL-[MP]\d+-FPS-VISUAL-IK/.test(group)), 'invalid one-size roll sweep candidates should be removed after accepting the golden record');
 
 if (failures.length) throw new Error(failures.join('\n'));

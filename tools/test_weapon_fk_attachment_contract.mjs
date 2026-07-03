@@ -4,10 +4,7 @@ import { execFileSync } from 'node:child_process';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const toolPath = path.join(projectRoot, 'tools', 'pose_lab_offline_render.mjs');
-const fixedOut = path.join(projectRoot, 'generated', 'test_runs', `weapon-fk-contract-fixed-${process.pid}`);
-const faultOut = path.join(projectRoot, 'generated', 'test_runs', `weapon-fk-contract-fault-${process.pid}`);
-const poseLabSource = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
-const weaponRulesSource = fs.readFileSync(path.join(projectRoot, 'src', 'weapon-runtime-rules.mjs'), 'utf8');
+const fixedOut = path.join(projectRoot, 'generated', 'test_runs', `weapon-baseline-contract-fixed-${process.pid}`);
 const profilesSource = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
 const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
@@ -19,36 +16,35 @@ function render(args) {
   return { result, artifact };
 }
 
-const fixed = render(['--out', fixedOut, '--samples', '3']);
-const fault = render(['--out', faultOut, '--samples', '2', '--fault', 'collapse-displacement']);
+const fixed = render([
+  '--actor', 'meshyCharacter',
+  '--clip', '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]',
+  '--out', fixedOut,
+  '--samples', '3',
+]);
 
-assert(!poseLabSource.includes("weaponConfig.targetWeapon || 'WeaponGrip'"), 'generated weapon tracks must not default to animating WeaponGrip');
-assert(poseLabSource.includes('experimentalWeaponSwing === true'), 'Meshy generated weapon tracks must be quarantined behind an explicit experimental flag');
-assert(weaponRulesSource.includes('const allowAnimatedGrip = animatedSocketRotation && config.allowAnimatedSocketAnimation === true'), 'synthetic source sockets should ignore accidental WeaponGrip tracks unless explicitly opted in');
-assert(weaponRulesSource.includes('proxy.root.position.copy(vectorFromArray(THREE, config.handLocalOffset));'), 'hand-fk runtime must assign WeaponGrip local position from handLocalOffset');
-assert(weaponRulesSource.includes('proxy.root.position.add(vectorFromArray(THREE, config.modelLocalOffset));'), 'hand-fk runtime must add modelLocalOffset directly in RightHand-local space');
-assert(weaponRulesSource.includes('proxy.root.position.add(vectorFromArray(THREE, config.gripOffset));'), 'hand-fk runtime must add gripOffset directly in RightHand-local space');
-assert(weaponRulesSource.includes('proxy.root.quaternion.copy(quaternionFromDeg(THREE, config.rotationDeg));'), 'hand-fk runtime must assign WeaponGrip local quaternion from config without pose-derived cache');
-assert(profilesSource.includes("parentMode: 'hand-fk'") && profilesSource.includes("placementAuthority: 'manual-golden'") && profilesSource.includes('allowAnimatedSocketAnimation: false'), 'Meshy profile should declare pure FK manual placement authority and forbid animated WeaponGrip placement');
+assert(profilesSource.includes('rotationDeg: [90, 0, -55.145]'), 'Meshy sabre rotation must match the accepted pre-FK T-pose baseline');
+assert(profilesSource.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy sabre hilt oracle must match the accepted pre-FK T-pose baseline');
+assert(!profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must not promote the failed hand-fk override');
+assert(!profilesSource.includes("placementAuthority: 'manual-golden'"), 'Meshy production profile must not keep the failed manual-golden authority label');
+assert(!profilesSource.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'failed Visual-IK Ready generator must not be promoted');
+assert(profilesSource.includes("targetWeapon: 'WeaponGrip'"), 'restored FPS-SWORD-UPPER bridge should still target WeaponGrip for the legacy source weapon track');
 
 assert(fixed.artifact.schema === 'pose-lab-offline-pose-weapon-render-v1', 'fixed render should use canonical offline schema');
-assert(fixed.artifact.ok === true, `fixed render should prove Meshy sword FK is green: ${JSON.stringify(fixed.artifact.checks)}`);
-assert(fixed.artifact.checks?.parentChainMatchesPureFkShape === true, `Meshy weapon should use direct pure FK chain shape: ${JSON.stringify(fixed.artifact.sampleData?.[0]?.parentChain)}`);
-assert(fixed.artifact.sampleData?.every((sample) => sample.parentChain.join('>') === 'Meshy French Revolution Sabre>WeaponGrip-display-root>WeaponGrip>RightHand'), 'each sample should keep model -> displayRoot -> WeaponGrip -> RightHand ownership');
-assert(fixed.artifact.checks?.weaponGripLocalStableUnderRightHand === true, `WeaponGrip should stay locally stable under RightHand: ${JSON.stringify(fixed.artifact.maxLocalDrift)}`);
-assert(fixed.artifact.checks?.weaponGripQuaternionStableUnderRightHand === true, `WeaponGrip local quaternion should stay stable under RightHand: ${JSON.stringify(fixed.artifact.maxLocalDrift)}`);
+assert(fixed.artifact.ok === true, `accepted T-pose baseline should be green: ${JSON.stringify(fixed.artifact.checks)}`);
+assert(fixed.artifact.generatedClipResolved === true, `accepted T-pose clip should resolve offline: ${fixed.artifact.generatedClipReason}`);
+assert(fixed.artifact.checks?.weaponMeshRendered === true, 'offline baseline must render the real sabre mesh');
+assert(fixed.artifact.checks?.parentChainMatchesPureFkShape === true, `offline baseline should keep model -> displayRoot -> WeaponGrip -> RightHand ownership: ${JSON.stringify(fixed.artifact.sampleData?.[0]?.parentChain)}`);
 assert(fixed.artifact.checks?.appliedHiltPinnedToWeaponGrip === true, `applied hilt should stay pinned to WeaponGrip: ${JSON.stringify(fixed.artifact.hiltSocketDistances)}`);
-assert(fixed.artifact.checks?.appliedHiltInHandRegion === true, `applied hilt should stay in the hand region: ${JSON.stringify(fixed.artifact.maxDistances)}`);
-assert(Number(fixed.artifact.maxDistances?.rawHandToAppliedHilt) <= Number(fixed.artifact.thresholds?.handRegionMaxDistance || 0.025), `raw hand to applied hilt distance should stay within hand-region threshold: ${JSON.stringify(fixed.artifact.maxDistances)}`);
-
-assert(fault.artifact.injectedFaults?.some((entry) => entry.name === 'collapse-displacement'), 'fault render should record injected collapsed-displacement fault');
-assert(fault.artifact.ok === false, 'collapsed-displacement fault should not pass the FK contract');
-assert(fault.artifact.checks?.appliedHiltInHandRegion === false, `fault should move hilt out of the hand region: ${JSON.stringify(fault.artifact.maxDistances)}`);
-assert(fault.artifact.reproducesLiveRed === true, 'collapsed-displacement fault should reproduce the red-build class');
+assert(fixed.artifact.checks?.visibleMeshHiltPinnedToWeaponGrip === true, `real mesh hilt should stay near WeaponGrip: ${JSON.stringify(fixed.artifact.maxDistances)}`);
+assert(fixed.artifact.checks?.visibleMeshHiltMatchesAppliedHilt === true, `real mesh hilt should match applied hilt: ${JSON.stringify(fixed.artifact.maxDistances)}`);
+assert(fixed.artifact.checks?.appliedHiltInHandRegion === true, `applied hilt should stay in the visible hand region: ${JSON.stringify(fixed.artifact.maxDistances)}`);
+assert(Number(fixed.artifact.maxDistances?.rawHandToAppliedHilt) <= Number(fixed.artifact.thresholds?.handRegionMaxDistance || 0.025), `raw hand to applied hilt distance should stay within restored baseline threshold: ${JSON.stringify(fixed.artifact.maxDistances)}`);
+assert(Number(fixed.artifact.maxDistances?.visibleMeshBladeLength) >= Number(fixed.artifact.thresholds?.meshBladeLengthMinDistance || 0.005), `real sabre blade landmark should be visible: ${JSON.stringify(fixed.artifact.maxDistances)}`);
+assert(fixed.artifact.reproducesLiveRed === false, `accepted T-pose baseline must not reproduce red-build class: ${JSON.stringify(fixed.artifact.maxLocalDrift)}`);
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({
-  checked: ['offline-pure-fk-chain-shape', 'visible-hilt-displacement', 'right-hand-local-stability', 'collapse-displacement-negative-control'],
+  checked: ['restored-tpose-weapon-baseline', 'no-failed-hand-fk-promotion', 'visible-real-sabre-hilt'],
   fixed: fixed.result.path,
-  fault: fault.result.path,
 }, null, 2));

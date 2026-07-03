@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const defaultClip = 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]';
+const defaultClip = 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]';
 
 const forwarded = [];
 let sawClip = false;

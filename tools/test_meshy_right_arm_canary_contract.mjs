@@ -6,31 +6,23 @@ const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'
 const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
 
-const visualIkStart = profiles.indexOf("clipTag: 'FPS-VISUAL-IK-GOLDEN'");
-const nextClipTag = visualIkStart >= 0 ? profiles.indexOf('clipTag:', visualIkStart + 1) : -1;
-const blockEnd = nextClipTag > visualIkStart ? nextClipTag : profiles.indexOf('],', visualIkStart);
-const visualIkBlock = visualIkStart >= 0 && blockEnd > visualIkStart
-  ? profiles.slice(visualIkStart, blockEnd)
-  : '';
-const projectionStart = visualIkBlock.indexOf('worldJointProjection: {');
-const rollStart = visualIkBlock.indexOf('rollCorrection: {', projectionStart);
-const projectionBlock = projectionStart >= 0 && rollStart > projectionStart ? visualIkBlock.slice(projectionStart, rollStart) : '';
-const rollBlock = rollStart >= 0 ? visualIkBlock.slice(rollStart) : '';
+const swordStart = profiles.indexOf("clipTag: 'FPS-SWORD-UPPER'");
+const restStart = swordStart >= 0 ? profiles.indexOf("clipTag: 'FPS-REST-ARMS-CAL'", swordStart) : -1;
+const swordBlock = swordStart >= 0 && restStart > swordStart ? profiles.slice(swordStart, restStart) : '';
 
-assert(visualIkBlock, 'missing Meshy FPS-VISUAL-IK-GOLDEN profile block');
-assert(projectionBlock, 'missing Meshy FPS-VISUAL-IK-GOLDEN world-joint projection block');
-assert(rollBlock, 'missing Meshy FPS-VISUAL-IK-GOLDEN roll correction block');
-assert(/clipNames:\s*\[\s*'OneHandReady',\s*\]/.test(visualIkBlock), 'right-arm canary applies to the OneHandReady review clip');
-assert(rollBlock.includes("mode: 'world-down-delta'") && rollBlock.includes('rightMaxTwistDeg: 180') && rollBlock.includes('leftMaxTwistDeg: 180'), 'golden projection should allow separate right/left roll-only correction bounds');
-assert(projectionBlock.includes('rightArmCanary: true') && projectionBlock.includes('rollOffsetDeg: -120'), 'right arm canary should carry the accepted -120 roll offset');
-assert(projectionBlock.includes('rollOffsetDeg: -90'), 'left arm should carry the accepted -90 roll offset');
-assert(projectionBlock.includes("sourceUpper: 'Arm.R'") && projectionBlock.includes("sourceLower: 'Forearm.R'") && projectionBlock.includes("sourceHand: 'Hand.R'"), 'active canary should measure the complete right source arm chain');
-assert(projectionBlock.includes("targetUpper: 'RightArm'"), 'active projection should target the Meshy right upper arm');
-assert(projectionBlock.includes("targetLower: 'RightForeArm'"), 'active projection should target the Meshy right forearm');
-assert(projectionBlock.includes("targetHand: 'RightHand'"), 'active projection should target the Meshy right hand');
-assert(projectionBlock.includes("sourceUpper: 'Arm.L'") && projectionBlock.includes("sourceLower: 'Forearm.L'") && projectionBlock.includes("sourceHand: 'Hand.L'"), 'active projection should also measure the complete left source arm chain');
-assert(!visualIkBlock.includes('weaponKeyConvert'), 'FPS-VISUAL-IK normal profile must not generate WeaponR or WeaponGrip tracks');
-assert(!visualIkBlock.includes("targetWeapon: 'WeaponGrip'") && !visualIkBlock.includes("targetWeapon: 'WeaponR'"), 'FPS-VISUAL-IK profile must leave weapon attachment to pure FK');
+assert(!profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'failed Meshy FPS-VISUAL-IK-GOLDEN profile block must not be promoted');
+assert(!profiles.includes("worldJointProjection: {"), 'failed world-joint projection Ready path must not be promoted');
+assert(!profiles.includes("rollCorrection: {"), 'failed Visual-IK roll correction block must not be promoted');
+assert(swordBlock, 'missing restored Meshy FPS-SWORD-UPPER profile block');
+assert(/clipNames:\s*\[\s*'OneHandReady',\s*\]/.test(swordBlock), 'restored canary applies to the OneHandReady review clip');
+assert(swordBlock.includes("sourceHand: 'Hand.R'") && swordBlock.includes("sourceWeapon: 'Weapon.R'"), 'restored ready path should measure authored right hand and weapon source tracks');
+assert(swordBlock.includes("targetHand: 'RightHand'") && swordBlock.includes("targetWeapon: 'WeaponGrip'"), 'restored ready path should target Meshy RightHand and WeaponGrip');
+assert(swordBlock.includes("{ from: 'Arm.R', to: 'RightArm', strength: 0.85 }"), 'restored profile should preserve the right upper arm source mapping');
+assert(swordBlock.includes("{ from: 'Forearm.R', to: 'RightForeArm', strength: 1.0 }"), 'restored profile should preserve the right forearm source mapping');
+assert(swordBlock.includes("{ from: 'Hand.R', to: 'RightHand', strength: 1.0 }"), 'restored profile should preserve the right hand source mapping');
+assert(swordBlock.includes("{ from: 'Arm.L', to: 'LeftArm', strength: 0.85 }"), 'restored profile should preserve the left upper arm source mapping');
+assert(swordBlock.includes("{ from: 'Forearm.L', to: 'LeftForeArm', strength: 1.0 }"), 'restored profile should preserve the left forearm source mapping');
+assert(!swordBlock.includes("targetWeapon: 'WeaponR'"), 'restored profile should not target runtime WeaponR');
 
-if (failures.length) throw new Error(failures.join('\\n'));
-console.log(JSON.stringify({ checked: ['meshy-golden-ready-roll-record', 'right-minus-120-left-minus-90', 'pure-fk-weapon-untracked'] }, null, 2));
+if (failures.length) throw new Error(failures.join('\n'));
+console.log(JSON.stringify({ checked: ['meshy-visual-ik-candidate-absent', 'restored-fps-sword-upper-right-arm-canary'] }, null, 2));

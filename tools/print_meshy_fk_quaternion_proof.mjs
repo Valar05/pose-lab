@@ -31,7 +31,7 @@ const clips = [
   },
   {
     key: 'Ready',
-    label: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
+    label: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]',
     buildOptions: {},
   },
 ];

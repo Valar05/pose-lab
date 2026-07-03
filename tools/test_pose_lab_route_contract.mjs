@@ -13,7 +13,7 @@ const raw = execFileSync('node', [
   '--actor',
   'meshyCharacter',
   '--clip',
-  'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
+  'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]',
   '--json',
 ], { cwd: projectRoot, encoding: 'utf8' });
 const route = JSON.parse(raw);
@@ -22,19 +22,22 @@ const orientation = fs.readFileSync(path.join(projectRoot, 'PROJECT_ORIENTATION.
 
 assert(route.schema === 'pose-lab-route-v1', 'route command should emit the canonical schema');
 assert(route.route?.kind === 'weapon-fk', 'weapon terms should route to weapon-fk');
-assert(route.route?.authoritativeEvidence === 'offline-render-artifact', 'weapon-fk route should use offline render artifacts as authority');
-assert(route.route?.commands?.some((entry) => entry.command.includes('tools/pose_lab_offline_render.mjs') && entry.command.includes('--assert-fixed')), 'weapon-fk route must run the fixed offline renderer');
-assert(route.route?.commands?.some((entry) => entry.command.includes('test_pose_lab_offline_render_contract.mjs')), 'weapon-fk route must run the offline render contract');
-assert(route.route?.acceptance?.includes('checks.appliedHiltInHandRegion === true'), 'weapon-fk route must require hilt placement in the hand region');
-assert(route.route?.acceptance?.includes('checks.parentChainMatchesPureFkShape === true'), 'weapon-fk route must require pure FK parent-chain parity');
-assert(route.route?.acceptance?.includes('checks.weaponGripLocalStableUnderRightHand === true'), 'weapon-fk route must require WeaponGrip local position stability under RightHand');
-assert(route.route?.acceptance?.includes('checks.weaponGripQuaternionStableUnderRightHand === true'), 'weapon-fk route must require WeaponGrip local rotation stability under RightHand');
-assert(!route.route?.acceptance?.includes('checks.weaponBladeDirectionMatchesFpsSource === true'), 'weapon-fk route must not require FPS Weapon.R blade parity');
+assert(route.route?.authoritativeEvidence === 'firebase-hosted-cloud-browser', 'weapon-fk route should use Firebase hosted cloud browser as authority');
+assert(route.route?.commands?.some((entry) => entry.command.includes('test_firebase_hosting_config.mjs')), 'weapon-fk route must validate Firebase hosting config');
+assert(route.route?.commands?.some((entry) => entry.command.includes('test_firebase_visual_truth_contract.mjs')), 'weapon-fk route must validate Firebase visual truth contract');
+assert(route.route?.commands?.some((entry) => entry.command.includes('gh workflow run firebase-visual-truth.yml')), 'weapon-fk route must run the Firebase visual truth workflow');
+assert(route.route?.requiredArtifacts?.includes('generated/firebase_visual_truth/latest/visual_truth.json'), 'weapon-fk route must require Firebase visual truth JSON');
+assert(route.route?.requiredArtifacts?.includes('generated/firebase_visual_truth/latest/tpose.png'), 'weapon-fk route must require T-pose cloud screenshot');
+assert(route.route?.requiredArtifacts?.includes('generated/firebase_visual_truth/latest/ready_visual_follow.png'), 'weapon-fk route must require Ready visual-follow cloud contact sheet');
+assert(route.route?.acceptance?.includes('truthLedger.tposeStableIdle === true'), 'weapon-fk route must require T-pose stable idle cloud truth');
+assert(route.route?.acceptance?.includes('truthLedger.readyBoringFk === true'), 'weapon-fk route must require Ready boring FK cloud truth');
+assert(route.route?.acceptance?.includes('captures[ready].evaluation.checks.tipTracksHand === true'), 'weapon-fk route must require saber tip to track hand in cloud');
 assert(route.route?.forbiddenProof?.some((item) => item.includes('source-string tests')), 'route must explicitly demote source-string tests as final visual proof');
 assert(route.route?.forbiddenProof?.some((item) => item.includes('screencap')), 'route must forbid deprecated screencap acceptance');
-assert(route.route?.negativeControl?.command?.includes('--fault collapse-displacement'), 'weapon-fk route must include the collapsed-displacement negative control');
+assert(route.route?.forbiddenProof?.some((item) => item.includes('offline render')), 'route must forbid offline render acceptance');
+assert(route.route?.negativeControl?.command?.includes('test_pose_lab_no_bad_promotions.mjs'), 'weapon-fk route must include promotion negative control');
 
-assert(doc.includes('Weapon FK / Meshy Sword') && doc.includes('Source-string tests are support-only'), 'evidence protocol should document the weapon route and support-only string tests');
+assert(doc.includes('Firebase hosted visual truth is tier-one') && doc.includes('Source-string tests are support-only'), 'evidence protocol should document Firebase authority and support-only string tests');
 assert(doc.includes('node tools/pose_lab_route.mjs --kind weapon-fk'), 'evidence protocol should advertise the router command');
 assert(orientation.includes('docs/POSE_LAB_EVIDENCE_PROTOCOL.md'), 'orientation should link to the evidence protocol');
 

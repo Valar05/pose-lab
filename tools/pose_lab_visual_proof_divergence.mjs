@@ -135,7 +135,7 @@ function buildReport(args) {
   const liveCacheMatches = live.ok && liveData.cacheToken === cacheToken;
   const routeMatches = liveData.actor === 'meshyCharacter'
     && String(liveData.clip || '').includes('OneHandReady')
-    && String(liveData.clip || '').includes('FPS-VISUAL-IK R-120 L-90');
+    && String(liveData.clip || '').includes('FPS-SWORD-UPPER');
   const debugMarkerNotSubstituteProof = !(bool(liveChecks.visibleAppliedHiltMarker) && !hiltInHandRegion);
   const newestScreenshotCoveredByLiveEvidence = !screenshotMtimeMs
     || !liveMtimeMs
@@ -176,7 +176,7 @@ function buildReport(args) {
     cacheToken,
     runtimeBuild,
     actor: liveData.actor || 'meshyCharacter',
-    clip: liveData.clip || 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
+    clip: liveData.clip || 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]',
     offline: {
       path: offline.absolute ? rel(offline.absolute) : args.offline,
       present: offline.ok,

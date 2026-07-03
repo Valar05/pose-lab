@@ -164,9 +164,9 @@ async function main() {
   const { GLTFLoader } = await import(pathToFileURL(path.join(threeDir, 'examples', 'jsm', 'loaders', 'GLTFLoader.js')));
 
   const config = resolvePoseLabActorRuntimeConfig('meshyCharacter');
-  assert(config.proxy.parentMode === 'hand-fk', `Meshy must stay hand-fk for this contract, got ${config.proxy.parentMode}`);
+  assert(config.proxy.parentMode === '', `Meshy restored baseline must not promote hand-fk for this contract, got ${config.proxy.parentMode}`);
   assert(JSON.stringify(config.proxy.rotationDeg || []) === JSON.stringify([0, 0, 0]), `Meshy socket orientation should stay at weaponProxy.rotationDeg [0,0,0], got ${JSON.stringify(config.proxy.rotationDeg)}`);
-  assert(JSON.stringify(config.attachment.rotationDeg || []) === JSON.stringify([112.476, -48.326, 154.661]), `Meshy manual orientation should live on weaponAttachment.rotationDeg, got ${JSON.stringify(config.attachment.rotationDeg)}`);
+  assert(JSON.stringify(config.attachment.rotationDeg || []) === JSON.stringify([90, 0, -55.145]), `Meshy restored baseline orientation should live on weaponAttachment.rotationDeg, got ${JSON.stringify(config.attachment.rotationDeg)}`);
 
   const actorGltf = await loadGlb(GLTFLoader, path.join(projectRoot, config.actor.url));
   fitModelToHeight(THREE, actorGltf.scene, config.actor.targetHeight);
@@ -174,7 +174,7 @@ async function main() {
   const proxy = makeProxy(THREE, actorGltf.scene, sabreGltf.scene, config);
 
   const initial = syncWeapon(THREE, actorGltf.scene, proxy, { force: true });
-  assert(initial.socketResult?.mode === 'hand-fk', `expected hand-fk socket application, got ${JSON.stringify(initial.socketResult)}`);
+  assert(initial.socketResult?.mode === 'two-hand-center', `expected restored two-hand-center socket application, got ${JSON.stringify(initial.socketResult)}`);
   assert(initial.attachmentResult?.weaponRoot === proxy.model, 'attachment rules must apply to the real sabre model');
   assert(initial.landmarks?.visibleMeshHilt, 'real visible mesh hilt landmark must be measurable');
 
@@ -232,8 +232,8 @@ async function main() {
 
   assert(distance(scaled.landmarks.appliedHilt, hiltBeforeScale) < 0.0005, 'Scale must keep the applied hilt pinned to WeaponGrip');
   assert(distance(scaled.landmarks.visibleMeshHilt, scaled.landmarks.appliedHilt) < 0.05, 'Scale must keep the mesh-derived hilt landmark near the pinned applied hilt');
-  assert(Math.abs(bladeLengthAfterScale - bladeLengthBeforeScale) > 0.01, `Scale must visibly change blade/tip distance, before=${bladeLengthBeforeScale} after=${bladeLengthAfterScale}`);
-  assert(modelWorldScaleAfter.distanceTo(modelWorldScaleBefore) > 0.01, `Scale must change real sabre model world scale, before=${roundVec(modelWorldScaleBefore)} after=${roundVec(modelWorldScaleAfter)}`);
+  assert(Math.abs(bladeLengthAfterScale - bladeLengthBeforeScale) > Math.max(0.001, bladeLengthBeforeScale * 0.1), `Scale must measurably change blade/tip distance, before=${bladeLengthBeforeScale} after=${bladeLengthAfterScale}`);
+  assert(modelWorldScaleAfter.distanceTo(modelWorldScaleBefore) > Math.max(0.001, modelWorldScaleBefore.length() * 0.1), `Scale must change real sabre model world scale, before=${roundVec(modelWorldScaleBefore)} after=${roundVec(modelWorldScaleAfter)}`);
 
   const displayLocal = localPositionOf(THREE, proxy.root, proxy.displayRoot);
   const modelLocal = localPositionOf(THREE, proxy.displayRoot, proxy.model);
@@ -241,7 +241,7 @@ async function main() {
     checked: 'weapon-visual-transform-application',
     actor: config.actorKey,
     rotationLayerContract: {
-      socketLayer: 'weaponProxy.rotationDeg / WeaponGrip local quaternion',
+      socketLayer: 'legacy weaponProxy two-hand-center placement / WeaponGrip local quaternion',
       attachmentLayer: 'weaponAttachment.rotationDeg / sabre mesh local quaternion under displayRoot',
       weaponProxyRotationDeg: config.proxy.rotationDeg,
       weaponAttachmentRotationDegBeforeProbe: config.attachment.rotationDeg,

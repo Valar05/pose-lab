@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const defaultClip = 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]';
+const defaultClip = '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]';
 
 function parseArgs(argv) {
   const args = { kind: '', actor: 'meshyCharacter', clip: defaultClip, json: false };
@@ -47,30 +47,34 @@ function routeFor(args) {
   const routes = {
     'weapon-fk': {
       kind: 'weapon-fk',
-      authoritativeEvidence: 'offline-render-artifact',
-      summary: 'Use the offline pose+weapon renderer as the first proof for Meshy pure-FK hierarchy, hilt hand-region placement, hand-local stability, and parent-chain regressions.',
+      authoritativeEvidence: 'firebase-hosted-cloud-browser',
+      summary: 'Use the Firebase preview workflow as the acceptance proof for Meshy T-pose stability and Ready boring FK. Offline render is diagnostic-only.',
       commands: [
-        command(`node tools/pose_lab_offline_render.mjs --actor ${actor} --clip ${JSON.stringify(clip)} --samples 4 --assert-fixed`),
-        command('node tools/test_pose_lab_offline_render_contract.mjs'),
-        command('node tools/test_weapon_fk_attachment_contract.mjs'),
-        command('node tools/test_meshy_full_body_weapon_attachment.mjs'),
-        command('node tools/test_manual_weapon_placement_lock.mjs'),
+        command('node --check tools/capture_firebase_visual_truth.mjs'),
+        command('node tools/test_firebase_hosting_config.mjs'),
+        command('node tools/test_firebase_visual_truth_contract.mjs'),
+        command('gh workflow run firebase-visual-truth.yml --repo Valar05/pose-lab --ref <branch>'),
+        command('gh run download <run-id> --repo Valar05/pose-lab --name firebase-visual-truth --dir <artifact-dir>'),
       ],
       requiredArtifacts: [
-        'generated/pose_lab_offline_render/latest/pose_weapon_render.json',
-        'generated/pose_lab_offline_render/latest/pose_weapon_render.png',
+        'generated/firebase_visual_truth/latest/visual_truth.json',
+        'generated/firebase_visual_truth/latest/tpose.png',
+        'generated/firebase_visual_truth/latest/ready.png',
+        'generated/firebase_visual_truth/latest/ready_visual_follow.png',
       ],
       acceptance: [
-        'artifact.ok === true',
-        'checks.parentChainMatchesPureFkShape === true',
-        'checks.weaponGripLocalStableUnderRightHand === true',
-        'checks.weaponGripQuaternionStableUnderRightHand === true',
-        'checks.appliedHiltPinnedToWeaponGrip === true',
-        'checks.appliedHiltInHandRegion === true',
-        'maxDistances.rawHandToAppliedHilt <= thresholds.handRegionMaxDistance',
+        'authority === "firebase-hosted-cloud-browser"',
+        'ok === true',
+        'truthLedger.tposeStableIdle === true',
+        'truthLedger.readyBoringFk === true',
+        'captures[tpose].evaluation.checks.acceptedHiltOracle === true',
+        'captures[tpose].evaluation.checks.realWeaponVisible === true',
+        'captures[ready].evaluation.checks.realWeaponVisible === true',
+        'captures[ready].evaluation.checks.handMoves === true',
+        'captures[ready].evaluation.checks.tipTracksHand === true',
       ],
-      forbiddenProof: commonForbidden,
-      negativeControl: command(`node tools/pose_lab_offline_render.mjs --actor ${actor} --clip ${JSON.stringify(clip)} --samples 2 --fault collapse-displacement`),
+      forbiddenProof: ['offline render as acceptance evidence', ...commonForbidden],
+      negativeControl: command('node tools/test_pose_lab_no_bad_promotions.mjs'),
     },
     'cache-server': {
       kind: 'cache-server',

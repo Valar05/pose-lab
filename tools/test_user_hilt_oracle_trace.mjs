@@ -16,7 +16,7 @@ import { RIG_PROFILES } from '../src/rig-profiles.js';
 import { resolvePoseLabActorRuntimeConfig } from '../src/pose-lab-profile-resolver.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const USER_HILT_ORACLE = [0.73272, 0.0091, -0.01674];
+const USER_HILT_ORACLE = [0.6535, -0.02302, -0.07317];
 const failures = [];
 
 function assert(condition, message) {
@@ -159,7 +159,7 @@ async function main() {
   const displayRootLocal = proxy.root.worldToLocal(proxy.displayRoot.getWorldPosition(new THREE.Vector3()));
   const sabreMeshLocal = proxy.displayRoot.worldToLocal(proxy.model.getWorldPosition(new THREE.Vector3()));
 
-  assert(socketResult?.mode === 'hand-fk', `socket runtime must apply hand-fk, got ${JSON.stringify(socketResult)}`);
+  assert(socketResult?.mode === 'two-hand-center', `socket runtime must apply restored two-hand-center placement, got ${JSON.stringify(socketResult)}`);
   assert(attachmentResult?.weaponRoot === proxy.model, 'attachment runtime must apply to the real sabre mesh root');
   assert(sameVec(proxy.attachmentConfig.gripLocalPosition, USER_HILT_ORACLE), `applyWeaponAttachmentRuntimeRules must not mutate the user hilt oracle, got ${JSON.stringify(proxy.attachmentConfig.gripLocalPosition)}`);
   assert(distance(configuredLocalHiltWorld, weaponGripWorld) <= 0.0005, `configured user hilt oracle point must pin to WeaponGrip, distance=${distance(configuredLocalHiltWorld, weaponGripWorld)}`);

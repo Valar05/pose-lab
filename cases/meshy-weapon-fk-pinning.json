@@ -7,7 +7,7 @@
   "route": {
     "kind": "weapon-fk",
     "actor": "meshyCharacter",
-    "clip": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
+    "clip": "OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]",
     "mode": "standard",
     "query": {
       "weaponDebug": "1"
@@ -55,7 +55,7 @@
     {
       "id": "fixed-offline-render",
       "kind": "command",
-      "command": "node tools/pose_lab_offline_render.mjs --actor meshyCharacter --clip \"OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]\" --samples 4 --assert-fixed",
+      "command": "node tools/pose_lab_offline_render.mjs --actor meshyCharacter --clip \"OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]\" --samples 4 --assert-fixed",
       "default": false
     },
     {

@@ -2150,9 +2150,8 @@ function buildFpsUpperKeyConvertClips(sharedClips, sourceRoot, targetRoot, optio
     const targetWeaponName = weaponConfig.targetWeapon || 'WeaponR';
     const sourceWeaponFrameName = weaponConfig.sourceFrame || weaponConfig.sourceChest || 'ShoulderCenter';
     const targetWeaponFrameName = weaponConfig.targetFrame || weaponConfig.targetChest || 'Spine02';
-    const weaponTrackEnabled = weaponConfig.enabled === true && weaponConfig.experimentalWeaponSwing === true;
     const sourceWeaponTrack = sourceTrackByName.get(canonicalBoneName(sourceWeaponName));
-    if (weaponTrackEnabled && sourceWeaponTrack) {
+    if (sourceWeaponTrack) {
       const sourceClone = cloneSkinnedObject(sourceRoot);
       const targetClone = cloneSkinnedObject(targetRoot);
       const sourceHand = findNamedBone(sourceClone, sourceHandName);

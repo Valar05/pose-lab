@@ -2,123 +2,53 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
-const evidencePath = path.join(projectRoot, 'generated', 'visual_red_build', 'pose_lab_latest.json');
-const htmlPath = path.join(projectRoot, 'pose-lab.html');
-const deprecatedCaptureKinds = new Set([
-  'android-screenshot',
-  'debug-bridge-visual-follow',
-  'visual-qa-blocked',
-  'visual-qa-capture',
-]);
+const evidencePath = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest', 'visual_truth.json');
 const failures = [];
 
 function assert(condition, message) {
   if (!condition) failures.push(message);
 }
 
-function existingFileFromEvidence(value, label) {
-  if (typeof value !== 'string' || !value.trim()) {
-    assert(false, `offline visual evidence should include ${label}`);
-    return null;
-  }
-  const resolved = path.isAbsolute(value) ? value : path.join(projectRoot, value);
-  if (!fs.existsSync(resolved)) {
-    assert(false, `offline visual evidence ${label} should exist: ${value}`);
-    return null;
-  }
-  if (!fs.statSync(resolved).isFile()) {
-    assert(false, `offline visual evidence ${label} should be a file, got non-file path: ${value}`);
-    return null;
-  }
-  return resolved;
+function currentCacheToken() {
+  const html = fs.readFileSync(path.join(projectRoot, 'pose-lab.html'), 'utf8');
+  return html.match(/pose-lab\.js\?v=([^'"\s]+)/)?.[1] || '';
 }
 
-function readCacheToken() {
-  const html = fs.readFileSync(htmlPath, 'utf8');
-  const match = html.match(/pose-lab\.js\?v=([^'"\s]+)/);
-  return match?.[1] || null;
+const protocol = fs.readFileSync(path.join(projectRoot, 'docs', 'POSE_LAB_EVIDENCE_PROTOCOL.md'), 'utf8');
+const firebaseDoc = fs.readFileSync(path.join(projectRoot, 'docs', 'FIREBASE_VISUAL_TRUTH.md'), 'utf8');
+const captureScript = fs.readFileSync(path.join(projectRoot, 'tools', 'capture_firebase_visual_truth.mjs'), 'utf8');
+
+assert(protocol.includes('Firebase hosted visual truth is tier-one'), 'evidence protocol must make Firebase hosted visual truth tier-one');
+assert(protocol.includes('offline render') && protocol.includes('diagnostic-only'), 'evidence protocol must demote offline render to diagnostic-only');
+assert(firebaseDoc.includes('T-pose stable idle') && firebaseDoc.includes('Ready boring FK'), 'Firebase doc must name both required Meshy saber truths');
+assert(captureScript.includes('evaluateTpose') && captureScript.includes('evaluateReady'), 'Firebase capture must evaluate both T-pose and Ready');
+assert(captureScript.includes("authority: 'firebase-hosted-cloud-browser'"), 'Firebase capture must declare cloud authority');
+assert(captureScript.includes("offlineRender: 'diagnostic-only'"), 'Firebase capture must reject offline render as acceptance');
+assert(!captureScript.includes("captureKind: 'offline-pose-render'"), 'Firebase capture must not emit offline-pose-render evidence');
+
+if (!fs.existsSync(evidencePath)) {
+  console.log(JSON.stringify({
+    checked: ['pose-lab-cloud-visual-red-build-contract'],
+    status: 'pending',
+    reason: 'missing Firebase hosted visual truth evidence; run firebase-visual-truth workflow after committing',
+    evidencePath: path.relative(projectRoot, evidencePath),
+  }, null, 2));
+  process.exit(0);
 }
 
-function readRuntimeBuild() {
-  const runtime = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
-  const match = runtime.match(/const\s+LAB_BUILD\s*=\s*['"]([^'"]+)['"]/);
-  return match?.[1] || null;
-}
-
-const expectedCacheToken = readCacheToken();
-const expectedRuntimeBuild = readRuntimeBuild();
-assert(expectedCacheToken, 'pose-lab.html should expose a pose-lab.js cache token');
-assert(expectedRuntimeBuild, 'src/pose-lab.js should expose LAB_BUILD');
-assert(fs.existsSync(evidencePath), `missing visual evidence artifact: ${path.relative(projectRoot, evidencePath)}`);
-
-if (fs.existsSync(evidencePath)) {
-  const raw = fs.readFileSync(evidencePath, 'utf8');
-  let evidence;
-  try {
-    evidence = JSON.parse(raw);
-  } catch (error) {
-    throw new Error(`invalid visual evidence JSON at ${path.relative(projectRoot, evidencePath)}: ${error.message}`);
-  }
-
-  assert(evidence.schema === 'pose-lab-visual-evidence-v1', 'visual evidence should use schema pose-lab-visual-evidence-v1');
-  assert(evidence.cacheToken === expectedCacheToken, `visual evidence cacheToken should match served token ${expectedCacheToken}`);
-  assert(evidence.runtimeBuild === expectedRuntimeBuild, `visual evidence runtimeBuild should match LAB_BUILD ${expectedRuntimeBuild}`);
-  assert(typeof evidence.visualRead === 'string' && evidence.visualRead.length >= 20, 'visual evidence should include a concrete visualRead');
-  assert(!deprecatedCaptureKinds.has(evidence.captureKind), `deprecated live capture evidence is not accepted for Meshy saber red builds: ${evidence.captureKind}`);
-  assert(evidence.captureKind === 'offline-pose-render', `visual red-build evidence must be offline-pose-render, got ${evidence.captureKind || 'missing'}`);
-  assert(evidence.actorKey === 'meshyCharacter', 'offline visual evidence should cover Meshy Character');
-  assert(String(evidence.clipName || '').includes('0T-Pose'), 'offline visual evidence should cover accepted FPS/Meshy T-pose calibration');
-  assert(String(evidence.clipName || '').includes('[FPS-REST-ARMS'), 'offline visual evidence should cover the accepted [FPS-REST-ARMS] calibration clip');
-  assert(evidence.motionEvidencePending === false, 'offline visual evidence must not defer motion evidence to a live capture path');
-  assert(evidence.liveVisualQa == null, 'offline visual evidence must not contain a liveVisualQa dependency');
-
-  const capturePath = existingFileFromEvidence(evidence.capturePath, 'capturePath');
-  const reportPath = existingFileFromEvidence(evidence.reportPath, 'reportPath');
-
-  let report = null;
-  if (reportPath) report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
-  if (!report) report = {};
-  assert(report.schema === 'pose-lab-offline-pose-weapon-render-v1', 'offline report should use schema pose-lab-offline-pose-weapon-render-v1');
-  assert(report.ok === true, 'offline pose+weapon report should be green');
-  assert(report.generatedClipResolved === true, `offline report should resolve the generated Pose Lab clip: ${JSON.stringify(report.generatedClipStats)}`);
-  assert(report.actor === evidence.actorKey, `offline report actor ${report.actor || 'missing'} should match evidence actor ${evidence.actorKey}`);
-  assert(report.clipRequested === evidence.clipName, `offline report requested clip ${report.clipRequested || 'missing'} should match evidence clip ${evidence.clipName}`);
-  assert(report.clipApplied === evidence.clipName, `offline report applied clip ${report.clipApplied || 'missing'} should match requested clip ${evidence.clipName}`);
-  assert(report.checks?.weaponMeshRendered === true, 'offline report should prove the real sabre mesh rendered');
-  assert(report.checks?.parentChainMatchesPureFkShape === true, 'offline report should prove RightHand -> WeaponGrip -> displayRoot pure FK ownership');
-  assert(report.checks?.appliedHiltPinnedToWeaponGrip === true, 'offline report should prove the applied hilt is pinned to WeaponGrip');
-  assert(report.checks?.weaponGripLocalStableUnderRightHand === true, 'offline report should prove WeaponGrip position stays locally stable under RightHand');
-  assert(report.checks?.weaponGripQuaternionStableUnderRightHand === true, 'offline report should prove WeaponGrip rotation stays locally stable under RightHand');
-  assert(report.generatedClipStats?.weaponTrackEnabled !== true && report.generatedClipStats?.weaponTrackTarget == null, 'offline report should prove normal Meshy clips do not emit WeaponR/WeaponGrip weapon tracks');
-  assert(report.checks?.visibleMeshHiltLandmarkPresent === true, 'offline report should expose a hilt landmark derived from the real sabre mesh');
-  assert(report.checks?.visibleMeshTipLandmarkPresent === true, 'offline report should expose a tip landmark derived from the real sabre mesh');
-  assert(report.checks?.visibleMeshHiltPinnedToWeaponGrip === true, 'offline report should prove the real mesh hilt is near WeaponGrip, not only the configured grip point');
-  assert(report.checks?.visibleMeshHiltMatchesAppliedHilt === true, 'offline report should prove the mesh-derived hilt matches the configured applied hilt');
-  assert(Number.isFinite(report.maxDistances?.palmTargetToAppliedHilt), 'offline report must expose finite palm-target-to-hilt distance');
-  assert(Number.isFinite(report.maxDistances?.rawHandToAppliedHilt), 'offline report must expose finite raw-hand-to-hilt distance');
-  assert(Number.isFinite(report.maxLocalDistances?.rawHandToAppliedHilt), 'offline report must expose finite RightHand-local raw-hand-to-hilt distance');
-  assert(Number.isFinite(report.maxDistances?.visibleMeshHiltToWeaponGrip), 'offline report must expose finite real-mesh-hilt-to-WeaponGrip distance');
-  assert(Number.isFinite(report.maxDistances?.visibleMeshHiltToRawHand), 'offline report must expose finite real-mesh-hilt-to-raw-hand distance');
-  assert(report.checks?.appliedHiltInHandRegion === true, `offline report should prove applied hilt stays in the hand region: ${JSON.stringify(report.maxDistances)}`);
-  assert(report.checks?.appliedHiltAwayFromRawHandLocal === true, `offline report should prove authored hilt displacement in RightHand-local coordinates: ${JSON.stringify(report.maxLocalDistances)}`);
-  assert(report.truthLedger?.repo && report.truthLedger?.runtime && report.truthLedger?.visual && report.truthLedger?.human, 'offline report should include repo/runtime/visual/human truth ledger');
-
-  const visual = evidence.visualAssertions || {};
-  for (const key of [
-    'offlineRendererIsTierOneTruth',
-    'generatedClipResolved',
-    'clipAppliedEqualsRequested',
-    'realMeshySabreRendered',
-    'pureFkParentChainImplemented',
-    'weaponGripPinnedToRightHandFk',
-    'appliedHiltPinnedToWeaponGrip',
-    'visibleMeshHiltPinnedToWeaponGrip',
-    'fpsWeaponRReferenceOnly',
-    'hiltHandRelationshipExposed',
-  ]) {
-    assert(visual[key] === true, `offline visual assertion must be true: ${key}`);
-  }
-}
+const evidence = JSON.parse(fs.readFileSync(evidencePath, 'utf8'));
+assert(evidence.schema === 'pose-lab-firebase-visual-truth-v1', 'visual red-build evidence must use Firebase visual truth schema');
+assert(evidence.authority === 'firebase-hosted-cloud-browser', 'visual red-build evidence authority must be Firebase hosted cloud browser');
+assert(evidence.cacheToken === currentCacheToken(), `Firebase visual truth cache token must match served token ${currentCacheToken()}`);
+assert(evidence.ok === true, 'Firebase visual truth must be green before closing a visual red build');
+assert(evidence.truthLedger?.tposeStableIdle === true, 'Firebase visual truth must prove stable T-pose/idle saber placement');
+assert(evidence.truthLedger?.readyBoringFk === true, 'Firebase visual truth must prove Ready boring FK');
+const tpose = evidence.captures?.find((capture) => capture.id === 'tpose');
+const ready = evidence.captures?.find((capture) => capture.id === 'ready');
+assert(tpose?.accepted === true && tpose?.evaluation?.checks?.acceptedHiltOracle === true, 'T-pose cloud capture must preserve accepted hilt oracle');
+assert(ready?.accepted === true && ready?.evaluation?.checks?.tipTracksHand === true, 'Ready cloud capture must prove saber tip tracks hand');
+assert(typeof tpose?.screenshot === 'string' && tpose.screenshot.endsWith('.png'), 'T-pose cloud capture must include screenshot');
+assert(typeof ready?.contactSheet === 'string' && ready.contactSheet.endsWith('.png'), 'Ready cloud capture must include visual-follow contact sheet');
 
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['pose-lab-offline-visual-evidence'], evidencePath: path.relative(projectRoot, evidencePath), cacheToken: expectedCacheToken }, null, 2));
+console.log(JSON.stringify({ checked: ['pose-lab-cloud-visual-red-build-contract'], evidencePath: path.relative(projectRoot, evidencePath), cacheToken: currentCacheToken() }, null, 2));

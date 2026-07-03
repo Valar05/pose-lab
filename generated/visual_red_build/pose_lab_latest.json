@@ -1,6 +1,6 @@
 {
   "schema": "pose-lab-visual-evidence-v1",
-  "generatedAt": "2026-07-02T22:59:37.899Z",
+  "generatedAt": "2026-07-03T02:22:42.334Z",
   "captureKind": "offline-pose-render",
   "offlineTruthOnly": true,
   "cacheToken": "pose-editor-189",
@@ -29,15 +29,15 @@
     "generatedClipResolved": true,
     "clipApplied": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
     "maxDistances": {
-      "rawHandToAppliedHilt": 0.0005708765190476334,
-      "palmTargetToAppliedHilt": 0.0012816005617976107,
-      "visibleMeshHiltToWeaponGrip": 0,
-      "visibleMeshHiltToRawHand": 0.0005708765190476334,
-      "visibleMeshHiltToAppliedHilt": 0
+      "rawHandToAppliedHilt": 0.01706075027658515,
+      "palmTargetToAppliedHilt": 0.017298699373074284,
+      "visibleMeshHiltToWeaponGrip": 0.00030757112998463826,
+      "visibleMeshHiltToRawHand": 0.016883654817603937,
+      "visibleMeshHiltToAppliedHilt": 0.00030757112998463826
     },
     "maxLocalDistances": {
-      "rawHandToAppliedHilt": 0.05179845750599143,
-      "rawHandToSocket": 0.05179845750599143,
+      "rawHandToAppliedHilt": 1.5343295723539974,
+      "rawHandToSocket": 1.5343295723539974,
       "socketToAppliedHilt": 0
     },
     "motionFromFirstFrame": {
@@ -48,8 +48,8 @@
       "tip": 0
     },
     "maxWeaponOrientationErrorDeg": {
-      "blade": 97.9801,
-      "visibleMeshBlade": 98.3512,
+      "blade": 108.4579,
+      "visibleMeshBlade": 109.0379,
       "up": 0
     },
     "truthLedger": {

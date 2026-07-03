@@ -12,9 +12,11 @@ const resolved = resolvePoseLabActorRuntimeConfig('meshyCharacter');
 const profile = RIG_PROFILES.meshyCharacter;
 assert(resolved.actor.url === profile.url, 'resolver should use imported RIG_PROFILES actor url');
 assert(resolved.actor.targetHeight === profile.targetHeight, 'resolver should use imported RIG_PROFILES targetHeight');
-for (const key of ['handBone', 'leftHandBone', 'socketBone', 'syntheticSourceSocketBone', 'parentMode', 'positionMode', 'allowAnimatedSocketAnimation']) {
-  assert(resolved.proxy[key] === profile.weaponProxy[key], `resolver proxy ${key} should match imported profile`);
+for (const key of ['handBone', 'leftHandBone', 'socketBone', 'syntheticSourceSocketBone', 'positionMode']) {
+  assert(resolved.proxy[key] === (profile.weaponProxy[key] ?? ''), `resolver proxy ${key} should match imported profile/default`);
 }
+assert(resolved.proxy.allowAnimatedSocketAnimation === (profile.weaponProxy.allowAnimatedSocketAnimation === true), 'resolver proxy allowAnimatedSocketAnimation should default to false');
+assert(resolved.proxy.parentMode === '', 'resolver should default missing parentMode to the restored legacy placement path');
 for (const key of ['handLocalOffset', 'modelLocalOffset', 'gripOffset', 'tipOffset', 'rotationDeg']) {
   assert(same(resolved.proxy[key], profile.weaponProxy[key]), `resolver proxy ${key} should match imported profile`);
 }

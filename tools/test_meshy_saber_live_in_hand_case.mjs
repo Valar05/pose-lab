@@ -8,28 +8,28 @@ const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
 
 const caseData = JSON.parse(fs.readFileSync(path.join(projectRoot, 'cases/meshy-saber-live-in-hand.json'), 'utf8'));
-const redBuildContract = fs.readFileSync(path.join(projectRoot, 'tools/test_pose_lab_visual_red_build_contract.mjs'), 'utf8');
-const refreshTool = fs.readFileSync(path.join(projectRoot, 'tools/refresh_pose_lab_offline_visual_evidence.mjs'), 'utf8');
+const firebaseContract = fs.readFileSync(path.join(projectRoot, 'tools/test_firebase_visual_truth_contract.mjs'), 'utf8');
+const captureTool = fs.readFileSync(path.join(projectRoot, 'tools/capture_firebase_visual_truth.mjs'), 'utf8');
 
 assert(caseData.id === 'meshy-saber-live-in-hand', 'missing Meshy saber in-hand case');
-assert(caseData.route.kind === 'weapon-fk', 'Meshy saber in-hand case should use the offline weapon-fk route');
-assert(caseData.route.clip.includes('0T-Pose') && caseData.route.clip.includes('[FPS-REST-ARMS'), 'Meshy saber in-hand case should cover the accepted T-pose calibration clip');
-assert(caseData.checks.some((check) => String(check.command || '').includes('test_pose_lab_visual_red_build_contract.mjs')), 'case should run the offline visual red-build contract');
-assert(caseData.checks.some((check) => String(check.command || '').includes('test_meshy_tpose_weapon_orientation_contract.mjs')), 'case should run the T-pose weapon orientation contract');
-assert(caseData.evidenceArtifacts.includes('generated/visual_red_build/pose_lab_latest.json'), 'case should require durable offline visual evidence');
-assert(caseData.evidenceArtifacts.includes('generated/pose_lab_offline_render/visual_red_build_tpose/pose_weapon_render.png'), 'case should require the offline render PNG');
+assert(caseData.route.kind === 'weapon-fk', 'Meshy saber in-hand case should use the Firebase weapon-fk route');
+assert(caseData.route.clip.includes('OneHandReady') && caseData.route.clip.includes('[FPS-SWORD-UPPER'), 'Meshy saber in-hand case should cover the Ready FK clip');
+assert(caseData.checks.some((check) => String(check.command || '').includes('test_firebase_hosting_config.mjs')), 'case should run the Firebase hosting contract');
+assert(caseData.checks.some((check) => String(check.command || '').includes('test_firebase_visual_truth_contract.mjs')), 'case should run the Firebase visual truth contract');
+assert(caseData.evidenceArtifacts.includes('generated/firebase_visual_truth/latest/visual_truth.json'), 'case should require durable Firebase visual truth evidence');
+assert(caseData.evidenceArtifacts.includes('generated/firebase_visual_truth/latest/tpose.png'), 'case should require the hosted T-pose screenshot');
+assert(caseData.evidenceArtifacts.includes('generated/firebase_visual_truth/latest/ready_visual_follow.png'), 'case should require the hosted Ready visual-follow contact sheet');
 assert(caseData.expectedVisibleBehavior.some((line) => /real saber/i.test(line)), 'case should name the real saber mesh, not only markers');
 assert(caseData.forbiddenProof.some((line) => /marker/i.test(line)), 'case should forbid debug marker substitution');
 
-assert(refreshTool.includes('offline-pose-render') || redBuildContract.includes('offline-pose-render'), 'offline visual evidence must use captureKind offline-pose-render');
-assert(redBuildContract.includes('deprecated live capture evidence is not accepted'), 'offline visual contract should reject deprecated live capture evidence');
-assert(redBuildContract.includes('parentChainMatchesPureFkShape'), 'offline visual contract should require pure FK parent-chain parity');
-assert(redBuildContract.includes('weaponGripLocalStableUnderRightHand'), 'offline visual contract should require WeaponGrip stability under RightHand');
-assert(redBuildContract.includes('weaponTrackTarget == null'), 'offline visual contract should require no normal Meshy weapon tracks');
-assert(!redBuildContract.includes('weaponBladeDirectionMatchesFpsSource === true'), 'offline visual contract should not require FPS Weapon.R blade parity');
-assert(redBuildContract.includes('rawHandToAppliedHilt'), 'offline visual contract should expose raw-hand-to-hilt distance');
+assert(captureTool.includes("authority: 'firebase-hosted-cloud-browser'"), 'Firebase capture should declare hosted cloud authority');
+assert(captureTool.includes('evaluateTpose') && captureTool.includes('evaluateReady'), 'Firebase capture should evaluate both T-pose and Ready');
+assert(firebaseContract.includes('truthLedger?.tposeStableIdle === true'), 'Firebase contract should require stable T-pose truth');
+assert(firebaseContract.includes('truthLedger?.readyBoringFk === true'), 'Firebase contract should require Ready boring FK truth');
+assert(firebaseContract.includes('tipTracksHand'), 'Firebase contract should require saber tip to track hand');
+assert(captureTool.includes("offlineRender: 'diagnostic-only'"), 'Firebase capture should demote offline render to diagnostic-only');
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({
-  checked: ['meshy-saber-offline-in-hand-case', 'offline-visual-red-build-contract'],
+  checked: ['meshy-saber-firebase-in-hand-case', 'firebase-visual-truth-contract'],
 }, null, 2));

@@ -40,7 +40,7 @@ export function resolvePoseLabActorRuntimeConfig(actorKey = 'meshyCharacter') {
       ...cloneData(proxy),
       handBone: requireString(proxy.handBone, `${actorKey}.weaponProxy.handBone`),
       socketBone: requireString(proxy.socketBone, `${actorKey}.weaponProxy.socketBone`),
-      parentMode: requireString(proxy.parentMode, `${actorKey}.weaponProxy.parentMode`),
+      parentMode: typeof proxy.parentMode === 'string' ? proxy.parentMode : '',
       positionMode: requireString(proxy.positionMode, `${actorKey}.weaponProxy.positionMode`),
       handLocalOffset: requireArray(proxy.handLocalOffset, `${actorKey}.weaponProxy.handLocalOffset`),
       modelLocalOffset: requireArray(proxy.modelLocalOffset, `${actorKey}.weaponProxy.modelLocalOffset`),

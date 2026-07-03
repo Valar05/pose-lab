@@ -27,10 +27,10 @@ Refresh user-facing evidence without falling back to deprecated standalone `scre
    node tools/pose_lab_case.mjs route --case visual-truth-parity
    ```
 
-4. Refresh the offline pose+weapon evidence. This is the accepted Meshy saber visual truth lane:
+4. Refresh Firebase hosted visual truth. This is the accepted Meshy saber visual truth lane:
 
    ```sh
-   node tools/refresh_pose_lab_offline_visual_evidence.mjs
+   gh workflow run firebase-visual-truth.yml --repo Valar05/pose-lab --ref <branch>
    ```
 
    The evidence must record:
@@ -38,16 +38,18 @@ Refresh user-facing evidence without falling back to deprecated standalone `scre
    - actor;
    - clip;
    - cache token;
-   - artifact path;
+   - hosted Firebase URL;
+   - screenshot/contact-sheet paths;
    - visible read in plain language.
 
    For the Meshy saber path, the accepted evidence lane is:
 
-   - `captureKind: offline-pose-render` in `generated/visual_red_build/pose_lab_latest.json`;
-   - `generated/pose_lab_offline_render/visual_red_build_tpose/pose_weapon_render.png`;
-   - `generated/pose_lab_offline_render/visual_red_build_tpose/pose_weapon_render.json`.
+   - `generated/firebase_visual_truth/latest/visual_truth.json`;
+   - `generated/firebase_visual_truth/latest/tpose.png`;
+   - `generated/firebase_visual_truth/latest/ready.png`;
+   - `generated/firebase_visual_truth/latest/ready_visual_follow.png`.
 
-   The offline parity target is the authored `RightHand -> WeaponGrip -> displayRoot -> sabre mesh` pure-FK chain plus the real sabre mesh. Raw hand and palm distances remain diagnostics to prove the hard-won displacement was not collapsed or hidden by a socket-only proof.
+   The Firebase parity target is simultaneous hosted truth: the accepted T-pose/rest saber baseline stays stable, and Ready boring FK moves the visible saber with the hand.
 
 5. Rerun:
 
@@ -57,14 +59,14 @@ Refresh user-facing evidence without falling back to deprecated standalone `scre
 
 ## Acceptance
 
-`visual-truth-parity` can go green only when `visual-red-build-contract` passes and the case verdict names current evidence artifacts.
+`visual-truth-parity` can go green only when the Firebase visual truth artifact is current and both hosted captures pass.
 
-For the Meshy saber, freshness alone is not enough. The offline evidence must show the real sabre mesh rendered, the generated clip resolved, the requested clip applied, the hilt pinned to `WeaponGrip`, finite hand/hilt distances, `WeaponGrip` local position/quaternion stable under `RightHand`, and no normal generated `WeaponR` or `WeaponGrip` weapon tracks.
+For the Meshy saber, freshness alone is not enough. Firebase evidence must show the real sabre mesh rendered, the requested hosted clips applied, stable T-pose hilt/rotation values preserved, and Ready hand/tip motion proving the saber follows boring FK.
 
 ## Forbidden Shortcuts
 
 - Do not use deprecated standalone Android `screencap` as acceptance evidence.
-- Do not use browser capture or debug-bridge `weapon visual-follow` as Meshy saber acceptance evidence.
+- Do not use local browser capture, offline render, or debug-bridge `weapon visual-follow` as Meshy saber acceptance evidence.
 - Do not treat source-string tests as visual proof.
 - Do not close a user screenshot red build with debug bridge telemetry.
 - Do not ignore cache token mismatch.

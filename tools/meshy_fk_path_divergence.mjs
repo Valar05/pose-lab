@@ -16,7 +16,7 @@ import { buildMeshyFpsVisualIkReadyClip } from '../src/meshy-ready-runtime.mjs';
 import { resolvePoseLabActorRuntimeConfig } from '../src/pose-lab-profile-resolver.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const READY_CLIP = 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]';
+const READY_CLIP = 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]';
 const TPOSE_CLIP = '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]';
 const DEFAULT_OUT = path.join(projectRoot, 'generated', 'fk_path_divergence', 'latest');
 

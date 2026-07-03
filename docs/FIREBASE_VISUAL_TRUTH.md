@@ -47,7 +47,7 @@ The evidence target is:
 generated/firebase_visual_truth/latest/visual_truth.json
 ```
 
-Screenshots are workflow artifacts, not local Android evidence. Human review still decides whether the hosted screenshot is visually green.
+Screenshots and hosted debug telemetry are workflow artifacts, not local Android evidence. The artifact is the engineering gate for Meshy saber acceptance: `ok` may be true only when T-pose stable idle and Ready boring FK both pass in the hosted Firebase browser.
 
 Known working checkpoint:
 
@@ -60,4 +60,4 @@ Known working checkpoint:
 
 ## Rule
 
-Do not use Firebase/cloud screenshots to tune offsets blindly. Use them to establish hosted visual truth. If the hosted screenshot is red, preserve the red evidence and fix the layer identified by repo/runtime/offline/hosted disagreement.
+Do not use Firebase/cloud screenshots to tune offsets blindly. Use them to establish hosted visual truth. If the hosted screenshot or telemetry is red, preserve the red evidence and fix the layer identified by the Firebase artifact. Offline render is diagnostic-only and cannot override Firebase truth.

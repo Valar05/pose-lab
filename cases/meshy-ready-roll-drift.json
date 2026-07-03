@@ -7,7 +7,7 @@
   "route": {
     "kind": "pose-retarget",
     "actor": "meshyCharacter",
-    "clip": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
+    "clip": "OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]",
     "mode": "standard",
     "query": {
       "weaponDebug": "1"
