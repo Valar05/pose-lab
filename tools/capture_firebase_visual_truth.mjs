@@ -245,7 +245,7 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
   if (followChecks.parentChain !== true) failures.push(`Ready parent chain failed: ${JSON.stringify(visualFollow?.parentChain)}`);
   if (followChecks.displayStableInSocket !== true || followChecks.modelStableInDisplay !== true) failures.push(`Ready display/model are not stable under FK layers: ${JSON.stringify(relativeDrift)}`);
   if (followChecks.socketTipLineVisible !== true || followChecks.visibleAppliedHiltMarker !== true) failures.push(`Ready visible hilt/tip markers failed: ${JSON.stringify(screenMetrics)}`);
-  if (!readyHiltAnchorSane) failures.push(`Ready hilt has neither socket pin nor visible clip-scoped hilt target: ${JSON.stringify(screenMetrics)}`);
+  if (!readyHiltAnchorSane) failures.push(`Ready hilt is not pinned to the authored FK socket: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.handLocalGripOffsetVisible !== true) failures.push(`Ready hand local grip offset is not visible; hand orientation/grip basis collapsed to raw wrist: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.appliedHiltAwayFromRawHand !== true) failures.push(`Ready hilt collapsed onto raw hand/wrist instead of the authored visible grip offset: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.readyHandOrientationSane !== true) failures.push(`Ready hand orientation/grip evidence is not visually sane: ${JSON.stringify(screenMetrics)}`);

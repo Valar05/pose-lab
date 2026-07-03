@@ -19,8 +19,8 @@ import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
 
-const LAB_BUILD = 'meshy-fps-visual-sanity-recovery';
-const LAB_CACHE_TOKEN = 'pose-editor-196';
+const LAB_BUILD = 'meshy-fps-boring-fk-ready-hilt';
+const LAB_CACHE_TOKEN = 'pose-editor-197';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 const MESHY_REVIEW_CLIPS = [
