@@ -274,12 +274,12 @@ const BASE_RIG_PROFILES = {
       clipOverrides: [
         {
           clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]',
-          gripOffset: [0.14, 0.09, 0],
+          gripOffset: [14, 9, 0],
           reason: 'Ready-only authored FK socket offset moves WeaponGrip itself toward the posed fist while keeping the sabre hilt pinned to the socket.',
         },
         {
           clipPattern: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
-          gripOffset: [0.14, 0.09, 0],
+          gripOffset: [14, 9, 0],
           reason: 'Review-only IK Ready uses the same authored FK socket offset without moving the sabre mesh under WeaponGrip.',
         },
       ],

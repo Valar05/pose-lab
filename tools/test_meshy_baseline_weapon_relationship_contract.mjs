@@ -29,8 +29,8 @@ assert(profiles.includes('rotationDeg: [90, 0, -55.145]'), 'base Meshy sabre att
 assert(profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'base Meshy hilt oracle must remain unchanged');
 assert(profiles.includes('tipLocalPosition: [-0.95561, 0.1368, 0]'), 'base Meshy tip oracle must remain unchanged');
 
-assert(weaponProxyBlock.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'") && weaponProxyBlock.includes('gripOffset: [0.14, 0.09, 0]'), 'Visual-IK Ready may move only the FK WeaponGrip socket through an authored proxy gripOffset');
-assert(weaponProxyBlock.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'") && weaponProxyBlock.includes('gripOffset: [0.14, 0.09, 0]'), 'FPS-SWORD-UPPER Ready may move only the FK WeaponGrip socket through an authored proxy gripOffset');
+assert(weaponProxyBlock.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'") && weaponProxyBlock.includes('gripOffset: [14, 9, 0]'), 'Visual-IK Ready may move only the FK WeaponGrip socket through an authored proxy gripOffset in Meshy bone-local units');
+assert(weaponProxyBlock.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'") && weaponProxyBlock.includes('gripOffset: [14, 9, 0]'), 'FPS-SWORD-UPPER Ready may move only the FK WeaponGrip socket through an authored proxy gripOffset in Meshy bone-local units');
 assert(!weaponAttachmentBlock.includes('clipOverrides:'), 'Ready must not move the sabre mesh under WeaponGrip through attachment clip overrides');
 assert(!profiles.includes('rotationDeg: [90, 0, 124.855]'), 'known bad Ready sabre rotation override must not return');
 
