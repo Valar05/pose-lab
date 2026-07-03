@@ -53,6 +53,25 @@
         "the exact woken cloud URL is contradicted by phone-visible screenshots"
       ],
       "notes": "This preserves the false-green Firebase workflow result for run 28649227859. Artifact green is insufficient when the phone-visible hosted URL hydrates to a contradictory or human-red state."
+    },
+    {
+      "commit": "22081ceb305efe1e472fff841f72be84ff303fa3",
+      "reportedAt": "2026-07-03",
+      "authority": "human-phone-visible-cloud-review",
+      "artifactCommit": "9e809fca6610cdacc5df7a18298c03824b447a75",
+      "url": "https://pose-lab-visual-truth--visual-truth-pr-1-rcoxld17.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&clip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&qaClip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&weaponDebug=1&cacheBust=firebase-visual-truth-1783099672802",
+      "screenshots": [
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-125148.png",
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-125153.png"
+      ],
+      "issues": [
+        "Android Chrome screenshot 20260703-125148 shows the Ready review URL rendering T-pose/rest with REVIEW RED instead of the requested Ready clip",
+        "manual Meshy Character selection was required, so the artifact did not prove cold URL actor hydration",
+        "Android Chrome screenshot 20260703-125153 shows the Ready route after manual interaction, but the sword FK relationship is still broken",
+        "the visible hand, hilt, guard, and blade basis relationship is not properly enforced",
+        "workflow JSON and marker/telemetry checks reported green while the phone-visible cloud page remained red"
+      ],
+      "notes": "This preserves the current false-green state. The local branch commit and the artifact merge commit must not be promoted until a later commit produces fresh accepted cloud visual evidence with explicit no-manual-actor-selection proof."
     }
   ]
 }

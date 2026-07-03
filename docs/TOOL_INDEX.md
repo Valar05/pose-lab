@@ -70,6 +70,12 @@ Use this index to choose the smallest proof surface before editing.
 - Proves: runs local preflight, commits tracked edits, pushes, waits for the PR Firebase workflow, downloads the artifact, inspects required PNGs, and wakes the exact Ready capture URL only when the artifact is green/ready for review.
 - Does not prove: human visual acceptance by itself; the printed `tpose.png`, `ready.png`, and `ready_visual_follow.png` still must be inspected.
 
+### `node tools/pose_lab_visual_truth_preflight.mjs`
+
+- Status: current hard stop before wake or Meshy FK edits after a red build.
+- Proves: the current artifact is commit/cache/build-current, not human-red, cold-loads Meshy without manual actor selection, and has accepted T-pose plus Ready visible relationship checks.
+- Does not prove: the user has accepted the visual result; it only blocks known false-green paths before handoff.
+
 ### `node tools/test_pose_lab_visual_red_build_contract.mjs`
 
 - Status: current

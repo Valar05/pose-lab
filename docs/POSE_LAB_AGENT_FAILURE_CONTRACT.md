@@ -33,6 +33,8 @@ That means the architecture must match FPS first. Do not tune offsets, markers, 
 - Do not use success language for cloud visual work until the actual cloud screenshots have been inspected and described.
 - Do not use success language for cloud visual work until the expected visible relationship and actual visible relationship are compared explicitly.
 - Do not use success language after waking the cloud URL until the phone-visible browser state agrees with the artifact: requested clip, highlighted clip row, review banner, body pose, hilt position, and blade axis must all tell the same story.
+- Manual Meshy Character selection is a red build. A cloud URL that requires the user to choose Meshy manually has not proven route hydration, even if the route banner or telemetry later turns green.
+- After a human red-build report, the required order is: state the visible contradiction, fix the lying evidence/UI gate, prove the gate catches that contradiction, and only then edit FK, pose, or offsets.
 - Do not write victory documentation for unaccepted visual changes.
 - In a dirty repo, label every touched surface as one of:
   - accepted production edit
@@ -94,3 +96,21 @@ An unacceptable phone-visible cloud review includes any of these:
 - A share sheet, browser overlay, stale tab, or post-wake state makes the supposed proof unreadable.
 
 When this happens, preserve the contradiction as human red-build evidence. The next implementation pass must fix the gate so the cloud artifact and phone-visible browser review converge before claiming progress.
+
+## Lying Evidence Gate Stop Order
+
+Do not make another Meshy FK, offset, hand-rotation, blade-axis, or pose-math edit while the current cloud review surface can still lie about actor, clip, route, or visible relationship.
+
+The hard preflight is:
+
+```sh
+node tools/pose_lab_visual_truth_preflight.mjs
+```
+
+If it is red, the next work is evidence/UI gate repair or preservation of the failed attempt. It is not FK tuning. The preflight must stay red for:
+
+- manual Meshy Character selection required;
+- Ready URL hydrating to T-pose/rest;
+- `REVIEW ROUTE OK` or `REVIEW ROUTE READY` while the visible hand/hilt/blade relationship is wrong;
+- marker, hilt dot, debug line, JSON, telemetry, or workflow green used as a substitute for the real visible sword basis;
+- a current commit or artifact commit listed in `evidence/human_visual_truth_red_builds.json`.

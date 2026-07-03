@@ -36,7 +36,13 @@ Refresh user-facing evidence without falling back to deprecated standalone `scre
 
    This uses `git push` plus the pull-request-triggered Firebase workflow. Do not depend on `gh workflow run` as the default path; it is a fallback only when GitHub CLI auth is already healthy.
 
-   After the artifact downloads, inspect the PNGs first. If the artifact is green/ready, wake the exact Ready capture URL recorded at `captures[id="ready"].url` in `generated/firebase_visual_truth/latest/visual_truth.json` on the device browser before reporting back. If the artifact is red/debug evidence, do not wake the Android browser; preserve the artifact and continue diagnosis. This browser wake is not acceptance evidence by itself; it prevents the user from being sent to a stale tab, localhost, `example.com`, the base Firebase root, or the wrong Firebase preview.
+   After the artifact downloads, inspect the PNGs first and run:
+
+   ```sh
+   node tools/pose_lab_visual_truth_preflight.mjs
+   ```
+
+   If the artifact is green/ready and the preflight is green, wake the exact Ready capture URL recorded at `captures[id="ready"].url` in `generated/firebase_visual_truth/latest/visual_truth.json` on the device browser before reporting back. If the artifact is red/debug evidence, preflight-red, or requires manual Meshy Character selection, do not wake the Android browser; preserve the artifact and continue diagnosis. This browser wake is not acceptance evidence by itself; it prevents the user from being sent to a stale tab, localhost, `example.com`, the base Firebase root, or the wrong Firebase preview.
 
    The evidence must record:
 
@@ -54,7 +60,9 @@ Refresh user-facing evidence without falling back to deprecated standalone `scre
    - `generated/firebase_visual_truth/latest/ready.png`;
    - `generated/firebase_visual_truth/latest/ready_visual_follow.png`.
 
-   The Firebase parity target is simultaneous hosted truth: the accepted T-pose/rest saber baseline stays stable, and Ready boring FK moves the visible saber with the hand.
+The Firebase parity target is simultaneous hosted truth: the accepted T-pose/rest saber baseline stays stable, and Ready boring FK moves the visible saber with the hand.
+
+   If a human screenshot contradicts a green artifact, the refresh loop must fix the lying evidence/UI gate before FK, offset, hand-rotation, blade-axis, or pose-math edits.
 
 5. Rerun:
 
@@ -67,6 +75,8 @@ Refresh user-facing evidence without falling back to deprecated standalone `scre
 `visual-truth-parity` can go green only when the Firebase visual truth artifact is current and both hosted captures pass.
 
 For the Meshy saber, freshness alone is not enough. Firebase evidence must show the real sabre mesh rendered, the requested hosted clips applied, stable T-pose hilt/rotation values preserved, and Ready hand/tip motion proving the saber follows boring FK.
+
+Manual Meshy Character selection is a red artifact, not a review step. The evidence must prove cold URL actor hydration with `autoLoadedMeshyFromColdUrl` and `manualActorSelectionRequiredFalse`.
 
 ## Forbidden Shortcuts
 

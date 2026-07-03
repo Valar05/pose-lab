@@ -6,6 +6,8 @@ This is a standalone browser Pose Lab seeded from the newer `gravity-fist-threej
 
 Before any more Meshy saber/FK work, read `docs/POSE_LAB_AGENT_FAILURE_CONTRACT.md`. The current Meshy saber state is not accepted as fixed. The controlling instruction is: Meshy must be FPS weapon FK plus authored offsets, nothing else. Do not tune offsets or document success until FK architecture parity is proven.
 
+After human red-build feedback, the current cloud UI/evidence gate is the first blocking surface. Run `node tools/pose_lab_visual_truth_preflight.mjs` before browser wake, success language, or any FK/offset/pose edit. If it fails because the Ready URL hydrates to T-pose/rest, requires manual Meshy Character selection, or shows route OK while the visible sword basis is wrong, fix that lying evidence/UI gate before touching visual math.
+
 ## Entry Points
 
 - `pose-lab.html`: browser lab UI.

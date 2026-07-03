@@ -152,7 +152,9 @@ function humanRedBuildForCommit(commit) {
     const payload = JSON.parse(fs.readFileSync(HUMAN_RED_BUILDS_PATH, 'utf8'));
     const builds = Array.isArray(payload?.redBuilds) ? payload.redBuilds : [];
     return builds.find((entry) => candidates.some((candidate) => (
-      String(entry?.commit || '').startsWith(candidate) || candidate.startsWith(String(entry?.commit || ''))
+      [entry?.commit, entry?.artifactCommit].map((value) => String(value || '')).filter(Boolean).some((entryCommit) => (
+        entryCommit.startsWith(candidate) || candidate.startsWith(entryCommit)
+      ))
     ))) || null;
   } catch (error) {
     return {
@@ -171,7 +173,7 @@ async function debugExec(page, command) {
   }, command);
 }
 
-function evaluateTpose({ routeSelected, weapon, liveHilt }) {
+function evaluateTpose({ routeSelected, routeAutoSelected, weapon, liveHilt }) {
   const failures = [];
   const config = weapon?.weapon?.config || {};
   const reviewFailures = reviewTruthFailures(weapon?.snapshot);
@@ -180,6 +182,7 @@ function evaluateTpose({ routeSelected, weapon, liveHilt }) {
   const liveDistances = live?.distances || {};
   const layers = live?.pinning?.layers || {};
   if (!routeSelected) failures.push('hosted route did not select Meshy Character');
+  if (!routeAutoSelected) failures.push('T-pose hosted route did not cold-load Meshy Character without manual actor selection');
   failures.push(...reviewFailures.map((failure) => `T-pose UI truth red: ${failure}`));
   if (weapon?.ok !== true) failures.push(`weapon debug failed: ${compactError(weapon?.error)}`);
   if (liveHilt?.ok !== true) failures.push(`live hilt debug failed: ${compactError(liveHilt?.error)}`);
@@ -198,6 +201,8 @@ function evaluateTpose({ routeSelected, weapon, liveHilt }) {
     failures,
     checks: {
       routeSelected,
+      autoLoadedMeshyFromColdUrl: routeAutoSelected,
+      manualActorSelectionRequiredFalse: routeAutoSelected,
       actorSelected: weapon?.weapon?.actor === 'meshyCharacter',
       clipSelected: weapon?.weapon?.clip === TPOSE_CLIP,
       acceptedHiltOracle: closeArray(config.gripLocalPosition, ACCEPTED_MESHY_HILT),
@@ -212,7 +217,7 @@ function evaluateTpose({ routeSelected, weapon, liveHilt }) {
   };
 }
 
-function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
+function evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow, liveHilt }) {
   const failures = [];
   const reviewFailures = reviewTruthFailures(weapon?.snapshot);
   const followChecks = visualFollow?.checks || {};
@@ -236,6 +241,7 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
     && followChecks.readyHandOrientationSane === true
     && followChecks.realWeaponVisible === true;
   if (!routeSelected) failures.push('hosted route did not select Meshy Character');
+  if (!routeAutoSelected) failures.push('Ready hosted route did not cold-load Meshy Character without manual actor selection');
   failures.push(...reviewFailures.map((failure) => `Ready UI truth red: ${failure}`));
   if (weapon?.ok !== true) failures.push(`weapon debug failed: ${compactError(weapon?.error)}`);
   if (visualFollow?.ok !== true) failures.push(`Ready visual-follow failed: ${compactError(visualFollow?.error) || JSON.stringify(followChecks)}`);
@@ -267,6 +273,8 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
     failures,
     checks: {
       routeSelected,
+      autoLoadedMeshyFromColdUrl: routeAutoSelected,
+      manualActorSelectionRequiredFalse: routeAutoSelected,
       actorSelected: weapon?.weapon?.actor === 'meshyCharacter',
       clipSelected: weapon?.weapon?.clip === READY_CLIP,
       realWeaponVisible: liveChecks.realWeaponVisible === true && followChecks.realWeaponVisible === true,
@@ -423,7 +431,9 @@ for (const capture of captures) {
     const reviewFailures = reviewTruthFailures(weapon?.snapshot);
     const selectedClip = weapon?.snapshot?.activeClip?.name || weapon?.weapon?.clip || '';
     const failures = [];
+    const routeAutoSelected = routeSelected && !initialLoadError;
     if (!routeSelected) failures.push('landing route did not select Meshy Character');
+    if (!routeAutoSelected) failures.push('landing hosted route did not cold-load Meshy Character without manual actor selection');
     failures.push(...reviewFailures.map((failure) => `landing UI truth red: ${failure}`));
     if (!Number.isFinite(Number(inventory.count)) || Number(inventory.count) < 5) failures.push(`landing Meshy clip inventory is too small for human review: ${JSON.stringify(inventory)}`);
     if (String(selectedClip).includes('walking_man')) failures.push(`landing selected walking clip instead of Meshy review clip: ${selectedClip}`);
@@ -433,6 +443,8 @@ for (const capture of captures) {
       failures,
       checks: {
         routeSelected,
+        autoLoadedMeshyFromColdUrl: routeAutoSelected,
+        manualActorSelectionRequiredFalse: routeAutoSelected,
         loadFastEnough: loadMs <= LANDING_LOAD_MAX_MS,
         loadWarning: loadMs > LANDING_LOAD_WARN_MS,
         reviewClipInventoryVisible: Number(inventory.count) >= 5,
@@ -442,9 +454,10 @@ for (const capture of captures) {
       },
     };
   } else {
+    const routeAutoSelected = routeSelected && clipSwitch?.ok === true && clipSwitch?.command === 'cold-load-route';
     evaluation = capture.id === 'tpose'
-      ? evaluateTpose({ routeSelected, weapon, liveHilt })
-      : evaluateReady({ routeSelected, weapon, visualFollow, liveHilt });
+      ? evaluateTpose({ routeSelected, routeAutoSelected, weapon, liveHilt })
+      : evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow, liveHilt });
   }
   if (!evaluation.ok || error) failed = true;
   captured.push({

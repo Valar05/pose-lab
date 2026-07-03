@@ -202,6 +202,27 @@ function reviewWakeUrl(evidence) {
   return captureUrl(evidence, 'ready') || captureUrl(evidence, 'tpose') || captureUrl(evidence, 'landing') || '';
 }
 
+function runVisualTruthPreflight(artifactDir) {
+  const evidencePath = path.join(artifactDir, 'visual_truth.json');
+  const result = spawnSync('node', ['tools/pose_lab_visual_truth_preflight.mjs', '--evidence', evidencePath, '--json'], {
+    cwd: projectRoot,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  let report = null;
+  const detail = String(result.stdout || '').trim();
+  if (detail) {
+    try {
+      report = JSON.parse(detail);
+    } catch (_error) {
+      report = { ok: false, failures: [detail] };
+    }
+  } else {
+    report = { ok: result.status === 0, failures: [String(result.stderr || 'visual truth preflight failed').trim()] };
+  }
+  return { ok: result.status === 0 && report?.ok === true, report };
+}
+
 function readArtifactEvidence(artifactDir) {
   const file = path.join(artifactDir, 'visual_truth.json');
   if (!fs.existsSync(file)) return null;
@@ -217,19 +238,20 @@ function parseKeyValueReport(text) {
   return parsed;
 }
 
-function wakeReviewUrl(artifactDir) {
+function wakeReviewUrl(artifactDir, preflightReport = null) {
   const evidence = readArtifactEvidence(artifactDir);
   const targetUrl = reviewWakeUrl(evidence);
-  if (!targetUrl) return { ok: false, targetUrl: '', skipped: 'missing capture URL in visual_truth.json' };
+  if (!targetUrl) return { ok: false, targetUrl: '', preflight: preflightReport, skipped: 'missing capture URL in visual_truth.json' };
   if (evidence?.hostedUrl && targetUrl === evidence.hostedUrl) {
-    return { ok: false, targetUrl, skipped: 'refusing to wake base hostedUrl; expected a capture URL with route query parameters' };
+    return { ok: false, targetUrl, preflight: preflightReport, skipped: 'refusing to wake base hostedUrl; expected a capture URL with route query parameters' };
   }
-  if (!fs.existsSync(androidWakeScript)) return { ok: false, targetUrl, skipped: `missing Android browser wake script: ${androidWakeScript}` };
+  if (!fs.existsSync(androidWakeScript)) return { ok: false, targetUrl, preflight: preflightReport, skipped: `missing Android browser wake script: ${androidWakeScript}` };
   const stdout = run('sh', [androidWakeScript, '--url', targetUrl], { capture: true });
   const summary = parseKeyValueReport(stdout);
   return {
     ok: summary.open_status === 'opened',
     targetUrl,
+    preflight: preflightReport,
     report: summary.report || '',
     openStatus: summary.open_status || '',
     pruneStatus: summary.prune_status || '',
@@ -278,6 +300,7 @@ const report = {
   artifact: null,
   canonicalArtifactDir: '',
   inspect: null,
+  visualTruthPreflight: null,
   browserWake: null,
   next: [],
 };
@@ -329,17 +352,22 @@ if (args.inspect) {
   const inspectText = run('node', ['tools/inspect_firebase_visual_artifact.mjs', '--artifact-dir', artifactDir, '--json'], { capture: true });
   const inspection = JSON.parse(inspectText);
   report.inspect = { artifactDir, ...inspection };
-  if (inspection.evidenceOk === true) {
-    report.browserWake = wakeReviewUrl(artifactDir);
+  report.visualTruthPreflight = runVisualTruthPreflight(artifactDir);
+  if (inspection.evidenceOk === true && report.visualTruthPreflight.ok === true) {
+    report.browserWake = wakeReviewUrl(artifactDir, report.visualTruthPreflight.report);
     if (report.browserWake.ok !== true) throw new Error(`browser wake failed: ${JSON.stringify(report.browserWake)}`);
   } else {
     report.browserWake = {
       ok: false,
-      skipped: 'artifact is not ready for browser review; inspect PNGs/debug output without waking Android browser',
+      skipped: report.visualTruthPreflight.ok === true
+        ? 'artifact is not ready for browser review; inspect PNGs/debug output without waking Android browser'
+        : 'visual truth preflight is red; browser wake blocked until the evidence/UI gate is honest',
       evidenceOk: inspection.evidenceOk === true,
+      preflightOk: report.visualTruthPreflight.ok === true,
+      preflight: report.visualTruthPreflight.report,
       targetUrl: inspection.wakeUrl || '',
     };
-    report.next.push('Browser wake skipped because the artifact is not green/ready; wake only after a reviewable artifact exists.');
+    report.next.push('Browser wake skipped because the artifact is not green/ready under visual truth preflight; wake only after a reviewable artifact exists.');
   }
 }
 

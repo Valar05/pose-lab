@@ -47,10 +47,13 @@ The normal path is:
 1. run the self-service tool with `--commit-message ... --push --wait --download --inspect`;
 2. let the pull-request-triggered Firebase workflow run;
 3. let the self-service tool poll, download, and inspect the artifact;
-4. visually inspect the printed PNG paths before reporting pass;
-5. after the artifact is green/ready, wake the exact Ready capture URL from that artifact on the device browser.
+4. run or rely on `node tools/pose_lab_visual_truth_preflight.mjs` before any wake or green language;
+5. visually inspect the printed PNG paths before reporting pass;
+6. after the artifact is green/ready and preflight is green, wake the exact Ready capture URL from that artifact on the device browser.
 
 Browser wake is a ready-for-review action, not a debugging step. Always wake the same cloud route used by the Ready screenshot before handing work back when the artifact is green/ready. Never wake Android Chrome for red/debug artifacts just to inspect telemetry. Do not open `example.com`, localhost, a generic Firebase site root, the base `hostedUrl`, or a remembered older preview URL. The URL to wake is `captures[id="ready"].url` in the downloaded `visual_truth.json`; it includes `/pose-lab.html` plus the actor, QA actor, weapon debug, and cache-bust query parameters. Use `captures[id="tpose"].url` only when the Ready capture is missing.
+
+Manual Meshy Character selection is red. The cloud artifact must explicitly prove cold URL actor hydration with `autoLoadedMeshyFromColdUrl` and `manualActorSelectionRequiredFalse` before wake or promotion. A page that becomes Ready only after human actor selection is a route-hydration failure, not a reviewable artifact.
 
 Use the stable one-command browser wake wrapper when a green artifact already exists:
 
@@ -107,6 +110,8 @@ If the human reports the cloud visual as red, stop promotion and preserve the co
 
 The exact URL woken on Android Chrome is part of the Firebase review. If that phone-visible page disagrees with the artifact, the result is red even when the workflow concluded success. A common false-green is: the artifact JSON says Ready passed, but the device screenshot shows the Ready URL rendering T-pose/rest first, or later shows `REVIEW ROUTE READY` while the blade axis and grip still do not read as a sane human-held Ready pose. The next loop must make the artifact, the woken URL, and the human screenshot converge; do not answer with telemetry or distance metrics alone.
 
+The order-of-operations contract is: red screenshot -> state visible contradiction -> fix lying evidence/UI gate -> prove the gate catches it -> then edit FK or pose math. Do not spend cloud cycles or FK edits while the preflight is red.
+
 The evidence target is:
 
 ```text
@@ -154,6 +159,14 @@ Phone-wake false-green checkpoint preserved for regression:
 - Human Android screenshots: `/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-094627.png` and `/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-094631.png`
 - Human review was red: the first screenshot shows the Ready URL with `REVIEW RED` because the active visible clip is T-pose/rest; the second screenshot shows `REVIEW ROUTE READY`, but the blade/hilt relationship still does not read as an accepted Ready hand-held saber pose.
 - Follow-up rule: artifact green is not sufficient if the phone-visible cloud URL hydrates to a contradictory or human-red state. The gate must prove the exact woken URL, highlighted clip row, review banner, body pose, hilt position, and blade axis agree.
+
+Manual-load false-green checkpoint preserved for regression:
+
+- Branch commit: `22081ceb305efe1e472fff841f72be84ff303fa3`
+- Artifact commit: `9e809fca6610cdacc5df7a18298c03824b447a75`
+- Hosted preview: `https://pose-lab-visual-truth--visual-truth-pr-1-rcoxld17.web.app/`
+- Human Android screenshots: `/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-125148.png` and `/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-125153.png`
+- Human review was red: the phone-visible URL first showed T-pose/rest for the Ready route, the user had to manually load Meshy Character, and the later Ready route still showed a broken sword FK relationship. The gate must never pass from route labels, marker lines, or JSON while manual actor selection or visible sword-basis failure remains.
 
 ## Rule
 

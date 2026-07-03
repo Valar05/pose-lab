@@ -24,6 +24,8 @@ assert(selfService.includes('firebase-visual-truth'), 'self-service tool should 
 assert(selfService.includes('generated\', \'firebase_visual_truth\', \'latest'), 'self-service tool should sync downloaded artifacts to the canonical evidence path');
 assert(selfService.includes('tpose_relationship_closeup.png') && selfService.includes('ready_relationship_closeup.png'), 'self-service tool should sync relationship close-up artifacts');
 assert(selfService.includes('tools/inspect_firebase_visual_artifact.mjs'), 'self-service tool should call the artifact inspector');
+assert(selfService.includes('tools/pose_lab_visual_truth_preflight.mjs'), 'self-service tool should call the visual truth preflight before browser wake');
+assert(selfService.includes('visualTruthPreflight') && selfService.includes('preflightOk'), 'self-service tool should preserve preflight-red reports instead of treating inspection green as wake-ready');
 assert(selfService.includes('refreshingFirebaseEvidence'), 'self-service tool should distinguish stale-evidence refresh from normal preflight');
 assert(selfService.includes("!options.refreshingFirebaseEvidence"), 'self-service tool should skip stale visual-red evidence only while refreshing Firebase artifacts');
 assert(selfService.includes("['node', ['tools/test_pose_lab_visual_red_build_contract.mjs']]"), 'normal self-service preflight should still include the visual red-build contract');
@@ -35,9 +37,12 @@ assert(selfService.includes('prune_and_wake_browser.sh'), 'self-service tool sho
 assert(selfService.includes('inspection.evidenceOk === true'), 'self-service tool should wake Android browser only when the artifact is ready/green');
 assert(selfService.includes('Browser wake skipped because the artifact is not green/ready'), 'self-service tool should skip browser wake during red/debug artifact inspection');
 assert(wakeReady.includes('pose-lab-ready-cloud-url-wake-v1'), 'ready wake wrapper should write a stable ledger schema');
+assert(wakeReady.includes('pose_lab_visual_truth_preflight.mjs'), 'ready wake wrapper must refuse artifacts that fail the visual truth preflight');
+assert(wakeReady.includes('URL opened is not visual acceptance'), 'ready wake wrapper must not treat browser wake as visual acceptance');
 assert(wakeReady.includes('truthLedger?.readyBoringFk') && wakeReady.includes('readyVisualRelationshipAccepted'), 'ready wake wrapper should refuse non-ready artifacts');
 assert(wakeReady.includes("captures?.find((capture) => capture.id === 'ready')"), 'ready wake wrapper should use captures[id=ready]');
 assert(packageJson.scripts?.['cloud:wake-ready'], 'package.json should expose a reusable ready browser wake script');
+assert(packageJson.scripts?.['cloud:preflight'], 'package.json should expose a reusable visual truth preflight script');
 for (const required of [
   "'--check', 'src/pose-lab.js'",
   "'--check', 'src/rig-profiles.js'",

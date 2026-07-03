@@ -43,12 +43,42 @@ function requireReadyEvidence(evidence) {
   return ready.url;
 }
 
+function runPreflight(evidencePath) {
+  const result = spawnSync('node', ['tools/pose_lab_visual_truth_preflight.mjs', '--evidence', evidencePath, '--json'], {
+    cwd: projectRoot,
+    encoding: 'utf8',
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+  const detail = String(result.stdout || '').trim();
+  if (detail) {
+    try {
+      return JSON.parse(detail);
+    } catch (_error) {
+      return { ok: false, failures: [detail] };
+    }
+  }
+  return { ok: result.status === 0, failures: [String(result.stderr || 'visual truth preflight failed').trim()] };
+}
+
 const args = parseArgs(process.argv);
 if (args.help) {
   console.log(usage());
   process.exit(0);
 }
 
+const preflight = runPreflight(args.evidence);
+if (preflight.ok !== true) {
+  console.log(JSON.stringify({
+    schema: 'pose-lab-ready-cloud-url-wake-v1',
+    evidence: path.relative(projectRoot, args.evidence),
+    dryRun: args.dryRun,
+    status: 'refused',
+    reason: 'visual truth preflight is red',
+    preflight,
+    rule: 'URL opened is not visual acceptance; human phone-visible review can still veto.',
+  }, null, 2));
+  process.exit(1);
+}
 const evidence = JSON.parse(fs.readFileSync(args.evidence, 'utf8'));
 const readyUrl = requireReadyEvidence(evidence);
 const report = {
@@ -57,7 +87,9 @@ const report = {
   cacheToken: evidence.cacheToken || '',
   commit: evidence.commit || '',
   readyUrl,
+  preflight,
   dryRun: args.dryRun,
+  rule: 'URL opened is not visual acceptance; human phone-visible review can still veto.',
 };
 
 if (args.dryRun) {

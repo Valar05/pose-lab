@@ -45,6 +45,7 @@ assert(!captureScript.includes('landing hosted review load exceeded'), 'Firebase
 assert(captureScript.includes('relationshipCloseup') && captureScript.includes('`${capture.id}_relationship_closeup.png`'), 'Firebase capture should preserve id-scoped relationship close-up PNGs for T-pose and Ready');
 assert(captureScript.includes("url.searchParams.set('qaActor', 'meshyCharacter')"), 'Firebase capture should force the hosted actor through qaActor');
 assert(captureScript.includes('selected Meshy Character'), 'Firebase capture should wait for the hosted page to actually select Meshy Character');
+assert(captureScript.includes('autoLoadedMeshyFromColdUrl') && captureScript.includes('manualActorSelectionRequiredFalse'), 'Firebase capture should record cold URL Meshy auto-load and no manual actor selection proof');
 assert(captureScript.includes('{ timeout: 120000 }'), 'Firebase capture should pass the wait timeout as Playwright options');
 assert(captureScript.includes('if (!evidence.ok) process.exitCode = 1'), 'Firebase capture should fail the workflow while preserving evidence');
 assert(captureScript.includes("id: 'landing'"), 'Firebase capture should include a human-review landing page capture');
@@ -66,6 +67,7 @@ assert(configStep && !configStep.includes('test_firebase_visual_truth_contract.m
 const captureStep = workflow.slice(workflow.indexOf('- name: Capture hosted Pose Lab truth'), workflow.indexOf('- uses: actions/upload-artifact@v4'));
 assert(captureStep.includes('capture_firebase_visual_truth.mjs') && captureStep.includes('test_firebase_visual_truth_contract.mjs'), 'Firebase workflow must validate visual truth after the fresh cloud capture is written');
 assert(packageJson.devDependencies?.['@playwright/test'] && packageJson.devDependencies?.['firebase-tools'], 'package.json should declare Firebase/Playwright tool dependencies');
+assert(packageJson.scripts?.['cloud:preflight'], 'package.json should expose visual truth preflight');
 assert(cleanupScript.includes("schema: 'pose-lab-cache-cleanup-v1'") && cleanupScript.includes('refusing non-generated cleanup path'), 'cleanup script should be allowlisted and refuse non-generated paths');
 assert(cleanupScript.includes('/data/data/com.termux/files/usr/tmp') && cleanupScript.includes('tmp-glob'), 'cleanup script should own Termux tmp cleanup through allowlisted targets');
 assert(firebaseDoc.includes('Cleanup Doctrine') && firebaseDoc.includes('tools/clean_pose_lab_cache.mjs'), 'Firebase docs should route cache cleanup through the cleanup script');
