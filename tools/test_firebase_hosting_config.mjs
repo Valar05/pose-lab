@@ -54,6 +54,8 @@ assert(workflow.includes('git lfs pull --include="assets/models/meshy_character_
 assert(workflow.includes('Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb') && workflow.includes('Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb') && workflow.includes('-gt 1000000'), 'Firebase workflow must fail if Meshy GLBs are LFS pointer files');
 assert(workflow.includes('Clear stale Firebase visual artifacts') && workflow.includes('rm -rf generated/firebase_visual_truth/latest'), 'Firebase workflow must clear stale checked-in visual artifacts before capture');
 assert(workflow.includes('set -o pipefail') && workflow.includes('tee "$RUNNER_TEMP/firebase-deploy.json"'), 'Firebase workflow must preserve Firebase deploy output when deploy fails');
+assert(workflow.includes('PREVIEW_CHANNEL_ID: visual-truth-pr-') && workflow.includes('hosting:channel:deploy "$PREVIEW_CHANNEL_ID"'), 'Firebase workflow must use a stable PR-scoped preview channel instead of one channel per run');
+assert(workflow.includes('hosting:channel:list') && workflow.includes('hosting:channel:delete') && workflow.includes('firebase-stale-channels.txt'), 'Firebase workflow must prune old visual-truth preview channels before deploy');
 const configStep = workflow.slice(workflow.indexOf('- name: Validate Firebase config'), workflow.indexOf('- name: Install Firebase CLI and Playwright'));
 assert(configStep && !configStep.includes('test_firebase_visual_truth_contract.mjs'), 'Firebase workflow must not validate stale visual-truth artifacts before capture refresh');
 const captureStep = workflow.slice(workflow.indexOf('- name: Capture hosted Pose Lab truth'), workflow.indexOf('- uses: actions/upload-artifact@v4'));
