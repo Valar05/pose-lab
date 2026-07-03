@@ -35,6 +35,8 @@ That means the architecture must match FPS first. Do not tune offsets, markers, 
 
 ## Current Meshy FK Quarantine
 
+See `docs/POSE_LAB_MESHY_SABER_FAILED_CHECKPOINTS.md` for failed checkpoints that must not be reused as accepted production truth.
+
 The current Meshy saber state is not accepted as fixed. Treat recent changes to weapon placement, visible-hilt pinning, cache tokens, offline-render green checks, and victory wording as suspect until a matrix-level FK parity diagnostic proves otherwise.
 
 Before more Meshy weapon implementation:
