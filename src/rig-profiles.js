@@ -271,18 +271,6 @@ const BASE_RIG_PROFILES = {
       handLocalOffset: [0.095, 0.035, -0.01],
       modelLocalOffset: [-0.11512, 0.00773, -0.01127],
       gripOffset: [0, 0, 0],
-      clipOverrides: [
-        {
-          clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]',
-          gripOffset: [14, 9, 0],
-          reason: 'Ready-only authored FK socket offset moves WeaponGrip itself toward the posed fist while keeping the sabre hilt pinned to the socket.',
-        },
-        {
-          clipPattern: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
-          gripOffset: [14, 9, 0],
-          reason: 'Review-only IK Ready uses the same authored FK socket offset without moving the sabre mesh under WeaponGrip.',
-        },
-      ],
       tipOffset: [0, 0, 0.85],
       visibleClipPatterns: ['\\[FPS-REST-ARMS'],
       length: 0.85,
@@ -311,18 +299,6 @@ const BASE_RIG_PROFILES = {
       sourceAttachment: {
         basis: 'Saber handle-centered attachment for Meshy Character: gripLocalPosition pins the semantic landmark hilt candidate to WeaponGrip, rotationDeg keeps the tip forward while rolling the rifle-shaped guard toward model right, handLocalOffset moves toward the palm, and modelLocalOffset applies explicit model-space down/back/out placement.',
       },
-      clipOverrides: [
-        {
-          clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]',
-          rotationDeg: [26.5, -114, -75],
-          reason: 'Ready-only vector-solved sabre mesh basis correction from Firebase run 28685426991: rotates the visible blade under the already-authored FK WeaponGrip without moving the hilt, socket, grip, tip oracle, scale, or T-pose baseline.',
-        },
-        {
-          clipPattern: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
-          rotationDeg: [26.5, -114, -75],
-          reason: 'Review-only Ready uses the same vector-solved rotation-only blade correction while preserving pure FK and the accepted rest weapon attachment.',
-        },
-      ],
     },
     extraClipUrls: [
       'assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Running_withSkin.glb',

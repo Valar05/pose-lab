@@ -34,13 +34,10 @@ assert(swordBlock.includes("originPrefix: 'mapped-arms:player->meshyCharacter'")
 assert(swordBlock.includes("retargetMode: 'world-joint-projection'"), 'FPS-SWORD-UPPER should use the world-joint Ready pose generator instead of the red direct quaternion copy');
 assert(swordBlock.includes("sourceUpper: 'Arm.R'") && swordBlock.includes("targetUpper: 'RightArm'"), 'FPS-SWORD-UPPER should solve the right arm from authored FPS world joints');
 assert(!swordBlock.includes('weaponKeyConvert'), 'FPS-SWORD-UPPER must not key WeaponGrip; direct hand FK owns the weapon at runtime');
-assert(profilesSource.includes('weaponProxy: {') && profilesSource.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'") && profilesSource.includes('gripOffset: [14, 9, 0]'), 'Ready may use only clip-scoped WeaponGrip FK offsets in Meshy bone-local units, not sabre mesh offsets');
 const attachmentBlock = meshyProfileBlock.slice(meshyProfileBlock.indexOf('weaponAttachment: {'), meshyProfileBlock.indexOf('extraClipUrls: ['));
-const attachmentOverrideBlock = attachmentBlock.slice(attachmentBlock.indexOf('clipOverrides: ['));
-assert(attachmentOverrideBlock.includes('rotationDeg: [26.5, -114, -75]'), 'Ready may use a rotation-only attachment override to correct the visible blade basis under the FK socket');
-for (const forbidden of ['position:', 'scale:', 'gripLocalPosition:', 'tipLocalPosition:', 'modelLocalOffset:', 'handLocalOffset:', 'gripOffset:']) {
-  assert(!attachmentOverrideBlock.includes(forbidden), `Ready attachment override must not move or rescale the sabre mesh: ${forbidden}`);
-}
+const weaponProxyBlock = meshyProfileBlock.slice(meshyProfileBlock.indexOf('weaponProxy: {'), meshyProfileBlock.indexOf('weaponAttachment: {'));
+assert(!weaponProxyBlock.includes('clipOverrides:'), 'Meshy shared FK weapon proxy must not use Ready-only WeaponGrip offsets');
+assert(!attachmentBlock.includes('clipOverrides:'), 'Meshy shared FK weapon attachment must not use Ready-only sabre mesh overrides');
 assert(poseLabSource.includes('clipScopedWeaponProxyConfig') && poseLabSource.includes('clipScopedWeaponAttachmentConfig') && poseLabSource.includes('applyWeaponAttachmentRuntimeRules(THREE, { actorModel: this.model, proxy, config: effectiveConfig })'), 'runtime should apply scoped proxy config to WeaponGrip and keep attachment config separate');
 
 assert(profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must use direct hand-fk so hosted Firebase can prove boring FK');
