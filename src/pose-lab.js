@@ -4,7 +4,7 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-190';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-191';
 import {
   applyWeaponAttachmentRuntimeRules,
   applyWeaponSocketRuntimeRules,
@@ -13,14 +13,14 @@ import {
   pinWeaponLocalPointToDisplay as pinWeaponLocalPointToDisplayRuntime,
   updateWeaponFallbackFromTipRuntime,
   weaponPlacementConfigSignature,
-} from './weapon-runtime-rules.mjs?v=pose-editor-190';
-import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-190';
+} from './weapon-runtime-rules.mjs?v=pose-editor-191';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-191';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
 
 const LAB_BUILD = 'meshy-fps-visual-ik-ready-review';
-const LAB_CACHE_TOKEN = 'pose-editor-190';
+const LAB_CACHE_TOKEN = 'pose-editor-191';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
@@ -67,9 +67,9 @@ function clipScopedWeaponAttachmentConfig(baseConfig = {}, clip = null) {
     if (entry.clipName && String(entry.clipName) === clipName) return true;
     if (!entry.clipPattern) return false;
     try {
-      return new RegExp(String(entry.clipPattern).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(clipName);
+      return new RegExp(String(entry.clipPattern)).test(clipName);
     } catch (_err) {
-      return false;
+      return clipName.includes(String(entry.clipPattern));
     }
   });
   if (!match) return baseConfig;
@@ -5614,7 +5614,7 @@ class PoseLab {
     return this.preferredCombatClip(actor, clip);
   }
 
-  findClipByName(actor, name) {
+  findClipByName(actor, name, options = {}) {
     const wanted = String(name || '').trim().toLowerCase();
     if (!actor || !wanted) return null;
     const aliases = actor.info?.animationAliases || {};
@@ -5622,7 +5622,7 @@ class PoseLab {
       if (String(alias || '').trim().toLowerCase() !== wanted) continue;
       for (const pref of preferences || []) {
         const match = actor.clips.find((clip) => clip.name === pref || clipKey(clip) === pref || clipLabel(clip) === pref);
-        if (match) return this.preferredSabreClip(actor, match);
+        if (match) return options.explicit === true ? match : this.preferredSabreClip(actor, match);
       }
     }
     const entries = actor.clips.map((clip) => ({
@@ -5634,7 +5634,7 @@ class PoseLab {
       || entries.find((entry) => entry.labels.some((label) => label === wanted))?.clip
       || entries.find((entry) => entry.labels.some((label) => label.includes(wanted)))?.clip
       || null;
-    return this.preferredSabreClip(actor, found);
+    return options.explicit === true ? found : this.preferredSabreClip(actor, found);
   }
 
 
@@ -5668,8 +5668,8 @@ class PoseLab {
     if (options.viewMode) this.setViewMode(options.viewMode);
     if (this.viewMode === 'firstPerson' && !actor.info?.firstPersonCamera) this.setViewMode('orbit');
     const savedClip = options.preferSaved && this.savedState?.actorKey === key ? this.findSavedClip(actor, this.savedState) : null;
-    const requestedClip = options.clipName ? this.findClipByName(actor, options.clipName) : null;
-    const clip = this.preferredSabreClip(actor, requestedClip || savedClip || this.findStartupClip(actor) || actor.activeClip() || this.findFirstPlayableClip(actor));
+    const requestedClip = options.clipName ? this.findClipByName(actor, options.clipName, { explicit: true }) : null;
+    const clip = requestedClip || this.preferredSabreClip(actor, savedClip || this.findStartupClip(actor) || actor.activeClip() || this.findFirstPlayableClip(actor));
     if (clip) actor.play(clipKey(clip));
     this.renderClipButtons();
     const fallbackPanel = this.labMode === 'critique' ? 'none' : (actor.info?.startupPanel || (UI.panels.cleanup?.classList.contains('open') ? 'cleanup' : 'clips'));
@@ -11940,7 +11940,7 @@ class PoseLab {
         const target = spec.args.join(' ').trim();
         if (!target) return { ok: false, command: spec.name, error: 'clip name required', snapshot: this.debugSnapshot() };
         if (!actor) return { ok: false, command: spec.name, error: 'no active actor', snapshot: this.debugSnapshot() };
-        const clip = this.findClipByName(actor, target);
+        const clip = this.findClipByName(actor, target, { explicit: true });
         if (!clip) return { ok: false, command: spec.name, error: 'clip not found: ' + target, available: actor.clips.slice(0, 16).map((entry) => entry.name), snapshot: this.debugSnapshot() };
         const previousClipKey = actor.activeAction ? clipKey(actor.activeAction._clip) : '';
         actor.play(clipKey(clip));

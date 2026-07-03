@@ -13,6 +13,20 @@
         "the visible Ready clip is deeply and obviously wrong"
       ],
       "notes": "This preserves the live browser review that disproved the green workflow result for run 28638735919."
+    },
+    {
+      "commit": "c30d87125de6d5e0eaabeb5961c32b2fe1c679d0",
+      "reportedAt": "2026-07-03",
+      "authority": "human-cloud-screenshot-review",
+      "url": "https://pose-lab-visual-truth--visual-truth-28640974375-g6thxcam.web.app/",
+      "issues": [
+        "Firebase cloud ready.png showed the Ready pose as visually red",
+        "right-hand and grip basis were visibly wrong",
+        "saber hung down-left instead of reading as a sane ready grip",
+        "selected clip UI was inconsistent with the Ready route",
+        "ready_visual_follow.png was too distant and marker-heavy to prove visual parity"
+      ],
+      "notes": "This preserves the false-green Firebase workflow result for run 28640974375. It cannot be promoted by telemetry-only evidence."
     }
   ]
 }
