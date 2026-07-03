@@ -34,6 +34,13 @@ Do not deploy the repository root directly.
 
 The GitHub workflow `.github/workflows/firebase-visual-truth.yml` deploys a Firebase preview channel and captures T-pose plus Ready screenshots with Playwright from GitHub-hosted Linux.
 
+The workflow intentionally does not use `actions/checkout` with `lfs: true`. This repository has legacy LFS pointers whose objects are missing from GitHub, and broad LFS checkout fails before visual truth can run. The workflow pulls only the Meshy runtime assets required by this lane:
+
+- `assets/models/meshy_character_sheet/**`
+- `assets/models/meshy_sabre/**`
+
+Those assets are size-checked before staging so pointer files cannot silently deploy.
+
 The evidence target is:
 
 ```text
@@ -41,6 +48,15 @@ generated/firebase_visual_truth/latest/visual_truth.json
 ```
 
 Screenshots are workflow artifacts, not local Android evidence. Human review still decides whether the hosted screenshot is visually green.
+
+Known working checkpoint:
+
+- Commit: `22e87926b73e5a4623154a39c8a682517af94f09`
+- GitHub Actions run: `28632638640`
+- Hosted preview: `https://pose-lab-visual-truth--visual-truth-28632638640-eprz32rp.web.app`
+- Artifact: `firebase-visual-truth`
+- Captures: `tpose.png`, `ready.png`, `visual_truth.json`
+- Runtime route: Meshy Character selected for both configured clips.
 
 ## Rule
 
