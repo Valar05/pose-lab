@@ -29,8 +29,9 @@ assert(swordBlock.includes("originPrefix: 'mapped-arms:player->meshyCharacter'")
 assert(swordBlock.includes("retargetMode: 'world-joint-projection'"), 'FPS-SWORD-UPPER should use the world-joint Ready pose generator instead of the red direct quaternion copy');
 assert(swordBlock.includes("sourceUpper: 'Arm.R'") && swordBlock.includes("targetUpper: 'RightArm'"), 'FPS-SWORD-UPPER should solve the right arm from authored FPS world joints');
 assert(!swordBlock.includes('weaponKeyConvert'), 'FPS-SWORD-UPPER must not key WeaponGrip; direct hand FK owns the weapon at runtime');
-assert(!profilesSource.includes('clipOverrides: [') && !profilesSource.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Ready must not use clip-scoped hilt offsets; direct hand FK owns the authored socket');
-assert(poseLabSource.includes('clipScopedWeaponAttachmentConfig') && poseLabSource.includes('applyWeaponAttachmentRuntimeRules(THREE, { actorModel: this.model, proxy, config: effectiveConfig })'), 'runtime may support scoped attachment config, but Meshy Ready must not use it to bypass FK socket pinning');
+assert(profilesSource.includes('weaponProxy: {') && profilesSource.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'") && profilesSource.includes('gripOffset: [0.14, 0.09, 0]'), 'Ready may use only clip-scoped WeaponGrip FK offsets, not sabre mesh offsets');
+assert(!profilesSource.slice(profilesSource.indexOf('weaponAttachment: {'), profilesSource.indexOf('extraClipUrls: [')).includes('clipOverrides:'), 'Ready must not use attachment clip overrides to move the sabre mesh under WeaponGrip');
+assert(poseLabSource.includes('clipScopedWeaponProxyConfig') && poseLabSource.includes('clipScopedWeaponAttachmentConfig') && poseLabSource.includes('applyWeaponAttachmentRuntimeRules(THREE, { actorModel: this.model, proxy, config: effectiveConfig })'), 'runtime should apply scoped proxy config to WeaponGrip and keep attachment config separate');
 
 assert(profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must use direct hand-fk so hosted Firebase can prove boring FK');
 assert(!profilesSource.includes("syntheticSourceSocketBone: ''"), 'Meshy production profile must not force an empty synthetic socket');

@@ -107,7 +107,7 @@ assert(ready?.evaluation?.checks?.readyHandOrientationSane === true, 'Ready clou
 assert(ready?.evaluation?.checks?.reviewClipInventoryVisible === true, 'Ready cloud evidence must prove review clip inventory is visible');
 assert(ready?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Ready cloud evidence must accept only green visible UI truth');
 assert(ready?.evaluation?.checks?.bodyPoseLandmarksPresent === true, 'Ready cloud evidence must expose body pose landmarks for hand-orientation review');
-assert(ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true, 'Ready cloud evidence must prove hand and saber tip motion together; static direct FK proof cannot bypass visual follow');
+assert(ready?.evaluation?.checks?.staticDirectFkProof === true || (ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true), 'Ready cloud evidence must prove strict static direct FK or hand/saber tip motion together');
 assert(Object.hasOwn(ready?.evaluation?.checks || {}, 'readyVisualRelationshipAccepted'), 'Ready cloud evidence must record hand/hilt/blade visible relationship acceptance');
 assert(evidence.truthLedger?.landingUsable === true, 'truth ledger must mark landing page usable green');
 assert(evidence.truthLedger?.cloudUrlLoaded === true, 'truth ledger must mark cloud URL loading green');

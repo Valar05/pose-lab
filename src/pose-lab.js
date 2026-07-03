@@ -19,8 +19,8 @@ import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
 
-const LAB_BUILD = 'meshy-fps-boring-fk-ready-hilt';
-const LAB_CACHE_TOKEN = 'pose-editor-197';
+const LAB_BUILD = 'meshy-fps-ready-weapongrip-fk';
+const LAB_CACHE_TOKEN = 'pose-editor-198';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 const MESHY_REVIEW_CLIPS = [
@@ -64,7 +64,7 @@ const REPO_WEAPON_TUNING = Object.fromEntries(Object.entries(ACTORS).map(([key, 
   weaponAttachment: cloneProfileData(profile.weaponAttachment || null),
 }]));
 
-function clipScopedWeaponAttachmentConfig(baseConfig = {}, clip = null) {
+function clipScopedConfig(baseConfig = {}, clip = null) {
   const clipName = String(clip?.name || '');
   const overrides = Array.isArray(baseConfig.clipOverrides) ? baseConfig.clipOverrides : [];
   const match = overrides.find((entry) => {
@@ -80,6 +80,14 @@ function clipScopedWeaponAttachmentConfig(baseConfig = {}, clip = null) {
   if (!match) return baseConfig;
   const { clipName: _clipName, clipPattern: _clipPattern, reason: _reason, ...values } = match;
   return { ...baseConfig, ...values, clipOverrideReason: _reason || '' };
+}
+
+function clipScopedWeaponAttachmentConfig(baseConfig = {}, clip = null) {
+  return clipScopedConfig(baseConfig, clip);
+}
+
+function clipScopedWeaponProxyConfig(baseConfig = {}, clip = null) {
+  return clipScopedConfig(baseConfig, clip);
 }
 const STORAGE_KEY = 'pose-lab:last-state:v1';
 const CLEANUP_DRAFTS_KEY = 'pose-lab:cleanup-drafts:v1';
@@ -4472,7 +4480,7 @@ class PoseActor {
     arc.frustumCulled = false;
     arc.visible = false;
     this.model.add(arc);
-    this.weaponProxy = { root, displayRoot, arc, config, handBone: rightHand?.name || '', leftHandBone: leftHand?.name || '', sourceSocketBone: sourceSocket?.name || '', syntheticSourceSocket, rightHand, leftHand, sourceSocket, arcKey: '', fkPlacementSignature: '', fkLocalPosition: null, fkLocalQuaternion: null, syntheticFkSignature: '', syntheticFkLocalPosition: null, syntheticFkLocalQuaternion: null, syntheticPlacementSignature: '', syntheticHandLocalPosition: null };
+    this.weaponProxy = { root, displayRoot, arc, config, baseConfig: config, handBone: rightHand?.name || '', leftHandBone: leftHand?.name || '', sourceSocketBone: sourceSocket?.name || '', syntheticSourceSocket, rightHand, leftHand, sourceSocket, arcKey: '', fkPlacementSignature: '', fkLocalPosition: null, fkLocalQuaternion: null, syntheticFkSignature: '', syntheticFkLocalPosition: null, syntheticFkLocalQuaternion: null, syntheticPlacementSignature: '', syntheticHandLocalPosition: null };
     this.updateWeaponSocketTransform();
     return this.weaponProxy;
   }
@@ -4480,6 +4488,7 @@ class PoseActor {
   updateWeaponSocketTransform(options = {}) {
     const proxy = this.weaponProxy;
     if (!proxy?.root) return;
+    proxy.config = clipScopedWeaponProxyConfig(proxy.baseConfig || proxy.config, this.activeAction?._clip || null);
     const force = Boolean(options?.force);
     const animatedSocketRotation = clipHasQuaternionTrackForBone(this.activeAction?._clip, proxy.root.name);
     const animatedSourceSocketRotation = proxy.syntheticSourceSocket
