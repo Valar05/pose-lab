@@ -31,6 +31,8 @@ assert(selfService.includes('downloading artifact for visual inspection'), 'self
 assert(selfService.includes("captureUrl(evidence, 'ready')"), 'self-service tool should wake the Ready capture URL, not the Firebase root');
 assert(selfService.includes('refusing to wake base hostedUrl'), 'self-service tool should refuse to wake the base hostedUrl as review proof');
 assert(selfService.includes('prune_and_wake_browser.sh'), 'self-service tool should use the Android browser wake script after artifact inspection');
+assert(selfService.includes('inspection.evidenceOk === true'), 'self-service tool should wake Android browser only when the artifact is ready/green');
+assert(selfService.includes('Browser wake skipped because the artifact is not green/ready'), 'self-service tool should skip browser wake during red/debug artifact inspection');
 for (const required of [
   "'--check', 'src/pose-lab.js'",
   "'--check', 'src/rig-profiles.js'",

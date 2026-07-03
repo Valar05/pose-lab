@@ -40,17 +40,17 @@ node tools/pose_lab_cloud_visual_truth_self_service.mjs --commit-message "Fix Me
 node tools/pose_lab_cloud_visual_truth_self_service.mjs --push --wait --download --inspect
 ```
 
-Use the `--commit-message` form for normal agent loops. It stages tracked edits with `git add -u`, commits them, pushes, polls the PR-triggered Firebase workflow, downloads the artifact, runs the inspector, and wakes the exact Ready capture URL. If a brand-new source/doc/tool file must be included, add it explicitly with `--include path/to/file`; generated Firebase artifacts stay untracked unless deliberately named.
+Use the `--commit-message` form for normal agent loops. It stages tracked edits with `git add -u`, commits them, pushes, polls the PR-triggered Firebase workflow, downloads the artifact, and runs the inspector. If the artifact is green/ready, the tool wakes the exact Ready capture URL. If the artifact is red, the tool preserves the PNG/JSON evidence and does not wake the Android browser. If a brand-new source/doc/tool file must be included, add it explicitly with `--include path/to/file`; generated Firebase artifacts stay untracked unless deliberately named.
 
 The normal path is:
 
 1. run the self-service tool with `--commit-message ... --push --wait --download --inspect`;
 2. let the pull-request-triggered Firebase workflow run;
 3. let the self-service tool poll, download, and inspect the artifact;
-4. wake the exact Ready capture URL from that artifact on the device browser;
-5. visually inspect the printed PNG paths before reporting pass.
+4. visually inspect the printed PNG paths before reporting pass;
+5. after the artifact is green/ready, wake the exact Ready capture URL from that artifact on the device browser.
 
-Always wake the same cloud route used by the Ready screenshot before handing work back. Do not open `example.com`, localhost, a generic Firebase site root, the base `hostedUrl`, or a remembered older preview URL. The URL to wake is `captures[id="ready"].url` in the downloaded `visual_truth.json`; it includes `/pose-lab.html` plus the actor, QA actor, weapon debug, and cache-bust query parameters. Use `captures[id="tpose"].url` only when the Ready capture is missing.
+Browser wake is a ready-for-review action, not a debugging step. Always wake the same cloud route used by the Ready screenshot before handing work back when the artifact is green/ready. Never wake Android Chrome for red/debug artifacts just to inspect telemetry. Do not open `example.com`, localhost, a generic Firebase site root, the base `hostedUrl`, or a remembered older preview URL. The URL to wake is `captures[id="ready"].url` in the downloaded `visual_truth.json`; it includes `/pose-lab.html` plus the actor, QA actor, weapon debug, and cache-bust query parameters. Use `captures[id="tpose"].url` only when the Ready capture is missing.
 
 Manual `gh workflow run firebase-visual-truth.yml` is a fallback only when GitHub CLI auth is known good. It is not the default path.
 

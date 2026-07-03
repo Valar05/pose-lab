@@ -326,10 +326,21 @@ if (args.download) {
 
 if (args.inspect) {
   const artifactDir = report.artifact?.artifactDir || path.join(outRoot, 'artifact');
-  run('node', ['tools/inspect_firebase_visual_artifact.mjs', '--artifact-dir', artifactDir, '--json']);
-  report.inspect = { artifactDir };
-  report.browserWake = wakeReviewUrl(artifactDir);
-  if (report.browserWake.ok !== true) throw new Error(`browser wake failed: ${JSON.stringify(report.browserWake)}`);
+  const inspectText = run('node', ['tools/inspect_firebase_visual_artifact.mjs', '--artifact-dir', artifactDir, '--json'], { capture: true });
+  const inspection = JSON.parse(inspectText);
+  report.inspect = { artifactDir, ...inspection };
+  if (inspection.evidenceOk === true) {
+    report.browserWake = wakeReviewUrl(artifactDir);
+    if (report.browserWake.ok !== true) throw new Error(`browser wake failed: ${JSON.stringify(report.browserWake)}`);
+  } else {
+    report.browserWake = {
+      ok: false,
+      skipped: 'artifact is not ready for browser review; inspect PNGs/debug output without waking Android browser',
+      evidenceOk: inspection.evidenceOk === true,
+      targetUrl: inspection.wakeUrl || '',
+    };
+    report.next.push('Browser wake skipped because the artifact is not green/ready; wake only after a reviewable artifact exists.');
+  }
 }
 
 if (!args.push) report.next.push('Run with --push after committing to trigger the PR Firebase workflow.');
