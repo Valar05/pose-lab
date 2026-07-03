@@ -37,7 +37,7 @@ assert(!swordBlock.includes('weaponKeyConvert'), 'FPS-SWORD-UPPER must not key W
 assert(profilesSource.includes('weaponProxy: {') && profilesSource.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'") && profilesSource.includes('gripOffset: [14, 9, 0]'), 'Ready may use only clip-scoped WeaponGrip FK offsets in Meshy bone-local units, not sabre mesh offsets');
 const attachmentBlock = meshyProfileBlock.slice(meshyProfileBlock.indexOf('weaponAttachment: {'), meshyProfileBlock.indexOf('extraClipUrls: ['));
 const attachmentOverrideBlock = attachmentBlock.slice(attachmentBlock.indexOf('clipOverrides: ['));
-assert(attachmentOverrideBlock.includes('rotationDeg: [131.704, 12.774, -83.407]'), 'Ready may use a rotation-only attachment override to correct the visible blade basis under the FK socket');
+assert(attachmentOverrideBlock.includes('rotationDeg: [41.704, 12.774, -173.407]'), 'Ready may use a rotation-only attachment override to correct the visible blade basis under the FK socket');
 for (const forbidden of ['position:', 'scale:', 'gripLocalPosition:', 'tipLocalPosition:', 'modelLocalOffset:', 'handLocalOffset:', 'gripOffset:']) {
   assert(!attachmentOverrideBlock.includes(forbidden), `Ready attachment override must not move or rescale the sabre mesh: ${forbidden}`);
 }
