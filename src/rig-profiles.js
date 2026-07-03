@@ -332,7 +332,8 @@ const BASE_RIG_PROFILES = {
           targetHand: 'RightHand',
           targetWeapon: 'WeaponGrip',
           frameSolve: true,
-          applyToHand: false,
+          applyToHand: true,
+          handStrength: 1.0,
         },
         ikOrientationGuide: {
           mode: 'source-key-correction',
