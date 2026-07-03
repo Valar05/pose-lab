@@ -18,6 +18,14 @@ jobs:
       FIREBASE_HOSTING_SITE: pose-lab-visual-truth
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Verify Git LFS assets
+        run: |
+          git lfs pull
+          test "$(wc -c < assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb)" -gt 1000000
+          test "$(wc -c < assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb)" -gt 1000000
 
       - uses: actions/setup-node@v4
         with:
