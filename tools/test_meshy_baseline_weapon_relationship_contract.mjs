@@ -33,7 +33,7 @@ assert(profiles.includes('tipLocalPosition: [-0.95561, 0.1368, 0]'), 'base Meshy
 assert(weaponProxyBlock.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'") && weaponProxyBlock.includes('gripOffset: [14, 9, 0]'), 'Visual-IK Ready may move only the FK WeaponGrip socket through an authored proxy gripOffset in Meshy bone-local units');
 assert(weaponProxyBlock.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'") && weaponProxyBlock.includes('gripOffset: [14, 9, 0]'), 'FPS-SWORD-UPPER Ready may move only the FK WeaponGrip socket through an authored proxy gripOffset in Meshy bone-local units');
 assert(readyAttachmentOverrideBlock.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'") && readyAttachmentOverrideBlock.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Ready attachment override must be scoped only to the two Ready review clips');
-assert(readyAttachmentOverrideBlock.includes('rotationDeg: [44.1, -105, -129.2]'), 'Ready attachment override may rotate only the visible blade basis under the FK socket');
+assert(readyAttachmentOverrideBlock.includes('rotationDeg: [26.5, -114, -75]'), 'Ready attachment override may rotate only the visible blade basis under the FK socket');
 for (const forbidden of ['position:', 'scale:', 'gripLocalPosition:', 'tipLocalPosition:', 'modelLocalOffset:', 'handLocalOffset:', 'gripOffset:']) {
   assert(!readyAttachmentOverrideBlock.includes(forbidden), `Ready attachment override must not change ${forbidden}`);
 }
