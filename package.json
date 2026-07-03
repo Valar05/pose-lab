@@ -1,0 +1,15 @@
+{
+  "name": "pose-lab",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "firebase:build": "node tools/build_firebase_pose_lab_release.mjs",
+    "firebase:capture": "node tools/capture_firebase_visual_truth.mjs",
+    "clean:cache": "node tools/clean_pose_lab_cache.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "firebase-tools": "^14.14.0"
+  }
+}

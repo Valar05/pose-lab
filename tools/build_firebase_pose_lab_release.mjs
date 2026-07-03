@@ -7,6 +7,13 @@ import { fileURLToPath } from 'node:url';
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = path.join(projectRoot, 'generated', 'firebase_hosting', 'pose_lab_release');
 const manifestPath = path.join(outDir, 'firebase-release-manifest.json');
+const stagedAssetFiles = [
+  'assets/models/FPSPlayer.glb',
+  'assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Running_withSkin.glb',
+  'assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb',
+  'assets/models/meshy_character_sheet/static/Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb',
+  'assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb',
+];
 
 function readText(relPath) {
   return fs.readFileSync(path.join(projectRoot, relPath), 'utf8');
@@ -35,6 +42,12 @@ function copyFile(relPath) {
   fs.copyFileSync(source, target);
 }
 
+function copyRequiredFile(relPath) {
+  const source = path.join(projectRoot, relPath);
+  if (!fs.existsSync(source)) throw new Error(`required Firebase release file missing: ${relPath}`);
+  copyFile(relPath);
+}
+
 function copyDir(relPath) {
   const source = path.join(projectRoot, relPath);
   const target = path.join(outDir, relPath);
@@ -58,15 +71,35 @@ function countFiles(dir) {
   return count;
 }
 
+function listFiles(dir, base = dir) {
+  const files = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) files.push(...listFiles(full, base));
+    else if (entry.isFile()) files.push(path.relative(base, full));
+  }
+  return files;
+}
+
+function byteSize(dir) {
+  let total = 0;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) total += byteSize(full);
+    else if (entry.isFile()) total += fs.statSync(full).size;
+  }
+  return total;
+}
+
 fs.rmSync(outDir, { recursive: true, force: true });
 fs.mkdirSync(outDir, { recursive: true });
 
-for (const file of ['index.html', 'pose-lab.html', 'pose-critique.html']) copyFile(file);
+for (const file of ['index.html', 'pose-lab.html', 'pose-critique.html']) copyRequiredFile(file);
 for (const dir of ['src', 'vendor']) copyDir(dir);
 
 fs.mkdirSync(path.join(outDir, 'assets'), { recursive: true });
-copyDir('assets/models');
-copyFile('assets/asset_manifest.json');
+for (const file of stagedAssetFiles) copyRequiredFile(file);
+copyRequiredFile('assets/asset_manifest.json');
 
 const manifest = {
   schema: 'pose-lab-firebase-release-manifest-v1',
@@ -87,9 +120,12 @@ const manifest = {
   runtimeAssetRoots: [
     'src',
     'vendor',
-    'assets/models',
+    ...stagedAssetFiles,
     'assets/asset_manifest.json',
   ],
+  stagedBytes: byteSize(outDir),
+  stagedAssetFiles,
+  stagedFileList: listFiles(outDir).sort(),
 };
 
 fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);

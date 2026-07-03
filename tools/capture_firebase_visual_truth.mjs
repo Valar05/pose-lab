@@ -244,21 +244,45 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, dev
 const captured = [];
 let failed = false;
 
+async function waitForHostedMeshyPage(pageInstance, clipName = '') {
+  await pageInstance.waitForFunction((expectedClip) => {
+    const text = document.querySelector('#loadState')?.textContent || '';
+    const apiReady = Boolean(window.__poseLabDebug || window.poseLabDebug);
+    if (!apiReady || !/selected Meshy Character/.test(text)) return false;
+    if (!expectedClip) return true;
+    return text.includes(expectedClip);
+  }, clipName, { timeout: 120000 });
+}
+
+const initialUrl = landingUrl(hostedUrl);
+const initialStartedAt = Date.now();
+await page.goto(initialUrl, { waitUntil: 'networkidle', timeout: 90000 });
+let initialLoadError = '';
+try {
+  await waitForHostedMeshyPage(page, '');
+} catch (caught) {
+  initialLoadError = caught?.message || String(caught);
+}
+const initialLoadMs = Date.now() - initialStartedAt;
+
 for (const capture of captures) {
-  const url = capture.clip ? poseUrl(hostedUrl, capture.clip) : landingUrl(hostedUrl);
-  let error = '';
+  let error = initialLoadError;
   const startedAt = Date.now();
-  await page.goto(url, { waitUntil: 'networkidle', timeout: 90000 });
-  try {
-    await page.waitForFunction(() => {
-      const text = document.querySelector('#loadState')?.textContent || '';
-      return /selected Meshy Character/.test(text) && (window.__poseLabDebug || window.poseLabDebug);
-    }, null, { timeout: 120000 });
-  } catch (caught) {
-    error = caught?.message || String(caught);
+  let clipSwitch = null;
+  if (capture.clip && !initialLoadError) {
+    clipSwitch = await debugExec(page, `clip ${capture.clip}`);
+    if (clipSwitch?.ok !== true) error = clipSwitch?.error || `debug clip switch failed: ${capture.clip}`;
+    else {
+      try {
+        await waitForHostedMeshyPage(page, capture.clip);
+      } catch (caught) {
+        error = caught?.message || String(caught);
+      }
+    }
   }
-  const loadMs = Date.now() - startedAt;
+  const loadMs = capture.id === 'landing' ? initialLoadMs : Date.now() - startedAt;
   await page.waitForTimeout(1000);
+  const url = page.url();
   const screenshot = path.join(outDir, `${capture.id}.png`);
   await page.screenshot({ path: screenshot, fullPage: false });
   const loadState = await page.locator('#loadState').textContent({ timeout: 5000 }).catch(() => '');
@@ -318,6 +342,7 @@ for (const capture of captures) {
       : `Hosted Firebase ${capture.id} is red: ${[error, ...evaluation.failures].filter(Boolean).join('; ')}`,
     evaluation,
     cloudTelemetry: {
+      clipSwitch,
       weapon,
       liveHilt,
       visualFollow,

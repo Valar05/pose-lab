@@ -11,6 +11,8 @@ const buildScript = fs.readFileSync(path.join(projectRoot, 'tools', 'build_fireb
 const workflow = fs.readFileSync(path.join(projectRoot, '.github', 'workflows', 'firebase-visual-truth.yml'), 'utf8');
 const gitignore = fs.readFileSync(path.join(projectRoot, '.gitignore'), 'utf8');
 const humanRedBuilds = JSON.parse(fs.readFileSync(path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json'), 'utf8'));
+const packageJson = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
+const cleanupScript = fs.readFileSync(path.join(projectRoot, 'tools', 'clean_pose_lab_cache.mjs'), 'utf8');
 
 assert(firebaseJson.hosting?.site === 'pose-lab-visual-truth', 'Firebase Hosting must use the isolated Pose Lab site');
 assert(firebaseJson.hosting?.public === 'generated/firebase_hosting/pose_lab_release', 'Firebase Hosting must deploy the staged release directory');
@@ -22,22 +24,33 @@ assert(headers.includes('no-store, no-cache'), 'Firebase headers should disable 
 assert(headers.includes('**/*.{js,mjs,css,json}'), 'Firebase headers should cover JS module assets');
 
 assert(buildScript.includes("for (const file of ['index.html', 'pose-lab.html', 'pose-critique.html'])"), 'release build should stage Pose Lab entrypoints');
-assert(buildScript.includes("copyDir('assets/models')"), 'release build should stage runtime model assets');
+assert(buildScript.includes('const stagedAssetFiles = ['), 'release build should use an explicit runtime asset allowlist');
+assert(buildScript.includes('assets/models/FPSPlayer.glb'), 'release build should stage FPSPlayer for Meshy retarget source clips');
+assert(buildScript.includes('assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb'), 'release build should stage Meshy animated runtime GLB');
+assert(buildScript.includes('assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb'), 'release build should stage Meshy sabre GLB');
+assert(!buildScript.includes("copyDir('assets/models')"), 'release build must not stage the entire assets/models tree');
 assert(!buildScript.includes("copyDir('generated'"), 'release build must not stage generated scratch output');
+assert(buildScript.includes('stagedBytes') && buildScript.includes('stagedFileList'), 'release manifest should record staged bytes and files');
 const captureScript = fs.readFileSync(path.join(projectRoot, 'tools', 'capture_firebase_visual_truth.mjs'), 'utf8');
 assert(captureScript.includes('function assertCloudHostedUrl'), 'Firebase capture should reject localhost/offline/staged URLs before Playwright control');
 assert(captureScript.includes("role: 'controller-only'"), 'Firebase capture should label Playwright as controller-only, not visual truth authority');
+assert(captureScript.includes('await page.goto(initialUrl') && captureScript.includes('clipSwitch = await debugExec'), 'Firebase capture should load the hosted page once and switch clips through the debug API');
 assert(captureScript.includes("url.searchParams.set('qaActor', 'meshyCharacter')"), 'Firebase capture should force the hosted actor through qaActor');
 assert(captureScript.includes('selected Meshy Character'), 'Firebase capture should wait for the hosted page to actually select Meshy Character');
-assert(captureScript.includes('null, { timeout: 120000 }'), 'Firebase capture should pass the wait timeout as Playwright options');
+assert(captureScript.includes('{ timeout: 120000 }'), 'Firebase capture should pass the wait timeout as Playwright options');
 assert(captureScript.includes('if (!evidence.ok) process.exitCode = 1'), 'Firebase capture should fail the workflow while preserving evidence');
 assert(captureScript.includes("id: 'landing'"), 'Firebase capture should include a human-review landing page capture');
 assert(captureScript.includes('humanRedBuildForCommit'), 'Firebase capture should honor the human red-build veto ledger');
 assert(humanRedBuilds.schema === 'pose-lab-human-visual-truth-red-builds-v1', 'human visual truth red-build ledger should use the expected schema');
 assert(humanRedBuilds.redBuilds?.some((entry) => String(entry.commit || '').startsWith('3fc1b14')), 'human red-build ledger should preserve the red review for commit 3fc1b14');
 assert(!workflow.includes('lfs: true'), 'Firebase workflow must not fetch every LFS object; legacy LFS history has missing objects');
+assert(workflow.includes('cache: npm'), 'Firebase workflow should cache npm dependencies');
+assert(workflow.includes('actions/cache@v4') && workflow.includes('~/.cache/ms-playwright'), 'Firebase workflow should cache Playwright browser binaries');
+assert(workflow.includes('npm ci') && !workflow.includes('npm init -y'), 'Firebase workflow should use package-lock-driven npm ci instead of ad hoc npm init/install');
 assert(workflow.includes('git lfs pull --include="assets/models/meshy_character_sheet/**,assets/models/meshy_sabre/**"'), 'Firebase workflow must fetch only Meshy runtime LFS assets before staging');
 assert(workflow.includes('Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb') && workflow.includes('Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb') && workflow.includes('-gt 1000000'), 'Firebase workflow must fail if Meshy GLBs are LFS pointer files');
+assert(packageJson.devDependencies?.['@playwright/test'] && packageJson.devDependencies?.['firebase-tools'], 'package.json should declare Firebase/Playwright tool dependencies');
+assert(cleanupScript.includes("schema: 'pose-lab-cache-cleanup-v1'") && cleanupScript.includes('refusing non-generated cleanup path'), 'cleanup script should be allowlisted and refuse non-generated paths');
 assert(gitignore.includes('/generated/firebase_hosting/'), 'generated Firebase staging output should stay untracked');
 assert(gitignore.includes('/generated/firebase_visual_truth/artifacts/'), 'Firebase screenshot artifacts should stay untracked');
 

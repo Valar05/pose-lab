@@ -16,6 +16,7 @@ jobs:
     env:
       FIREBASE_PROJECT_ID: home-center-dclar
       FIREBASE_HOSTING_SITE: pose-lab-visual-truth
+      PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
     steps:
       - uses: actions/checkout@v4
 
@@ -30,6 +31,13 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+
+      - name: Restore Playwright browser cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
       - name: Build staged Pose Lab release
         run: node tools/build_firebase_pose_lab_release.mjs
@@ -42,10 +50,8 @@ jobs:
 
       - name: Install Firebase CLI and Playwright
         run: |
-          npm init -y
-          npm install --save-dev firebase-tools
-          npm install --save-dev @playwright/test
-          npx playwright install --with-deps chromium
+          npm ci
+          npx playwright install chromium
 
       - name: Deploy Firebase preview channel
         env:
