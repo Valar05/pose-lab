@@ -36,6 +36,8 @@ Refresh user-facing evidence without falling back to deprecated standalone `scre
 
    This uses `git push` plus the pull-request-triggered Firebase workflow. Do not depend on `gh workflow run` as the default path; it is a fallback only when GitHub CLI auth is already healthy.
 
+   After the artifact downloads, wake the exact `hostedUrl` recorded in `generated/firebase_visual_truth/latest/visual_truth.json` on the device browser before reporting back. This browser wake is not acceptance evidence by itself; it prevents the user from being sent to a stale tab, localhost, `example.com`, or the wrong Firebase preview.
+
    The evidence must record:
 
    - actor;

@@ -45,7 +45,10 @@ The normal path is:
 2. run the self-service tool with `--push`;
 3. let the pull-request-triggered Firebase workflow run;
 4. let the self-service tool poll, download, and inspect the artifact;
-5. visually inspect the printed PNG paths before reporting pass.
+5. wake the exact `hostedUrl` from that artifact on the device browser;
+6. visually inspect the printed PNG paths before reporting pass.
+
+Always wake the same cloud URL used by the artifact before handing work back. Do not open `example.com`, localhost, a generic Firebase site root, or a remembered older preview URL. The URL to wake is the `hostedUrl` field in the downloaded `visual_truth.json`, and it must match the run being discussed.
 
 Manual `gh workflow run firebase-visual-truth.yml` is a fallback only when GitHub CLI auth is known good. It is not the default path.
 
