@@ -4,7 +4,7 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-193';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-194';
 import {
   applyWeaponAttachmentRuntimeRules,
   applyWeaponSocketRuntimeRules,
@@ -13,14 +13,14 @@ import {
   pinWeaponLocalPointToDisplay as pinWeaponLocalPointToDisplayRuntime,
   updateWeaponFallbackFromTipRuntime,
   weaponPlacementConfigSignature,
-} from './weapon-runtime-rules.mjs?v=pose-editor-193';
-import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-193';
+} from './weapon-runtime-rules.mjs?v=pose-editor-194';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-194';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
 
 const LAB_BUILD = 'meshy-fps-visual-ik-ready-review';
-const LAB_CACHE_TOKEN = 'pose-editor-193';
+const LAB_CACHE_TOKEN = 'pose-editor-194';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
@@ -11950,6 +11950,7 @@ class PoseLab {
         this.updatePlayerTransportUi('debug clip ' + clipLabel(clip));
         this.updateCritiqueTransportUi('debug clip ' + clipLabel(clip));
         setStatus(this.actorSelectionStatus(actor, clip));
+        this.renderClipButtons();
         this.updateReadout();
         const snapshot = this.debugSnapshot();
         return respond({ message: 'playing ' + clipLabel(clip), activeClipChanged: previousClipKey !== clipKey(clip), paused: false, snapshot });

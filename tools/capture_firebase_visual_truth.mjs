@@ -290,7 +290,7 @@ for (const capture of captures) {
   }
   const loadMs = capture.id === 'landing' ? initialLoadMs : Date.now() - startedAt;
   await page.waitForTimeout(1000);
-  const url = page.url();
+  const url = capture.clip ? poseUrl(hostedUrl, capture.clip) : page.url();
   const screenshot = path.join(outDir, `${capture.id}.png`);
   const screenshotOk = await page.screenshot({ path: screenshot, fullPage: false }).then(() => true).catch(() => false);
   const loadState = await page.locator('#loadState').textContent({ timeout: 5000 }).catch(() => '');

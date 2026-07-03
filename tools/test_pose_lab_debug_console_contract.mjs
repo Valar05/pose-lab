@@ -87,6 +87,7 @@ for (const command of ['help', 'status', 'snapshot', 'inspect', 'state', 'readou
 assert(source.includes('debugBridgeUrl') && source.includes('debugBridgePollMs') && source.includes('debugBridgeTimeoutMs'), 'debug bridge config should read query-string bridge settings');
 assert(source.includes('window.location.href'), 'debug bridge should register the live browser URL');
 assert(source.includes('cacheToken: LAB_CACHE_TOKEN') && source.includes('pageUrl: window.location.href'), 'debug bridge and live hilt state should report loaded page/cache identity');
+assert(source.includes("this.updateCritiqueTransportUi('debug clip ' + clipLabel(clip));\n        setStatus(this.actorSelectionStatus(actor, clip));\n        this.renderClipButtons();"), 'debug clip command should refresh visible clip buttons so cloud screenshots do not show stale selected rows');
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({ checked: ['pose-lab-debug-console-contract', 'bone-select-rotate-contract'] }, null, 2));

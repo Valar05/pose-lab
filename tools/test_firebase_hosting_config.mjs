@@ -36,6 +36,7 @@ const captureScript = fs.readFileSync(path.join(projectRoot, 'tools', 'capture_f
 assert(captureScript.includes('function assertCloudHostedUrl'), 'Firebase capture should reject localhost/offline/staged URLs before Playwright control');
 assert(captureScript.includes("role: 'controller-only'"), 'Firebase capture should label Playwright as controller-only, not visual truth authority');
 assert(captureScript.includes('await page.goto(initialUrl') && captureScript.includes('clipSwitch = await debugExec'), 'Firebase capture should load the hosted page once and switch clips through the debug API');
+assert(captureScript.includes("url.searchParams.set('qaClip', clip)") && captureScript.includes('const url = capture.clip ? poseUrl(hostedUrl, capture.clip) : page.url()'), 'Firebase capture artifacts must preserve exact clip route URLs for human review wakeup');
 assert(captureScript.includes("url.searchParams.set('qaActor', 'meshyCharacter')"), 'Firebase capture should force the hosted actor through qaActor');
 assert(captureScript.includes('selected Meshy Character'), 'Firebase capture should wait for the hosted page to actually select Meshy Character');
 assert(captureScript.includes('{ timeout: 120000 }'), 'Firebase capture should pass the wait timeout as Playwright options');
