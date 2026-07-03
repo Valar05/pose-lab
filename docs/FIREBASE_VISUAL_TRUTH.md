@@ -107,7 +107,9 @@ Screenshots and hosted debug telemetry are workflow artifacts, not local Android
 
 The gate must also record `defaultSurfaceAccepted`, `tposeWristRelationshipAccepted`, and `readyVisualRelationshipAccepted`. Until those are true, a cloud artifact is preservation or diagnosis, not progress.
 
-The landing usability threshold is a cold hosted-cloud review budget, not a visual correctness metric. The current budget is 20 seconds because the staged runtime still carries about 47 MB of required Meshy/FPS/sabre assets; exceeding it remains red, while Ready/T-pose visual parity is judged by the dedicated captures and telemetry.
+The landing usability threshold is a cold hosted-cloud review budget and friction signal, not a visual correctness metric. Slow load should be reported and improved, but it does not by itself prove or disprove T-pose or Ready FK correctness. Ready/T-pose visual parity is judged by the dedicated captures and human visual review.
+
+A cloud workflow success, UI truth page, or green JSON result is not progress after a human no-op report unless it introduces a new accepted visual artifact that shows the target relationship changed correctly. Before another paid/cloud loop after a red-build or no-op report, record the visual hypothesis, the artifact that will answer it, and the stop condition. If the run cannot answer a new visual question, do not spend it.
 
 False-pass checkpoint preserved for regression:
 

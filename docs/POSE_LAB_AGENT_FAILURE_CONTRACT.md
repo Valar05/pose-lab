@@ -37,6 +37,19 @@ That means the architecture must match FPS first. Do not tune offsets, markers, 
   - diagnostic-only edit
   - failed-attempt edit to quarantine or roll back
 
+## No-Op Churn Stop Order
+
+If the user reports that the visual did not change, the current loop is failed until proven otherwise. Do not continue by adding more gates, review UI, telemetry, cache tokens, generated artifacts, or doctrine around the same unchanged visual.
+
+Before the next visual implementation edit, the agent must:
+
+1. Inspect the latest accepted visual evidence lane.
+2. State the specific visible relationship that is still wrong.
+3. Classify every current dirty surface as production visual fix, instrumentation-only, failed attempt, or blocker evidence.
+4. Name the next implementation hypothesis that should produce a visible delta.
+
+If there is no new implementation hypothesis, stop and preserve the failed attempt. Instrumentation-only churn after a no-op report is not progress and must not be described as progress.
+
 ## Current Meshy FK Quarantine
 
 See `docs/POSE_LAB_MESHY_SABER_FAILED_CHECKPOINTS.md` for failed checkpoints that must not be reused as accepted production truth.
