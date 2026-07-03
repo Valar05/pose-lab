@@ -243,6 +243,7 @@ const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 });
 const captured = [];
 let failed = false;
+let fatalError = '';
 
 async function waitForHostedMeshyPage(pageInstance, clipName = '') {
   await pageInstance.waitForFunction((expectedClip) => {
@@ -256,12 +257,13 @@ async function waitForHostedMeshyPage(pageInstance, clipName = '') {
 
 const initialUrl = landingUrl(hostedUrl);
 const initialStartedAt = Date.now();
-await page.goto(initialUrl, { waitUntil: 'networkidle', timeout: 90000 });
 let initialLoadError = '';
 try {
+  await page.goto(initialUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
   await waitForHostedMeshyPage(page, '');
 } catch (caught) {
   initialLoadError = caught?.message || String(caught);
+  fatalError = initialLoadError;
 }
 const initialLoadMs = Date.now() - initialStartedAt;
 
@@ -284,7 +286,7 @@ for (const capture of captures) {
   await page.waitForTimeout(1000);
   const url = page.url();
   const screenshot = path.join(outDir, `${capture.id}.png`);
-  await page.screenshot({ path: screenshot, fullPage: false });
+  const screenshotOk = await page.screenshot({ path: screenshot, fullPage: false }).then(() => true).catch(() => false);
   const loadState = await page.locator('#loadState').textContent({ timeout: 5000 }).catch(() => '');
   const routeSelected = /selected Meshy Character/.test(loadState || '');
   const weapon = routeSelected ? await debugExec(page, 'weapon') : { ok: false, error: 'route not selected' };
@@ -329,7 +331,7 @@ for (const capture of captures) {
     actor: 'meshyCharacter',
     clip: capture.clip,
     url,
-    screenshot: path.relative(projectRoot, screenshot),
+    screenshot: screenshotOk ? path.relative(projectRoot, screenshot) : '',
     contactSheet: contactSheet ? path.relative(projectRoot, contactSheet) : '',
     loadMs,
     loadState: loadState || '',
