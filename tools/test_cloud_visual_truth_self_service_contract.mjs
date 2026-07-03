@@ -18,6 +18,7 @@ assert(!selfService.includes("'workflow', 'run'"), 'self-service tool must not i
 assert(selfService.includes("'run', 'download'"), 'self-service tool should use authenticated gh artifact download fallback');
 assert(selfService.includes('actions/runs?head_sha='), 'self-service tool should poll workflow runs by commit SHA');
 assert(selfService.includes('firebase-visual-truth'), 'self-service tool should fetch the Firebase visual truth artifact');
+assert(selfService.includes('generated\', \'firebase_visual_truth\', \'latest'), 'self-service tool should sync downloaded artifacts to the canonical evidence path');
 assert(selfService.includes('tools/inspect_firebase_visual_artifact.mjs'), 'self-service tool should call the artifact inspector');
 for (const required of [
   "'--check', 'src/pose-lab.js'",

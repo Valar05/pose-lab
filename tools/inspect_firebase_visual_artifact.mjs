@@ -106,7 +106,7 @@ if (evidence) {
     if (!evidence.captures?.some((capture) => capture.id === id)) failures.push(`missing ${id} capture in visual_truth.json`);
   }
   const ready = evidence.captures?.find((capture) => capture.id === 'ready');
-  if (ready && ready.contactSheet && path.resolve(projectRoot, ready.contactSheet) !== followPath) {
+  if (ready && ready.contactSheet && path.basename(ready.contactSheet) !== path.basename(followPath)) {
     failures.push(`ready contactSheet points somewhere unexpected: ${ready.contactSheet}`);
   }
   if (args.requireGreen && evidence.ok !== true) failures.push('Firebase visual truth JSON is not green');

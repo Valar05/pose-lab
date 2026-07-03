@@ -9,6 +9,7 @@ const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '
 const repoFullName = 'Valar05/pose-lab';
 const workflowName = 'Firebase Visual Truth';
 const outRoot = path.join(projectRoot, 'generated', 'cloud_visual_truth_self_service', 'latest');
+const canonicalArtifactDir = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest');
 
 function parseArgs(argv) {
   const args = {
@@ -144,6 +145,17 @@ async function downloadArtifact(runId) {
   throw new Error(`artifact download failed ${response.status} ${response.statusText}`);
 }
 
+function syncCanonicalArtifact(artifactDir) {
+  for (const name of ['visual_truth.json', 'landing.png', 'tpose.png', 'ready.png', 'ready_visual_follow.png']) {
+    const source = path.join(artifactDir, name);
+    if (fs.existsSync(source)) {
+      fs.mkdirSync(canonicalArtifactDir, { recursive: true });
+      fs.copyFileSync(source, path.join(canonicalArtifactDir, name));
+    }
+  }
+  return canonicalArtifactDir;
+}
+
 function localPreflight() {
   const commands = [
     ['node', ['--check', 'src/pose-lab.js']],
@@ -179,6 +191,7 @@ const report = {
   preflight: [],
   run: null,
   artifact: null,
+  canonicalArtifactDir: '',
   inspect: null,
   next: [],
 };
@@ -214,6 +227,7 @@ if (args.download) {
     artifactDir: downloaded.artifactDir,
     downloadMethod: downloaded.downloadMethod,
   };
+  report.canonicalArtifactDir = syncCanonicalArtifact(downloaded.artifactDir);
 }
 
 if (args.inspect) {
