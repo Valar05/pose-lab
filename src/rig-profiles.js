@@ -301,8 +301,7 @@ const BASE_RIG_PROFILES = {
         {
           clipPattern: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
           position: [0.14, 0.09, 0],
-          rotationDeg: [90, 0, 124.855],
-          reason: 'Review-only IK Ready keeps boring FK under RightHand but flips the sabre local presentation for the posed hand without changing the accepted T-pose/rest attachment.',
+          reason: 'Review-only IK Ready uses the same scoped hilt target as the red FPS-SWORD-UPPER candidate without changing the accepted T-pose/rest attachment rotation.',
         },
       ],
       sourceBounds: {
