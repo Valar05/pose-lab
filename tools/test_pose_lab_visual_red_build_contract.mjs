@@ -33,10 +33,11 @@ assert(!captureScript.includes("captureKind: 'offline-pose-render'"), 'Firebase 
 assert(captureScript.includes('Ready hilt collapsed onto raw hand/wrist'), 'Firebase capture must fail the red screenshot class where the hilt collapses onto the wrist');
 assert(captureScript.includes('Ready hand orientation/grip evidence is not visually sane'), 'Firebase capture must fail Ready hand-orientation visual regressions');
 assert(captureScript.includes('Ready blade axis points down through the body'), 'Firebase capture must fail Ready blade-axis visual regressions');
+assert(captureScript.includes('weapon rotation-probe'), 'Firebase capture must preserve cloud rotation-probe evidence when Ready blade-axis proof is red');
 assert(captureScript.includes('function relationshipChecksFromTelemetry'), 'Firebase capture must evaluate explicit relationship verdicts');
 assert(captureScript.includes('reviewTruthFailures') && captureScript.includes('visibleUiTruthAccepted'), 'Firebase capture must fail when the hosted visible UI truth is red');
 assert(captureScript.includes('MOBILE_REVIEW_VIEWPORT') && captureScript.includes('isMobile: true'), 'Firebase capture must reproduce the mobile review surface');
-assert(captureScript.includes('await page.goto(captureUrl'), 'Firebase capture must cold-load the exact review URL instead of only switching clips through debug state');
+assert(captureScript.includes('gotoHostedMeshyPage(page, captureUrl, capture.clip)') && captureScript.includes('routeRetry='), 'Firebase capture must cold-load the exact review URL with retry instead of only switching clips through debug state');
 assert(captureScript.includes('relationshipCloseupClip(page)') && !captureScript.includes('x: 360, y: 230'), 'Firebase capture must not crop relationship proof with desktop-only coordinates');
 assert(captureScript.includes('loadWarning: loadMs > LANDING_LOAD_WARN_MS'), 'Firebase capture must preserve slow hosted review load as diagnostic warning only');
 assert(!captureScript.includes('landing hosted review load exceeded'), 'Firebase capture must not fail visual truth solely because hosted review is slow');

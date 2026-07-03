@@ -330,19 +330,42 @@ let fatalError = '';
 async function waitForHostedMeshyPage(pageInstance, clipName = '') {
   await pageInstance.waitForFunction((expectedClip) => {
     const text = document.querySelector('#loadState')?.textContent || '';
+    if (/module failed|boot error|boot rejection/i.test(text)) return true;
     const apiReady = Boolean(window.__poseLabDebug || window.poseLabDebug);
     if (!apiReady || !/selected Meshy Character/.test(text)) return false;
     if (!expectedClip) return true;
     return text.includes(expectedClip);
   }, clipName, { timeout: 120000 });
+  const text = await pageInstance.locator('#loadState').textContent({ timeout: 5000 }).catch(() => '');
+  if (/module failed|boot error|boot rejection/i.test(text || '')) throw new Error(text);
+  if (!/selected Meshy Character/.test(text || '')) throw new Error(`hosted route did not select Meshy Character: ${text || 'missing load state'}`);
+  if (clipName && !String(text || '').includes(clipName)) throw new Error(`hosted route selected wrong clip: ${text || 'missing load state'}`);
+}
+
+async function gotoHostedMeshyPage(pageInstance, url, clipName = '') {
+  let lastError = '';
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const nextUrl = attempt === 0
+      ? url
+      : `${url}${url.includes('?') ? '&' : '?'}routeRetry=${attempt}`;
+    try {
+      await pageInstance.goto('about:blank', { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
+      await pageInstance.goto(nextUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
+      await waitForHostedMeshyPage(pageInstance, clipName);
+      return { ok: true, attempts: attempt + 1, error: '' };
+    } catch (caught) {
+      lastError = caught?.message || String(caught);
+    }
+  }
+  return { ok: false, attempts: 3, error: lastError };
 }
 
 const initialUrl = landingUrl(hostedUrl);
 const initialStartedAt = Date.now();
 let initialLoadError = '';
 try {
-  await page.goto(initialUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
-  await waitForHostedMeshyPage(page, '');
+  const loaded = await gotoHostedMeshyPage(page, initialUrl, '');
+  if (!loaded.ok) throw new Error(loaded.error);
 } catch (caught) {
   initialLoadError = caught?.message || String(caught);
   fatalError = initialLoadError;
@@ -358,8 +381,8 @@ for (const capture of captures) {
     error = initialLoadError;
   } else if (!initialLoadError) {
     try {
-      await page.goto(captureUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
-      await waitForHostedMeshyPage(page, capture.clip);
+      const loaded = await gotoHostedMeshyPage(page, captureUrl, capture.clip);
+      if (!loaded.ok) throw new Error(loaded.error);
     } catch (caught) {
       error = caught?.message || String(caught);
     }
@@ -380,6 +403,9 @@ for (const capture of captures) {
   const liveHilt = routeSelected ? await debugExec(page, 'weapon live-hilt-state') : { ok: false, error: 'route not selected' };
   const visualFollow = capture.id === 'ready' && routeSelected
     ? await debugExec(page, 'weapon visual-follow')
+    : null;
+  const rotationProbe = capture.id === 'ready' && routeSelected
+    ? await debugExec(page, 'weapon rotation-probe')
     : null;
   let contactSheet = '';
   if (visualFollow?.image?.dataUrl) {
@@ -444,6 +470,7 @@ for (const capture of captures) {
       weapon,
       liveHilt,
       visualFollow,
+      rotationProbe,
     },
   });
 }

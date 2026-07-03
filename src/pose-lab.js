@@ -11785,6 +11785,112 @@ class PoseLab {
     };
   }
 
+  debugWeaponRotationProbe() {
+    const actor = this.debugCurrentActor();
+    const clip = this.debugCurrentClip(actor);
+    const proxy = actor?.weaponProxy || null;
+    const attachment = actor?.info?.weaponAttachment || proxy?.attachmentConfig || null;
+    const model = proxy?.model || null;
+    const tip = proxy?.tipMarker || null;
+    if (!actor || !clip || !proxy?.root || !model || !tip || !attachment) {
+      return { ok: false, command: 'weapon-rotation-probe', error: 'active weapon attachment required', snapshot: this.debugSnapshot() };
+    }
+    const effective = clipScopedWeaponAttachmentConfig(attachment, clip);
+    const base = Array.isArray(effective.rotationDeg) ? effective.rotationDeg.map((value) => Number(value || 0)) : [0, 0, 0];
+    const originalRotation = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg.slice() : null;
+    const originalOverrides = Array.isArray(attachment.clipOverrides) ? JSON.parse(JSON.stringify(attachment.clipOverrides)) : null;
+    const tileWidth = 320;
+    const tileHeight = 240;
+    const round = (value, digits = 3) => Number(Number(value || 0).toFixed(digits));
+    const project = (world) => {
+      const projected = world.clone().project(this.camera);
+      return {
+        x: ((projected.x + 1) * 0.5 * tileWidth),
+        y: (1 - projected.y) * 0.5 * tileHeight,
+        z: projected.z,
+      };
+    };
+    const inTile = (point) => Boolean(point
+      && point.z >= -1
+      && point.z <= 1
+      && point.x >= 0
+      && point.x <= tileWidth
+      && point.y >= 0
+      && point.y <= tileHeight);
+    const offsets = [];
+    for (const dx of [-90, -60, -30, 0, 30, 60, 90, 120, 150]) {
+      for (const dz of [-150, -120, -90, -60, -30, 0, 30, 60, 90, 120, 150]) {
+        offsets.push([dx, 0, dz]);
+      }
+    }
+    const candidates = [
+      base,
+      ...offsets.map((delta) => delta.map((value, index) => round(base[index] + value, 3))),
+    ];
+    const seen = new Set();
+    const rows = [];
+    const measure = (rotationDeg) => {
+      const config = { ...effective, rotationDeg };
+      applyWeaponAttachmentRuntimeRules(THREE, { actorModel: actor.model, proxy, config });
+      actor.model.updateMatrixWorld(true);
+      proxy.root.updateMatrixWorld(true);
+      model.updateMatrixWorld(true);
+      tip.updateMatrixWorld(true);
+      const landmarks = this.weaponVisualMeshLandmarks(actor);
+      const hiltWorld = landmarks?.world?.appliedHilt
+        ? new THREE.Vector3().fromArray(landmarks.world.appliedHilt)
+        : worldPositionOf(proxy.root);
+      const tipWorld = worldPositionOf(tip);
+      const hiltScreen = project(hiltWorld);
+      const tipScreen = project(tipWorld);
+      const dx = tipScreen.x - hiltScreen.x;
+      const dy = tipScreen.y - hiltScreen.y;
+      return {
+        rotationDeg: rotationDeg.map((value) => round(value, 3)),
+        tipDropFromHiltPx: round(dy, 2),
+        tipRightFromHiltPx: round(dx, 2),
+        socketToTipPx: round(Math.hypot(dx, dy), 2),
+        hiltInTile: inTile(hiltScreen),
+        tipInTile: inTile(tipScreen),
+        screen: {
+          hilt: { x: round(hiltScreen.x, 2), y: round(hiltScreen.y, 2), z: round(hiltScreen.z, 4) },
+          tip: { x: round(tipScreen.x, 2), y: round(tipScreen.y, 2), z: round(tipScreen.z, 4) },
+        },
+      };
+    };
+    try {
+      for (const candidate of candidates) {
+        const key = candidate.join(',');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        rows.push(measure(candidate));
+      }
+    } finally {
+      if (originalRotation) attachment.rotationDeg = originalRotation;
+      if (originalOverrides) attachment.clipOverrides = originalOverrides;
+      this.updateWeaponAttachmentTransform(attachment);
+      actor.model.updateMatrixWorld(true);
+    }
+    const sorted = rows
+      .filter((row) => row.hiltInTile && row.tipInTile && row.socketToTipPx >= 24)
+      .sort((a, b) => {
+        const aPass = a.tipDropFromHiltPx <= 12 ? 0 : 1;
+        const bPass = b.tipDropFromHiltPx <= 12 ? 0 : 1;
+        if (aPass !== bPass) return aPass - bPass;
+        return Math.abs(a.tipDropFromHiltPx - 4) - Math.abs(b.tipDropFromHiltPx - 4);
+      });
+    return {
+      ok: true,
+      command: 'weapon-rotation-probe',
+      baseRotationDeg: base.map((value) => round(value, 3)),
+      candidateCount: rows.length,
+      best: sorted[0] || null,
+      acceptedCandidates: sorted.filter((row) => row.tipDropFromHiltPx <= 12).slice(0, 12),
+      nearest: sorted.slice(0, 24),
+      snapshot: this.debugSnapshot(),
+    };
+  }
+
   debugSnapshot() {
     const actor = this.debugCurrentActor();
     const clip = this.debugCurrentClip(actor);
@@ -12032,6 +12138,7 @@ class PoseLab {
         const subcommand = String(spec.args[0] || '').trim().toLowerCase();
         if (subcommand === 'follow' || subcommand === 'follows') return this.debugWeaponFollow(spec.args.slice(1));
         if (subcommand === 'visual-follow' || subcommand === 'visual' || subcommand === 'visualfollow') return this.debugWeaponVisualFollow(spec.args.slice(1));
+        if (subcommand === 'rotation-probe' || subcommand === 'rotationprobe' || subcommand === 'blade-probe') return this.debugWeaponRotationProbe(spec.args.slice(1));
         if (subcommand === 'live-hilt-state' || subcommand === 'live-hilt' || subcommand === 'hilt-state') return this.debugLiveWeaponHiltState(spec.args.slice(1));
         if (subcommand === 'use-saved-tuning' || subcommand === 'use-saved') return this.useSavedWeaponGizmoTuning();
         if (subcommand === 'clear-saved-tuning' || subcommand === 'clear-saved') return this.clearSavedWeaponGizmoTuning();
@@ -12044,6 +12151,11 @@ class PoseLab {
       case 'weapon-visual-follow':
       case 'weaponvisualfollow':
         return this.debugWeaponVisualFollow(spec.args);
+      case 'weapon-rotation-probe':
+      case 'weaponrotationprobe':
+      case 'weapon-blade-probe':
+      case 'weaponbladeprobe':
+        return this.debugWeaponRotationProbe(spec.args);
       case 'weapon-live-hilt-state':
       case 'weaponlivehiltstate':
       case 'weapon-hilt-state':
