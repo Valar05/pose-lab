@@ -289,7 +289,7 @@ const BASE_RIG_PROFILES = {
       tipMarker: 'WeaponGrip_end',
       scale: 0.47493,
       position: [0, 0, 0],
-      rotationDeg: [-67.582, 76.718, -90.52],
+      rotationDeg: [-67.582, 76.718, -0.52],
       gripLocalPosition: [0.6535, -0.02302, -0.07317],
       tipLocalPosition: [-0.95561, 0.1368, 0],
       sourceBounds: {

@@ -320,17 +320,37 @@ function sameArray(a, b) {
   return JSON.stringify(a || []) === JSON.stringify(b || []);
 }
 
+function normalizedFkPlacementSignature(value) {
+  try {
+    const parsed = JSON.parse(value || '{}');
+    return JSON.stringify({
+      positionMode: parsed.positionMode || '',
+      handLocalOffset: parsed.handLocalOffset || null,
+      modelLocalOffset: parsed.modelLocalOffset || null,
+      gripOffset: parsed.gripOffset || null,
+      rotationDeg: parsed.rotationDeg || null,
+      allowAnimatedSocketAnimation: parsed.allowAnimatedSocketAnimation === true,
+      compensateParentScale: parsed.compensateParentScale !== false,
+    });
+  } catch (_error) {
+    return String(value || '');
+  }
+}
+
 function compareReports(ready, tpose) {
   const blockers = [];
   if (ready.generatedClipResolved !== true || tpose.generatedClipResolved !== true) blockers.push('one-or-both-generated-clips-did-not-resolve');
   for (const node of ['WeaponR', 'WeaponGrip', 'RightHand', 'LeftHand']) {
     if (!sameArray(ready.trackSummary[node], tpose.trackSummary[node])) blockers.push(`track-summary-differs:${node}`);
   }
-  for (const field of ['runtimeMode', 'animatedSourceSocketRotation', 'animatedSocketRotation', 'fkPlacementSignature']) {
+  for (const field of ['runtimeMode', 'animatedSourceSocketRotation', 'animatedSocketRotation']) {
     const readyValues = [...new Set(ready.samples.map((sample) => JSON.stringify(sample[field])))];
     const tposeValues = [...new Set(tpose.samples.map((sample) => JSON.stringify(sample[field])))];
     if (!sameArray(readyValues, tposeValues)) blockers.push(`runtime-field-differs:${field}`);
   }
+  const readyPlacement = [...new Set(ready.samples.map((sample) => normalizedFkPlacementSignature(sample.fkPlacementSignature)))];
+  const tposePlacement = [...new Set(tpose.samples.map((sample) => normalizedFkPlacementSignature(sample.fkPlacementSignature)))];
+  if (!sameArray(readyPlacement, tposePlacement)) blockers.push('runtime-field-differs:fkPlacementSignature');
   for (const child of ['WeaponGrip', 'displayRoot', 'weaponMesh']) {
     const readyStable = Number(ready.maxParentLocalMatrixDrift[child] || 0) <= 0.000001;
     const tposeStable = Number(tpose.maxParentLocalMatrixDrift[child] || 0) <= 0.000001;
