@@ -22,6 +22,9 @@ assert(headers.includes('**/*.{js,mjs,css,json}'), 'Firebase headers should cove
 assert(buildScript.includes("for (const file of ['index.html', 'pose-lab.html', 'pose-critique.html'])"), 'release build should stage Pose Lab entrypoints');
 assert(buildScript.includes("copyDir('assets/models')"), 'release build should stage runtime model assets');
 assert(!buildScript.includes("copyDir('generated'"), 'release build must not stage generated scratch output');
+const captureScript = fs.readFileSync(path.join(projectRoot, 'tools', 'capture_firebase_visual_truth.mjs'), 'utf8');
+assert(captureScript.includes("url.searchParams.set('qaActor', 'meshyCharacter')"), 'Firebase capture should force the hosted actor through qaActor');
+assert(captureScript.includes('selected Meshy Character'), 'Firebase capture should wait for the hosted page to actually select Meshy Character');
 assert(gitignore.includes('/generated/firebase_hosting/'), 'generated Firebase staging output should stay untracked');
 assert(gitignore.includes('/generated/firebase_visual_truth/artifacts/'), 'Firebase screenshot artifacts should stay untracked');
 

@@ -25,7 +25,9 @@ function poseUrl(base, clip) {
   const url = new URL('pose-lab.html', base.endsWith('/') ? base : `${base}/`);
   url.searchParams.set('mode', 'standard');
   url.searchParams.set('actor', 'meshyCharacter');
+  url.searchParams.set('qaActor', 'meshyCharacter');
   url.searchParams.set('clip', clip);
+  url.searchParams.set('qaClip', clip);
   url.searchParams.set('weaponDebug', '1');
   url.searchParams.set('cacheBust', `firebase-visual-truth-${Date.now()}`);
   return url.toString();
@@ -57,10 +59,17 @@ const captured = [];
 for (const capture of captures) {
   const url = poseUrl(args.hostedUrl, capture.clip);
   await page.goto(url, { waitUntil: 'networkidle', timeout: 90000 });
-  await page.waitForTimeout(4000);
+  await page.waitForFunction(() => {
+    const text = document.querySelector('#loadState')?.textContent || '';
+    return /selected Meshy Character/.test(text);
+  }, { timeout: 120000 });
+  await page.waitForTimeout(1000);
   const screenshot = path.join(outDir, `${capture.id}.png`);
   await page.screenshot({ path: screenshot, fullPage: false });
   const loadState = await page.locator('#loadState').textContent({ timeout: 5000 }).catch(() => '');
+  if (!/selected Meshy Character/.test(loadState || '')) {
+    throw new Error(`hosted capture selected wrong actor for ${capture.id}: ${loadState || 'missing loadState'}`);
+  }
   captured.push({
     id: capture.id,
     actor: 'meshyCharacter',
