@@ -21,12 +21,14 @@ const restBlockEnd = profilesSource.indexOf('directRotationPairs: MESHY_FPS_REST
 const restBlock = restBlockStart >= 0 && restBlockEnd > restBlockStart ? profilesSource.slice(restBlockStart, restBlockEnd) : '';
 assert(restBlock && !restBlock.includes('weaponKeyConvert'), 'T-pose rest bridge must not generate Meshy weapon tracks for the accepted baseline');
 
-const swordBlockStart = profilesSource.indexOf("clipTag: 'FPS-SWORD-UPPER'");
-const swordBlockEnd = profilesSource.indexOf('ikOrientationGuide:', swordBlockStart);
+const swordClipTag = profilesSource.indexOf("clipTag: 'FPS-SWORD-UPPER'");
+const swordBlockStart = swordClipTag >= 0 ? profilesSource.lastIndexOf('      {', swordClipTag) : -1;
+const swordBlockEnd = profilesSource.indexOf("clipTag: 'FPS-REST-ARMS-CAL'", swordClipTag);
 const swordBlock = swordBlockStart >= 0 && swordBlockEnd > swordBlockStart ? profilesSource.slice(swordBlockStart, swordBlockEnd) : '';
 assert(swordBlock.includes("originPrefix: 'mapped-arms:player->meshyCharacter'"), 'FPS-SWORD-UPPER should use the restored mapped-arms origin group');
-assert(swordBlock.includes("sourceWeapon: 'Weapon.R'") && swordBlock.includes("targetWeapon: 'WeaponGrip'"), 'FPS-SWORD-UPPER should keep the restored source Weapon.R -> WeaponGrip bridge');
-assert(swordBlock.includes('frameSolve: true') && swordBlock.includes('applyToHand: false'), 'restored weapon bridge should solve the weapon frame without rewriting the hand track');
+assert(swordBlock.includes("retargetMode: 'world-joint-projection'"), 'FPS-SWORD-UPPER should use the world-joint Ready pose generator instead of the red direct quaternion copy');
+assert(swordBlock.includes("sourceUpper: 'Arm.R'") && swordBlock.includes("targetUpper: 'RightArm'"), 'FPS-SWORD-UPPER should solve the right arm from authored FPS world joints');
+assert(!swordBlock.includes('weaponKeyConvert'), 'FPS-SWORD-UPPER must not key WeaponGrip; direct hand FK owns the weapon at runtime');
 
 assert(profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must use direct hand-fk so hosted Firebase can prove boring FK');
 assert(!profilesSource.includes("syntheticSourceSocketBone: ''"), 'Meshy production profile must not force an empty synthetic socket');

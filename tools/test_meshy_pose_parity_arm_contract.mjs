@@ -18,14 +18,13 @@ assert(!profiles.includes('copiedSourceLayer') && !js.includes('syncCopiedSource
 assert(profiles.includes("parentMode: 'hand-fk'") && !profiles.includes("syntheticSourceSocketBone: ''"), 'Meshy profile must use direct hand-fk without an empty synthetic socket override');
 assert(!profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy profile must not promote the failed Visual-IK golden Ready path');
 
-assert(profiles.includes("retargetMode: 'fps-upper-key-convert'"), 'Meshy FPS-SWORD-UPPER config should use source-key conversion');
-assert(profiles.includes('ikOrientationGuide: {') && profiles.includes("mode: 'source-key-correction'") && profiles.includes('replaceTracks: false'), 'Meshy FPS-SWORD-UPPER ready profile should use IK only as bounded source-key correction');
-assert(profiles.includes('frameSolve: true') && profiles.includes('sourceTipLocal: [0.00854, 0.57786, 0.00995]'), 'Meshy FPS-SWORD-UPPER config should use measured FPS weapon basis solve');
-assert(profiles.includes("sourceHand: 'Hand.R'") && profiles.includes("sourceWeapon: 'Weapon.R'"), 'Meshy weapon socket should use explicit authored FPS Hand.R and Weapon.R tracks');
-assert(profiles.includes('applyToHand: false'), 'Meshy ready pose should not force the wrist to match the weapon frame solve');
+assert(profiles.includes("retargetMode: 'world-joint-projection'"), 'Meshy FPS-SWORD-UPPER config should use source-authored world joint projection for Ready pose');
+assert(profiles.includes("sourceUpper: 'Arm.R'") && profiles.includes("targetUpper: 'RightArm'"), 'Meshy FPS-SWORD-UPPER should solve the right arm from authored FPS world joints');
+assert(profiles.includes("sourceHand: 'Hand.R'") && profiles.includes("targetHand: 'RightHand'"), 'Meshy ready pose should map authored FPS hand joints onto Meshy hands');
+assert(!profiles.includes("sourceWeapon: 'Weapon.R'") || !profiles.includes("clipTag: 'FPS-SWORD-UPPER'") || !profiles.slice(profiles.indexOf("clipTag: 'FPS-SWORD-UPPER'"), profiles.indexOf("clipTag: 'FPS-REST-ARMS-CAL'")).includes('weaponKeyConvert'), 'Meshy Ready must not key WeaponGrip; boring FK runtime owns weapon follow');
 assert(js.includes('if (guidedTracks.length && !ikPreservesSourceTracks)'), 'replacement IK should be guarded away from the active source-key correction mode');
 assert(profiles.includes("positionMode: 'right-hand'"), 'Meshy one-hand saber socket should be positioned on the right hand, not the two-hand midpoint');
-assert(profiles.includes("targetHand: 'RightHand'") && profiles.includes("targetWeapon: 'WeaponGrip'"), 'Meshy right-hand weapon socket should map onto RightHand and WeaponGrip');
+assert(profiles.includes("targetHand: 'RightHand'") && profiles.includes("parentMode: 'hand-fk'"), 'Meshy right hand should drive the direct hand-FK weapon socket');
 assert(profiles.includes("from: 'Hand.L', to: 'LeftHand'") && profiles.includes("from: 'Hand.R', to: 'RightHand'"), 'Meshy ready-only slice should preserve mapped hand source keys');
 assert(profiles.includes("boneRollCorrection: 'chain-up'"), 'Meshy wrist parity should retain chain-up bone-roll correction');
 assert(profiles.includes("sourceRestClip: '0T-Pose'") && profiles.includes("targetRestProvider: 'skin-bind'"), 'Meshy wrist parity should not use stale animated model-node rest');
