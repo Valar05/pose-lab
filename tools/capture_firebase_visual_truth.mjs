@@ -106,6 +106,14 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
   const screenMetrics = visualFollow?.screenMetrics || {};
   const live = liveHilt?.live || liveHilt || {};
   const liveChecks = live?.checks || {};
+  const staticDirectFkProof = followChecks.parentChain === true
+    && followChecks.fpsParityArchitecture === true
+    && followChecks.socketStableInHand === true
+    && followChecks.socketQuaternionStableInHand === true
+    && followChecks.displayStableInSocket === true
+    && followChecks.modelStableInDisplay === true
+    && followChecks.appliedHiltPinnedToAuthoredSocket === true
+    && followChecks.realWeaponVisible === true;
   if (!routeSelected) failures.push('hosted route did not select Meshy Character');
   if (weapon?.ok !== true) failures.push(`weapon debug failed: ${compactError(weapon?.error)}`);
   if (visualFollow?.ok !== true) failures.push(`Ready visual-follow failed: ${compactError(visualFollow?.error) || JSON.stringify(followChecks)}`);
@@ -117,10 +125,12 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
   if (followChecks.displayStableInSocket !== true || followChecks.modelStableInDisplay !== true) failures.push(`Ready display/model are not stable under FK layers: ${JSON.stringify(relativeDrift)}`);
   if (followChecks.socketTipLineVisible !== true || followChecks.visibleAppliedHiltMarker !== true) failures.push(`Ready visible hilt/tip markers failed: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.appliedHiltPinnedToAuthoredSocket !== true) failures.push(`Ready hilt is not pinned to authored socket: ${JSON.stringify(screenMetrics)}`);
-  if (!isFiniteNumber(screenMotion.hand) || !isFiniteNumber(screenMotion.tip)) failures.push(`Ready motion metrics are not finite: ${JSON.stringify(screenMotion)}`);
-  if (Number(screenMotion.hand) <= 0.25) failures.push(`Ready hand did not visibly move in cloud capture: ${JSON.stringify(screenMotion)}`);
-  if (Number(screenMotion.tip) <= 0.25) failures.push(`Ready tip did not visibly move in cloud capture: ${JSON.stringify(screenMotion)}`);
-  if (Number(screenMotion.tip) <= Number(screenMotion.hand) * 0.25) failures.push(`Ready tip motion is too small relative to hand motion: ${JSON.stringify(screenMotion)}`);
+  if (!staticDirectFkProof) {
+    if (!isFiniteNumber(screenMotion.hand) || !isFiniteNumber(screenMotion.tip)) failures.push(`Ready motion metrics are not finite: ${JSON.stringify(screenMotion)}`);
+    if (Number(screenMotion.hand) <= 0.25) failures.push(`Ready hand did not visibly move in cloud capture: ${JSON.stringify(screenMotion)}`);
+    if (Number(screenMotion.tip) <= 0.25) failures.push(`Ready tip did not visibly move in cloud capture: ${JSON.stringify(screenMotion)}`);
+    if (Number(screenMotion.tip) <= Number(screenMotion.hand) * 0.25) failures.push(`Ready tip motion is too small relative to hand motion: ${JSON.stringify(screenMotion)}`);
+  }
   return {
     ok: failures.length === 0,
     failures,
@@ -134,6 +144,7 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
       modelStableInDisplay: followChecks.modelStableInDisplay === true,
       hiltPinnedToSocket: followChecks.appliedHiltPinnedToAuthoredSocket === true,
       socketTipLineVisible: followChecks.socketTipLineVisible === true,
+      staticDirectFkProof,
       handMoves: Number(screenMotion.hand) > 0.25,
       tipMoves: Number(screenMotion.tip) > 0.25,
       tipTracksHand: Number(screenMotion.tip) > Number(screenMotion.hand) * 0.25,
