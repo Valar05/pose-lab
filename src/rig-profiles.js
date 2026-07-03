@@ -311,6 +311,18 @@ const BASE_RIG_PROFILES = {
       sourceAttachment: {
         basis: 'Saber handle-centered attachment for Meshy Character: gripLocalPosition pins the semantic landmark hilt candidate to WeaponGrip, rotationDeg keeps the tip forward while rolling the rifle-shaped guard toward model right, handLocalOffset moves toward the palm, and modelLocalOffset applies explicit model-space down/back/out placement.',
       },
+      clipOverrides: [
+        {
+          clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]',
+          rotationDeg: [131.704, 12.774, -83.407],
+          reason: 'Ready-only sabre mesh basis correction: rotates the visible blade under the already-authored FK WeaponGrip without moving the hilt, socket, grip, tip oracle, scale, or T-pose baseline.',
+        },
+        {
+          clipPattern: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
+          rotationDeg: [131.704, 12.774, -83.407],
+          reason: 'Review-only Ready uses the same rotation-only blade correction while preserving pure FK and the accepted rest weapon attachment.',
+        },
+      ],
     },
     extraClipUrls: [
       'assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Running_withSkin.glb',

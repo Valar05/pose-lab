@@ -4,7 +4,7 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-201';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-202';
 import {
   applyWeaponAttachmentRuntimeRules,
   applyWeaponSocketRuntimeRules,
@@ -13,14 +13,14 @@ import {
   pinWeaponLocalPointToDisplay as pinWeaponLocalPointToDisplayRuntime,
   updateWeaponFallbackFromTipRuntime,
   weaponPlacementConfigSignature,
-} from './weapon-runtime-rules.mjs?v=pose-editor-201';
-import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-201';
+} from './weapon-runtime-rules.mjs?v=pose-editor-202';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-202';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
 
-const LAB_BUILD = 'meshy-fps-ready-fk-units';
-const LAB_CACHE_TOKEN = 'pose-editor-201';
+const LAB_BUILD = 'meshy-fps-ready-blade-rotation';
+const LAB_CACHE_TOKEN = 'pose-editor-202';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 const MESHY_REVIEW_CLIPS = [
@@ -11639,12 +11639,24 @@ class PoseLab {
       const second = sample.screen[b];
       return Math.hypot(second.x - first.x, second.y - first.y);
     }));
+    const screenDeltaRange = (fromField, toField, axis) => {
+      const values = samples.map((sample) => {
+        const from = sample.screen[fromField];
+        const to = sample.screen[toField];
+        return Number(to?.[axis]) - Number(from?.[axis]);
+      }).filter((value) => Number.isFinite(value));
+      return values.length
+        ? { min: round(Math.min(...values), 2), max: round(Math.max(...values), 2) }
+        : { min: null, max: null };
+    };
     const maxFiniteSampleMetric = (field) => {
       const values = samples
         .map((sample) => Number(sample.meshLandmarks?.[field]))
         .filter((value) => Number.isFinite(value));
       return values.length ? round(Math.max(...values), 2) : null;
     };
+    const tipFromHiltY = screenDeltaRange('appliedHilt', 'tip', 'y');
+    const tipFromHiltX = screenDeltaRange('appliedHilt', 'tip', 'x');
     const screenMetrics = {
       maxHandToSocketPx: round(maxScreenDistance('hand', 'socket'), 2),
       maxHandBaselineToSocketPx: maxFiniteSampleMetric('handBaselineToSocketPx'),
@@ -11659,6 +11671,10 @@ class PoseLab {
       maxHandToSavedGripPx: maxFiniteSampleMetric('handToSavedGripPx'),
       appliedHiltInTile: samples.every((sample) => sample.screen.appliedHiltInTile === true),
       appliedHiltMarkerDrawn: samples.every((sample) => Boolean(sample.screen.appliedHiltDrawn)),
+      maxTipDropFromAppliedHiltPx: tipFromHiltY.max,
+      minTipDropFromAppliedHiltPx: tipFromHiltY.min,
+      maxTipRightFromAppliedHiltPx: tipFromHiltX.max,
+      minTipRightFromAppliedHiltPx: tipFromHiltX.min,
       fallbackHiddenWithRealWeapon: samples.every((sample) => sample.meshLandmarks?.layers?.fallbackHiddenWithRealWeapon === true),
       realWeaponVisible: samples.every((sample) => sample.meshLandmarks?.layers?.realWeaponVisible === true),
     };
@@ -11716,6 +11732,8 @@ class PoseLab {
         && Number.isFinite(Number(screenMetrics.maxHandToAppliedHiltPx))
         && screenMetrics.maxHandToConfiguredGripPx > 8
         && screenMetrics.maxHandToAppliedHiltPx > 8,
+      readyBladeNotPointingDownThroughBody: Number.isFinite(Number(screenMetrics.maxTipDropFromAppliedHiltPx))
+        && screenMetrics.maxTipDropFromAppliedHiltPx <= 12,
       fallbackHiddenWithRealWeapon: screenMetrics.fallbackHiddenWithRealWeapon === true,
       realWeaponVisible: screenMetrics.realWeaponVisible === true,
       visibleAppliedHiltMarker: screenMetrics.appliedHiltMarkerDrawn === true,
@@ -11734,6 +11752,7 @@ class PoseLab {
       && hiltAnchorSane
       && checks.appliedHiltAwayFromRawHand
       && checks.readyHandOrientationSane
+      && checks.readyBladeNotPointingDownThroughBody
       && checks.fallbackHiddenWithRealWeapon
       && checks.realWeaponVisible
       && checks.visibleAppliedHiltMarker

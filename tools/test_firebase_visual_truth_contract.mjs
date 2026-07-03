@@ -33,6 +33,16 @@ try {
   throw new Error(`invalid Firebase visual truth JSON: ${error.message}`);
 }
 
+if (evidence.cacheToken !== currentCacheToken() || evidence.runtimeBuild !== currentRuntimeBuild()) {
+  console.log(JSON.stringify({
+    checked: ['firebase-visual-truth-contract'],
+    status: 'pending',
+    reason: `stale Firebase hosted visual truth evidence: token ${evidence.cacheToken || 'missing'} / build ${evidence.runtimeBuild || 'missing'} does not match current ${currentCacheToken()} / ${currentRuntimeBuild()}`,
+    evidencePath: path.relative(projectRoot, evidencePath),
+  }, null, 2));
+  process.exit(0);
+}
+
 assert(evidence.schema === 'pose-lab-firebase-visual-truth-v1', 'Firebase visual truth evidence should use schema pose-lab-firebase-visual-truth-v1');
 assert(evidence.projectId === 'home-center-dclar', 'Firebase visual truth should come from home-center-dclar');
 assert(evidence.hostingSite === 'pose-lab-visual-truth', 'Firebase visual truth should come from pose-lab-visual-truth');
@@ -104,11 +114,13 @@ assert(ready?.evaluation?.checks?.hiltPinnedToSocket === true, 'Ready cloud evid
 assert(ready?.evaluation?.checks?.handLocalGripOffsetVisible === true, 'Ready cloud evidence must prove hand-local grip offset is visibly separated from the raw wrist');
 assert(ready?.evaluation?.checks?.hiltAwayFromRawHand === true, 'Ready cloud evidence must prove the hilt has not collapsed onto the raw hand/wrist');
 assert(ready?.evaluation?.checks?.readyHandOrientationSane === true, 'Ready cloud evidence must prove the hand orientation/grip basis is visually sane');
+assert(ready?.evaluation?.checks?.readyBladeNotPointingDownThroughBody === true, 'Ready cloud evidence must reject a blade axis that visibly points down through the body');
 assert(ready?.evaluation?.checks?.reviewClipInventoryVisible === true, 'Ready cloud evidence must prove review clip inventory is visible');
 assert(ready?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Ready cloud evidence must accept only green visible UI truth');
 assert(ready?.evaluation?.checks?.bodyPoseLandmarksPresent === true, 'Ready cloud evidence must expose body pose landmarks for hand-orientation review');
 assert(ready?.evaluation?.checks?.staticDirectFkProof === true || (ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true), 'Ready cloud evidence must prove strict static direct FK or hand/saber tip motion together');
 assert(Object.hasOwn(ready?.evaluation?.checks || {}, 'readyVisualRelationshipAccepted'), 'Ready cloud evidence must record hand/hilt/blade visible relationship acceptance');
+assert(Object.hasOwn(ready?.cloudTelemetry?.visualFollow?.screenMetrics || {}, 'maxTipDropFromAppliedHiltPx'), 'Ready cloud evidence must record blade tip drop from hilt');
 assert(evidence.truthLedger?.landingUsable === true, 'truth ledger must mark landing page usable green');
 assert(evidence.truthLedger?.cloudUrlLoaded === true, 'truth ledger must mark cloud URL loading green');
 if (!evidence.humanRedBuild) {

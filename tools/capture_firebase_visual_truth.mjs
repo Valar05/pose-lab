@@ -121,7 +121,9 @@ function relationshipChecksFromTelemetry({ liveChecks = {}, liveDistances = {}, 
       && Number(screenMotion.tip || 0) > Number(screenMotion.hand || 0) * 0.25
     ))
     && Number(screenMetrics.maxHandToAppliedHiltPx || 0) >= 18
-    && Number(screenMetrics.minSocketToTipPx || 0) >= 24;
+    && Number(screenMetrics.minSocketToTipPx || 0) >= 24
+    && Number.isFinite(Number(screenMetrics.maxTipDropFromAppliedHiltPx))
+    && Number(screenMetrics.maxTipDropFromAppliedHiltPx) <= 12;
   return {
     tposeWristRelationshipAccepted,
     defaultSurfaceAccepted: tposeWristRelationshipAccepted,
@@ -251,6 +253,7 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
   if (followChecks.handLocalGripOffsetVisible !== true) failures.push(`Ready hand local grip offset is not visible; hand orientation/grip basis collapsed to raw wrist: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.appliedHiltAwayFromRawHand !== true) failures.push(`Ready hilt collapsed onto raw hand/wrist instead of the authored visible grip offset: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.readyHandOrientationSane !== true) failures.push(`Ready hand orientation/grip evidence is not visually sane: ${JSON.stringify(screenMetrics)}`);
+  if (followChecks.readyBladeNotPointingDownThroughBody !== true) failures.push(`Ready blade axis points down through the body instead of reading as held by the hilt: ${JSON.stringify(screenMetrics)}`);
   const relationship = relationshipChecksFromTelemetry({ followChecks, screenMetrics, screenMotion, staticDirectFkProof });
   if (relationship.readyVisualRelationshipAccepted !== true) failures.push(`Ready hand/hilt/blade relationship failed telemetry proxy: ${JSON.stringify(screenMetrics)}`);
   if (!staticDirectFkProof) {
@@ -275,6 +278,7 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
       handLocalGripOffsetVisible: followChecks.handLocalGripOffsetVisible === true,
       hiltAwayFromRawHand: followChecks.appliedHiltAwayFromRawHand === true,
       readyHandOrientationSane: followChecks.readyHandOrientationSane === true,
+      readyBladeNotPointingDownThroughBody: followChecks.readyBladeNotPointingDownThroughBody === true,
       socketTipLineVisible: followChecks.socketTipLineVisible === true,
       staticDirectFkProof,
       handMoves: Number(screenMotion.hand) > 0.25,

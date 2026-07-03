@@ -19,6 +19,7 @@ function objectBlock(marker, nextMarker) {
 
 const weaponProxyBlock = objectBlock('    weaponProxy: {', '    weaponAttachment: {');
 const weaponAttachmentBlock = objectBlock('    weaponAttachment: {', '    extraClipUrls: [');
+const readyAttachmentOverrideBlock = weaponAttachmentBlock.slice(weaponAttachmentBlock.indexOf('clipOverrides: ['));
 
 assert(workflowState.acceptedClip === '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', 'accepted baseline must remain the user-verified T-pose rest calibration');
 assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }"), 'Meshy startup must preserve the accepted T-pose baseline');
@@ -31,7 +32,11 @@ assert(profiles.includes('tipLocalPosition: [-0.95561, 0.1368, 0]'), 'base Meshy
 
 assert(weaponProxyBlock.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'") && weaponProxyBlock.includes('gripOffset: [14, 9, 0]'), 'Visual-IK Ready may move only the FK WeaponGrip socket through an authored proxy gripOffset in Meshy bone-local units');
 assert(weaponProxyBlock.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'") && weaponProxyBlock.includes('gripOffset: [14, 9, 0]'), 'FPS-SWORD-UPPER Ready may move only the FK WeaponGrip socket through an authored proxy gripOffset in Meshy bone-local units');
-assert(!weaponAttachmentBlock.includes('clipOverrides:'), 'Ready must not move the sabre mesh under WeaponGrip through attachment clip overrides');
+assert(readyAttachmentOverrideBlock.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'") && readyAttachmentOverrideBlock.includes("clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Ready attachment override must be scoped only to the two Ready review clips');
+assert(readyAttachmentOverrideBlock.includes('rotationDeg: [131.704, 12.774, -83.407]'), 'Ready attachment override may rotate only the visible blade basis under the FK socket');
+for (const forbidden of ['position:', 'scale:', 'gripLocalPosition:', 'tipLocalPosition:', 'modelLocalOffset:', 'handLocalOffset:', 'gripOffset:']) {
+  assert(!readyAttachmentOverrideBlock.includes(forbidden), `Ready attachment override must not change ${forbidden}`);
+}
 assert(!profiles.includes('rotationDeg: [90, 0, 124.855]'), 'known bad Ready sabre rotation override must not return');
 
 if (failures.length) throw new Error(failures.join('\n'));
@@ -39,5 +44,5 @@ if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({
   checked: 'meshy-baseline-weapon-relationship',
   acceptedClip: workflowState.acceptedClip,
-  readyRotationOverrideAllowed: false,
+  readyRotationOverrideAllowed: 'rotation-only',
 }, null, 2));

@@ -32,6 +32,7 @@ assert(captureScript.includes("offlineRender: 'diagnostic-only'"), 'Firebase cap
 assert(!captureScript.includes("captureKind: 'offline-pose-render'"), 'Firebase capture must not emit offline-pose-render evidence');
 assert(captureScript.includes('Ready hilt collapsed onto raw hand/wrist'), 'Firebase capture must fail the red screenshot class where the hilt collapses onto the wrist');
 assert(captureScript.includes('Ready hand orientation/grip evidence is not visually sane'), 'Firebase capture must fail Ready hand-orientation visual regressions');
+assert(captureScript.includes('Ready blade axis points down through the body'), 'Firebase capture must fail Ready blade-axis visual regressions');
 assert(captureScript.includes('function relationshipChecksFromTelemetry'), 'Firebase capture must evaluate explicit relationship verdicts');
 assert(captureScript.includes('reviewTruthFailures') && captureScript.includes('visibleUiTruthAccepted'), 'Firebase capture must fail when the hosted visible UI truth is red');
 assert(captureScript.includes('MOBILE_REVIEW_VIEWPORT') && captureScript.includes('isMobile: true'), 'Firebase capture must reproduce the mobile review surface');
@@ -88,6 +89,7 @@ assert(tpose?.evaluation?.checks?.acceptedHiltOracle === true, 'T-pose cloud cap
 assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'tposeWristRelationshipAccepted'), 'T-pose cloud capture must record wrist/saber visible relationship acceptance');
 assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'defaultSurfaceAccepted'), 'T-pose cloud capture must record default-surface visible acceptance');
 assert(Object.hasOwn(ready?.evaluation?.checks || {}, 'readyVisualRelationshipAccepted'), 'Ready cloud capture must record hand/hilt/blade visible relationship acceptance');
+assert(Object.hasOwn(ready?.cloudTelemetry?.visualFollow?.screenMetrics || {}, 'maxTipDropFromAppliedHiltPx'), 'Ready cloud capture must record blade tip drop from hilt');
 assert(evidence.captures?.find((capture) => capture.id === 'landing')?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Landing cloud capture must prove visible UI truth accepted');
 assert(tpose?.evaluation?.checks?.visibleUiTruthAccepted === true, 'T-pose cloud capture must prove visible UI truth accepted');
 assert(ready?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Ready cloud capture must prove visible UI truth accepted');
@@ -97,6 +99,7 @@ if (!evidence.humanRedBuild) {
   assert(ready?.accepted === true && ready?.evaluation?.checks?.tipTracksHand === true, 'Ready cloud capture must prove saber tip tracks hand');
   assert(ready?.accepted === true && ready?.evaluation?.checks?.hiltAwayFromRawHand === true, 'Ready cloud capture must prove hilt is visibly away from the raw hand/wrist');
   assert(ready?.accepted === true && ready?.evaluation?.checks?.readyHandOrientationSane === true, 'Ready cloud capture must prove hand orientation/grip basis is visually sane');
+  assert(ready?.evaluation?.checks?.readyBladeNotPointingDownThroughBody === true, 'Ready cloud capture must prove blade axis does not point down through the body');
   assert(ready?.evaluation?.checks?.readyVisualRelationshipAccepted === true, 'Ready cloud capture must prove accepted hand/hilt/blade visual relationship');
 }
 assert(typeof tpose?.screenshot === 'string' && tpose.screenshot.endsWith('.png'), 'T-pose cloud capture must include screenshot');
