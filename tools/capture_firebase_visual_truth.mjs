@@ -102,19 +102,22 @@ function reviewTruthFailures(snapshot) {
   return Array.isArray(truth.failures) && truth.failures.length ? truth.failures : ['hosted page review truth is red'];
 }
 
-function relationshipChecksFromTelemetry({ liveChecks = {}, liveDistances = {}, followChecks = {}, screenMetrics = {}, staticDirectFkProof = false } = {}) {
+function relationshipChecksFromTelemetry({ liveChecks = {}, liveDistances = {}, followChecks = {}, screenMetrics = {}, screenMotion = {} } = {}) {
   const tposeWristRelationshipAccepted = liveChecks.realWeaponVisible === true
     && liveChecks.appliedHiltPinnedToAuthoredSocket === true
     && liveChecks.appliedHiltPinnedToPalmTarget === true
     && Number(liveDistances.palmTargetToAppliedHiltPx || 0) <= 2
     && Number(liveDistances.socketToAppliedHiltPx || 0) <= 2;
-  const readyVisualRelationshipAccepted = staticDirectFkProof === true
-    && followChecks.realWeaponVisible === true
+  const readyVisualRelationshipAccepted = followChecks.realWeaponVisible === true
     && followChecks.visibleAppliedHiltMarker === true
     && followChecks.socketTipLineVisible === true
+    && followChecks.appliedHiltPinnedToAuthoredSocket === true
     && followChecks.handLocalGripOffsetVisible === true
     && followChecks.appliedHiltAwayFromRawHand === true
     && followChecks.readyHandOrientationSane === true
+    && Number(screenMotion.hand || 0) > 0.25
+    && Number(screenMotion.tip || 0) > 0.25
+    && Number(screenMotion.tip || 0) > Number(screenMotion.hand || 0) * 0.25
     && Number(screenMetrics.maxHandToAppliedHiltPx || 0) >= 18
     && Number(screenMetrics.minSocketToTipPx || 0) >= 24;
   return {
@@ -214,8 +217,7 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
   const screenMetrics = visualFollow?.screenMetrics || {};
   const live = liveHilt?.live || liveHilt || {};
   const liveChecks = live?.checks || {};
-  const readyHiltAnchorSane = followChecks.appliedHiltPinnedToAuthoredSocket === true
-    || followChecks.clipScopedHiltTargetVisible === true;
+  const readyHiltAnchorSane = followChecks.appliedHiltPinnedToAuthoredSocket === true;
   const readyLiveHiltAnchorSane = liveChecks.appliedHiltPinnedToAuthoredSocket === true
     || liveChecks.appliedHiltAwayFromRawHand === true;
   const staticDirectFkProof = followChecks.parentChain === true
@@ -247,14 +249,12 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
   if (followChecks.handLocalGripOffsetVisible !== true) failures.push(`Ready hand local grip offset is not visible; hand orientation/grip basis collapsed to raw wrist: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.appliedHiltAwayFromRawHand !== true) failures.push(`Ready hilt collapsed onto raw hand/wrist instead of the authored visible grip offset: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.readyHandOrientationSane !== true) failures.push(`Ready hand orientation/grip evidence is not visually sane: ${JSON.stringify(screenMetrics)}`);
-  const relationship = relationshipChecksFromTelemetry({ followChecks, screenMetrics, staticDirectFkProof });
+  const relationship = relationshipChecksFromTelemetry({ followChecks, screenMetrics, screenMotion });
   if (relationship.readyVisualRelationshipAccepted !== true) failures.push(`Ready hand/hilt/blade relationship failed telemetry proxy: ${JSON.stringify(screenMetrics)}`);
-  if (!staticDirectFkProof) {
-    if (!isFiniteNumber(screenMotion.hand) || !isFiniteNumber(screenMotion.tip)) failures.push(`Ready motion metrics are not finite: ${JSON.stringify(screenMotion)}`);
-    if (Number(screenMotion.hand) <= 0.25) failures.push(`Ready hand did not visibly move in cloud capture: ${JSON.stringify(screenMotion)}`);
-    if (Number(screenMotion.tip) <= 0.25) failures.push(`Ready tip did not visibly move in cloud capture: ${JSON.stringify(screenMotion)}`);
-    if (Number(screenMotion.tip) <= Number(screenMotion.hand) * 0.25) failures.push(`Ready tip motion is too small relative to hand motion: ${JSON.stringify(screenMotion)}`);
-  }
+  if (!isFiniteNumber(screenMotion.hand) || !isFiniteNumber(screenMotion.tip)) failures.push(`Ready motion metrics are not finite: ${JSON.stringify(screenMotion)}`);
+  if (Number(screenMotion.hand) <= 0.25) failures.push(`Ready hand did not visibly move in cloud capture: ${JSON.stringify(screenMotion)}`);
+  if (Number(screenMotion.tip) <= 0.25) failures.push(`Ready tip did not visibly move in cloud capture: ${JSON.stringify(screenMotion)}`);
+  if (Number(screenMotion.tip) <= Number(screenMotion.hand) * 0.25) failures.push(`Ready tip motion is too small relative to hand motion: ${JSON.stringify(screenMotion)}`);
   return {
     ok: failures.length === 0,
     failures,

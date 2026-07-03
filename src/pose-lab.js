@@ -19,8 +19,8 @@ import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
 
-const LAB_BUILD = 'meshy-fps-visual-ik-ready-review';
-const LAB_CACHE_TOKEN = 'pose-editor-195';
+const LAB_BUILD = 'meshy-fps-visual-sanity-recovery';
+const LAB_CACHE_TOKEN = 'pose-editor-196';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 const MESHY_REVIEW_CLIPS = [
@@ -5736,7 +5736,7 @@ class PoseLab {
     }
     if (state.ok) {
       UI.reviewTruth.classList.add('review-ok');
-      UI.reviewTruth.textContent = 'REVIEW OK: ' + (state.selectedClip || state.selectedActor || 'route ready');
+      UI.reviewTruth.textContent = 'REVIEW ROUTE READY: ' + (state.selectedClip || state.selectedActor || 'route ready');
       return state;
     }
     UI.reviewTruth.classList.add('review-red');
@@ -11710,8 +11710,7 @@ class PoseLab {
       visibleAppliedHiltMarker: screenMetrics.appliedHiltMarkerDrawn === true,
       imageDataUrl: sheet.width > 0 && sheet.height > 0,
     };
-    const readyClipUsesScopedHiltTarget = isMeshyReadyReviewClipName(clip.name || '');
-    const hiltAnchorSane = checks.appliedHiltPinnedToAuthoredSocket || (readyClipUsesScopedHiltTarget && checks.clipScopedHiltTargetVisible);
+    const hiltAnchorSane = checks.appliedHiltPinnedToAuthoredSocket;
     const passed = checks.parentChain
       && checks.socketStableInHand
       && checks.socketQuaternionStableInHand

@@ -382,7 +382,7 @@ const BASE_RIG_PROFILES = {
         boneRollCorrection: 'chain-up',
         targetRestProvider: 'skin-bind',
         sourceRestClip: '0T-Pose',
-        restSegmentCorrection: meshyFpsRestSegmentCorrection(-120),
+        restSegmentCorrection: meshyFpsRestSegmentCorrection(0),
         preserveLoopSeam: false,
         clipSuffix: '-> meshyCharacter [FPS-REST-ARMS roll -120]',
         originPrefix: 'mapped-arms:player->meshyCharacter:FPS-REST-ARMS-CAL--120',

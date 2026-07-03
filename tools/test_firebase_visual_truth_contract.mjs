@@ -100,14 +100,14 @@ assert(typeof ready?.contactSheet === 'string' && ready.contactSheet.endsWith('.
 assert(ready?.cloudTelemetry?.visualFollow?.ok === true, 'Ready cloud evidence must include successful visual-follow telemetry');
 assert(ready?.evaluation?.checks?.realWeaponVisible === true, 'Ready cloud evidence must prove real weapon visibility');
 assert(ready?.evaluation?.checks?.parentChain === true, 'Ready cloud evidence must prove FK parent chain');
-assert(ready?.evaluation?.checks?.hiltPinnedToSocket === true || ready?.evaluation?.checks?.clipScopedHiltTargetVisible === true, 'Ready cloud evidence must prove hilt pinning or a visible clip-scoped hilt target');
+assert(ready?.evaluation?.checks?.hiltPinnedToSocket === true, 'Ready cloud evidence must prove authored hilt pinning to the FK socket; a clip-scoped visual target is not enough');
 assert(ready?.evaluation?.checks?.handLocalGripOffsetVisible === true, 'Ready cloud evidence must prove hand-local grip offset is visibly separated from the raw wrist');
 assert(ready?.evaluation?.checks?.hiltAwayFromRawHand === true, 'Ready cloud evidence must prove the hilt has not collapsed onto the raw hand/wrist');
 assert(ready?.evaluation?.checks?.readyHandOrientationSane === true, 'Ready cloud evidence must prove the hand orientation/grip basis is visually sane');
 assert(ready?.evaluation?.checks?.reviewClipInventoryVisible === true, 'Ready cloud evidence must prove review clip inventory is visible');
 assert(ready?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Ready cloud evidence must accept only green visible UI truth');
 assert(ready?.evaluation?.checks?.bodyPoseLandmarksPresent === true, 'Ready cloud evidence must expose body pose landmarks for hand-orientation review');
-assert(ready?.evaluation?.checks?.staticDirectFkProof === true || (ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true), 'Ready cloud evidence must prove static direct FK or hand/saber tip motion together');
+assert(ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true, 'Ready cloud evidence must prove hand and saber tip motion together; static direct FK proof cannot bypass visual follow');
 assert(Object.hasOwn(ready?.evaluation?.checks || {}, 'readyVisualRelationshipAccepted'), 'Ready cloud evidence must record hand/hilt/blade visible relationship acceptance');
 assert(evidence.truthLedger?.landingUsable === true, 'truth ledger must mark landing page usable green');
 assert(evidence.truthLedger?.cloudUrlLoaded === true, 'truth ledger must mark cloud URL loading green');

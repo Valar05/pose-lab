@@ -21,7 +21,7 @@ assert(!js.includes('startsWith(originPrefix)') && !js.includes('key.startsWith(
 assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }"), 'Meshy startup should use the accepted FPS/Meshy T-pose calibration');
 assert(profiles.includes("sourceKey: 'player'"), 'Meshy generated clips should source from FPS Arms');
 assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy generated clips should be tagged FPS-SWORD-UPPER');
-assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(-120)'), 'Meshy T-pose bridge should use the restored accepted -120 rest-arms calibration');
+assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(0)'), 'Meshy T-pose bridge should keep the accepted CAL--120 label while avoiding the dirty Ready hand-roll offset');
 const restBlockStart = profiles.indexOf("clipTag: 'FPS-REST-ARMS-CAL'");
 const restBlockEnd = profiles.indexOf('directRotationPairs: MESHY_FPS_REST_DIRECT_PAIRS', restBlockStart);
 const restBlock = restBlockStart >= 0 && restBlockEnd > restBlockStart ? profiles.slice(restBlockStart, restBlockEnd) : '';
