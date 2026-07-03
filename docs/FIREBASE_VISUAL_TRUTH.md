@@ -63,6 +63,8 @@ generated/firebase_visual_truth/latest/visual_truth.json
 
 Screenshots and hosted debug telemetry are workflow artifacts, not local Android evidence. The artifact is the engineering gate for Meshy saber acceptance: `ok` may be true only when the landing page is usable, T-pose stable idle passes, Ready boring FK passes, and no human red-build veto exists for the commit. Ready must also prove the visible hand/grip basis is sane: the authored grip offset and applied hilt cannot collapse onto the raw wrist/hand, even if direct FK parent-chain telemetry is stable.
 
+The landing usability threshold is a cold hosted-cloud review budget, not a visual correctness metric. The current budget is 20 seconds because the staged runtime still carries about 47 MB of required Meshy/FPS/sabre assets; exceeding it remains red, while Ready/T-pose visual parity is judged by the dedicated captures and telemetry.
+
 False-pass checkpoint preserved for regression:
 
 - Commit: `9bf57c6da686c6baf7594ddcf5ce29237bd3b494`

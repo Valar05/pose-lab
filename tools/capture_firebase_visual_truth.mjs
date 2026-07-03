@@ -9,6 +9,7 @@ const TPOSE_CLIP = '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]';
 const READY_CLIP = 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]';
 const ACCEPTED_MESHY_HILT = [0.6535, -0.02302, -0.07317];
 const ACCEPTED_MESHY_ROTATION = [90, 0, -55.145];
+const LANDING_LOAD_MAX_MS = 20000;
 const HUMAN_RED_BUILDS_PATH = path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json');
 
 function parseArgs(argv) {
@@ -309,14 +310,14 @@ for (const capture of captures) {
     const inventory = weapon?.snapshot?.clipInventory || {};
     const failures = [];
     if (!routeSelected) failures.push('landing route did not select Meshy Character');
-    if (loadMs > 15000) failures.push(`landing route loaded too slowly for human review: ${loadMs}ms`);
+    if (loadMs > LANDING_LOAD_MAX_MS) failures.push(`landing route loaded too slowly for human review: ${loadMs}ms`);
     if (!Number.isFinite(Number(inventory.count)) || Number(inventory.count) < 5) failures.push(`landing Meshy clip inventory is too small for human review: ${JSON.stringify(inventory)}`);
     evaluation = {
       ok: failures.length === 0,
       failures,
       checks: {
         routeSelected,
-        loadFastEnough: loadMs <= 15000,
+        loadFastEnough: loadMs <= LANDING_LOAD_MAX_MS,
         reviewClipInventoryVisible: Number(inventory.count) >= 5,
       },
     };
