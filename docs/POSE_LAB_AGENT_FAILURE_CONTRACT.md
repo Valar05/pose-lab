@@ -14,6 +14,7 @@ That means the architecture must match FPS first. Do not tune offsets, markers, 
 
 - The user repeatedly asked for simple FK identical to FPS except authored offsets, and the agent kept solving narrower symptoms.
 - The agent accepted marker, socket, cache-token, and generated-artifact evidence while the user repeatedly reported unchanged screenshots.
+- The agent accepted Firebase telemetry and green workflow status before inspecting the cloud screenshots that were supposed to be the visual authority.
 - The agent edited placement literals before proving that Meshy and FPS shared the same weapon architecture.
 - The agent documented and implied fixed states before the user accepted the visual result.
 - The agent let tests encode the broken Meshy-specific design, then used those tests as proof.
@@ -27,6 +28,7 @@ That means the architecture must match FPS first. Do not tune offsets, markers, 
 - If the user says "nothing changed", "red build", "wrong target", or "you ignored me", stop the active premise and audit assumptions before another patch.
 - If two consecutive visual edits are no-ops, do not make a third visual edit. Build or fix the evidence path first.
 - Do not use success language for visual work until the evidence type matches the failure type and the user has not contradicted it.
+- Do not use success language for cloud visual work until the actual cloud screenshots have been inspected and described.
 - Do not write victory documentation for unaccepted visual changes.
 - In a dirty repo, label every touched surface as one of:
   - accepted production edit
@@ -57,3 +59,5 @@ No Pose Lab FK fix may be called fixed because:
 - a socket is locally stable under another socket
 
 It may only be called fixed after the runtime architecture matches the stated reference and the visible failure is verified by the accepted evidence path.
+
+For Firebase visual-truth work, the accepted evidence path is screenshot-first: inspect `generated/firebase_visual_truth/latest/tpose.png`, `ready.png`, and `ready_visual_follow.png` before citing `visual_truth.json`, telemetry, or CI. If the screenshots are red, missing, stale, too distant, or unreadable, the run is red or blocked.

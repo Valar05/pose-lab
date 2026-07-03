@@ -55,6 +55,24 @@ Those assets are size-checked before staging so pointer files cannot silently de
 
 Local Playwright may be used as a controller only when the loaded page is a hosted Firebase HTTPS URL such as `https://pose-lab-visual-truth--...web.app`. Controller location is not truth location. A local Playwright pass against localhost, offline render output, or `generated/firebase_hosting/pose_lab_release` is diagnostic-only and cannot promote a Meshy saber visual fix.
 
+## Visual Authority
+
+Firebase visual truth is a screenshot-first lane.
+
+Before reporting a Firebase run green, inspect the cloud artifact images:
+
+- `generated/firebase_visual_truth/latest/tpose.png`
+- `generated/firebase_visual_truth/latest/ready.png`
+- `generated/firebase_visual_truth/latest/ready_visual_follow.png`
+
+The JSON summary and hosted debug telemetry explain what the page reported. They do not certify visual acceptance by themselves.
+
+If the cloud screenshots show a red build, the run is red even when `visual_truth.json`, CI, or telemetry says `ok: true`.
+
+If the screenshots are missing, stale, too distant, cropped badly, or unreadable for the visual question, the run is blocked, not green.
+
+If the human reports the cloud visual as red, stop promotion and preserve the contradiction until the screenshots and gate explain it.
+
 The evidence target is:
 
 ```text
@@ -82,6 +100,14 @@ Logic-regression checkpoint preserved for regression:
 - Human live Firebase review was red: slow page load, missing expected clips, and the visible Ready clip was wrong.
 - Follow-up rule: the capture controller may be local Playwright, but only the hosted Firebase page plus matching commit/cache identity can contribute visual truth.
 
+Cloud-screenshot false-green checkpoint preserved for regression:
+
+- Commit: `c30d87125de6d5e0eaabeb5961c32b2fe1c679d0`
+- GitHub Actions run: `28640974375`
+- Hosted preview: `https://pose-lab-visual-truth--visual-truth-28640974375-g6thxcam.web.app/`
+- Human and screenshot review were red: `ready.png` showed an unacceptable Ready pose, wrong right-hand/grip basis, a saber hanging down-left instead of reading as a sane ready grip, and inconsistent selected-clip UI. `ready_visual_follow.png` was too distant and marker-heavy to prove visual parity.
+- Follow-up rule: a Firebase run may not pass until the cloud screenshots themselves prove the visual claim. Telemetry, marker checks, and `ok: true` are insufficient.
+
 ## Rule
 
-Do not use Firebase/cloud screenshots to tune offsets blindly. Use them to establish hosted visual truth. If the hosted screenshot or telemetry is red, preserve the red evidence and fix the layer identified by the Firebase artifact. Direct FK, marker pinning, or source-string tests cannot override a visible hand-orientation or grip-collapse failure. Offline render is diagnostic-only and cannot override Firebase truth.
+Do not use Firebase/cloud screenshots to tune offsets blindly. Use them to establish hosted visual truth. If the hosted screenshot is red, preserve the red evidence and fix the layer identified by the Firebase artifact. If telemetry is green while the hosted screenshot is red, the telemetry gate is broken. Direct FK, marker pinning, source-string tests, or `ok: true` summaries cannot override a visible hand-orientation, grip-collapse, missing-clip, or bad-saber failure. Offline render is diagnostic-only and cannot override Firebase truth.
