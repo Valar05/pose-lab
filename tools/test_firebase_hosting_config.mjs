@@ -35,7 +35,7 @@ assert(buildScript.includes('stagedBytes') && buildScript.includes('stagedFileLi
 const captureScript = fs.readFileSync(path.join(projectRoot, 'tools', 'capture_firebase_visual_truth.mjs'), 'utf8');
 assert(captureScript.includes('function assertCloudHostedUrl'), 'Firebase capture should reject localhost/offline/staged URLs before Playwright control');
 assert(captureScript.includes("role: 'controller-only'"), 'Firebase capture should label Playwright as controller-only, not visual truth authority');
-assert(captureScript.includes('await page.goto(initialUrl') && captureScript.includes('await page.goto(captureUrl'), 'Firebase capture should cold-load each hosted review URL instead of only switching debug state');
+assert(captureScript.includes('gotoHostedMeshyPage(page, initialUrl') && captureScript.includes('gotoHostedMeshyPage(page, captureUrl, capture.clip)') && captureScript.includes('routeRetry='), 'Firebase capture should cold-load each hosted review URL through the retry loader instead of only switching debug state');
 assert(captureScript.includes("url.searchParams.set('qaClip', clip)") && captureScript.includes('const captureUrl = capture.clip ? poseUrl(hostedUrl, capture.clip) : initialUrl'), 'Firebase capture artifacts must preserve exact clip route URLs for human review wakeup');
 assert(captureScript.includes('MOBILE_REVIEW_VIEWPORT') && captureScript.includes('isMobile: true'), 'Firebase capture should use a mobile review viewport so the gate matches the user review UI');
 assert(captureScript.includes('reviewTruthFailures') && captureScript.includes('visibleUiTruthAccepted'), 'Firebase capture should fail when hosted visible UI review truth is red');
