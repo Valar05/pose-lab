@@ -4,6 +4,7 @@ import path from 'node:path';
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const contractPath = path.join(projectRoot, 'docs', 'POSE_LAB_AGENT_FAILURE_CONTRACT.md');
 const contract = fs.readFileSync(contractPath, 'utf8');
+const testDoctrine = fs.readFileSync(path.join(projectRoot, 'docs', 'POSE_LAB_HUMAN_MEASURABLE_TEST_DOCTRINE.md'), 'utf8');
 const orientation = fs.readFileSync(path.join(projectRoot, 'PROJECT_ORIENTATION.md'), 'utf8');
 const agents = fs.readFileSync(path.join(projectRoot, 'AGENTS.md'), 'utf8');
 const failures = [];
@@ -52,9 +53,12 @@ assert(agents.includes('FPS weapon FK plus authored offsets'), 'AGENTS should pr
 assert(contract.includes('Phone-Visible Cloud Review Rule'), 'contract must preserve the phone-visible cloud review rule');
 assert(contract.includes('URL requests Ready but the active clip, highlighted row, or visible pose is T-pose/rest'), 'contract must reject Ready URLs that hydrate to rest/T-pose');
 assert(contract.includes('REVIEW ROUTE READY') && contract.includes('blade axis'), 'contract must reject route-ready banners when the blade relationship is visibly wrong');
+assert(contract.includes('Test Harness Recovery Rule'), 'contract must include test harness recovery after false-green tests');
+assert(testDoctrine.includes('Could the screenshot still be red while this test passes?'), 'test doctrine must force human-visible review of tests');
+assert(testDoctrine.includes('acceptance') && testDoctrine.includes('diagnostic') && testDoctrine.includes('guardrail') && testDoctrine.includes('quarantine'), 'test doctrine must classify visual tests');
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({
-  checked: ['pose-lab-agent-failure-contract', 'prompt-attention-regression', 'meshy-fk-quarantine-routing'],
+  checked: ['pose-lab-agent-failure-contract', 'prompt-attention-regression', 'meshy-fk-quarantine-routing', 'human-measurable-test-doctrine'],
   contract: path.relative(projectRoot, contractPath),
 }, null, 2));

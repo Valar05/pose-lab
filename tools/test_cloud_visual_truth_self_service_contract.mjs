@@ -26,6 +26,7 @@ assert(selfService.includes('tpose_relationship_closeup.png') && selfService.inc
 assert(selfService.includes('tools/inspect_firebase_visual_artifact.mjs'), 'self-service tool should call the artifact inspector');
 assert(selfService.includes('tools/pose_lab_visual_truth_preflight.mjs'), 'self-service tool should call the visual truth preflight before browser wake');
 assert(selfService.includes('visualTruthPreflight') && selfService.includes('preflightOk'), 'self-service tool should preserve preflight-red reports instead of treating inspection green as wake-ready');
+assert(selfService.includes('AUTHORITY_REVOKED_FALSE_GREEN') || wakeReady.includes('AUTHORITY_REVOKED_FALSE_GREEN'), 'cloud wake path should preserve authority-revoked false-green status');
 assert(selfService.includes('refreshingFirebaseEvidence'), 'self-service tool should distinguish stale-evidence refresh from normal preflight');
 assert(selfService.includes("!options.refreshingFirebaseEvidence"), 'self-service tool should skip stale visual-red evidence only while refreshing Firebase artifacts');
 assert(selfService.includes("['node', ['tools/test_pose_lab_visual_red_build_contract.mjs']]"), 'normal self-service preflight should still include the visual red-build contract');

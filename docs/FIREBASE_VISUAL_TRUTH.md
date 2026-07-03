@@ -110,6 +110,8 @@ If the screenshots are missing, stale, too distant, cropped badly, or unreadable
 
 If the human reports the cloud visual as red, stop promotion and preserve the contradiction until the screenshots and gate explain it.
 
+If `node tools/pose_lab_visual_truth_preflight.mjs --json` reports `AUTHORITY_REVOKED_FALSE_GREEN`, the artifact has lost authority. Do not wake the browser, claim green, promote, or edit FK/offset/pose surfaces. Supersede the matching entry in `evidence/human_visual_truth_red_builds.json` only after accepted human-visible evidence exists.
+
 The exact URL woken on Android Chrome is part of the Firebase review. If that phone-visible page disagrees with the artifact, the result is red even when the workflow concluded success. A common false-green is: the artifact JSON says Ready passed, but the device screenshot shows the Ready URL rendering T-pose/rest first, or later shows `REVIEW ROUTE READY` while the blade axis and grip still do not read as a sane human-held Ready pose. The next loop must make the artifact, the woken URL, and the human screenshot converge; do not answer with telemetry or distance metrics alone.
 
 The order-of-operations contract is: red screenshot -> state visible contradiction -> fix lying evidence/UI gate -> prove the gate catches it -> then edit FK or pose math. Do not spend cloud cycles or FK edits while the preflight is red.
@@ -169,6 +171,15 @@ Manual-load false-green checkpoint preserved for regression:
 - Hosted preview: `https://pose-lab-visual-truth--visual-truth-pr-1-rcoxld17.web.app/`
 - Human Android screenshots: `/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-125148.png` and `/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-125153.png`
 - Human review was red: the phone-visible URL first showed T-pose/rest for the Ready route, the user had to manually load Meshy Character, and the later Ready route still showed a broken sword FK relationship. The gate must never pass from route labels, marker lines, or JSON while manual actor selection or visible sword-basis failure remains.
+
+Authority-revoked false-green checkpoint preserved for regression:
+
+- Branch commit: `e6cc6635631c1f1a983932d01e3233f25640e933`
+- Artifact commit: `8cf6d879a92f59ef3f5532ee1b798f9261340e32`
+- GitHub Actions run: `28678973256`
+- Hosted preview: `https://pose-lab-visual-truth--visual-truth-pr-1-rcoxld17.web.app/`
+- Human review was red: FK was not enforced and no weapon pose read as sane. The artifact reported `ok=true` and Sense Synthesis green even though Ready telemetry showed `basketFrontErrorDeg=125.81`, `socketForwardToBladeErrorDeg=96.97`, `handMoves=false`, and `clipScopedHiltTargetVisible=false`.
+- Follow-up rule: preflight must return `AUTHORITY_REVOKED_FALSE_GREEN` for this commit/artifact/run until a later accepted human-visible artifact explicitly supersedes the ledger entry.
 
 ## Rule
 

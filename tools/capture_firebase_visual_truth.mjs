@@ -103,7 +103,7 @@ function reviewTruthFailures(snapshot) {
   return Array.isArray(truth.failures) && truth.failures.length ? truth.failures : ['hosted page review truth is red'];
 }
 
-function relationshipChecksFromTelemetry({ liveChecks = {}, liveDistances = {}, followChecks = {}, screenMetrics = {}, screenMotion = {}, staticDirectFkProof = false } = {}) {
+function relationshipChecksFromTelemetry({ liveChecks = {}, liveDistances = {}, followChecks = {}, screenMetrics = {}, screenMotion = {} } = {}) {
   const tposeWristRelationshipAccepted = liveChecks.realWeaponVisible === true
     && liveChecks.appliedHiltPinnedToAuthoredSocket === true
     && liveChecks.appliedHiltPinnedToPalmTarget === true
@@ -116,11 +116,10 @@ function relationshipChecksFromTelemetry({ liveChecks = {}, liveDistances = {}, 
     && followChecks.handLocalGripOffsetVisible === true
     && followChecks.appliedHiltAwayFromRawHand === true
     && followChecks.readyHandOrientationSane === true
-    && (staticDirectFkProof === true || (
-      Number(screenMotion.hand || 0) > 0.25
-      && Number(screenMotion.tip || 0) > 0.25
-      && Number(screenMotion.tip || 0) > Number(screenMotion.hand || 0) * 0.25
-    ))
+    && followChecks.clipScopedHiltTargetVisible === true
+    && Number(screenMotion.hand || 0) > 0.25
+    && Number(screenMotion.tip || 0) > 0.25
+    && Number(screenMotion.tip || 0) > Number(screenMotion.hand || 0) * 0.25
     && Number(screenMetrics.maxHandToAppliedHiltPx || 0) >= 18
     && Number(screenMetrics.minSocketToTipPx || 0) >= 24
     && Number.isFinite(Number(screenMetrics.maxTipDropFromAppliedHiltPx))
@@ -150,17 +149,45 @@ function currentGitCommit() {
   }
 }
 
+function redBuildClosed(entry) {
+  return entry?.status === 'superseded'
+    && entry?.humanAccepted === true
+    && Boolean(entry?.supersededByCommit)
+    && Boolean(entry?.acceptedEvidencePath);
+}
+
+function identifierMatches(identifier = '', candidate = '') {
+  if (!identifier || !candidate) return false;
+  const left = String(identifier);
+  const right = String(candidate);
+  if (/^https?:\/\//.test(left) || /^https?:\/\//.test(right)) {
+    return left.replace(/\/$/, '') === right.replace(/\/$/, '');
+  }
+  return left === right || left.startsWith(right) || right.startsWith(left);
+}
+
 function humanRedBuildForCommit(commit) {
-  const candidates = [commit, currentHeadCommit(), currentGitCommit()].filter(Boolean);
+  const candidates = [
+    commit,
+    currentHeadCommit(),
+    currentGitCommit(),
+    process.env.GITHUB_RUN_ID,
+  ].filter(Boolean);
   if (!candidates.length || !fs.existsSync(HUMAN_RED_BUILDS_PATH)) return null;
   try {
     const payload = JSON.parse(fs.readFileSync(HUMAN_RED_BUILDS_PATH, 'utf8'));
     const builds = Array.isArray(payload?.redBuilds) ? payload.redBuilds : [];
-    return builds.find((entry) => candidates.some((candidate) => (
-      [entry?.commit, entry?.artifactCommit].map((value) => String(value || '')).filter(Boolean).some((entryCommit) => (
-        entryCommit.startsWith(candidate) || candidate.startsWith(entryCommit)
-      ))
-    ))) || null;
+    return builds.filter((entry) => !redBuildClosed(entry)).find((entry) => {
+      const identifiers = [
+        entry?.commit,
+        entry?.artifactCommit,
+        entry?.headCommit,
+        entry?.runId,
+        entry?.firebaseRunId,
+        entry?.workflowRunId,
+      ].map((value) => String(value || '')).filter(Boolean);
+      return candidates.some((candidate) => identifiers.some((identifier) => identifierMatches(identifier, candidate)));
+    }) || null;
   } catch (error) {
     return {
       commit,
@@ -270,14 +297,19 @@ function evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow,
   if (followChecks.appliedHiltAwayFromRawHand !== true) failures.push(`Ready hilt collapsed onto raw hand/wrist instead of the authored visible grip offset: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.readyHandOrientationSane !== true) failures.push(`Ready hand orientation/grip evidence is not visually sane: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.readyBladeNotPointingDownThroughBody !== true) failures.push(`Ready blade axis points down through the body instead of reading as held by the hilt: ${JSON.stringify(screenMetrics)}`);
-  const relationship = relationshipChecksFromTelemetry({ followChecks, screenMetrics, screenMotion, staticDirectFkProof });
+  const relationship = relationshipChecksFromTelemetry({ followChecks, screenMetrics, screenMotion });
   if (relationship.readyVisualRelationshipAccepted !== true) failures.push(`Ready hand/hilt/blade relationship failed telemetry proxy: ${JSON.stringify(screenMetrics)}`);
-  if (!staticDirectFkProof) {
-    if (!isFiniteNumber(screenMotion.hand) || !isFiniteNumber(screenMotion.tip)) failures.push(`Ready motion metrics are not finite: ${JSON.stringify(screenMotion)}`);
-    if (Number(screenMotion.hand) <= 0.25) failures.push(`Ready hand did not visibly move in cloud capture: ${JSON.stringify(screenMotion)}`);
-    if (Number(screenMotion.tip) <= 0.25) failures.push(`Ready tip did not visibly move in cloud capture: ${JSON.stringify(screenMotion)}`);
-    if (Number(screenMotion.tip) <= Number(screenMotion.hand) * 0.25) failures.push(`Ready tip motion is too small relative to hand motion: ${JSON.stringify(screenMotion)}`);
-  }
+  if (followChecks.clipScopedHiltTargetVisible !== true) failures.push(`Ready clip-scoped hilt target is not visible; marker/socket proof is not enough: ${JSON.stringify(screenMetrics)}`);
+  if (!isFiniteNumber(screenMotion.hand) || !isFiniteNumber(screenMotion.tip)) failures.push(`Ready motion metrics are not finite: ${JSON.stringify(screenMotion)}`);
+  if (Number(screenMotion.hand) <= 0.25) failures.push(`Ready hand did not visibly move in cloud capture: ${JSON.stringify(screenMotion)}`);
+  if (Number(screenMotion.tip) <= 0.25) failures.push(`Ready tip did not visibly move in cloud capture: ${JSON.stringify(screenMotion)}`);
+  if (Number(screenMotion.tip) <= Number(screenMotion.hand) * 0.25) failures.push(`Ready tip motion is too small relative to hand motion: ${JSON.stringify(screenMotion)}`);
+  const basketFrontErrorDeg = Number(weapon?.weapon?.basketFrontErrorDeg);
+  const socketForwardToBladeErrorDeg = Number(weapon?.weapon?.socketForwardToBladeErrorDeg);
+  if (!Number.isFinite(basketFrontErrorDeg)) failures.push(`Ready basket/front orientation metric is missing: ${JSON.stringify(weapon?.weapon || {})}`);
+  else if (basketFrontErrorDeg > 60) failures.push(`Ready basket/front orientation is not visually sane: basketFrontErrorDeg=${basketFrontErrorDeg}`);
+  if (!Number.isFinite(socketForwardToBladeErrorDeg)) failures.push(`Ready socket-forward to blade axis metric is missing: ${JSON.stringify(weapon?.weapon || {})}`);
+  else if (socketForwardToBladeErrorDeg > 75) failures.push(`Ready socket-forward to blade axis is not visually sane: socketForwardToBladeErrorDeg=${socketForwardToBladeErrorDeg}`);
   return {
     ok: failures.length === 0,
     failures,
@@ -302,6 +334,8 @@ function evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow,
       handMoves: Number(screenMotion.hand) > 0.25,
       tipMoves: Number(screenMotion.tip) > 0.25,
       tipTracksHand: Number(screenMotion.tip) > Number(screenMotion.hand) * 0.25,
+      basketFrontOrientationSane: Number.isFinite(basketFrontErrorDeg) && basketFrontErrorDeg <= 60,
+      socketForwardBladeAxisSane: Number.isFinite(socketForwardToBladeErrorDeg) && socketForwardToBladeErrorDeg <= 75,
       reviewClipInventoryVisible: Number(inventory.count) >= 5,
       bodyPoseLandmarksPresent: Boolean(weapon?.snapshot?.pose?.watch?.bones?.rh && weapon?.snapshot?.pose?.watch?.bones?.lh),
       readyVisualRelationshipAccepted: relationship.readyVisualRelationshipAccepted,
@@ -519,6 +553,11 @@ const evidence = {
   hostedUrl,
   commit: currentCommit(),
   headCommit: currentHeadCommit(),
+  workflowRunId: process.env.GITHUB_RUN_ID || '',
+  workflowRunAttempt: process.env.GITHUB_RUN_ATTEMPT || '',
+  workflowUrl: process.env.GITHUB_SERVER_URL && process.env.GITHUB_REPOSITORY && process.env.GITHUB_RUN_ID
+    ? `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`
+    : '',
   cacheToken: sourceMatch(/const\s+LAB_CACHE_TOKEN\s*=\s*['"]([^'"]+)['"]/),
   runtimeBuild: sourceMatch(/const\s+LAB_BUILD\s*=\s*['"]([^'"]+)['"]/),
   authority: 'firebase-hosted-cloud-browser',

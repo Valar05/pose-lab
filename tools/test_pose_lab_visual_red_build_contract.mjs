@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const evidencePath = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest', 'visual_truth.json');
@@ -23,6 +23,7 @@ const protocol = fs.readFileSync(path.join(projectRoot, 'docs', 'POSE_LAB_EVIDEN
 const firebaseDoc = fs.readFileSync(path.join(projectRoot, 'docs', 'FIREBASE_VISUAL_TRUTH.md'), 'utf8');
 const humanRedBuilds = fs.readFileSync(path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json'), 'utf8');
 const captureScript = fs.readFileSync(path.join(projectRoot, 'tools', 'capture_firebase_visual_truth.mjs'), 'utf8');
+const preflightScript = fs.readFileSync(path.join(projectRoot, 'tools', 'pose_lab_visual_truth_preflight.mjs'), 'utf8');
 
 assert(protocol.includes('Firebase hosted visual truth is tier-one'), 'evidence protocol must make Firebase hosted visual truth tier-one');
 assert(protocol.includes('wake the exact Ready capture URL'), 'evidence protocol must require waking the exact Ready capture URL before handoff');
@@ -38,6 +39,9 @@ assert(!captureScript.includes("captureKind: 'offline-pose-render'"), 'Firebase 
 assert(captureScript.includes('Ready hilt collapsed onto raw hand/wrist'), 'Firebase capture must fail the red screenshot class where the hilt collapses onto the wrist');
 assert(captureScript.includes('Ready hand orientation/grip evidence is not visually sane'), 'Firebase capture must fail Ready hand-orientation visual regressions');
 assert(captureScript.includes('Ready blade axis points down through the body'), 'Firebase capture must fail Ready blade-axis visual regressions');
+assert(captureScript.includes('Ready hand did not visibly move') && captureScript.includes('Ready clip-scoped hilt target is not visible'), 'Firebase capture must fail missing visible motion and clip-scoped hilt target proof');
+assert(captureScript.includes('Ready basket/front orientation is not visually sane') && captureScript.includes('Ready socket-forward to blade axis is not visually sane'), 'Firebase capture must fail weapon orientation sanity regressions');
+assert(!captureScript.includes('staticDirectFkProof === true ||'), 'Firebase capture must not let static direct FK bypass visible motion proof');
 assert(captureScript.includes('weapon rotation-probe'), 'Firebase capture must preserve cloud rotation-probe evidence when Ready blade-axis proof is red');
 assert(captureScript.includes('function relationshipChecksFromTelemetry'), 'Firebase capture must evaluate explicit relationship verdicts');
 assert(captureScript.includes('synthesizeCaptureSense') && captureScript.includes('synthesizeEvidenceSense'), 'Firebase capture must write Sense Synthesis verdicts');
@@ -56,6 +60,8 @@ assert(protocol.includes('phone-visible hosted URL is part of cloud truth'), 'ev
 assert(firebaseDoc.includes('Phone-wake false-green checkpoint') && firebaseDoc.includes('28649227859'), 'Firebase doc must preserve the phone-wake false-green checkpoint');
 assert(humanRedBuilds.includes('a92fa0bb6dc5b83644688db2d8b04d7c9b2f56b5'), 'human red-build ledger must preserve the phone-visible red review for commit a92fa0b');
 assert(humanRedBuilds.includes('REVIEW ROUTE READY') && humanRedBuilds.includes('T-pose/rest'), 'human red-build ledger must name route-ready and rest-hydration failures');
+assert(humanRedBuilds.includes('e6cc6635631c1f1a983932d01e3233f25640e933') && humanRedBuilds.includes('28678973256'), 'human red-build ledger must preserve the latest false-green strike');
+assert(preflightScript.includes('AUTHORITY_REVOKED_FALSE_GREEN') && preflightScript.includes('allowedNextAction'), 'preflight must revoke authority and provide the only allowed next action for false-green vetoes');
 const appSource = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
 assert(appSource.includes('reviewTruthState') && appSource.includes('REVIEW RED'), 'Pose Lab runtime must expose visible review truth in the UI');
 assert(appSource.includes('Meshy review UI fell back to walking-only clip inventory'), 'Pose Lab runtime must mark walking-only Meshy review inventory red');
@@ -123,6 +129,18 @@ if (!evidence.humanRedBuild) {
   assert(ready?.accepted === true && ready?.evaluation?.checks?.readyHandOrientationSane === true, 'Ready cloud capture must prove hand orientation/grip basis is visually sane');
   assert(ready?.evaluation?.checks?.readyBladeNotPointingDownThroughBody === true, 'Ready cloud capture must prove blade axis does not point down through the body');
   assert(ready?.evaluation?.checks?.readyVisualRelationshipAccepted === true, 'Ready cloud capture must prove accepted hand/hilt/blade visual relationship');
+}
+const preflightResult = spawnSync('node', ['tools/pose_lab_visual_truth_preflight.mjs', '--json'], {
+  cwd: projectRoot,
+  encoding: 'utf8',
+  stdio: ['ignore', 'pipe', 'pipe'],
+});
+const preflight = JSON.parse(preflightResult.stdout || '{}');
+if (preflight.status === 'AUTHORITY_REVOKED_FALSE_GREEN') {
+  assert(preflight.ok === false, 'authority-revoked preflight must be red');
+  assert(preflight.failures.some((failure) => failure.includes('AUTHORITY_REVOKED_FALSE_GREEN')), 'preflight must preserve false-green failure text');
+} else if (!evidence.humanRedBuild) {
+  assert(preflight.ok === true, 'non-vetoed Firebase evidence must pass visual truth preflight before red-build contract can pass');
 }
 assert(typeof tpose?.screenshot === 'string' && tpose.screenshot.endsWith('.png'), 'T-pose cloud capture must include screenshot');
 assert(typeof tpose?.relationshipCloseup === 'string' && tpose.relationshipCloseup.endsWith('.png'), 'T-pose cloud capture must include relationship close-up screenshot');

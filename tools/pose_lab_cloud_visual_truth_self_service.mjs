@@ -359,8 +359,11 @@ if (args.inspect) {
   } else {
     report.browserWake = {
       ok: false,
+      status: report.visualTruthPreflight.report?.status === 'AUTHORITY_REVOKED_FALSE_GREEN' ? 'AUTHORITY_REVOKED_FALSE_GREEN' : 'skipped',
       skipped: report.visualTruthPreflight.ok === true
         ? 'artifact is not ready for browser review; inspect PNGs/debug output without waking Android browser'
+        : report.visualTruthPreflight.report?.status === 'AUTHORITY_REVOKED_FALSE_GREEN'
+          ? 'AUTHORITY_REVOKED_FALSE_GREEN: browser wake blocked because human visual evidence revoked generated proof authority'
         : 'visual truth preflight is red; browser wake blocked until the evidence/UI gate is honest',
       evidenceOk: inspection.evidenceOk === true,
       preflightOk: report.visualTruthPreflight.ok === true,

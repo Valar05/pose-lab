@@ -72,6 +72,37 @@
         "workflow JSON and marker/telemetry checks reported green while the phone-visible cloud page remained red"
       ],
       "notes": "This preserves the current false-green state. The local branch commit and the artifact merge commit must not be promoted until a later commit produces fresh accepted cloud visual evidence with explicit no-manual-actor-selection proof."
+    },
+    {
+      "commit": "e6cc6635631c1f1a983932d01e3233f25640e933",
+      "artifactCommit": "8cf6d879a92f59ef3f5532ee1b798f9261340e32",
+      "runId": "28678973256",
+      "reportedAt": "2026-07-03",
+      "authority": "human-red-build-review",
+      "status": "open",
+      "blocks": [
+        "promotion",
+        "browser-wake",
+        "green-report",
+        "fk-offset-pose-edits"
+      ],
+      "url": "https://pose-lab-visual-truth--visual-truth-pr-1-rcoxld17.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&clip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&qaClip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&weaponDebug=1&cacheBust=firebase-visual-truth-1783105632362",
+      "issues": [
+        "human review says FK is not enforced and no weapon pose is sane",
+        "Firebase artifact incorrectly reported ok=true and Sense Synthesis human-green",
+        "Ready telemetry showed basketFrontErrorDeg=125.81 and socketForwardToBladeErrorDeg=96.97 while the artifact still passed",
+        "Ready visual-follow had handMoves=false",
+        "Ready clipScopedHiltTargetVisible=false",
+        "gate accepted staticDirectFkProof and marker/relationship checks instead of a real weapon pose audit",
+        "agent ignored human-visible red-build evidence again and treated metrics/generated proof as authority"
+      ],
+      "closureRequired": {
+        "status": "superseded",
+        "supersededByCommit": "required",
+        "acceptedEvidencePath": "required",
+        "humanAccepted": true
+      },
+      "notes": "This preserves false-green Firebase run 28678973256. Do not promote, wake, or report green from this branch/artifact until a later human-accepted visual evidence record explicitly supersedes it."
     }
   ]
 }

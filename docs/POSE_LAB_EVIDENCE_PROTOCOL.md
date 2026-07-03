@@ -2,6 +2,8 @@
 
 Use this protocol before changing Pose Lab in response to a visual or animation bug. It is a routing layer: pick the evidence lane first, then edit.
 
+For red-build, no-op visual, Meshy saber, FK, or cloud visual work, follow `docs/POSE_LAB_AGENT_REVIEW_PROCESS.md` before this routing layer.
+
 ## First Command
 
 For named recurring problems, start with the case workflow:
@@ -48,6 +50,7 @@ Change `--kind` to `cache-server`, `pose-retarget`, `ui-state`, `promotion`, or 
 - The phone-visible hosted URL is part of cloud truth. If Android Chrome shows the Ready URL selecting T-pose/rest, or shows `REVIEW ROUTE READY` while the blade axis and grip still look wrong, the artifact is false-green. Fix route hydration and visible relationship proof before another success claim.
 - Manual Meshy Character selection is red. The cloud lane must prove cold URL actor hydration with `autoLoadedMeshyFromColdUrl` and `manualActorSelectionRequiredFalse`; otherwise the page has not proven the same state the user will review.
 - Before browser wake, success language, or another Meshy FK/offset edit after red screenshots, run `node tools/pose_lab_visual_truth_preflight.mjs`. If it fails, repair the evidence/UI gate or preserve the failed attempt before touching pose math.
+- If preflight reports `AUTHORITY_REVOKED_FALSE_GREEN`, generated evidence has lost authority. Do not wake, promote, claim green, or edit FK/offset/pose surfaces until the matching human red-build ledger entry is explicitly superseded by accepted human-visible evidence.
 - Every visual fix needs a positive artifact and, when practical, a negative control that proves the artifact would fail on the known bad state.
 - If offline evidence is green while the user screenshot shows the saber out of hand, classify it as an offline truth mismatch and fix the offline/runtime parity layer before changing offsets.
 - Generated artifacts under `generated/` are evidence output, not app code. Commit them only when a workflow explicitly declares the artifact durable.

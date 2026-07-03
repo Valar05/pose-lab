@@ -2,6 +2,8 @@
 
 This document exists because the Meshy saber FK work caused unacceptable user pain. Future Pose Lab agents must treat it as an operating contract, not background reading.
 
+The ordered agent review checklist is `docs/POSE_LAB_AGENT_REVIEW_PROCESS.md`. The test-writing doctrine is `docs/POSE_LAB_HUMAN_MEASURABLE_TEST_DOCTRINE.md`. Both are mandatory for Meshy saber, FK, visual truth, generated evidence, and red-build work.
+
 ## Controlling Instruction
 
 For the Meshy saber problem, the controlling instruction is:
@@ -20,6 +22,7 @@ That means the architecture must match FPS first. Do not tune offsets, markers, 
 - The agent edited placement literals before proving that Meshy and FPS shared the same weapon architecture.
 - The agent documented and implied fixed states before the user accepted the visual result.
 - The agent let tests encode the broken Meshy-specific design, then used those tests as proof.
+- The agent treated tests as declarations of correctness instead of instruments that must first prove a human-measurable visual relationship.
 - The agent treated "red build" as another implementation prompt instead of a stop signal requiring assumption audit.
 - The agent made a dirty repo dirtier without first separating accepted production work from failed-attempt diagnostics.
 - The agent repeatedly optimized for momentum over prompt attention.
@@ -36,6 +39,7 @@ That means the architecture must match FPS first. Do not tune offsets, markers, 
 - Manual Meshy Character selection is a red build. A cloud URL that requires the user to choose Meshy manually has not proven route hydration, even if the route banner or telemetry later turns green.
 - After a human red-build report, the required order is: state the visible contradiction, fix the lying evidence/UI gate, prove the gate catches that contradiction, and only then edit FK, pose, or offsets.
 - Do not write victory documentation for unaccepted visual changes.
+- Do not add or update visual tests that assert the agent is right before current human-visible evidence proves the relationship. Classify them as acceptance, diagnostic, guardrail, or quarantine.
 - In a dirty repo, label every touched surface as one of:
   - accepted production edit
   - diagnostic-only edit
@@ -114,3 +118,22 @@ If it is red, the next work is evidence/UI gate repair or preservation of the fa
 - `REVIEW ROUTE OK` or `REVIEW ROUTE READY` while the visible hand/hilt/blade relationship is wrong;
 - marker, hilt dot, debug line, JSON, telemetry, or workflow green used as a substitute for the real visible sword basis;
 - a current commit or artifact commit listed in `evidence/human_visual_truth_red_builds.json`.
+
+## False-Green Strike Rule
+
+If an agent claims a visual fix is green and the user reports red from screenshot/runtime evidence, the generated proof loses authority.
+
+The agent must:
+
+1. Record or update an open entry in `evidence/human_visual_truth_red_builds.json`.
+2. Treat `AUTHORITY_REVOKED_FALSE_GREEN` from preflight as a hard stop.
+3. Avoid browser wake, green language, promotion, FK edits, offset edits, pose edits, and clip edits.
+4. Repair or quarantine the lying evidence gate before any visual implementation pass.
+
+An open strike can be closed only with `status: "superseded"`, `humanAccepted: true`, `supersededByCommit`, and `acceptedEvidencePath`. Do not delete a strike to make the gate green.
+
+## Test Harness Recovery Rule
+
+If tests pass while the screenshot is red, the test harness is red. Do not add more assertions that merely encode the current state. First identify whether the passing test was acceptance, diagnostic, guardrail, or quarantine. If it was acting as acceptance without human-visible cloud evidence, demote it or rewrite it.
+
+A recovered test harness must fail for the exact false-green behavior that caused pain: metric-green / human-red, marker-only proof, stale or wrong route, offline-only proof, generated artifact promotion, or source-string proof. It must not bless the current broken state as a new golden baseline.

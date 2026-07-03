@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const evidencePath = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest', 'visual_truth.json');
@@ -55,6 +55,25 @@ if (evidence.commit !== currentCommit() && evidence.headCommit !== currentCommit
     reason: `stale Firebase hosted visual truth evidence: commit ${evidence.commit || 'missing'} head ${evidence.headCommit || 'missing'} does not match current ${currentCommit()}`,
     evidencePath: path.relative(projectRoot, evidencePath),
   }, null, 2));
+  process.exit(0);
+}
+
+const preflightResult = spawnSync('node', ['tools/pose_lab_visual_truth_preflight.mjs', '--json'], {
+  cwd: projectRoot,
+  encoding: 'utf8',
+  stdio: ['ignore', 'pipe', 'pipe'],
+});
+let preflight = null;
+try {
+  preflight = JSON.parse(String(preflightResult.stdout || '{}'));
+} catch (_error) {
+  preflight = null;
+}
+if (preflight?.status === 'AUTHORITY_REVOKED_FALSE_GREEN') {
+  assert(preflight.ok === false, 'authority-revoked preflight must be red');
+  assert(Array.isArray(preflight.failures) && preflight.failures.some((failure) => failure.includes('AUTHORITY_REVOKED_FALSE_GREEN')), 'authority-revoked preflight must name false-green veto');
+  if (failures.length) throw new Error(failures.join('\n'));
+  console.log(JSON.stringify({ checked: ['firebase-visual-truth-contract', 'false-green-quarantined'], evidencePath: path.relative(projectRoot, evidencePath), preflight: preflight.status }, null, 2));
   process.exit(0);
 }
 
@@ -146,7 +165,10 @@ assert(ready?.senseSynthesis?.vocabulary?.includes('confident grip'), 'Ready Sen
 assert(ready?.evaluation?.checks?.reviewClipInventoryVisible === true, 'Ready cloud evidence must prove review clip inventory is visible');
 assert(ready?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Ready cloud evidence must accept only green visible UI truth');
 assert(ready?.evaluation?.checks?.bodyPoseLandmarksPresent === true, 'Ready cloud evidence must expose body pose landmarks for hand-orientation review');
-assert(ready?.evaluation?.checks?.staticDirectFkProof === true || (ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true), 'Ready cloud evidence must prove strict static direct FK or hand/saber tip motion together');
+assert(ready?.evaluation?.checks?.clipScopedHiltTargetVisible === true, 'Ready cloud evidence must prove clip-scoped hilt target visibility');
+assert(ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true, 'Ready cloud evidence must prove hand and saber tip visible motion together');
+assert(ready?.evaluation?.checks?.basketFrontOrientationSane === true, 'Ready cloud evidence must prove basket/front orientation sanity');
+assert(ready?.evaluation?.checks?.socketForwardBladeAxisSane === true, 'Ready cloud evidence must prove socket-forward to blade axis sanity');
 assert(Object.hasOwn(ready?.evaluation?.checks || {}, 'readyVisualRelationshipAccepted'), 'Ready cloud evidence must record hand/hilt/blade visible relationship acceptance');
 assert(Object.hasOwn(ready?.cloudTelemetry?.visualFollow?.screenMetrics || {}, 'maxTipDropFromAppliedHiltPx'), 'Ready cloud evidence must record blade tip drop from hilt');
 assert(evidence.truthLedger?.landingUsable === true, 'truth ledger must mark landing page usable green');

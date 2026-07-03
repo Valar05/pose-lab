@@ -37,6 +37,7 @@ assert(failureContract.includes('manual Meshy Character selection') && failureCo
 assert(firebaseDoc.includes('Manual Meshy Character selection is red') && firebaseDoc.includes('pose_lab_visual_truth_preflight.mjs'), 'Firebase doctrine must route through the visual truth preflight');
 assert(redLedger.includes('22081ceb305efe1e472fff841f72be84ff303fa3') && redLedger.includes('9e809fca6610cdacc5df7a18298c03824b447a75'), 'human red-build ledger must preserve the false-green branch commit and artifact commit');
 assert(redLedger.includes('manual Meshy Character') && redLedger.includes('Screenshot_20260703-125148.png') && redLedger.includes('Screenshot_20260703-125153.png'), 'human red-build ledger must preserve manual-load and latest screenshot evidence');
+assert(redLedger.includes('e6cc6635631c1f1a983932d01e3233f25640e933') && redLedger.includes('28678973256'), 'human red-build ledger must preserve the latest false-green strike');
 
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pose-lab-preflight-'));
 for (const name of ['landing.png', 'tpose.png', 'tpose_relationship_closeup.png', 'ready.png', 'ready_relationship_closeup.png', 'ready_visual_follow.png']) {
@@ -99,16 +100,27 @@ const goodEvidence = {
       acceptedHiltOracle: true,
       acceptedAttachmentRotation: true,
       realWeaponVisible: true,
+      hiltPinnedToSocket: true,
       tposeWristRelationshipAccepted: true,
       defaultSurfaceAccepted: true,
     }),
     baseCapture('ready', {
       ...commonRouteChecks,
       realWeaponVisible: true,
+      parentChain: true,
+      displayStableInSocket: true,
+      modelStableInDisplay: true,
+      hiltPinnedToSocket: true,
       hiltAwayFromRawHand: true,
       handLocalGripOffsetVisible: true,
       readyHandOrientationSane: true,
       readyBladeNotPointingDownThroughBody: true,
+      clipScopedHiltTargetVisible: true,
+      handMoves: true,
+      tipMoves: true,
+      tipTracksHand: true,
+      basketFrontOrientationSane: true,
+      socketForwardBladeAxisSane: true,
       reviewClipInventoryVisible: true,
       bodyPoseLandmarksPresent: true,
       readyVisualRelationshipAccepted: true,
@@ -117,7 +129,10 @@ const goodEvidence = {
 };
 for (const capture of goodEvidence.captures) {
   capture.cloudTelemetry = capture.id === 'ready'
-    ? { visualFollow: { screenMetrics: { maxTipRightFromAppliedHiltPx: 101.6, maxTipDropFromAppliedHiltPx: 2.6 }, relativeDrift: {} } }
+    ? {
+      visualFollow: { screenMetrics: { maxTipRightFromAppliedHiltPx: 101.6, maxTipDropFromAppliedHiltPx: 2.6 }, relativeDrift: {} },
+      weapon: { weapon: { basketFrontErrorDeg: 12, socketForwardToBladeErrorDeg: 18 } },
+    }
     : {};
   capture.senseSynthesis = synthesizeCaptureSense(capture);
   capture.visibleRead = `${capture.senseSynthesis.verdict}: ${capture.senseSynthesis.observedVisibleRelationship}`;
@@ -147,7 +162,38 @@ const currentRedPath = path.join(tempDir, 'current-red-veto.json');
 fs.writeFileSync(currentRedPath, `${JSON.stringify(currentRedEvidence, null, 2)}\n`);
 const currentRedResult = spawnSync('node', [toolPath, '--evidence', currentRedPath, '--json'], { cwd: projectRoot, encoding: 'utf8' });
 assert(currentRedResult.status !== 0, 'preflight must fail when the evidence commit or artifact commit is in the human red-build ledger');
-assert(currentRedResult.stdout.includes('human red-build veto'), 'preflight must name human red-build veto');
+assert(currentRedResult.stdout.includes('AUTHORITY_REVOKED_FALSE_GREEN'), 'preflight must name authority revocation for a human red-build veto');
+
+const openStrikeLedger = {
+  schema: 'pose-lab-human-visual-truth-red-builds-v1',
+  redBuilds: [
+    {
+      commit: 'open-head',
+      artifactCommit: 'open-artifact',
+      runId: 'open-run',
+      status: 'open',
+      issues: ['open false green'],
+    },
+  ],
+};
+const openStrikePath = path.join(tempDir, 'open-strike-ledger.json');
+fs.writeFileSync(openStrikePath, `${JSON.stringify(openStrikeLedger, null, 2)}\n`);
+const openStrikeEvidence = { ...goodEvidence, commit: 'open-artifact', headCommit: currentCommit, workflowRunId: 'open-run' };
+const openStrikeEvidencePath = path.join(tempDir, 'open-strike-evidence.json');
+fs.writeFileSync(openStrikeEvidencePath, `${JSON.stringify(openStrikeEvidence, null, 2)}\n`);
+const openStrikeResult = spawnSync('node', [toolPath, '--evidence', openStrikeEvidencePath, '--red-builds', openStrikePath, '--json'], { cwd: projectRoot, encoding: 'utf8' });
+assert(openStrikeResult.status !== 0, 'open strike must block by artifact commit or workflow run id');
+assert(openStrikeResult.stdout.includes('AUTHORITY_REVOKED_FALSE_GREEN'), 'open strike result must report AUTHORITY_REVOKED_FALSE_GREEN');
+
+const supersededLedger = JSON.parse(JSON.stringify(openStrikeLedger));
+supersededLedger.redBuilds[0].status = 'superseded';
+supersededLedger.redBuilds[0].humanAccepted = true;
+supersededLedger.redBuilds[0].supersededByCommit = currentCommit;
+supersededLedger.redBuilds[0].acceptedEvidencePath = 'generated/firebase_visual_truth/latest/visual_truth.json';
+const supersededPath = path.join(tempDir, 'superseded-ledger.json');
+fs.writeFileSync(supersededPath, `${JSON.stringify(supersededLedger, null, 2)}\n`);
+const supersededResult = spawnSync('node', [toolPath, '--evidence', openStrikeEvidencePath, '--red-builds', supersededPath, '--json'], { cwd: projectRoot, encoding: 'utf8' });
+assert(supersededResult.status === 0, `properly superseded strike should not block clean evidence: ${supersededResult.stdout}`);
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({ checked: ['pose-lab-visual-truth-preflight-contract'], currentCommit }, null, 2));

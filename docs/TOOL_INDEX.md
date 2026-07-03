@@ -4,6 +4,36 @@ Use this index to choose the smallest proof surface before editing.
 
 ## Case And Evidence Front Doors
 
+### `node tools/pose_lab_current_truth.mjs --json`
+
+- Status: mandatory front door before visual/FK/weapon work.
+- Proves: current branch, commit, cache token, preflight status, open red-build strikes, current evidence path, allowed work, and blocked work.
+- Does not prove: visual correctness or human acceptance.
+
+### `docs/POSE_LAB_AGENT_REVIEW_PROCESS.md`
+
+- Status: mandatory for red-build and Meshy saber work.
+- Proves: the required order before visual claims, browser wake, promotion, FK edits, offset edits, pose edits, or evidence-gate work.
+- Does not prove: visual correctness by itself.
+
+### `docs/POSE_LAB_HUMAN_MEASURABLE_TEST_DOCTRINE.md`
+
+- Status: mandatory for visual/FK/weapon test changes.
+- Proves: the required distinction between acceptance, diagnostic, guardrail, and quarantine tests.
+- Does not prove: any current screenshot is visually accepted.
+
+### `docs/POSE_LAB_LAGOON_ROADMAP.md`
+
+- Status: design direction.
+- Proves: the intended recovery path toward calm review, safe authoring modes, disposable candidates, and protected goldens.
+- Does not prove: current implementation completeness.
+
+### `node tools/test_pose_lab_visual_test_role_audit.mjs`
+
+- Status: mandatory for visual/FK/weapon/pose test changes.
+- Proves: high-risk visual/FK/weapon/pose tests are classified in `contracts/visual_test_roles.json`.
+- Does not prove: classified tests are correct or sufficient; it prevents unclassified machine contracts from quietly becoming acceptance.
+
 ### `node tools/pose_lab_case.mjs list`
 
 - Status: current
@@ -27,14 +57,14 @@ Use this index to choose the smallest proof surface before editing.
 ### `node tools/pose_lab_offline_render.mjs --assert-fixed`
 
 - Status: current
-- Proves: offline Meshy pose/weapon render can satisfy hilt pinning, hilt displacement, and blade-basis checks.
-- Does not prove: live browser capture is fresh.
+- Proves: diagnostic offline Meshy pose/weapon render can satisfy hilt pinning, hilt displacement, and blade-basis checks.
+- Does not prove: Meshy saber acceptance, live browser freshness, or human-visible cloud truth.
 
 ### `node tools/test_weapon_fk_attachment_contract.mjs`
 
 - Status: current
-- Proves: weapon FK attachment contract wiring is protected.
-- Does not prove: live browser screenshot correctness.
+- Proves: diagnostic/guardrail weapon FK attachment wiring is protected.
+- Does not prove: Meshy saber visual acceptance.
 
 ### `node tools/test_manual_weapon_placement_lock.mjs`
 
@@ -73,14 +103,14 @@ Use this index to choose the smallest proof surface before editing.
 ### `node tools/pose_lab_visual_truth_preflight.mjs`
 
 - Status: current hard stop before wake or Meshy FK edits after a red build.
-- Proves: the current artifact is commit/cache/build-current, not human-red, cold-loads Meshy without manual actor selection, and has accepted T-pose plus Ready visible relationship checks.
+- Proves: the current artifact is commit/cache/build-current, not human-red, cold-loads Meshy without manual actor selection, and has accepted T-pose plus Ready visible relationship checks. `AUTHORITY_REVOKED_FALSE_GREEN` means generated proof has lost authority and only evidence-gate repair/quarantine work is allowed.
 - Does not prove: the user has accepted the visual result; it only blocks known false-green paths before handoff.
 
 ### `node tools/test_pose_lab_visual_red_build_contract.mjs`
 
 - Status: current
-- Proves: current offline pose-render evidence matches served cache token and required accepted Meshy saber evidence.
-- Does not prove: fresh evidence creation.
+- Proves: red-build and false-green guardrails remain wired.
+- Does not prove: fresh evidence creation or Meshy saber acceptance.
 
 ### `node tools/test_no_cache_server_contract.mjs`
 

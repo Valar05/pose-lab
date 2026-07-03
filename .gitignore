@@ -25,9 +25,12 @@ __pycache__/
 /generated/visual_qa/
 /generated/weapon_visual_follow/
 /generated/weapon_visual_repro_offline/
+/generated/weapon_basis_workspace_*/
 /generated/firebase_hosting/
 /generated/cloud_visual_truth_self_service/
 /generated/firebase_visual_truth/artifacts/
+/generated/firebase_visual_truth/latest/
+/generated/firebase_visual_truth/run-*/
 .firebase/
 
 # durable workflow records that may be intentionally promoted

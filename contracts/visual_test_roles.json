@@ -1,0 +1,171 @@
+{
+  "schema": "pose-lab-visual-test-roles-v1",
+  "policy": "Visual, FK, weapon, pose, Meshy, Firebase, and cloud tests must be classified as acceptance, diagnostic, guardrail, or quarantine. Broad rules are allowed for legacy tests only when their role is intentionally diagnostic/support-only.",
+  "roles": [
+    {
+      "match": "test_firebase_visual_truth_contract.mjs",
+      "role": "acceptance",
+      "reason": "Cloud visual truth contract can close only when preflight is green and no human red-build veto is active."
+    },
+    {
+      "match": "test_pose_lab_visual_truth_preflight_contract.mjs",
+      "role": "guardrail",
+      "reason": "Preflight blocks false-green evidence and authority-revoked states."
+    },
+    {
+      "match": "test_pose_lab_visual_red_build_contract.mjs",
+      "role": "quarantine",
+      "reason": "Preserves red-build and false-green behavior so it cannot be promoted."
+    },
+    {
+      "match": "test_cloud_visual_truth_self_service_contract.mjs",
+      "role": "guardrail",
+      "reason": "Protects cloud workflow gating and wake behavior."
+    },
+    {
+      "match": "test_firebase_hosting_config.mjs",
+      "role": "guardrail",
+      "reason": "Protects hosted review configuration, not visual acceptance by itself."
+    },
+    {
+      "match": "test_pose_lab_sense_synthesis_contract.mjs",
+      "role": "guardrail",
+      "reason": "Protects Sense Synthesis behavior used by cloud visual acceptance."
+    },
+    {
+      "match": "test_pose_lab_agent_",
+      "role": "guardrail",
+      "reason": "Protects agent/process doctrine."
+    },
+    {
+      "match": "test_pose_lab_human_",
+      "role": "guardrail",
+      "reason": "Protects human-measurable test doctrine."
+    },
+    {
+      "match": "test_pose_lab_no_bad_promotions.mjs",
+      "role": "guardrail",
+      "reason": "Prevents stale or unsupported promotion."
+    },
+    {
+      "match": "test_clean_pose_lab_tmp_contract.mjs",
+      "role": "guardrail",
+      "reason": "Protects cleanup boundaries; not visual acceptance."
+    },
+    {
+      "match": "test_manual_weapon_placement_lock.mjs",
+      "role": "guardrail",
+      "reason": "Protects manual authored weapon values from diagnostics."
+    },
+    {
+      "match": "test_diagnostics_cannot_write_production_surfaces.mjs",
+      "role": "guardrail",
+      "reason": "Prevents diagnostics from becoming production edits."
+    },
+    {
+      "match": "test_meshy_saber_live_in_hand_case.mjs",
+      "role": "acceptance",
+      "reason": "Case-level live/cloud Meshy saber review must route through Firebase visual truth."
+    },
+    {
+      "match": "test_visual_qa_",
+      "role": "guardrail",
+      "reason": "Protects visual QA capture behavior; does not accept a specific Pose Lab visual state."
+    },
+    {
+      "match": "test_ux_critique_workflow.mjs",
+      "role": "guardrail",
+      "reason": "Protects critique workflow expectations; not final visual acceptance."
+    },
+    {
+      "match": "test_codex_critique_runner.mjs",
+      "role": "diagnostic",
+      "reason": "Critique runner tests check packet/control flow, not accepted visual output."
+    },
+    {
+      "match": "test_openai_critique_runner.mjs",
+      "role": "diagnostic",
+      "reason": "Critique runner tests check packet/control flow, not accepted visual output."
+    },
+    {
+      "match": "test_frame_critique_mode.mjs",
+      "role": "diagnostic",
+      "reason": "Frame critique tests support review tooling, not final visual acceptance."
+    },
+    {
+      "match": "test_fk_",
+      "role": "diagnostic",
+      "reason": "FK tests explain transform behavior; visual acceptance requires the accepted evidence lane."
+    },
+    {
+      "match": "test_fps_",
+      "role": "diagnostic",
+      "reason": "FPS weapon/profile tests are reference diagnostics unless paired with cloud acceptance."
+    },
+    {
+      "match": "test_poseclip_",
+      "role": "diagnostic",
+      "reason": "Poseclip tests inspect generated animation data; visual appeal acceptance needs review evidence."
+    },
+    {
+      "match": "test_touch_pose_",
+      "role": "diagnostic",
+      "reason": "Touch pose editor tests check interaction mechanics, not final visual acceptance."
+    },
+    {
+      "match": "test_weapon_gizmo_controls.mjs",
+      "role": "diagnostic",
+      "reason": "Weapon gizmo tests check editor controls, not accepted weapon placement."
+    },
+    {
+      "match": "test_weapon_retarget_",
+      "role": "diagnostic",
+      "reason": "Weapon retarget debug tests are diagnostic support only."
+    },
+    {
+      "match": "test_weapon_visual_transform_application.mjs",
+      "role": "diagnostic",
+      "reason": "Visual transform application tests inspect runtime behavior but do not accept Meshy saber visuals."
+    },
+    {
+      "match": "test_weapon_visual_follow_contract.mjs",
+      "role": "diagnostic",
+      "reason": "Debug-bridge visual follow is diagnostic-only for Meshy saber acceptance."
+    },
+    {
+      "match": "test_weapon_visual_repro_offline_contract.mjs",
+      "role": "diagnostic",
+      "reason": "Offline repro wrapper is diagnostic-only."
+    },
+    {
+      "match": "test_pose_lab_offline_render_contract.mjs",
+      "role": "diagnostic",
+      "reason": "Offline renderer is diagnostic/parity support, not cloud acceptance."
+    },
+    {
+      "match": "test_weapon_fk_",
+      "role": "diagnostic",
+      "reason": "FK tests explain transform behavior; cloud visual evidence is still required for acceptance."
+    },
+    {
+      "match": "test_meshy_",
+      "role": "diagnostic",
+      "reason": "Legacy Meshy tests are diagnostic unless explicitly matched above as acceptance or guardrail."
+    },
+    {
+      "match": "test_pose_",
+      "role": "diagnostic",
+      "reason": "Pose UI/runtime tests are support checks unless paired with visual acceptance evidence."
+    },
+    {
+      "match": "test_critique_",
+      "role": "diagnostic",
+      "reason": "Critique UI tests check workflow surfaces, not final visual acceptance."
+    },
+    {
+      "match": "test_attack_",
+      "role": "diagnostic",
+      "reason": "Attack poseclip tests check generated motion behavior; human visual critique remains acceptance for appeal."
+    }
+  ]
+}

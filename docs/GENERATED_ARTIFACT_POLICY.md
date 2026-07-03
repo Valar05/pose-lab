@@ -10,6 +10,8 @@ Generated artifacts are evidence, not app code. Keep them useful by attaching th
 - `generated/artifact_manifest.json`: generated tree inventory.
 - `generated/artifact_mining_index.json`: mined problem families and next mining passes.
 
+`generated/firebase_visual_truth/latest/` is a downloaded cloud artifact cache. It is ignored by default and must not be committed as app code. If a Firebase artifact becomes durable evidence, promote it through a named case, contract, or ledger entry rather than committing the mutable `latest/` cache.
+
 ## Retention Rules
 
 - Keep: current manifests, accepted baselines, case evidence, canonical diagnostic roots, and structured metrics with project schemas.

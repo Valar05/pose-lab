@@ -72,8 +72,10 @@ if (preflight.ok !== true) {
     schema: 'pose-lab-ready-cloud-url-wake-v1',
     evidence: path.relative(projectRoot, args.evidence),
     dryRun: args.dryRun,
-    status: 'refused',
-    reason: 'visual truth preflight is red',
+    status: preflight.status === 'AUTHORITY_REVOKED_FALSE_GREEN' ? 'AUTHORITY_REVOKED_FALSE_GREEN' : 'refused',
+    reason: preflight.status === 'AUTHORITY_REVOKED_FALSE_GREEN'
+      ? 'AUTHORITY_REVOKED_FALSE_GREEN: browser wake blocked because human visual evidence revoked generated proof authority'
+      : 'visual truth preflight is red',
     preflight,
     rule: 'URL opened is not visual acceptance; human phone-visible review can still veto.',
   }, null, 2));

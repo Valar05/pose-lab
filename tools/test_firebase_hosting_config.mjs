@@ -52,6 +52,7 @@ assert(captureScript.includes('{ timeout: 120000 }'), 'Firebase capture should p
 assert(captureScript.includes('if (!evidence.ok) process.exitCode = 1'), 'Firebase capture should fail the workflow while preserving evidence');
 assert(captureScript.includes("id: 'landing'"), 'Firebase capture should include a human-review landing page capture');
 assert(captureScript.includes('humanRedBuildForCommit'), 'Firebase capture should honor the human red-build veto ledger');
+assert(captureScript.includes('workflowRunId') && captureScript.includes('GITHUB_RUN_ID') && captureScript.includes('workflowUrl'), 'Firebase capture should preserve GitHub workflow run metadata for red-build audits');
 assert(humanRedBuilds.schema === 'pose-lab-human-visual-truth-red-builds-v1', 'human visual truth red-build ledger should use the expected schema');
 assert(humanRedBuilds.redBuilds?.some((entry) => String(entry.commit || '').startsWith('3fc1b14')), 'human red-build ledger should preserve the red review for commit 3fc1b14');
 assert(!workflow.includes('lfs: true'), 'Firebase workflow must not fetch every LFS object; legacy LFS history has missing objects');

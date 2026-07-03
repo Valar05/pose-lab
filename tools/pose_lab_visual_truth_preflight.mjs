@@ -7,14 +7,16 @@ import { SENSE_SYNTHESIS_SCHEMA, synthesizeEvidenceSense } from './pose_lab_sens
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const defaultEvidencePath = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest', 'visual_truth.json');
-const humanRedBuildsPath = path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json');
+let humanRedBuildsPath = path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json');
 
 function parseArgs(argv) {
-  const args = { evidence: defaultEvidencePath, json: false, help: false };
+  const args = { evidence: defaultEvidencePath, redBuilds: humanRedBuildsPath, json: false, help: false };
   for (let i = 2; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === '--evidence') args.evidence = path.resolve(projectRoot, String(argv[++i] || ''));
     else if (arg.startsWith('--evidence=')) args.evidence = path.resolve(projectRoot, arg.slice('--evidence='.length));
+    else if (arg === '--red-builds') args.redBuilds = path.resolve(projectRoot, String(argv[++i] || ''));
+    else if (arg.startsWith('--red-builds=')) args.redBuilds = path.resolve(projectRoot, arg.slice('--red-builds='.length));
     else if (arg === '--json') args.json = true;
     else if (arg === '--help' || arg === '-h') args.help = true;
     else throw new Error(`unknown argument: ${arg}`);
@@ -52,6 +54,25 @@ function currentCommit() {
   }
 }
 
+function normalizeUrl(value = '') {
+  if (!value) return '';
+  try {
+    const url = new URL(String(value));
+    url.hash = '';
+    return url.toString().replace(/\/$/, '');
+  } catch (_error) {
+    return String(value).replace(/\/$/, '');
+  }
+}
+
+function identifierMatches(identifier = '', candidate = '') {
+  if (!identifier || !candidate) return false;
+  const left = String(identifier);
+  const right = String(candidate);
+  if (/^https?:\/\//.test(left) || /^https?:\/\//.test(right)) return normalizeUrl(left) === normalizeUrl(right);
+  return left === right || left.startsWith(right) || right.startsWith(left);
+}
+
 function commitMatches(a = '', b = '') {
   if (!a || !b) return false;
   return String(a).startsWith(String(b)) || String(b).startsWith(String(a));
@@ -73,14 +94,36 @@ function resolveArtifactFile(evidencePath, value = '') {
   return path.join(relativeArtifactDir(evidencePath), value);
 }
 
-function humanRedBuildFor(candidates) {
+function redBuildClosed(entry) {
+  return entry?.status === 'superseded'
+    && entry?.humanAccepted === true
+    && Boolean(entry?.supersededByCommit)
+    && Boolean(entry?.acceptedEvidencePath);
+}
+
+function redBuildIdentifiers(entry = {}) {
+  return [
+    entry.commit,
+    entry.artifactCommit,
+    entry.headCommit,
+    entry.runId,
+    entry.firebaseRunId,
+    entry.workflowRunId,
+    entry.url,
+    entry.hostedUrl,
+    ...(Array.isArray(entry.urls) ? entry.urls : []),
+  ].map((value) => String(value || '')).filter(Boolean);
+}
+
+function humanRedBuildsFor(candidates) {
   if (!fs.existsSync(humanRedBuildsPath)) return null;
   const payload = readJson(humanRedBuildsPath);
   const builds = Array.isArray(payload?.redBuilds) ? payload.redBuilds : [];
-  return builds.find((entry) => candidates.some((candidate) => {
-    const commits = [entry?.commit, entry?.artifactCommit].map((value) => String(value || '')).filter(Boolean);
-    return commits.some((commit) => commit && candidate && (commit.startsWith(candidate) || String(candidate).startsWith(commit)));
-  })) || null;
+  const active = builds.filter((entry) => !redBuildClosed(entry));
+  return active.filter((entry) => {
+    const identifiers = redBuildIdentifiers(entry);
+    return candidates.some((candidate) => identifiers.some((identifier) => identifierMatches(identifier, candidate)));
+  });
 }
 
 function capture(evidence, id) {
@@ -121,6 +164,7 @@ function requireSenseSynthesis(evidence, failures) {
 }
 
 const args = parseArgs(process.argv);
+humanRedBuildsPath = args.redBuilds;
 if (args.help) {
   console.log(usage());
   process.exit(0);
@@ -140,9 +184,21 @@ if (!fs.existsSync(args.evidence)) {
 
 const localCommit = currentCommit();
 if (evidence) {
-  const redBuild = humanRedBuildFor([localCommit, evidence.commit].filter(Boolean));
-  if (redBuild) {
-    failures.push(`human red-build veto for commit ${redBuild.commit}: ${(redBuild.issues || []).join('; ')}`);
+  const readyCapture = capture(evidence, 'ready');
+  const redBuilds = humanRedBuildsFor([
+    localCommit,
+    evidence.commit,
+    evidence.headCommit,
+    evidence.runId,
+    evidence.workflowRunId,
+    evidence.workflow?.runId,
+    evidence.hostedUrl,
+    readyCapture?.url,
+  ].filter(Boolean));
+  if (redBuilds?.length) {
+    for (const redBuild of redBuilds) {
+      failures.push(`AUTHORITY_REVOKED_FALSE_GREEN: human red-build veto for commit ${redBuild.commit || 'unknown'} / artifact ${redBuild.artifactCommit || 'unknown'} / run ${redBuild.runId || redBuild.firebaseRunId || redBuild.workflowRunId || 'unknown'}: ${(redBuild.issues || []).join('; ')}`);
+    }
   }
   if (evidence.schema !== 'pose-lab-firebase-visual-truth-v1') failures.push(`unexpected schema: ${evidence.schema || 'missing'}`);
   if (evidence.authority !== 'firebase-hosted-cloud-browser') failures.push(`unexpected authority: ${evidence.authority || 'missing'}`);
@@ -215,6 +271,12 @@ if (evidence) {
     requireCheck(ready, 'handLocalGripOffsetVisible', failures, 'Ready');
     requireCheck(ready, 'readyHandOrientationSane', failures, 'Ready');
     requireCheck(ready, 'readyBladeNotPointingDownThroughBody', failures, 'Ready');
+    requireCheck(ready, 'clipScopedHiltTargetVisible', failures, 'Ready');
+    requireCheck(ready, 'handMoves', failures, 'Ready');
+    requireCheck(ready, 'tipMoves', failures, 'Ready');
+    requireCheck(ready, 'tipTracksHand', failures, 'Ready');
+    requireCheck(ready, 'basketFrontOrientationSane', failures, 'Ready');
+    requireCheck(ready, 'socketForwardBladeAxisSane', failures, 'Ready');
     requireCheck(ready, 'reviewClipInventoryVisible', failures, 'Ready');
     requireCheck(ready, 'bodyPoseLandmarksPresent', failures, 'Ready');
     requireCheck(ready, 'readyVisualRelationshipAccepted', failures, 'Ready');
@@ -226,15 +288,20 @@ if (evidence) {
 const report = {
   schema: 'pose-lab-visual-truth-preflight-v1',
   ok: failures.length === 0,
+  status: failures.some((failure) => failure.includes('AUTHORITY_REVOKED_FALSE_GREEN')) ? 'AUTHORITY_REVOKED_FALSE_GREEN' : (failures.length ? 'red' : 'green'),
   evidence: path.relative(projectRoot, args.evidence),
   currentCommit: localCommit,
   evidenceCommit: evidence?.commit || '',
   evidenceHeadCommit: evidence?.headCommit || '',
+  workflowRunId: evidence?.workflowRunId || evidence?.workflow?.runId || '',
   cacheToken: evidence?.cacheToken || '',
   runtimeBuild: evidence?.runtimeBuild || '',
   wakeUrl: capture(evidence, 'ready')?.url || '',
   failures,
-  rule: 'Red screenshot -> fix lying evidence/UI gate -> then edit FK/pose math. Browser wake and green language are blocked until this preflight is green.',
+  rule: 'Red screenshot -> fix lying evidence/UI gate -> then edit FK/pose math. Browser wake, green language, promotion, and FK/offset/pose edits are blocked until this preflight is green.',
+  allowedNextAction: failures.some((failure) => failure.includes('AUTHORITY_REVOKED_FALSE_GREEN'))
+    ? 'Document and repair/quarantine the false-green evidence gate; do not edit FK, offsets, clips, or pose math.'
+    : '',
 };
 
 if (args.json) console.log(JSON.stringify(report, null, 2));

@@ -7,10 +7,12 @@
     "firebase:build": "node tools/build_firebase_pose_lab_release.mjs",
     "firebase:capture": "node tools/capture_firebase_visual_truth.mjs",
     "clean:cache": "node tools/clean_pose_lab_cache.mjs",
+    "truth": "node tools/pose_lab_current_truth.mjs",
     "cloud:visual": "node tools/pose_lab_cloud_visual_truth_self_service.mjs",
     "cloud:inspect": "node tools/inspect_firebase_visual_artifact.mjs",
     "cloud:preflight": "node tools/pose_lab_visual_truth_preflight.mjs",
-    "cloud:wake-ready": "node tools/wake_pose_lab_ready_cloud_url.mjs"
+    "cloud:wake-ready": "node tools/wake_pose_lab_ready_cloud_url.mjs",
+    "test:doctrine": "node tools/test_pose_lab_human_measurable_test_doctrine.mjs && node tools/test_pose_lab_agent_failure_contract.mjs && node tools/test_pose_lab_agent_skill_doctrine.mjs && node tools/test_pose_lab_visual_test_role_audit.mjs && node tools/test_pose_lab_current_truth_contract.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

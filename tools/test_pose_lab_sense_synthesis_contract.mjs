@@ -57,10 +57,16 @@ const ready = capture('ready', {
   displayStableInSocket: true,
   modelStableInDisplay: true,
   hiltPinnedToSocket: true,
+  clipScopedHiltTargetVisible: true,
   handLocalGripOffsetVisible: true,
   hiltAwayFromRawHand: true,
   readyHandOrientationSane: true,
   readyBladeNotPointingDownThroughBody: true,
+  handMoves: true,
+  tipMoves: true,
+  tipTracksHand: true,
+  basketFrontOrientationSane: true,
+  socketForwardBladeAxisSane: true,
   reviewClipInventoryVisible: true,
   bodyPoseLandmarksPresent: true,
   readyVisualRelationshipAccepted: true,
@@ -77,6 +83,12 @@ const ready = capture('ready', {
         socketInHand: 0,
         displayInSocket: 0,
         modelInDisplay: 0,
+      },
+    },
+    weapon: {
+      weapon: {
+        basketFrontErrorDeg: 12,
+        socketForwardToBladeErrorDeg: 18,
       },
     },
   },
@@ -105,6 +117,20 @@ markerOnly.evaluation.checks.handLocalGripOffsetVisible = false;
 markerOnly.senseSynthesis = synthesizeCaptureSense(markerOnly);
 assert(markerOnly.senseSynthesis.verdict === 'human-red', 'marker-only wrist pinning should not pass Sense Synthesis');
 assert(markerOnly.senseSynthesis.failures.some((failure) => failure.includes('hiltAwayFromRawHand')), 'marker-only failure should name hilt away from raw hand');
+
+const falseGreenReady = JSON.parse(JSON.stringify(ready));
+falseGreenReady.evaluation.checks.handMoves = false;
+falseGreenReady.evaluation.checks.clipScopedHiltTargetVisible = false;
+falseGreenReady.evaluation.checks.basketFrontOrientationSane = false;
+falseGreenReady.evaluation.checks.socketForwardBladeAxisSane = false;
+falseGreenReady.cloudTelemetry.weapon.weapon.basketFrontErrorDeg = 125.81;
+falseGreenReady.cloudTelemetry.weapon.weapon.socketForwardToBladeErrorDeg = 96.97;
+falseGreenReady.senseSynthesis = synthesizeCaptureSense(falseGreenReady);
+assert(falseGreenReady.senseSynthesis.verdict === 'human-red', 'latest false-green Ready evidence should fail Sense Synthesis');
+
+const humanVeto = synthesizeEvidenceSense({ captures: [landing, tpose, ready], humanRedBuild: { issues: ['human screenshot says red'] } });
+assert(humanVeto.verdict === 'human-red', 'human red-build veto should force aggregate Sense Synthesis red');
+assert(humanVeto.failures.some((failure) => failure.includes('AUTHORITY_REVOKED_FALSE_GREEN')), 'human veto should name authority revocation');
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({ checked: ['pose-lab-sense-synthesis-contract'] }, null, 2));

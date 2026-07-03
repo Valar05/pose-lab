@@ -128,6 +128,12 @@ function readySense(capture) {
     'hiltAwayFromRawHand',
     'readyHandOrientationSane',
     'readyBladeNotPointingDownThroughBody',
+    'clipScopedHiltTargetVisible',
+    'handMoves',
+    'tipMoves',
+    'tipTracksHand',
+    'basketFrontOrientationSane',
+    'socketForwardBladeAxisSane',
     'reviewClipInventoryVisible',
     'bodyPoseLandmarksPresent',
     'readyVisualRelationshipAccepted',
@@ -163,13 +169,16 @@ function readySense(capture) {
       realWeaponVisible: checkValue(capture, 'realWeaponVisible'),
       pureFkSupport: checkValue(capture, 'parentChain') && checkValue(capture, 'displayStableInSocket') && checkValue(capture, 'modelStableInDisplay'),
       hiltHeldAwayFromWrist: checkValue(capture, 'hiltAwayFromRawHand') && checkValue(capture, 'handLocalGripOffsetVisible'),
-      bladeProjectsFromGrip: checkValue(capture, 'readyBladeNotPointingDownThroughBody') && Number.isFinite(tipRight) && tipRight >= 24 && Number.isFinite(tipDrop) && tipDrop <= 12,
-      heldByHandRead: checkValue(capture, 'readyVisualRelationshipAccepted'),
+      bladeProjectsFromGrip: checkValue(capture, 'readyBladeNotPointingDownThroughBody') && checkValue(capture, 'basketFrontOrientationSane') && checkValue(capture, 'socketForwardBladeAxisSane') && Number.isFinite(tipRight) && tipRight >= 24 && Number.isFinite(tipDrop) && tipDrop <= 12,
+      visibleFollowMotion: checkValue(capture, 'handMoves') && checkValue(capture, 'tipMoves') && checkValue(capture, 'tipTracksHand'),
+      heldByHandRead: checkValue(capture, 'readyVisualRelationshipAccepted') && checkValue(capture, 'clipScopedHiltTargetVisible'),
     },
     supportingMetrics: {
       maxHandToAppliedHiltPx: capture?.cloudTelemetry?.visualFollow?.screenMetrics?.maxHandToAppliedHiltPx ?? null,
       maxTipRightFromAppliedHiltPx: capture?.cloudTelemetry?.visualFollow?.screenMetrics?.maxTipRightFromAppliedHiltPx ?? null,
       maxTipDropFromAppliedHiltPx: capture?.cloudTelemetry?.visualFollow?.screenMetrics?.maxTipDropFromAppliedHiltPx ?? null,
+      basketFrontErrorDeg: capture?.cloudTelemetry?.weapon?.weapon?.basketFrontErrorDeg ?? null,
+      socketForwardToBladeErrorDeg: capture?.cloudTelemetry?.weapon?.weapon?.socketForwardToBladeErrorDeg ?? null,
       relativeDrift: capture?.cloudTelemetry?.visualFollow?.relativeDrift || null,
     },
     failures,
@@ -200,6 +209,10 @@ export function synthesizeEvidenceSense(evidence = {}) {
     .filter((capture) => ['landing', 'tpose', 'ready'].includes(capture.id))
     .map((capture) => capture.senseSynthesis || synthesizeCaptureSense(capture));
   const failures = captures.flatMap((capture) => (capture.failures || []).map((failure) => `${capture.captureId}: ${failure}`));
+  if (evidence.humanRedBuild) {
+    const issues = Array.isArray(evidence.humanRedBuild.issues) ? evidence.humanRedBuild.issues.join('; ') : 'human red build';
+    failures.push(`AUTHORITY_REVOKED_FALSE_GREEN: human red-build veto contradicts generated evidence: ${issues}`);
+  }
   const byId = Object.fromEntries(captures.map((capture) => [capture.captureId, capture]));
   for (const id of ['landing', 'tpose', 'ready']) {
     if (!byId[id]) failures.push(`missing ${id} Sense Synthesis verdict`);

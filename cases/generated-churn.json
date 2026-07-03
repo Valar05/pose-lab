@@ -17,8 +17,7 @@
     "Artifact mining can explain keep/review/delete decisions."
   ],
   "contracts": [
-    "generated/artifact_mining_index.json",
-    "generated/artifact_manifest_review.md"
+    "docs/GENERATED_ARTIFACT_POLICY.md"
   ],
   "evidenceArtifacts": [
     "generated/artifact_manifest.json",
