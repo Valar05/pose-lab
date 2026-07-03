@@ -203,7 +203,7 @@ function wakeReviewUrl(artifactDir) {
   };
 }
 
-function localPreflight() {
+function localPreflight(options = {}) {
   const commands = [
     ['node', ['--check', 'src/pose-lab.js']],
     ['node', ['--check', 'src/rig-profiles.js']],
@@ -211,10 +211,12 @@ function localPreflight() {
     ['node', ['tools/test_firebase_hosting_config.mjs']],
     ['node', ['tools/test_meshy_core_retarget_contract.mjs']],
     ['node', ['tools/test_meshy_infinite_brutality_retarget_contract.mjs']],
-    ['node', ['tools/test_pose_lab_visual_red_build_contract.mjs']],
     ['node', ['tools/test_pose_lab_no_bad_promotions.mjs']],
     ['git', ['diff', '--check']],
   ];
+  if (!options.refreshingFirebaseEvidence) {
+    commands.splice(6, 0, ['node', ['tools/test_pose_lab_visual_red_build_contract.mjs']]);
+  }
   for (const [command, args] of commands) run(command, args);
   return commands.map(([command, args]) => `${command} ${args.join(' ')}`);
 }
@@ -244,7 +246,7 @@ const report = {
   next: [],
 };
 
-report.preflight = localPreflight();
+report.preflight = localPreflight({ refreshingFirebaseEvidence: args.download || args.inspect });
 
 if (args.push) {
   run('git', ['push']);
