@@ -31,9 +31,10 @@ assert(captureScript.includes("offlineRender: 'diagnostic-only'"), 'Firebase cap
 assert(!captureScript.includes("captureKind: 'offline-pose-render'"), 'Firebase capture must not emit offline-pose-render evidence');
 assert(captureScript.includes('Ready hilt collapsed onto raw hand/wrist'), 'Firebase capture must fail the red screenshot class where the hilt collapses onto the wrist');
 assert(captureScript.includes('Ready hand orientation/grip evidence is not visually sane'), 'Firebase capture must fail Ready hand-orientation visual regressions');
-assert(captureScript.includes('tposeWristRelationshipAccepted: false'), 'Firebase capture must not greenlight T-pose without explicit wrist/saber relationship acceptance');
-assert(captureScript.includes('readyVisualRelationshipAccepted: false'), 'Firebase capture must not greenlight Ready without explicit hand/hilt/blade relationship acceptance');
-assert(captureScript.includes('defaultSurfaceAccepted: false'), 'Firebase capture must not greenlight a default surface from route/clip selection alone');
+assert(captureScript.includes('function relationshipChecksFromTelemetry'), 'Firebase capture must evaluate explicit relationship verdicts');
+assert(captureScript.includes('tposeWristRelationshipAccepted: relationship.tposeWristRelationshipAccepted'), 'Firebase capture must not hard-code T-pose relationship failure');
+assert(captureScript.includes('readyVisualRelationshipAccepted: relationship.readyVisualRelationshipAccepted'), 'Firebase capture must not hard-code Ready relationship failure');
+assert(captureScript.includes('relationshipCloseup'), 'Firebase capture must preserve relationship close-up screenshots');
 assert(protocol.includes('visible relationship') && firebaseDoc.includes('visible relationship'), 'Pose Lab docs must name visible relationship truth');
 
 if (!fs.existsSync(evidencePath)) {
@@ -73,6 +74,8 @@ if (!evidence.humanRedBuild) {
   assert(ready?.evaluation?.checks?.readyVisualRelationshipAccepted === true, 'Ready cloud capture must prove accepted hand/hilt/blade visual relationship');
 }
 assert(typeof tpose?.screenshot === 'string' && tpose.screenshot.endsWith('.png'), 'T-pose cloud capture must include screenshot');
+assert(typeof tpose?.relationshipCloseup === 'string' && tpose.relationshipCloseup.endsWith('.png'), 'T-pose cloud capture must include relationship close-up screenshot');
+assert(typeof ready?.relationshipCloseup === 'string' && ready.relationshipCloseup.endsWith('.png'), 'Ready cloud capture must include relationship close-up screenshot');
 assert(typeof ready?.contactSheet === 'string' && ready.contactSheet.endsWith('.png'), 'Ready cloud capture must include visual-follow contact sheet');
 
 if (failures.length) throw new Error(failures.join('\n'));

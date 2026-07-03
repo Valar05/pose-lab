@@ -61,6 +61,9 @@ for (const capture of evidence.captures || []) {
   assert(capture.actor === 'meshyCharacter', 'Firebase capture actor should be meshyCharacter');
   if (capture.id !== 'landing') assert(typeof capture.clip === 'string' && capture.clip.includes('meshyCharacter'), 'Firebase capture clip should name the Meshy route');
   assert(typeof capture.screenshot === 'string' && capture.screenshot.endsWith('.png'), 'Firebase capture should name a PNG screenshot');
+  if (capture.id === 'tpose' || capture.id === 'ready') {
+    assert(typeof capture.relationshipCloseup === 'string' && capture.relationshipCloseup.endsWith('.png'), `Firebase capture should name a relationship close-up PNG: ${capture.id}`);
+  }
   assert(typeof capture.url === 'string' && capture.url.startsWith('https://'), 'Firebase capture should preserve the hosted HTTPS URL');
   assert(capture.url.startsWith('https://pose-lab-visual-truth'), 'Firebase capture must load the pose-lab-visual-truth cloud URL');
   assert(capture.routeSelected === true, `Firebase capture should route-select Meshy Character: ${capture.id}`);
@@ -86,7 +89,9 @@ assert(tpose?.evaluation?.checks?.realWeaponVisible === true, 'T-pose cloud evid
 assert(tpose?.evaluation?.checks?.hiltPinnedToSocket === true, 'T-pose cloud evidence must prove hilt pinning');
 assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'tposeWristRelationshipAccepted'), 'T-pose cloud evidence must record wrist/saber visible relationship acceptance');
 assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'defaultSurfaceAccepted'), 'T-pose cloud evidence must record default visible surface acceptance');
+assert(typeof tpose?.relationshipCloseup === 'string' && tpose.relationshipCloseup.endsWith('tpose_relationship_closeup.png'), 'T-pose cloud evidence must include wrist/saber close-up');
 const ready = evidence.captures.find((capture) => capture.id === 'ready');
+assert(typeof ready?.relationshipCloseup === 'string' && ready.relationshipCloseup.endsWith('ready_relationship_closeup.png'), 'Ready cloud evidence must include hand/hilt/blade close-up');
 assert(typeof ready?.contactSheet === 'string' && ready.contactSheet.endsWith('.png'), 'Ready cloud evidence should include a visual-follow contact sheet PNG');
 assert(ready?.cloudTelemetry?.visualFollow?.ok === true, 'Ready cloud evidence must include successful visual-follow telemetry');
 assert(ready?.evaluation?.checks?.realWeaponVisible === true, 'Ready cloud evidence must prove real weapon visibility');

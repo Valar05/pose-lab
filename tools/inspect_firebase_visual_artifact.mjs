@@ -88,7 +88,9 @@ const warnings = [];
 const artifactDir = args.artifactDir;
 const visualTruthPath = requiredFile(artifactDir, 'visual_truth.json', failures);
 const tposePath = requiredFile(artifactDir, 'tpose.png', failures);
+const tposeCloseupPath = requiredFile(artifactDir, 'tpose_relationship_closeup.png', failures);
 const readyPath = requiredFile(artifactDir, 'ready.png', failures);
+const readyCloseupPath = requiredFile(artifactDir, 'ready_relationship_closeup.png', failures);
 const followPath = requiredFile(artifactDir, 'ready_visual_follow.png', failures);
 
 let evidence = null;
@@ -114,6 +116,13 @@ if (evidence) {
     if (!evidence.captures?.some((capture) => capture.id === id)) failures.push(`missing ${id} capture in visual_truth.json`);
   }
   const ready = evidence.captures?.find((capture) => capture.id === 'ready');
+  const tpose = evidence.captures?.find((capture) => capture.id === 'tpose');
+  if (tpose && path.basename(tpose.relationshipCloseup || '') !== path.basename(tposeCloseupPath)) {
+    failures.push(`tpose relationshipCloseup points somewhere unexpected: ${tpose.relationshipCloseup || 'missing'}`);
+  }
+  if (ready && path.basename(ready.relationshipCloseup || '') !== path.basename(readyCloseupPath)) {
+    failures.push(`ready relationshipCloseup points somewhere unexpected: ${ready.relationshipCloseup || 'missing'}`);
+  }
   if (ready && ready.contactSheet && path.basename(ready.contactSheet) !== path.basename(followPath)) {
     failures.push(`ready contactSheet points somewhere unexpected: ${ready.contactSheet}`);
   }
@@ -138,7 +147,9 @@ const report = {
   cacheToken: evidence?.cacheToken || '',
   imagesToInspect: {
     tpose: tposePath,
+    tposeRelationshipCloseup: tposeCloseupPath,
     ready: readyPath,
+    readyRelationshipCloseup: readyCloseupPath,
     readyVisualFollow: followPath,
   },
   failures,
@@ -156,7 +167,9 @@ else {
   console.log(`commit: ${report.commit || 'missing'}`);
   console.log(`cacheToken: ${report.cacheToken || 'missing'}`);
   console.log(`tpose: ${report.imagesToInspect.tpose}`);
+  console.log(`tposeRelationshipCloseup: ${report.imagesToInspect.tposeRelationshipCloseup}`);
   console.log(`ready: ${report.imagesToInspect.ready}`);
+  console.log(`readyRelationshipCloseup: ${report.imagesToInspect.readyRelationshipCloseup}`);
   console.log(`readyVisualFollow: ${report.imagesToInspect.readyVisualFollow}`);
   if (failures.length) {
     console.log('failures:');

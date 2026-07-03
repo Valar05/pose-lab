@@ -19,6 +19,7 @@ assert(selfService.includes("'run', 'download'"), 'self-service tool should use 
 assert(selfService.includes('actions/runs?head_sha='), 'self-service tool should poll workflow runs by commit SHA');
 assert(selfService.includes('firebase-visual-truth'), 'self-service tool should fetch the Firebase visual truth artifact');
 assert(selfService.includes('generated\', \'firebase_visual_truth\', \'latest'), 'self-service tool should sync downloaded artifacts to the canonical evidence path');
+assert(selfService.includes('tpose_relationship_closeup.png') && selfService.includes('ready_relationship_closeup.png'), 'self-service tool should sync relationship close-up artifacts');
 assert(selfService.includes('tools/inspect_firebase_visual_artifact.mjs'), 'self-service tool should call the artifact inspector');
 assert(selfService.includes('refreshingFirebaseEvidence'), 'self-service tool should distinguish stale-evidence refresh from normal preflight');
 assert(selfService.includes("!options.refreshingFirebaseEvidence"), 'self-service tool should skip stale visual-red evidence only while refreshing Firebase artifacts');
@@ -40,7 +41,7 @@ for (const required of [
 }
 
 assert(inspector.includes('pose-lab-firebase-visual-artifact-inspection-v1'), 'artifact inspector should write a stable schema');
-for (const required of ['visual_truth.json', 'tpose.png', 'ready.png', 'ready_visual_follow.png']) {
+for (const required of ['visual_truth.json', 'tpose.png', 'tpose_relationship_closeup.png', 'ready.png', 'ready_relationship_closeup.png', 'ready_visual_follow.png']) {
   assert(inspector.includes(required), `artifact inspector should require ${required}`);
 }
 assert(inspector.includes('Inspect these PNGs directly'), 'artifact inspector must remind agents that PNG inspection is required');

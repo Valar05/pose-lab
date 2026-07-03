@@ -147,7 +147,7 @@ async function downloadArtifact(runId) {
 }
 
 function syncCanonicalArtifact(artifactDir) {
-  for (const name of ['visual_truth.json', 'landing.png', 'tpose.png', 'ready.png', 'ready_visual_follow.png']) {
+  for (const name of ['visual_truth.json', 'landing.png', 'tpose.png', 'tpose_relationship_closeup.png', 'ready.png', 'ready_relationship_closeup.png', 'ready_visual_follow.png']) {
     const source = path.join(artifactDir, name);
     if (fs.existsSync(source)) {
       fs.mkdirSync(canonicalArtifactDir, { recursive: true });
