@@ -52,6 +52,12 @@ The normal path is:
 
 Browser wake is a ready-for-review action, not a debugging step. Always wake the same cloud route used by the Ready screenshot before handing work back when the artifact is green/ready. Never wake Android Chrome for red/debug artifacts just to inspect telemetry. Do not open `example.com`, localhost, a generic Firebase site root, the base `hostedUrl`, or a remembered older preview URL. The URL to wake is `captures[id="ready"].url` in the downloaded `visual_truth.json`; it includes `/pose-lab.html` plus the actor, QA actor, weapon debug, and cache-bust query parameters. Use `captures[id="tpose"].url` only when the Ready capture is missing.
 
+Use the stable one-command browser wake wrapper when a green artifact already exists:
+
+```sh
+node tools/wake_pose_lab_ready_cloud_url.mjs
+```
+
 Manual `gh workflow run firebase-visual-truth.yml` is a fallback only when GitHub CLI auth is known good. It is not the default path.
 
 ## Cleanup Doctrine

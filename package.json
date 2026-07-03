@@ -8,7 +8,8 @@
     "firebase:capture": "node tools/capture_firebase_visual_truth.mjs",
     "clean:cache": "node tools/clean_pose_lab_cache.mjs",
     "cloud:visual": "node tools/pose_lab_cloud_visual_truth_self_service.mjs",
-    "cloud:inspect": "node tools/inspect_firebase_visual_artifact.mjs"
+    "cloud:inspect": "node tools/inspect_firebase_visual_artifact.mjs",
+    "cloud:wake-ready": "node tools/wake_pose_lab_ready_cloud_url.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

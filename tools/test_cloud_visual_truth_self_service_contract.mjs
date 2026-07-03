@@ -6,6 +6,7 @@ const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
 
 const selfService = fs.readFileSync(path.join(projectRoot, 'tools', 'pose_lab_cloud_visual_truth_self_service.mjs'), 'utf8');
+const wakeReady = fs.readFileSync(path.join(projectRoot, 'tools', 'wake_pose_lab_ready_cloud_url.mjs'), 'utf8');
 const inspector = fs.readFileSync(path.join(projectRoot, 'tools', 'inspect_firebase_visual_artifact.mjs'), 'utf8');
 const firebaseDoc = fs.readFileSync(path.join(projectRoot, 'docs', 'FIREBASE_VISUAL_TRUTH.md'), 'utf8');
 const refreshDoc = fs.readFileSync(path.join(projectRoot, 'docs', 'VISUAL_EVIDENCE_REFRESH.md'), 'utf8');
@@ -33,6 +34,10 @@ assert(selfService.includes('refusing to wake base hostedUrl'), 'self-service to
 assert(selfService.includes('prune_and_wake_browser.sh'), 'self-service tool should use the Android browser wake script after artifact inspection');
 assert(selfService.includes('inspection.evidenceOk === true'), 'self-service tool should wake Android browser only when the artifact is ready/green');
 assert(selfService.includes('Browser wake skipped because the artifact is not green/ready'), 'self-service tool should skip browser wake during red/debug artifact inspection');
+assert(wakeReady.includes('pose-lab-ready-cloud-url-wake-v1'), 'ready wake wrapper should write a stable ledger schema');
+assert(wakeReady.includes('truthLedger?.readyBoringFk') && wakeReady.includes('readyVisualRelationshipAccepted'), 'ready wake wrapper should refuse non-ready artifacts');
+assert(wakeReady.includes("captures?.find((capture) => capture.id === 'ready')"), 'ready wake wrapper should use captures[id=ready]');
+assert(packageJson.scripts?.['cloud:wake-ready'], 'package.json should expose a reusable ready browser wake script');
 for (const required of [
   "'--check', 'src/pose-lab.js'",
   "'--check', 'src/rig-profiles.js'",
