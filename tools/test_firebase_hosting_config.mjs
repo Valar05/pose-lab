@@ -39,6 +39,7 @@ assert(captureScript.includes('gotoHostedMeshyPage(page, initialUrl') && capture
 assert(captureScript.includes("url.searchParams.set('qaClip', clip)") && captureScript.includes('const captureUrl = capture.clip ? poseUrl(hostedUrl, capture.clip) : initialUrl'), 'Firebase capture artifacts must preserve exact clip route URLs for human review wakeup');
 assert(captureScript.includes('MOBILE_REVIEW_VIEWPORT') && captureScript.includes('isMobile: true'), 'Firebase capture should use a mobile review viewport so the gate matches the user review UI');
 assert(captureScript.includes('reviewTruthFailures') && captureScript.includes('visibleUiTruthAccepted'), 'Firebase capture should fail when hosted visible UI review truth is red');
+assert(captureScript.includes('synthesizeCaptureSense') && captureScript.includes('synthesizeEvidenceSense'), 'Firebase capture should write Sense Synthesis verdicts for screenshot perception');
 assert(captureScript.includes('relationshipCloseupClip(page)') && !captureScript.includes('x: 360, y: 230'), 'Firebase capture should not use desktop-only relationship close-up crop coordinates');
 assert(captureScript.includes('loadWarning: loadMs > LANDING_LOAD_WARN_MS'), 'Firebase capture should preserve slow hosted review load as diagnostic warning only');
 assert(!captureScript.includes('landing hosted review load exceeded'), 'Firebase capture must not fail visual truth solely because hosted review is slow');
@@ -68,6 +69,7 @@ const captureStep = workflow.slice(workflow.indexOf('- name: Capture hosted Pose
 assert(captureStep.includes('capture_firebase_visual_truth.mjs') && captureStep.includes('test_firebase_visual_truth_contract.mjs'), 'Firebase workflow must validate visual truth after the fresh cloud capture is written');
 assert(packageJson.devDependencies?.['@playwright/test'] && packageJson.devDependencies?.['firebase-tools'], 'package.json should declare Firebase/Playwright tool dependencies');
 assert(packageJson.scripts?.['cloud:preflight'], 'package.json should expose visual truth preflight');
+assert(firebaseDoc.includes('Sense Synthesis') && firebaseDoc.includes('human-visible'), 'Firebase docs should require Sense Synthesis / human-visible screenshot review');
 assert(cleanupScript.includes("schema: 'pose-lab-cache-cleanup-v1'") && cleanupScript.includes('refusing non-generated cleanup path'), 'cleanup script should be allowlisted and refuse non-generated paths');
 assert(cleanupScript.includes('/data/data/com.termux/files/usr/tmp') && cleanupScript.includes('tmp-glob'), 'cleanup script should own Termux tmp cleanup through allowlisted targets');
 assert(firebaseDoc.includes('Cleanup Doctrine') && firebaseDoc.includes('tools/clean_pose_lab_cache.mjs'), 'Firebase docs should route cache cleanup through the cleanup script');

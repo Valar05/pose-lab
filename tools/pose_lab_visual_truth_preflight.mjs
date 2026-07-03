@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { SENSE_SYNTHESIS_SCHEMA, synthesizeEvidenceSense } from './pose_lab_sense_synthesis.mjs';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const defaultEvidencePath = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest', 'visual_truth.json');
@@ -97,6 +98,28 @@ function requireCheck(captureEntry, key, failures, label = captureEntry?.id || '
   if (captureEntry?.evaluation?.checks?.[key] !== true) failures.push(`${label} check failed or missing: ${key}`);
 }
 
+function requireSenseSynthesis(evidence, failures) {
+  const sense = evidence?.senseSynthesis || null;
+  if (!sense) {
+    failures.push('missing top-level Sense Synthesis verdict');
+    return;
+  }
+  if (sense.schema !== SENSE_SYNTHESIS_SCHEMA) failures.push(`unexpected Sense Synthesis schema: ${sense.schema || 'missing'}`);
+  if (sense.verdict !== 'human-green') failures.push(`Sense Synthesis verdict is not human-green: ${sense.verdict || 'missing'}`);
+  if (!Array.isArray(sense.captures) || sense.captures.length < 3) failures.push('Sense Synthesis must include landing, T-pose, and Ready capture verdicts');
+  const recomputed = synthesizeEvidenceSense(evidence);
+  if (recomputed.verdict !== 'human-green') {
+    failures.push(`recomputed Sense Synthesis is ${recomputed.verdict}: ${recomputed.failures.join('; ')}`);
+  }
+  for (const id of ['landing', 'tpose', 'ready']) {
+    const captureEntry = capture(evidence, id);
+    const captureSense = captureEntry?.senseSynthesis || null;
+    if (!captureSense) failures.push(`${id} missing capture Sense Synthesis verdict`);
+    else if (captureSense.schema !== SENSE_SYNTHESIS_SCHEMA) failures.push(`${id} Sense Synthesis schema mismatch: ${captureSense.schema || 'missing'}`);
+    else if (captureSense.verdict !== 'human-green') failures.push(`${id} Sense Synthesis verdict is not human-green: ${captureSense.verdict}`);
+  }
+}
+
 const args = parseArgs(process.argv);
 if (args.help) {
   console.log(usage());
@@ -127,12 +150,14 @@ if (evidence) {
   if (evidence.runtimeBuild !== currentRuntimeBuild()) failures.push(`stale runtime build: artifact=${evidence.runtimeBuild || 'missing'} current=${currentRuntimeBuild()}`);
   if (!commitMatches(localCommit, evidence.commit)) failures.push(`artifact commit does not match current checkout: artifact=${evidence.commit || 'missing'} current=${localCommit || 'missing'}`);
   if (evidence.ok !== true) failures.push('visual_truth.ok is not true');
+  requireSenseSynthesis(evidence, failures);
   for (const [key, expected] of Object.entries({
     cloudUrlLoaded: true,
     landingUsable: true,
     tposeStableIdle: true,
     readyBoringFk: true,
     human: true,
+    senseSynthesis: true,
   })) {
     if (evidence.truthLedger?.[key] !== expected) failures.push(`truthLedger.${key} is not true`);
   }

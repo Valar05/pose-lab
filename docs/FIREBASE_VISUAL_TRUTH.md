@@ -104,6 +104,8 @@ If the cloud screenshots show a red build, the run is red even when `visual_trut
 
 visible relationship truth controls this lane. If the object is present but the relationship is wrong, the run is red. T-pose must preserve the accepted wrist/saber relationship and default visible surface. Ready must visibly read as the intended hand/hilt/blade relationship. Actor selection, clip selection, marker placement, and weapon visibility are support evidence only.
 
+Sense Synthesis is the machine-readable human-visible verdict for this lane. It must ask whether the viewer believes the weapon is held by the character, keep Physical/Visual/Perceptual/Behavioral truth separate, and fail metric-green / human-red screenshots instead of excusing them with transform metrics.
+
 If the screenshots are missing, stale, too distant, cropped badly, or unreadable for the visual question, the run is blocked, not green.
 
 If the human reports the cloud visual as red, stop promotion and preserve the contradiction until the screenshots and gate explain it.
@@ -118,7 +120,7 @@ The evidence target is:
 generated/firebase_visual_truth/latest/visual_truth.json
 ```
 
-Screenshots and hosted debug telemetry are workflow artifacts, not local Android evidence. The artifact is the engineering gate for Meshy saber acceptance: `ok` may be true only when the landing page is usable, T-pose stable idle passes, Ready boring FK passes, and no human red-build veto exists for the commit. Ready must also prove the visible hand/grip basis is sane: the authored grip offset and applied hilt cannot collapse onto the raw wrist/hand, even if direct FK parent-chain telemetry is stable.
+Screenshots and hosted debug telemetry are workflow artifacts, not local Android evidence. The artifact is the engineering gate for Meshy saber acceptance: `ok` may be true only when the landing page is usable, T-pose stable idle passes, Ready boring FK passes, Sense Synthesis is green, and no human red-build veto exists for the commit. Ready must also prove the visible hand/grip basis is sane: the authored grip offset and applied hilt cannot collapse onto the raw wrist/hand, even if direct FK parent-chain telemetry is stable.
 
 The gate must also record `defaultSurfaceAccepted`, `tposeWristRelationshipAccepted`, and `readyVisualRelationshipAccepted`. Until those are true, a cloud artifact is preservation or diagnosis, not progress.
 

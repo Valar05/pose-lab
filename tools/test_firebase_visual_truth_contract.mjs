@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const evidencePath = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest', 'visual_truth.json');
@@ -14,6 +15,10 @@ function currentCacheToken() {
 function currentRuntimeBuild() {
   const source = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
   return source.match(/const\s+LAB_BUILD\s*=\s*['"]([^'"]+)['"]/)?.[1] || '';
+}
+
+function currentCommit() {
+  return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: projectRoot, encoding: 'utf8' }).trim();
 }
 
 if (!fs.existsSync(evidencePath)) {
@@ -43,6 +48,16 @@ if (evidence.cacheToken !== currentCacheToken() || evidence.runtimeBuild !== cur
   process.exit(0);
 }
 
+if (evidence.commit !== currentCommit()) {
+  console.log(JSON.stringify({
+    checked: ['firebase-visual-truth-contract'],
+    status: 'pending',
+    reason: `stale Firebase hosted visual truth evidence: commit ${evidence.commit || 'missing'} does not match current ${currentCommit()}`,
+    evidencePath: path.relative(projectRoot, evidencePath),
+  }, null, 2));
+  process.exit(0);
+}
+
 assert(evidence.schema === 'pose-lab-firebase-visual-truth-v1', 'Firebase visual truth evidence should use schema pose-lab-firebase-visual-truth-v1');
 assert(evidence.projectId === 'home-center-dclar', 'Firebase visual truth should come from home-center-dclar');
 assert(evidence.hostingSite === 'pose-lab-visual-truth', 'Firebase visual truth should come from pose-lab-visual-truth');
@@ -50,6 +65,9 @@ assert(/^https:\/\/.+/.test(String(evidence.hostedUrl || '')), 'Firebase visual 
 assert(evidence.cacheToken === currentCacheToken(), `Firebase visual truth cacheToken must match current ${currentCacheToken()}`);
 assert(evidence.runtimeBuild === currentRuntimeBuild(), `Firebase visual truth runtimeBuild must match current ${currentRuntimeBuild()}`);
 assert(evidence.authority === 'firebase-hosted-cloud-browser', 'Firebase visual truth should be the cloud-hosted browser authority');
+assert(evidence.senseSynthesis?.schema === 'pose-lab-sense-synthesis-v1', 'Firebase visual truth should include a top-level Sense Synthesis verdict');
+assert(evidence.senseSynthesis?.verdict === 'human-green', 'Firebase Sense Synthesis should be human-green for normal landing/T-pose/Ready captures');
+assert(evidence.truthLedger?.senseSynthesis === true, 'truth ledger must mark Sense Synthesis green before visual truth can pass');
 assert(evidence.controller?.role === 'controller-only', 'Firebase visual truth should label Playwright as controller-only');
 assert(evidence.controller?.acceptanceRule?.includes('hosted Firebase HTTPS URL'), 'Firebase visual truth should require a hosted Firebase HTTPS URL');
 assert(evidence.deprecatedAcceptance?.offlineRender === 'diagnostic-only', 'offline render must be diagnostic-only, not acceptance authority');
@@ -78,6 +96,10 @@ for (const capture of evidence.captures || []) {
   assert(capture.url.startsWith('https://pose-lab-visual-truth'), 'Firebase capture must load the pose-lab-visual-truth cloud URL');
   assert(capture.routeSelected === true, `Firebase capture should route-select Meshy Character: ${capture.id}`);
   assert(typeof capture.visibleRead === 'string' && capture.visibleRead.length >= 10, 'Firebase capture should include a human-readable visibleRead');
+  assert(capture.senseSynthesis?.schema === 'pose-lab-sense-synthesis-v1', `Firebase capture should include Sense Synthesis verdict: ${capture.id}`);
+  assert(capture.senseSynthesis?.verdict === 'human-green', `Firebase capture Sense Synthesis should be human-green before human veto is considered: ${capture.id}`);
+  assert(typeof capture.senseSynthesis?.question === 'string' && capture.senseSynthesis.question.includes('?'), `Firebase capture Sense Synthesis should preserve the perceptual question: ${capture.id}`);
+  assert(capture.visibleRead.includes(capture.senseSynthesis.verdict), `Firebase visibleRead should be derived from Sense Synthesis verdict: ${capture.id}`);
   assert(capture.cloudTelemetry?.weapon?.ok === true, `Firebase capture should include successful cloud weapon telemetry: ${capture.id}`);
   assert(capture.cloudTelemetry?.liveHilt?.ok === true, `Firebase capture should include successful cloud live hilt telemetry: ${capture.id}`);
   assert(capture.cloudTelemetry?.weapon?.snapshot?.reviewTruth?.active === true, `Firebase capture should expose visible UI review truth: ${capture.id}`);
@@ -100,6 +122,8 @@ assert(tpose?.evaluation?.checks?.acceptedHiltOracle === true, 'T-pose cloud evi
 assert(tpose?.evaluation?.checks?.acceptedAttachmentRotation === true, 'T-pose cloud evidence must preserve the accepted attachment rotation');
 assert(tpose?.evaluation?.checks?.realWeaponVisible === true, 'T-pose cloud evidence must prove real weapon visibility');
 assert(tpose?.evaluation?.checks?.hiltPinnedToSocket === true, 'T-pose cloud evidence must prove hilt pinning');
+assert(tpose?.senseSynthesis?.checks?.heldByHandRead === true, 'T-pose Sense Synthesis must say the reference weapon reads as hand-owned');
+assert(tpose?.senseSynthesis?.truth?.visual && tpose.senseSynthesis.truth.perceptual, 'T-pose Sense Synthesis must keep visual and perceptual truth separate');
 assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'tposeWristRelationshipAccepted'), 'T-pose cloud evidence must record wrist/saber visible relationship acceptance');
 assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'defaultSurfaceAccepted'), 'T-pose cloud evidence must record default visible surface acceptance');
 assert(tpose?.evaluation?.checks?.visibleUiTruthAccepted === true, 'T-pose cloud evidence must accept only green visible UI truth');
@@ -115,6 +139,9 @@ assert(ready?.evaluation?.checks?.handLocalGripOffsetVisible === true, 'Ready cl
 assert(ready?.evaluation?.checks?.hiltAwayFromRawHand === true, 'Ready cloud evidence must prove the hilt has not collapsed onto the raw hand/wrist');
 assert(ready?.evaluation?.checks?.readyHandOrientationSane === true, 'Ready cloud evidence must prove the hand orientation/grip basis is visually sane');
 assert(ready?.evaluation?.checks?.readyBladeNotPointingDownThroughBody === true, 'Ready cloud evidence must reject a blade axis that visibly points down through the body');
+assert(ready?.senseSynthesis?.checks?.heldByHandRead === true, 'Ready Sense Synthesis must say the weapon reads as held by the hand');
+assert(ready?.senseSynthesis?.checks?.bladeProjectsFromGrip === true, 'Ready Sense Synthesis must prove the blade visually projects from the grip');
+assert(ready?.senseSynthesis?.vocabulary?.includes('confident grip'), 'Ready Sense Synthesis should use perceptual vocabulary for the held weapon read');
 assert(ready?.evaluation?.checks?.reviewClipInventoryVisible === true, 'Ready cloud evidence must prove review clip inventory is visible');
 assert(ready?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Ready cloud evidence must accept only green visible UI truth');
 assert(ready?.evaluation?.checks?.bodyPoseLandmarksPresent === true, 'Ready cloud evidence must expose body pose landmarks for hand-orientation review');

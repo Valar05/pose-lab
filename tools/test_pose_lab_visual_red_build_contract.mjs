@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const evidencePath = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest', 'visual_truth.json');
@@ -12,6 +13,10 @@ function assert(condition, message) {
 function currentCacheToken() {
   const html = fs.readFileSync(path.join(projectRoot, 'pose-lab.html'), 'utf8');
   return html.match(/pose-lab\.js\?v=([^'"\s]+)/)?.[1] || '';
+}
+
+function currentCommit() {
+  return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: projectRoot, encoding: 'utf8' }).trim();
 }
 
 const protocol = fs.readFileSync(path.join(projectRoot, 'docs', 'POSE_LAB_EVIDENCE_PROTOCOL.md'), 'utf8');
@@ -35,6 +40,7 @@ assert(captureScript.includes('Ready hand orientation/grip evidence is not visua
 assert(captureScript.includes('Ready blade axis points down through the body'), 'Firebase capture must fail Ready blade-axis visual regressions');
 assert(captureScript.includes('weapon rotation-probe'), 'Firebase capture must preserve cloud rotation-probe evidence when Ready blade-axis proof is red');
 assert(captureScript.includes('function relationshipChecksFromTelemetry'), 'Firebase capture must evaluate explicit relationship verdicts');
+assert(captureScript.includes('synthesizeCaptureSense') && captureScript.includes('synthesizeEvidenceSense'), 'Firebase capture must write Sense Synthesis verdicts');
 assert(captureScript.includes('reviewTruthFailures') && captureScript.includes('visibleUiTruthAccepted'), 'Firebase capture must fail when the hosted visible UI truth is red');
 assert(captureScript.includes('MOBILE_REVIEW_VIEWPORT') && captureScript.includes('isMobile: true'), 'Firebase capture must reproduce the mobile review surface');
 assert(captureScript.includes('gotoHostedMeshyPage(page, captureUrl, capture.clip)') && captureScript.includes('routeRetry='), 'Firebase capture must cold-load the exact review URL with retry instead of only switching clips through debug state');
@@ -45,6 +51,7 @@ assert(captureScript.includes('tposeWristRelationshipAccepted: relationship.tpos
 assert(captureScript.includes('readyVisualRelationshipAccepted: relationship.readyVisualRelationshipAccepted'), 'Firebase capture must not hard-code Ready relationship failure');
 assert(captureScript.includes('relationshipCloseup'), 'Firebase capture must preserve relationship close-up screenshots');
 assert(protocol.includes('visible relationship') && firebaseDoc.includes('visible relationship'), 'Pose Lab docs must name visible relationship truth');
+assert(protocol.includes('Sense Synthesis') && firebaseDoc.includes('Sense Synthesis'), 'Pose Lab docs must require Sense Synthesis for visual acceptance');
 assert(protocol.includes('phone-visible hosted URL is part of cloud truth'), 'evidence protocol must treat Android Chrome hosted review as cloud truth');
 assert(firebaseDoc.includes('Phone-wake false-green checkpoint') && firebaseDoc.includes('28649227859'), 'Firebase doc must preserve the phone-wake false-green checkpoint');
 assert(humanRedBuilds.includes('a92fa0bb6dc5b83644688db2d8b04d7c9b2f56b5'), 'human red-build ledger must preserve the phone-visible red review for commit a92fa0b');
@@ -76,6 +83,17 @@ if (evidence.cacheToken !== currentCacheToken()) {
   }, null, 2));
   process.exit(0);
 }
+if (evidence.commit !== currentCommit()) {
+  if (failures.length) throw new Error(failures.join('\n'));
+  console.log(JSON.stringify({
+    checked: ['pose-lab-cloud-visual-red-build-contract'],
+    status: 'pending',
+    reason: `stale Firebase hosted visual truth evidence: commit ${evidence.commit || 'missing'} does not match current ${currentCommit()}`,
+    evidencePath: path.relative(projectRoot, evidencePath),
+  }, null, 2));
+  process.exit(0);
+}
+assert(evidence.senseSynthesis?.schema === 'pose-lab-sense-synthesis-v1', 'visual red-build evidence must include Sense Synthesis verdict');
 if (evidence.humanRedBuild) {
   assert(evidence.ok === false, 'human visual contradiction must keep Firebase visual truth red');
   assert(evidence.truthLedger?.human === false, 'human visual contradiction must mark human truth red');
@@ -83,6 +101,7 @@ if (evidence.humanRedBuild) {
   assert(evidence.ok === true, 'Firebase visual truth must be green before closing a visual red build');
   assert(evidence.truthLedger?.tposeStableIdle === true, 'Firebase visual truth must prove stable T-pose/idle saber placement');
   assert(evidence.truthLedger?.readyBoringFk === true, 'Firebase visual truth must prove Ready boring FK');
+  assert(evidence.truthLedger?.senseSynthesis === true, 'Firebase visual truth must prove Sense Synthesis green');
 }
 const tpose = evidence.captures?.find((capture) => capture.id === 'tpose');
 const ready = evidence.captures?.find((capture) => capture.id === 'ready');
@@ -90,6 +109,8 @@ assert(tpose?.evaluation?.checks?.acceptedHiltOracle === true, 'T-pose cloud cap
 assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'tposeWristRelationshipAccepted'), 'T-pose cloud capture must record wrist/saber visible relationship acceptance');
 assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'defaultSurfaceAccepted'), 'T-pose cloud capture must record default-surface visible acceptance');
 assert(Object.hasOwn(ready?.evaluation?.checks || {}, 'readyVisualRelationshipAccepted'), 'Ready cloud capture must record hand/hilt/blade visible relationship acceptance');
+assert(tpose?.senseSynthesis?.checks?.heldByHandRead === true, 'T-pose Sense Synthesis must say the weapon reads as hand-owned');
+assert(ready?.senseSynthesis?.checks?.heldByHandRead === true, 'Ready Sense Synthesis must say the weapon reads as hand-owned');
 assert(Object.hasOwn(ready?.cloudTelemetry?.visualFollow?.screenMetrics || {}, 'maxTipDropFromAppliedHiltPx'), 'Ready cloud capture must record blade tip drop from hilt');
 assert(evidence.captures?.find((capture) => capture.id === 'landing')?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Landing cloud capture must prove visible UI truth accepted');
 assert(tpose?.evaluation?.checks?.visibleUiTruthAccepted === true, 'T-pose cloud capture must prove visible UI truth accepted');

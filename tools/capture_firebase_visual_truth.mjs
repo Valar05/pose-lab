@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { chromium } from '@playwright/test';
+import { synthesizeCaptureSense, synthesizeEvidenceSense } from './pose_lab_sense_synthesis.mjs';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const outDir = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest');
@@ -215,6 +216,11 @@ function evaluateTpose({ routeSelected, routeAutoSelected, weapon, liveHilt }) {
       visibleUiTruthAccepted: reviewFailures.length === 0,
     },
   };
+}
+
+function visibleReadFromSense(sense) {
+  const terms = Array.isArray(sense?.vocabulary) && sense.vocabulary.length ? ` [${sense.vocabulary.join(', ')}]` : '';
+  return `${sense?.verdict || 'human-red'}: ${sense?.observedVisibleRelationship || 'missing Sense Synthesis read'}${terms}`;
 }
 
 function evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow, liveHilt }) {
@@ -459,8 +465,7 @@ for (const capture of captures) {
       ? evaluateTpose({ routeSelected, routeAutoSelected, weapon, liveHilt })
       : evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow, liveHilt });
   }
-  if (!evaluation.ok || error) failed = true;
-  captured.push({
+  const captureRecord = {
     id: capture.id,
     actor: 'meshyCharacter',
     clip: capture.clip,
@@ -474,9 +479,7 @@ for (const capture of captures) {
     error,
     expectedVisibleState: capture.expected,
     accepted: evaluation.ok && !error,
-    visibleRead: evaluation.ok && !error
-      ? `Hosted Firebase ${capture.id} cloud capture passes route, visibility, and weapon telemetry checks.`
-      : `Hosted Firebase ${capture.id} is red: ${[error, ...evaluation.failures].filter(Boolean).join('; ')}`,
+    visibleRead: '',
     evaluation,
     cloudTelemetry: {
       clipSwitch,
@@ -485,7 +488,21 @@ for (const capture of captures) {
       visualFollow,
       rotationProbe,
     },
-  });
+  };
+  captureRecord.senseSynthesis = synthesizeCaptureSense(captureRecord);
+  captureRecord.visibleRead = error
+    ? `human-red: ${capture.id} route/capture failed before Sense Synthesis could pass: ${error}`
+    : visibleReadFromSense(captureRecord.senseSynthesis);
+  if (captureRecord.senseSynthesis.verdict !== 'human-green') {
+    captureRecord.accepted = false;
+    captureRecord.evaluation.ok = false;
+    captureRecord.evaluation.failures = [
+      ...(captureRecord.evaluation.failures || []),
+      ...captureRecord.senseSynthesis.failures.map((failure) => `Sense Synthesis red: ${failure}`),
+    ];
+  }
+  if (!captureRecord.evaluation.ok || error) failed = true;
+  captured.push(captureRecord);
 }
 
 await browser.close();
@@ -516,6 +533,7 @@ const evidence = {
   humanRedBuild: humanRedBuildForCommit(currentCommit()),
   ok: !failed && !humanRedBuildForCommit(currentCommit()) && captured.length === captures.length && captured.every((capture) => capture.accepted === true),
   captures: captured,
+  senseSynthesis: null,
   truthLedger: {
     repo: true,
     hostedFirebase: true,
@@ -525,11 +543,24 @@ const evidence = {
     tposeStableIdle: captured.find((capture) => capture.id === 'tpose')?.accepted === true,
     readyBoringFk: captured.find((capture) => capture.id === 'ready')?.accepted === true,
     human: !humanRedBuildForCommit(currentCommit()),
+    senseSynthesis: false,
   },
 };
 
+evidence.senseSynthesis = synthesizeEvidenceSense(evidence);
+evidence.truthLedger.senseSynthesis = evidence.senseSynthesis.verdict === 'human-green';
+if (evidence.senseSynthesis.verdict !== 'human-green') evidence.ok = false;
+
 if (evidence.humanRedBuild) {
   failed = true;
+  for (const capture of evidence.captures) {
+    capture.accepted = false;
+    capture.evaluation.ok = false;
+    capture.evaluation.failures = [
+      ...(capture.evaluation.failures || []),
+      `Human red-build veto: ${(evidence.humanRedBuild.issues || []).join('; ')}`,
+    ];
+  }
   evidence.captures.push({
     id: 'human-red-build',
     actor: 'human-review',

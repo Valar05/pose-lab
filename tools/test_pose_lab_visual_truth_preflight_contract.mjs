@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync, execFileSync } from 'node:child_process';
+import { synthesizeCaptureSense, synthesizeEvidenceSense } from './pose_lab_sense_synthesis.mjs';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const toolPath = path.join(projectRoot, 'tools', 'pose_lab_visual_truth_preflight.mjs');
@@ -31,6 +32,7 @@ assert(selfService.includes('tools/pose_lab_visual_truth_preflight.mjs'), 'self-
 assert(wakeScript.includes('pose_lab_visual_truth_preflight.mjs'), 'browser wake wrapper must call the visual truth preflight');
 assert(captureScript.includes('autoLoadedMeshyFromColdUrl'), 'Firebase capture must record cold URL Meshy auto-load');
 assert(captureScript.includes('manualActorSelectionRequiredFalse'), 'Firebase capture must record that manual Meshy actor selection was not required');
+assert(captureScript.includes('synthesizeCaptureSense') && captureScript.includes('synthesizeEvidenceSense'), 'Firebase capture must write Sense Synthesis verdicts');
 assert(failureContract.includes('manual Meshy Character selection') && failureContract.includes('lying evidence/UI gate'), 'failure contract must block manual actor-load false greens and enforce gate-before-FK order');
 assert(firebaseDoc.includes('Manual Meshy Character selection is red') && firebaseDoc.includes('pose_lab_visual_truth_preflight.mjs'), 'Firebase doctrine must route through the visual truth preflight');
 assert(redLedger.includes('22081ceb305efe1e472fff841f72be84ff303fa3') && redLedger.includes('9e809fca6610cdacc5df7a18298c03824b447a75'), 'human red-build ledger must preserve the false-green branch commit and artifact commit');
@@ -112,6 +114,15 @@ const goodEvidence = {
     }),
   ],
 };
+for (const capture of goodEvidence.captures) {
+  capture.cloudTelemetry = capture.id === 'ready'
+    ? { visualFollow: { screenMetrics: { maxTipRightFromAppliedHiltPx: 101.6, maxTipDropFromAppliedHiltPx: 2.6 }, relativeDrift: {} } }
+    : {};
+  capture.senseSynthesis = synthesizeCaptureSense(capture);
+  capture.visibleRead = `${capture.senseSynthesis.verdict}: ${capture.senseSynthesis.observedVisibleRelationship}`;
+}
+goodEvidence.senseSynthesis = synthesizeEvidenceSense(goodEvidence);
+goodEvidence.truthLedger.senseSynthesis = goodEvidence.senseSynthesis.verdict === 'human-green';
 
 const missingManualProof = JSON.parse(JSON.stringify(goodEvidence));
 delete missingManualProof.captures[2].evaluation.checks.manualActorSelectionRequiredFalse;
@@ -120,6 +131,15 @@ fs.writeFileSync(missingManualPath, `${JSON.stringify(missingManualProof, null, 
 const missingManualResult = spawnSync('node', [toolPath, '--evidence', missingManualPath, '--json'], { cwd: projectRoot, encoding: 'utf8' });
 assert(missingManualResult.status !== 0, 'preflight must fail when manual Meshy actor-load proof is missing');
 assert(missingManualResult.stdout.includes('manualActorSelectionRequiredFalse'), 'preflight failure must name missing manual-load proof');
+
+const missingSense = JSON.parse(JSON.stringify(goodEvidence));
+delete missingSense.senseSynthesis;
+delete missingSense.captures[1].senseSynthesis;
+const missingSensePath = path.join(tempDir, 'missing-sense.json');
+fs.writeFileSync(missingSensePath, `${JSON.stringify(missingSense, null, 2)}\n`);
+const missingSenseResult = spawnSync('node', [toolPath, '--evidence', missingSensePath, '--json'], { cwd: projectRoot, encoding: 'utf8' });
+assert(missingSenseResult.status !== 0, 'preflight must fail when Sense Synthesis proof is missing');
+assert(missingSenseResult.stdout.includes('Sense Synthesis'), 'preflight failure must name missing Sense Synthesis proof');
 
 const currentRedEvidence = { ...goodEvidence, commit: '9e809fca6610cdacc5df7a18298c03824b447a75' };
 const currentRedPath = path.join(tempDir, 'current-red-veto.json');
