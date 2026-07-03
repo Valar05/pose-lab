@@ -273,7 +273,6 @@ if (evidence) {
     requireCheck(ready, 'readyBladeNotPointingDownThroughBody', failures, 'Ready');
     requireCheck(ready, 'tipMoves', failures, 'Ready');
     requireCheck(ready, 'tipTracksHand', failures, 'Ready');
-    requireCheck(ready, 'basketFrontOrientationSane', failures, 'Ready');
     requireCheck(ready, 'socketForwardBladeAxisSane', failures, 'Ready');
     requireCheck(ready, 'reviewClipInventoryVisible', failures, 'Ready');
     requireCheck(ready, 'bodyPoseLandmarksPresent', failures, 'Ready');

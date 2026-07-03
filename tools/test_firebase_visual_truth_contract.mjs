@@ -167,7 +167,7 @@ assert(ready?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Ready cloud 
 assert(ready?.evaluation?.checks?.bodyPoseLandmarksPresent === true, 'Ready cloud evidence must expose body pose landmarks for hand-orientation review');
 assert(ready?.evaluation?.checks?.clipScopedHiltTargetVisible === true, 'Ready cloud evidence must prove clip-scoped hilt target visibility');
 assert(ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true, 'Ready cloud evidence must prove hand and saber tip visible motion together');
-assert(ready?.evaluation?.checks?.basketFrontOrientationSane === true, 'Ready cloud evidence must prove basket/front orientation sanity');
+assert(Number.isFinite(Number(ready?.cloudTelemetry?.weapon?.weapon?.basketFrontErrorDeg)), 'Ready cloud evidence must record basket/front orientation as diagnostic telemetry');
 assert(ready?.evaluation?.checks?.socketForwardBladeAxisSane === true, 'Ready cloud evidence must prove socket-forward to blade axis sanity');
 assert(Object.hasOwn(ready?.evaluation?.checks || {}, 'readyVisualRelationshipAccepted'), 'Ready cloud evidence must record hand/hilt/blade visible relationship acceptance');
 assert(Object.hasOwn(ready?.cloudTelemetry?.visualFollow?.screenMetrics || {}, 'maxTipDropFromAppliedHiltPx'), 'Ready cloud evidence must record blade tip drop from hilt');

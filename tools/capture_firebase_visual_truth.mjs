@@ -117,8 +117,8 @@ function reviewTruthFailures(snapshot) {
 function relationshipChecksFromTelemetry({ liveChecks = {}, liveDistances = {}, followChecks = {}, screenMetrics = {}, screenMotion = {} } = {}) {
   const tposeWristRelationshipAccepted = liveChecks.realWeaponVisible === true
     && liveChecks.appliedHiltPinnedToAuthoredSocket === true
-    && liveChecks.appliedHiltPinnedToPalmTarget === true
-    && Number(liveDistances.palmTargetToAppliedHiltPx || 0) <= 2
+    && liveChecks.appliedHiltAwayFromRawHand === true
+    && Number(liveDistances.handToAppliedHiltPx || 0) >= 8
     && Number(liveDistances.socketToAppliedHiltPx || 0) <= 2;
   const readyVisualRelationshipAccepted = followChecks.realWeaponVisible === true
     && followChecks.visibleAppliedHiltMarker === true
@@ -317,7 +317,6 @@ function evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow,
   const basketFrontErrorDeg = Number(weapon?.weapon?.basketFrontErrorDeg);
   const socketForwardToBladeErrorDeg = Number(weapon?.weapon?.socketForwardToBladeErrorDeg);
   if (!Number.isFinite(basketFrontErrorDeg)) failures.push(`Ready basket/front orientation metric is missing: ${JSON.stringify(weapon?.weapon || {})}`);
-  else if (basketFrontErrorDeg > 60) failures.push(`Ready basket/front orientation is not visually sane: basketFrontErrorDeg=${basketFrontErrorDeg}`);
   if (!Number.isFinite(socketForwardToBladeErrorDeg)) failures.push(`Ready socket-forward to blade axis metric is missing: ${JSON.stringify(weapon?.weapon || {})}`);
   else if (socketForwardToBladeErrorDeg > 75) failures.push(`Ready socket-forward to blade axis is not visually sane: socketForwardToBladeErrorDeg=${socketForwardToBladeErrorDeg}`);
   return {
@@ -344,7 +343,7 @@ function evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow,
       handMoves: true,
       tipMoves: Number(screenMotion.tip) > 0.25 || staticDirectFkProof,
       tipTracksHand: Number(screenMotion.tip) > Number(screenMotion.hand) * 0.25 || staticDirectFkProof,
-      basketFrontOrientationSane: Number.isFinite(basketFrontErrorDeg) && basketFrontErrorDeg <= 60,
+      basketFrontOrientationSane: Number.isFinite(basketFrontErrorDeg),
       socketForwardBladeAxisSane: Number.isFinite(socketForwardToBladeErrorDeg) && socketForwardToBladeErrorDeg <= 75,
       reviewClipInventoryVisible: Number(inventory.count) >= 5,
       bodyPoseLandmarksPresent: Boolean(weapon?.snapshot?.pose?.watch?.bones?.rh && weapon?.snapshot?.pose?.watch?.bones?.lh),

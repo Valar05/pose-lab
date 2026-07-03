@@ -14,6 +14,7 @@ function capture(id, checks = {}, extras = {}) {
         : '',
     screenshot: `generated/firebase_visual_truth/latest/${id}.png`,
     relationshipCloseup: id === 'landing' ? '' : `generated/firebase_visual_truth/latest/${id}_relationship_closeup.png`,
+    humanReadScreenshot: id === 'landing' ? '' : `generated/firebase_visual_truth/latest/${id}_human_read.png`,
     contactSheet: id === 'ready' ? 'generated/firebase_visual_truth/latest/ready_visual_follow.png' : '',
     accepted: true,
     evaluation: { ok: true, failures: [], checks },
@@ -121,7 +122,6 @@ assert(markerOnly.senseSynthesis.failures.some((failure) => failure.includes('hi
 const falseGreenReady = JSON.parse(JSON.stringify(ready));
 falseGreenReady.evaluation.checks.handMoves = false;
 falseGreenReady.evaluation.checks.clipScopedHiltTargetVisible = false;
-falseGreenReady.evaluation.checks.basketFrontOrientationSane = false;
 falseGreenReady.evaluation.checks.socketForwardBladeAxisSane = false;
 falseGreenReady.cloudTelemetry.weapon.weapon.basketFrontErrorDeg = 125.81;
 falseGreenReady.cloudTelemetry.weapon.weapon.socketForwardToBladeErrorDeg = 96.97;

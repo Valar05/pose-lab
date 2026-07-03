@@ -40,7 +40,7 @@ assert(redLedger.includes('manual Meshy Character') && redLedger.includes('Scree
 assert(redLedger.includes('e6cc6635631c1f1a983932d01e3233f25640e933') && redLedger.includes('28678973256'), 'human red-build ledger must preserve the latest false-green strike');
 
 const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pose-lab-preflight-'));
-for (const name of ['landing.png', 'tpose.png', 'tpose_relationship_closeup.png', 'ready.png', 'ready_relationship_closeup.png', 'ready_visual_follow.png']) {
+for (const name of ['landing.png', 'tpose.png', 'tpose_relationship_closeup.png', 'tpose_human_read.png', 'ready.png', 'ready_relationship_closeup.png', 'ready_human_read.png', 'ready_visual_follow.png']) {
   fs.writeFileSync(path.join(tempDir, name), 'png-placeholder');
 }
 
@@ -55,6 +55,7 @@ const baseCapture = (id, checks = {}) => ({
   url: `https://pose-lab-visual-truth--fixture.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter${id === 'ready' ? '&clip=OneHandReady' : ''}`,
   screenshot: path.join(tempDir, `${id}.png`),
   relationshipCloseup: id === 'landing' ? '' : path.join(tempDir, `${id}_relationship_closeup.png`),
+  humanReadScreenshot: id === 'landing' ? '' : path.join(tempDir, `${id}_human_read.png`),
   contactSheet: id === 'ready' ? path.join(tempDir, 'ready_visual_follow.png') : '',
   accepted: true,
   evaluation: { ok: true, failures: [], checks },
@@ -84,6 +85,7 @@ const goodEvidence = {
     tposeStableIdle: true,
     readyBoringFk: true,
     human: true,
+    senseSynthesis: true,
   },
   captures: [
     baseCapture('landing', {
