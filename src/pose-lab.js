@@ -53,6 +53,24 @@ const REPO_WEAPON_TUNING = Object.fromEntries(Object.entries(ACTORS).map(([key, 
   weaponProxy: cloneProfileData(profile.weaponProxy || null),
   weaponAttachment: cloneProfileData(profile.weaponAttachment || null),
 }]));
+
+function clipScopedWeaponAttachmentConfig(baseConfig = {}, clip = null) {
+  const clipName = String(clip?.name || '');
+  const overrides = Array.isArray(baseConfig.clipOverrides) ? baseConfig.clipOverrides : [];
+  const match = overrides.find((entry) => {
+    if (!entry) return false;
+    if (entry.clipName && String(entry.clipName) === clipName) return true;
+    if (!entry.clipPattern) return false;
+    try {
+      return new RegExp(String(entry.clipPattern).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).test(clipName);
+    } catch (_err) {
+      return false;
+    }
+  });
+  if (!match) return baseConfig;
+  const { clipName: _clipName, clipPattern: _clipPattern, reason: _reason, ...values } = match;
+  return { ...baseConfig, ...values, clipOverrideReason: _reason || '' };
+}
 const STORAGE_KEY = 'pose-lab:last-state:v1';
 const CLEANUP_DRAFTS_KEY = 'pose-lab:cleanup-drafts:v1';
 const CRITIQUE_NOTES_KEY = 'pose-lab:critique-notes:v1';
@@ -4548,10 +4566,12 @@ class PoseActor {
     const weaponRoot = proxy?.model;
     const tip = proxy?.tipMarker;
     if (!weaponRoot || !config) return null;
+    const effectiveConfig = clipScopedWeaponAttachmentConfig(config, this.activeAction?._clip || null);
     weaponLiveTrace('updateWeaponAttachmentTransform BEFORE', {
       actorKey: this.key,
-      configId: weaponTraceObjectId(config),
-      configRotationDeg: config.rotationDeg || null,
+      configId: weaponTraceObjectId(effectiveConfig),
+      configRotationDeg: effectiveConfig.rotationDeg || null,
+      clipOverrideReason: effectiveConfig.clipOverrideReason || '',
       proxyAttachmentId: weaponTraceObjectId(proxy.attachmentConfig),
       actorAttachmentId: weaponTraceObjectId(this.info?.weaponAttachment),
       modelId: weaponTraceObjectId(weaponRoot),
@@ -4559,11 +4579,12 @@ class PoseActor {
       modelQuaternion: weaponTraceQuaternion(weaponRoot),
       displayRootQuaternion: weaponTraceQuaternion(proxy.displayRoot),
     });
-    applyWeaponAttachmentRuntimeRules(THREE, { actorModel: this.model, proxy, config });
+    applyWeaponAttachmentRuntimeRules(THREE, { actorModel: this.model, proxy, config: effectiveConfig });
     weaponLiveTrace('updateWeaponAttachmentTransform AFTER', {
       actorKey: this.key,
-      configId: weaponTraceObjectId(config),
-      configRotationDeg: config.rotationDeg || null,
+      configId: weaponTraceObjectId(effectiveConfig),
+      configRotationDeg: effectiveConfig.rotationDeg || null,
+      clipOverrideReason: effectiveConfig.clipOverrideReason || '',
       modelId: weaponTraceObjectId(weaponRoot),
       modelRotation: weaponTraceRotation(weaponRoot),
       modelQuaternion: weaponTraceQuaternion(weaponRoot),

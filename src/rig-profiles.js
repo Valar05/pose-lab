@@ -292,6 +292,13 @@ const BASE_RIG_PROFILES = {
       rotationDeg: [90, 0, -55.145],
       gripLocalPosition: [0.6535, -0.02302, -0.07317],
       tipLocalPosition: [-0.95561, 0.1368, 0],
+      clipOverrides: [
+        {
+          clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]',
+          position: [0.14, 0.09, 0],
+          reason: 'Ready-only hilt target moves the visible sabre grip from the wrist origin into the posed fist without changing the accepted T-pose/rest attachment.',
+        },
+      ],
       sourceBounds: {
         min: [-0.955609, -0.40501, -0.200351],
         max: [0.95101, 0.402693, 0.198555],
