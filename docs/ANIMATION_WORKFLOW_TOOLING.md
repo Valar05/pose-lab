@@ -82,7 +82,7 @@ Do not wire a candidate to `startupClip`, `SwordReady`, `RestProbe`, or `visible
 
 ## Generated Clip Churn Control
 
-Generated clips must be owned by exact `generationGroup` metadata, not broad string prefixes. Replacing `mapped-arms:player->meshyCharacter:FPS-VISUAL-IK` must not delete `mapped-arms:player->meshyCharacter:FPS-SWORD-UPPER`, the accepted rest calibration, native Meshy clips, or any sibling candidate. Auto-retarget specs must declare both `clipTag` and `originPrefix`, and the runtime rejects prefix-related generated groups at startup.
+Generated clips must be owned by exact `generationGroup` metadata, not broad string prefixes. Replacing `mapped-arms:player->meshyCharacter:FPS-VISUAL-IK` must not delete `mapped-arms:player->meshyCharacter:FPS-SWORD-UPPER`, the accepted rest calibration, native Meshy clips, or any sibling candidate. Auto-retarget specs must declare both `clipTag` and `originPrefix`, and the runtime rejects duplicate generated groups at startup. Parent/child-looking labels are allowed only because replacement uses exact `generationGroup` equality, not prefix deletion.
 
 Diagnostic workspaces are evidence producers only. They may write generated reports and review artifacts, but they must not write `src/rig-profiles.js`, accepted workflow state, startup defaults, aliases, weapon visibility, manual socket/landmark values, or production-shaped override snippets. Use `node tools/test_generated_clip_group_replacement_does_not_delete_siblings.mjs` and `node tools/test_diagnostics_cannot_write_production_surfaces.mjs` before another Meshy retarget pass.
 

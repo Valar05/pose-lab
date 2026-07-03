@@ -30,7 +30,7 @@ assert(originGroups.length === retargetBlocks.length && clipTags.length === reta
 assert(new Set(originGroups).size === originGroups.length, 'generated clip groups should be unique');
 for (let i = 0; i < originGroups.length; i += 1) {
   for (let j = i + 1; j < originGroups.length; j += 1) {
-    assert(!originGroups[i].startsWith(originGroups[j]) && !originGroups[j].startsWith(originGroups[i]), `generated clip groups must not be prefix-related: ${originGroups[i]} vs ${originGroups[j]}`);
+    assert(originGroups[i] !== originGroups[j], `generated clip groups must be unique: ${originGroups[i]} vs ${originGroups[j]}`);
   }
 }
 assert(!originGroups.includes('mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'), 'failed Visual-IK golden group should not remain promoted in generated-group tests');
@@ -38,6 +38,6 @@ assert(!originGroups.some((group) => /ROLL-[MP]\d+-FPS-VISUAL-IK/.test(group)), 
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({
-  checked: ['exact-generated-clip-group-replacement', 'no-prefix-sibling-deletion', 'auto-retarget-group-collision-guard'],
+  checked: ['exact-generated-clip-group-replacement', 'no-prefix-sibling-deletion', 'auto-retarget-group-uniqueness'],
   originGroups,
 }, null, 2));

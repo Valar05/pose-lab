@@ -41,9 +41,6 @@ function validateAutoRetargetGenerationGroups(profiles) {
       if (a.group === b.group) {
         throw new Error('duplicate generated clip group: ' + a.group);
       }
-      if (a.group.startsWith(b.group) || b.group.startsWith(a.group)) {
-        throw new Error('generated clip groups must not be prefix-related: ' + a.group + ' vs ' + b.group);
-      }
     }
   }
 }
