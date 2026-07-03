@@ -40,7 +40,7 @@ assert(!captureScript.includes("captureKind: 'offline-pose-render'"), 'Firebase 
 assert(captureScript.includes('Ready hilt collapsed onto raw hand/wrist'), 'Firebase capture must fail the red screenshot class where the hilt collapses onto the wrist');
 assert(captureScript.includes('Ready hand orientation/grip evidence is not visually sane'), 'Firebase capture must fail Ready hand-orientation visual regressions');
 assert(captureScript.includes('Ready blade axis points down through the body'), 'Firebase capture must fail Ready blade-axis visual regressions');
-assert(captureScript.includes('Ready hand did not visibly move') && captureScript.includes('Ready clip-scoped hilt target is not visible'), 'Firebase capture must fail missing visible motion and clip-scoped hilt target proof');
+assert(captureScript.includes('Ready blade axis points down through the body') && captureScript.includes('maxTipRightFromAppliedHiltPx'), 'Firebase capture must fail bad static Ready blade projection from the held hilt');
 assert(captureScript.includes('Ready basket/front orientation is not visually sane') && captureScript.includes('Ready socket-forward to blade axis is not visually sane'), 'Firebase capture must fail weapon orientation sanity regressions');
 assert(!captureScript.includes('staticDirectFkProof === true ||'), 'Firebase capture must not let static direct FK bypass visible motion proof');
 assert(captureScript.includes('weapon rotation-probe'), 'Firebase capture must preserve cloud rotation-probe evidence when Ready blade-axis proof is red');

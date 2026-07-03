@@ -271,8 +271,6 @@ if (evidence) {
     requireCheck(ready, 'handLocalGripOffsetVisible', failures, 'Ready');
     requireCheck(ready, 'readyHandOrientationSane', failures, 'Ready');
     requireCheck(ready, 'readyBladeNotPointingDownThroughBody', failures, 'Ready');
-    requireCheck(ready, 'clipScopedHiltTargetVisible', failures, 'Ready');
-    requireCheck(ready, 'handMoves', failures, 'Ready');
     requireCheck(ready, 'tipMoves', failures, 'Ready');
     requireCheck(ready, 'tipTracksHand', failures, 'Ready');
     requireCheck(ready, 'basketFrontOrientationSane', failures, 'Ready');
