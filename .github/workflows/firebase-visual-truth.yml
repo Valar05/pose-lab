@@ -1,0 +1,59 @@
+name: Firebase Visual Truth
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  firebase-visual-truth:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    env:
+      FIREBASE_PROJECT_ID: home-center-dclar
+      FIREBASE_HOSTING_SITE: pose-lab-visual-truth
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Build staged Pose Lab release
+        run: node tools/build_firebase_pose_lab_release.mjs
+
+      - name: Validate Firebase config
+        run: |
+          node --check tools/build_firebase_pose_lab_release.mjs
+          node tools/test_firebase_hosting_config.mjs
+          node tools/test_firebase_visual_truth_contract.mjs
+
+      - name: Install Firebase CLI and Playwright
+        run: |
+          npm init -y
+          npm install --save-dev firebase-tools
+          npm install --save-dev @playwright/test
+          npx playwright install --with-deps chromium
+
+      - name: Deploy Firebase preview channel
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HOME_CENTER_DCLAR }}'
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json"
+          npx firebase-tools hosting:channel:deploy "visual-truth-${GITHUB_RUN_ID}" --project "$FIREBASE_PROJECT_ID" --expires 30d --json > "$RUNNER_TEMP/firebase-deploy.json"
+          node -e "const fs=require('fs'); const p=process.env.RUNNER_TEMP + '/firebase-deploy.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); const site=process.env.FIREBASE_HOSTING_SITE; const url=j.result?.[site]?.url; if(!url) throw new Error('missing Firebase preview URL in '+p); fs.appendFileSync(process.env.GITHUB_ENV, 'HOSTED_URL='+url+'\\n'); console.log(url);"
+
+      - name: Capture hosted Pose Lab truth
+        env:
+          GITHUB_SHA: '${{ github.sha }}'
+        run: node tools/capture_firebase_visual_truth.mjs --hosted-url "$HOSTED_URL"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: firebase-visual-truth
+          path: generated/firebase_visual_truth/latest/

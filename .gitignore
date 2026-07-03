@@ -25,6 +25,9 @@ __pycache__/
 /generated/visual_qa/
 /generated/weapon_visual_follow/
 /generated/weapon_visual_repro_offline/
+/generated/firebase_hosting/
+/generated/firebase_visual_truth/artifacts/
+.firebase/
 
 # durable workflow records that may be intentionally promoted
 !/generated/workflow_state/

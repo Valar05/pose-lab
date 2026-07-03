@@ -109,6 +109,8 @@ Run `node tools/test_pose_lab_offline_render_contract.mjs` after changing pose o
 For bug routing, start with `node tools/pose_lab_route.mjs --kind weapon-fk --json` and follow `docs/POSE_LAB_EVIDENCE_PROTOCOL.md`. For Meshy saber FK, refresh `generated/visual_red_build/pose_lab_latest.json` with `node tools/refresh_pose_lab_offline_visual_evidence.mjs`; offline renderer evidence is the tier-one acceptance truth. Source-string tests are support-only for visual bugs; they do not close a red build.
 For recurring problems, prefer `node tools/pose_lab_case.mjs verify --case <case-id>` because it records the route, contracts, artifacts, and verdict together.
 
+If local browser capture, Android capture, or debug bridge capture is unreliable, use the Firebase hosted visual-truth lane in `docs/FIREBASE_VISUAL_TRUTH.md`. That lane deploys Pose Lab to Firebase Hosting and captures screenshots from GitHub-hosted Playwright instead of this device.
+
 ## Validation
 
 ```sh

@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "home-center-dclar"
+  },
+  "targets": {
+    "home-center-dclar": {
+      "hosting": {
+        "pose-lab-visual-truth": [
+          "pose-lab-visual-truth"
+        ]
+      }
+    }
+  }
+}
