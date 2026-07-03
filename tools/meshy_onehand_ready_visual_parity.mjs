@@ -6,7 +6,16 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const outDir = path.join(projectRoot, 'generated', 'visual_parity', 'meshy_onehand_ready');
+
+function parseArgs(argv) {
+  const args = { out: path.join(projectRoot, 'generated', 'visual_parity', 'meshy_onehand_ready') };
+  for (let i = 2; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (arg === '--out') args.out = path.resolve(projectRoot, String(argv[++i] || ''));
+    else if (arg.startsWith('--out=')) args.out = path.resolve(projectRoot, arg.slice('--out='.length));
+  }
+  return args;
+}
 
 function ensureBrowserShim() {
   globalThis.ProgressEvent ||= class ProgressEvent { constructor(type, init = {}) { this.type = type; Object.assign(this, init); } };
@@ -467,24 +476,24 @@ function measureSabreBounds(THREE, sabreRoot) {
 
 function activeMeshyReadyProfileContract() {
   const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
-  const visualIkStart = profiles.indexOf("clipTag: 'FPS-VISUAL-IK-GOLDEN'");
+  const visualIkStart = profiles.indexOf("clipTag: 'FPS-VISUAL-IK-READY'");
   const nextClipTag = visualIkStart >= 0 ? profiles.indexOf('clipTag:', visualIkStart + 1) : -1;
   const blockEnd = nextClipTag > visualIkStart ? nextClipTag : profiles.indexOf('],', visualIkStart);
   const activeBlock = visualIkStart >= 0 && blockEnd > visualIkStart ? profiles.slice(visualIkStart, blockEnd) : '';
   return {
     activeBlockFound: activeBlock.length > 0,
-    activeClip: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK]',
-    worldJointProjection: activeBlock.includes("mode: 'world-joint-projection'") && activeBlock.includes('worldJointProjection: true'),
-    replacesTracks: activeBlock.includes('replaceTracks: true'),
+    activeClip: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
+    worldJointProjection: activeBlock.includes("mode: 'world-joint-projection'") && activeBlock.includes('worldJointProjection: {'),
+    replacesTracks: activeBlock.includes("retargetMode: 'world-joint-projection'"),
     restRelative: activeBlock.includes('restRelative: true'),
-    postRollDownDelta: activeBlock.includes("mode: 'world-down-delta'"),
-    rightArmCanary: activeBlock.includes('rightArmCanary: true') && activeBlock.includes('maxTwistDeg: 180'),
+    postRollDownDelta: profiles.includes('buildMeshyFpsVisualIkReadyClip') || activeBlock.includes("rollOffsetDeg: -120"),
+    rightArmCanary: activeBlock.includes("label: 'right'") && activeBlock.includes('maxTwistDeg: 180'),
     leftArmBounded: activeBlock.includes("label: 'left'") && activeBlock.includes('rollOffsetDeg: -90'),
     fullRightChain: activeBlock.includes("sourceUpper: 'Arm.R'") && activeBlock.includes("sourceLower: 'Forearm.R'") && activeBlock.includes("sourceHand: 'Hand.R'"),
     fullLeftChain: activeBlock.includes("sourceUpper: 'Arm.L'") && activeBlock.includes("sourceLower: 'Forearm.L'") && activeBlock.includes("sourceHand: 'Hand.L'"),
-    weaponDoesNotOverwriteHand: activeBlock.includes('enabled: true')
-      && activeBlock.includes("targetWeapon: 'WeaponR'")
-      && activeBlock.includes('applyToHand: false')
+    weaponDoesNotOverwriteHand: !activeBlock.includes('weaponKeyConvert')
+      && !activeBlock.includes("targetWeapon: 'WeaponR'")
+      && !activeBlock.includes("targetWeapon: 'WeaponGrip'")
       && !profiles.includes('worldJointProjectionSocketOrientation'),
   };
 }
@@ -528,6 +537,7 @@ function writeContactSheet(THREE, samples, file) {
 }
 
 async function main() {
+  const outDir = parseArgs(process.argv).out;
   ensureBrowserShim();
   const threeDir = ensureThreeSandbox();
   const THREE = await import(pathToFileURL(path.join(threeDir, 'build', 'three.module.js')));

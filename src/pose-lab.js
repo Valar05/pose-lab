@@ -4,7 +4,7 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
 import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-189';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-190';
 import {
   applyWeaponAttachmentRuntimeRules,
   applyWeaponSocketRuntimeRules,
@@ -13,16 +13,21 @@ import {
   pinWeaponLocalPointToDisplay as pinWeaponLocalPointToDisplayRuntime,
   updateWeaponFallbackFromTipRuntime,
   weaponPlacementConfigSignature,
-} from './weapon-runtime-rules.mjs?v=pose-editor-189';
-import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-189';
+} from './weapon-runtime-rules.mjs?v=pose-editor-190';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-190';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
 
-const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget';
-const LAB_CACHE_TOKEN = 'pose-editor-189';
+const LAB_BUILD = 'meshy-fps-visual-ik-ready-review';
+const LAB_CACHE_TOKEN = 'pose-editor-190';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
+
+function isMeshyReadyReviewClipName(name = '') {
+  const value = String(name || '');
+  return value.includes('[FPS-SWORD-UPPER]') || value.includes('[FPS-VISUAL-IK R-120 L-90]');
+}
 
 function validateAutoRetargetGenerationGroups(profiles) {
   const groups = [];
@@ -6282,7 +6287,7 @@ class PoseLab {
       landmarks,
       snapshot: this.debugSnapshot(),
     };
-    const readyClipUsesScopedHiltTarget = String(clip?.name || '').includes('[FPS-SWORD-UPPER]');
+    const readyClipUsesScopedHiltTarget = isMeshyReadyReviewClipName(clip?.name || '');
     live.ok = Boolean(live.checks.sameLiveMarkerPoint
       && (live.checks.appliedHiltPinnedToAuthoredSocket || (readyClipUsesScopedHiltTarget && live.checks.appliedHiltAwayFromRawHand))
       && (live.checks.weaponGripHasSourceSocketLocal || live.checks.weaponGripHasHandLocal)
@@ -11607,7 +11612,7 @@ class PoseLab {
       visibleAppliedHiltMarker: screenMetrics.appliedHiltMarkerDrawn === true,
       imageDataUrl: sheet.width > 0 && sheet.height > 0,
     };
-    const readyClipUsesScopedHiltTarget = String(clip.name || '').includes('[FPS-SWORD-UPPER]');
+    const readyClipUsesScopedHiltTarget = isMeshyReadyReviewClipName(clip.name || '');
     const hiltAnchorSane = checks.appliedHiltPinnedToAuthoredSocket || (readyClipUsesScopedHiltTarget && checks.clipScopedHiltTargetVisible);
     const passed = checks.parentChain
       && checks.socketStableInHand

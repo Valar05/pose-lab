@@ -35,6 +35,7 @@ assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-
 assert(!profiles.includes('defaultRestClip') && !js.includes('applyDefaultModelRestClip') && !js.includes('this.applyDefaultModelRestClips();'), 'accepted CAL--120 RestProbe must remain a generated clip, not mutate actor modelRestPose');
 assert(!profiles.includes('...[-150') && !profiles.includes('FPS-REST-ARMS-CAL-120') && !profiles.includes('FPS-REST-ARMS-CAL-90') && !profiles.includes('FPS-REST-ARMS-CAL--90'), 'Meshy should not expose rejected positive or sweep hand-roll calibration clips after accepting CAL--120');
 assert(!profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy should not keep the failed golden OneHandReady generator as production truth');
+assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-READY'") && profiles.includes("clipSuffix: '-> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'Meshy should expose the non-GOLDEN Visual-IK Ready candidate for Firebase review');
 assert(profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy visible hilt placement must remain locked to the restored pre-FK baseline');
 assert(profiles.includes('modelLocalOffset: [0.00424, -0.0167, 0.01744]') && profiles.includes('gripLocalPosition: [0.67888, -0.07803, -0.06249]'), 'FPS manual weapon placement must remain locked as repository truth');
 assert(!profiles.includes('worldJointProjectionSocketOrientation') && !js.includes('handDeltaWorld') && !js.includes('restRelative.socketWorldQuaternion'), 'Meshy visual IK must not install special socket orientation policies; manual attachment should keep its local hand-to-blade angle');
@@ -43,7 +44,7 @@ for (const deferred of ['OneHandReadied -> meshyCharacter', 'OneHandAttack1 -> m
   assert(!profiles.includes(deferred), `Meshy should defer generated attack/readied clip: ${deferred}`);
 }
 assert(profiles.includes("boneRollCorrection: 'chain-up'"), 'Meshy should use chain-up bone-roll correction');
-assert(profiles.includes("mode: 'source-key-correction'") && profiles.includes('replaceTracks: false'), 'Meshy should use bounded IK correction without replacing authored source-key tracks');
+assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-READY'") && profiles.includes("mode: 'world-joint-projection'") && profiles.includes("rollOffsetDeg: -120") && profiles.includes("rollOffsetDeg: -90"), 'Meshy should use the measured world-joint Visual-IK Ready review candidate with accepted hand roll offsets');
 assert(profiles.includes("sourceRestClip: '0T-Pose'") && profiles.includes("targetRestProvider: 'skin-bind'"), 'Meshy should retarget from explicit source and target rest providers');
 assert(profiles.includes("{ from: 'Arm.R', to: 'RightArm', strength: 0.85 }"), 'Meshy should map source right upper arm to Meshy right upper arm');
 assert(profiles.includes("{ from: 'Forearm.R', to: 'RightForeArm', strength: 1.0 }"), 'Meshy should map source right forearm to Meshy right forearm');

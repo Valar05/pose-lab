@@ -16,14 +16,14 @@ Use `--run-checks` only when you want the case to execute its heavier verifier c
 If the problem does not have a case yet, route it first:
 
 ```sh
-node tools/pose_lab_route.mjs --kind weapon-fk --actor meshyCharacter --clip "OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]" --json
+node tools/pose_lab_route.mjs --kind weapon-fk --actor meshyCharacter --clip "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]" --json
 ```
 
 Change `--kind` to `cache-server`, `pose-retarget`, `ui-state`, `promotion`, or `live-visual` when the bug is not a weapon FK issue.
 
 ## Evidence Lanes
 
-- **Weapon / Meshy Sword:** Firebase hosted visual truth is tier-one. A green claim requires the `.github/workflows/firebase-visual-truth.yml` preview deploy, `generated/firebase_visual_truth/latest/visual_truth.json`, cloud screenshots for the human-review landing route, accepted T-pose/rest clip, and Ready clip, and hosted debug telemetry proving `truthLedger.landingUsable === true`, `truthLedger.tposeStableIdle === true`, `truthLedger.readyBoringFk === true`, `captures[ready].evaluation.checks.hiltAwayFromRawHand === true`, and `captures[ready].evaluation.checks.readyHandOrientationSane === true`. Local Playwright is allowed only as a controller pointed at a hosted Firebase HTTPS URL; it is not itself visual truth. Direct FK parent-chain telemetry is support evidence only; it cannot greenlight a screenshot where the Ready hand orientation or visible grip basis is wrong. Offline render, localhost capture, generated Firebase staging capture, debug bridge, and standalone `screencap` are diagnostic-only and cannot close Meshy saber acceptance.
+- **Weapon / Meshy Sword:** Firebase hosted visual truth is tier-one. A green claim requires the `.github/workflows/firebase-visual-truth.yml` preview deploy, `generated/firebase_visual_truth/latest/visual_truth.json`, cloud screenshots for the human-review landing route, accepted T-pose/rest clip, and the `OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]` Ready review clip, and hosted debug telemetry proving `truthLedger.landingUsable === true`, `truthLedger.tposeStableIdle === true`, `truthLedger.readyBoringFk === true`, `captures[ready].evaluation.checks.hiltAwayFromRawHand === true`, and `captures[ready].evaluation.checks.readyHandOrientationSane === true`. Local Playwright is allowed only as a controller pointed at a hosted Firebase HTTPS URL; it is not itself visual truth. Direct FK parent-chain telemetry is support evidence only; it cannot greenlight a screenshot where the Ready hand orientation or visible grip basis is wrong. Offline render, localhost capture, generated Firebase staging capture, debug bridge, and standalone `screencap` are diagnostic-only and cannot close Meshy saber acceptance.
 - **Cache / Server:** `tools/test_no_cache_server_contract.mjs`, `tmux ls`, and `curl -I` prove served build identity. Do this before reasoning about stale browser visuals.
 - **Pose / Retarget:** `tools/pose_lab_workflow_status.mjs` and the relevant retarget contract decide whether a candidate may affect accepted surfaces.
 - **UI State:** live browser evidence, visual QA, or debug snapshots may diagnose panel/control problems. They do not decide Meshy saber FK acceptance.

@@ -6,7 +6,7 @@ import { chromium } from '@playwright/test';
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const outDir = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest');
 const TPOSE_CLIP = '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]';
-const READY_CLIP = 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]';
+const READY_CLIP = 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]';
 const ACCEPTED_MESHY_HILT = [0.6535, -0.02302, -0.07317];
 const ACCEPTED_MESHY_ROTATION = [90, 0, -55.145];
 const HUMAN_RED_BUILDS_PATH = path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json');

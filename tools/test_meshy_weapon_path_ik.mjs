@@ -17,9 +17,10 @@ assert(profiles.includes("weaponAttachment: {") && profiles.includes("socketBone
 assert(profiles.includes('Saber handle-centered attachment for Meshy Character') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy Character should preserve the restored visible hilt saber candidate');
 assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy saber should rotate from the hand origin without shifting the socket');
 assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]') && profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]') && profiles.includes('rotationDeg: [90, 0, -55.145]'), 'Meshy saber should use the restored pre-FK rig-local socket position and manual rotation');
-assert(!profiles.includes("parentMode: 'hand-fk'") && !profiles.includes("syntheticSourceSocketBone: ''"), 'Meshy saber should not promote the failed direct pure FK profile path');
+assert(profiles.includes("parentMode: 'hand-fk'") && !profiles.includes("syntheticSourceSocketBone: ''"), 'Meshy saber should use the accepted boring direct hand-FK profile path');
 assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy FPS-SWORD-UPPER remains available as an unpromoted weapon diagnostic');
-assert(profiles.includes('weaponKeyConvert') && profiles.includes("targetWeapon: 'WeaponGrip'") && !profiles.includes("targetWeapon: 'WeaponR'"), 'restored Meshy FPS clips should drive WeaponGrip, not WeaponR');
+assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-READY'"), 'Meshy Visual-IK Ready should be available as an explicit review candidate');
+assert(!profiles.includes("targetWeapon: 'WeaponGrip'") && !profiles.includes("targetWeapon: 'WeaponR'"), 'Meshy Ready candidates must not animate WeaponGrip or WeaponR; boring FK owns weapon follow');
 assert(!profiles.includes("retargetMode: 'weapon-path-ik'"), 'Meshy active profile should not request the rejected weapon-path IK acceptance path');
 assert(!profiles.includes("clipTag: 'IB-MC'") && !profiles.includes("clipTag: 'RA-FULL'"), 'Meshy active profile should not generate rejected full-body/RA weapon clips');
 assert(!profiles.includes("pathMode: 'authored-diagonal-cut'"), 'the authored Scavenger fallback path should not remain in the active Meshy profile');

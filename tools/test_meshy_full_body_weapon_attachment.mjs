@@ -33,7 +33,7 @@ for (const metric of ['hiltToHandDistance', 'bladeLength', 'basketFrontErrorDeg'
   assert(js.includes(metric), `live weapon diagnostics should expose ${metric}`);
 }
 assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'") && profiles.includes("sourceHand: 'Hand.R'") && profiles.includes("leftHandBone: 'LeftHand'"), 'FPS-SWORD-UPPER should convert authored Hand.R/Weapon.R upper-body contribution and keep a Meshy socket');
-assert(profiles.includes("targetWeapon: 'WeaponGrip'") && profiles.includes("sourceWeapon: 'Weapon.R'"), 'restored pre-FK Ready path should drive WeaponGrip from authored FPS Weapon.R');
+assert(!profiles.includes("targetWeapon: 'WeaponGrip'") && !profiles.includes("targetWeapon: 'WeaponR'"), 'Ready path must not drive WeaponGrip or WeaponR from generated tracks; boring FK owns weapon follow');
 assert(!profiles.includes("{ from: 'mixamorigHips', to: 'Hips'"), 'rejected full-body hips mapping must not remain');
 assert(manifest.includes('meshy_french_revolution_sabre_runtime_glb') && manifest.includes('WeaponGrip'), 'asset manifest should document the Meshy sabre runtime socket');
 assert(manifest.includes('meshy_character_sheet_fps_sword_upper_clip_binding'), 'asset manifest should document the FPS sword upper-body Meshy clip binding');

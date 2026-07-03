@@ -7,7 +7,7 @@ const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'
 const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
 
-assert(js.includes("const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget'"), 'runtime build should identify the FPS sword upper-body pivot');
+assert(js.includes("const LAB_BUILD = 'meshy-fps-visual-ik-ready-review'"), 'runtime build should identify the Firebase Visual-IK Ready review pivot');
 assert(js.includes("canonicalBoneName(sourceName).replace(/^mixamorig/, '')"), 'chain-up basis should still normalize Mixamo prefixes without breaking FPS names');
 assert(js.includes("const customOriginPrefix = spec.originPrefix ||"), 'auto retarget specs should be able to preserve mapped-arms origin identity');
 assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }"), 'Meshy startup should use the accepted T-pose calibration until ready passes artifact review');
@@ -25,7 +25,7 @@ assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter'") &
 assert(profiles.includes("{ from: 'Arm.R', to: 'RightArm', strength: 0.85 }"), 'right upper arm should be converted from authored FPS Arm.R keys');
 assert(profiles.includes("{ from: 'Forearm.R', to: 'RightForeArm', strength: 1.0 }"), 'right forearm should be converted from authored FPS Forearm.R keys');
 assert(profiles.includes("{ from: 'Hand.R', to: 'RightHand', strength: 1.0 }"), 'right hand should be converted from authored FPS Hand.R keys');
-assert(profiles.includes("sourceWeapon: 'Weapon.R'") && profiles.includes("targetWeapon: 'WeaponGrip'") && !profiles.includes("targetWeapon: 'WeaponR'"), 'restored Meshy retarget should generate WeaponGrip tracks from FPS Weapon.R, not WeaponR tracks');
+assert(!profiles.includes("targetWeapon: 'WeaponGrip'") && !profiles.includes("targetWeapon: 'WeaponR'"), 'Meshy Ready retarget must not generate weapon tracks; boring FK owns WeaponGrip under RightHand');
 for (const rejected of ["sourceKey: 'orc'", "clipTag: 'IB-MC'", "standing_melee_attack_horizontal -> meshyCharacter", "mixamorigHips", "mixamorigRightUpLeg", "to: 'LeftFoot'", "to: 'RightFoot'", "to: 'Head'"]) {
   assert(!profiles.includes(rejected), `Meshy sword profile must not retain rejected full-body token: ${rejected}`);
 }

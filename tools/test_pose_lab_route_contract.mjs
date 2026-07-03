@@ -13,7 +13,7 @@ const raw = execFileSync('node', [
   '--actor',
   'meshyCharacter',
   '--clip',
-  'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]',
+  'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
   '--json',
 ], { cwd: projectRoot, encoding: 'utf8' });
 const route = JSON.parse(raw);

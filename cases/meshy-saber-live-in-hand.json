@@ -7,7 +7,7 @@
   "route": {
     "kind": "weapon-fk",
     "actor": "meshyCharacter",
-    "clip": "OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]",
+    "clip": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
     "mode": "standard",
     "query": {
       "weaponDebug": "1",
@@ -16,7 +16,7 @@
   },
   "expectedVisibleBehavior": [
     "The Firebase-hosted T-pose screenshot preserves the accepted stable saber baseline.",
-    "The Firebase-hosted Ready capture proves the real saber mesh follows boring FK with the hand.",
+    "The Firebase-hosted Visual-IK Ready capture proves the real saber mesh follows boring FK with the hand.",
     "A local/offline/debug marker near the wrist does not count as proof unless the hosted Firebase artifact also passes."
   ],
   "contracts": [

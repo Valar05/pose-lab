@@ -298,6 +298,11 @@ const BASE_RIG_PROFILES = {
           position: [0.14, 0.09, 0],
           reason: 'Ready-only hilt target moves the visible sabre grip from the wrist origin into the posed fist without changing the accepted T-pose/rest attachment.',
         },
+        {
+          clipPattern: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
+          position: [0.14, 0.09, 0],
+          reason: 'Review-only IK Ready uses the same ready hilt target as the red FPS-SWORD-UPPER candidate without changing the accepted T-pose/rest attachment.',
+        },
       ],
       sourceBounds: {
         min: [-0.955609, -0.40501, -0.200351],
@@ -313,6 +318,31 @@ const BASE_RIG_PROFILES = {
     ownClipOptions: { positionPolicy: 'hips', lockHipRotation: false, stripRootMotionXZ: true, translationScale: 0.01 },
     retargetOptions: { positionPolicy: 'hips', lockHipRotation: false, translationScale: 0.01 },
     autoRetargetSources: [
+      {
+        sourceKey: 'player',
+        retargetMode: 'world-joint-projection',
+        clipTag: 'FPS-VISUAL-IK-READY',
+        clipNames: [
+          'OneHandReady',
+        ],
+        channels: { translate: false, rotate: true, scale: false },
+        positionPolicy: 'none',
+        sourceRestClip: '0T-Pose',
+        targetRestProvider: 'skin-bind',
+        dropInitialRestKey: true,
+        preserveLoopSeam: false,
+        clipSuffix: '-> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
+        originPrefix: 'mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-READY',
+        worldJointProjection: {
+          enabled: true,
+          mode: 'world-joint-projection',
+          restRelative: true,
+          chains: [
+            { label: 'right', sourceUpper: 'Arm.R', sourceLower: 'Forearm.R', sourceHand: 'Hand.R', targetUpper: 'RightArm', targetLower: 'RightForeArm', targetHand: 'RightHand', sourceDownAxis: [0, -1, 0], targetDownAxis: [0, -1, 0], maxTwistDeg: 180, rollOffsetDeg: -120 },
+            { label: 'left', sourceUpper: 'Arm.L', sourceLower: 'Forearm.L', sourceHand: 'Hand.L', targetUpper: 'LeftArm', targetLower: 'LeftForeArm', targetHand: 'LeftHand', sourceDownAxis: [0, -1, 0], targetDownAxis: [0, -1, 0], maxTwistDeg: 180, rollOffsetDeg: -90 },
+          ],
+        },
+      },
       {
         sourceKey: 'player',
         retargetMode: 'world-joint-projection',
