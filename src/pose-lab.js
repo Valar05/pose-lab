@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
-import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
+import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-204';
 import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-204';
 import {
   applyWeaponAttachmentRuntimeRules,
@@ -15,9 +15,9 @@ import {
   weaponPlacementConfigSignature,
 } from './weapon-runtime-rules.mjs?v=pose-editor-204';
 import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-204';
-import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
-import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
-import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
+import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-204';
+import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-204';
+import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-204';
 
 const LAB_BUILD = 'meshy-fps-ready-probe-truth';
 const LAB_CACHE_TOKEN = 'pose-editor-204';
