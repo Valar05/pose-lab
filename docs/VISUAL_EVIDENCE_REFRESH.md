@@ -30,8 +30,11 @@ Refresh user-facing evidence without falling back to deprecated standalone `scre
 4. Refresh Firebase hosted visual truth. This is the accepted Meshy saber visual truth lane:
 
    ```sh
-   gh workflow run firebase-visual-truth.yml --repo Valar05/pose-lab --ref <branch>
+   node tools/pose_lab_cloud_visual_truth_self_service.mjs
+   node tools/pose_lab_cloud_visual_truth_self_service.mjs --push --wait --download --inspect
    ```
+
+   This uses `git push` plus the pull-request-triggered Firebase workflow. Do not depend on `gh workflow run` as the default path; it is a fallback only when GitHub CLI auth is already healthy.
 
    The evidence must record:
 

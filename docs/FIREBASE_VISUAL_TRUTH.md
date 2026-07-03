@@ -30,6 +30,25 @@ The build script stages only the static runtime surface needed by Pose Lab:
 
 Do not deploy the repository root directly.
 
+## Self-Service Cloud Loop
+
+Use the repo-owned self-service tool instead of one-off workflow dispatch commands:
+
+```sh
+node tools/pose_lab_cloud_visual_truth_self_service.mjs
+node tools/pose_lab_cloud_visual_truth_self_service.mjs --push --wait --download --inspect
+```
+
+The normal path is:
+
+1. commit the candidate;
+2. run the self-service tool with `--push`;
+3. let the pull-request-triggered Firebase workflow run;
+4. let the self-service tool poll, download, and inspect the artifact;
+5. visually inspect the printed PNG paths before reporting pass.
+
+Manual `gh workflow run firebase-visual-truth.yml` is a fallback only when GitHub CLI auth is known good. It is not the default path.
+
 ## Cleanup Doctrine
 
 Do not ask for approval to hand-delete temp/cache paths, and do not use ad hoc `rm` as the workflow. Cache cleanup must go through the allowlisted script:
