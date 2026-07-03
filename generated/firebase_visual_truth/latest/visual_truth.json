@@ -1,11 +1,11 @@
 {
   "schema": "pose-lab-firebase-visual-truth-v1",
-  "generatedAt": "2026-07-03T06:26:18.727Z",
+  "generatedAt": "2026-07-03T07:17:07.888Z",
   "projectId": "home-center-dclar",
   "hostingSite": "pose-lab-visual-truth",
-  "hostedUrl": "https://pose-lab-visual-truth--visual-truth-28642688436-esyxyew4.web.app/",
-  "commit": "66ef6e2432672c8d14d956029f6fcdc2a3f1f4f1",
-  "cacheToken": "pose-editor-192",
+  "hostedUrl": "https://pose-lab-visual-truth--visual-truth-28644885699-lkzvr452.web.app/",
+  "commit": "ae4d245ee58429b21ac014e3b0c008bf5d8aacdf",
+  "cacheToken": "pose-editor-194",
   "runtimeBuild": "meshy-fps-visual-ik-ready-review",
   "authority": "firebase-hosted-cloud-browser",
   "controller": {
@@ -21,43 +21,31 @@
     "androidScreencap": "not accepted",
     "debugBridge": "not accepted"
   },
-  "humanRedBuild": {
-    "commit": "66ef6e2432672c8d14d956029f6fcdc2a3f1f4f1",
-    "reportedAt": "2026-07-03",
-    "authority": "human-cloud-screenshot-review",
-    "url": "https://pose-lab-visual-truth--visual-truth-28642688436-esyxyew4.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&weaponDebug=1&cacheBust=firebase-visual-truth-landing-1783059951830",
-    "issues": [
-      "T-pose wrist/saber relationship is visibly mutated from the accepted default",
-      "Ready hand/hilt/blade relationship does not read as accepted visual IK/FK",
-      "cloud telemetry and marker checks passed while the visible relationship remained wrong",
-      "default visible surface is not an accepted good default"
-    ],
-    "notes": "Human screenshots from 2026-07-03 01:40 disprove the green telemetry result for run 28642688436."
-  },
+  "humanRedBuild": null,
   "ok": false,
   "captures": [
     {
       "id": "landing",
       "actor": "meshyCharacter",
       "clip": "",
-      "url": "https://pose-lab-visual-truth--visual-truth-28642688436-esyxyew4.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&weaponDebug=1&cacheBust=firebase-visual-truth-landing-1783059951830",
+      "url": "https://pose-lab-visual-truth--visual-truth-28644885699-lkzvr452.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&weaponDebug=1&cacheBust=firebase-visual-truth-landing-1783062973638",
       "screenshot": "generated/firebase_visual_truth/latest/landing.png",
       "contactSheet": "",
-      "loadMs": 17267,
+      "loadMs": 44525,
       "loadState": "lab meshy-fps-visual-ik-ready-review | selected Meshy Character clip=0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120] extra=1/1 startup=ok",
       "routeSelected": true,
       "error": "",
       "expectedVisibleState": "Human review landing route loads the hosted app with a usable Meshy clip inventory and visible runtime status.",
       "accepted": false,
-      "visibleRead": "Hosted Firebase landing/default is red: human screenshots show the default visible surface is not accepted.",
+      "visibleRead": "Hosted Firebase landing is red: landing route loaded too slowly for human review: 44525ms",
       "evaluation": {
         "ok": false,
         "failures": [
-          "default visible surface is not human-accepted"
+          "landing route loaded too slowly for human review: 44525ms"
         ],
         "checks": {
           "routeSelected": true,
-          "loadFastEnough": true,
+          "loadFastEnough": false,
           "reviewClipInventoryVisible": true,
           "defaultSurfaceAccepted": false
         }
@@ -70,7 +58,7 @@
           "weapon": {
             "schema": "pose-lab-live-weapon-state-v1",
             "build": "meshy-fps-visual-ik-ready-review",
-            "cacheToken": "pose-editor-192",
+            "cacheToken": "pose-editor-194",
             "actor": "meshyCharacter",
             "actorLabel": "Meshy Character",
             "clip": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
@@ -869,7 +857,7 @@
               "clientId": "",
               "pageUrl": "",
               "build": "meshy-fps-visual-ik-ready-review",
-              "cacheToken": "pose-editor-192",
+              "cacheToken": "pose-editor-194",
               "lastCommand": "",
               "lastCommandId": "",
               "lastError": "",
@@ -883,8 +871,8 @@
           "live": {
             "schema": "pose-lab-live-weapon-hilt-state-v1",
             "build": "meshy-fps-visual-ik-ready-review",
-            "cacheToken": "pose-editor-192",
-            "pageUrl": "https://pose-lab-visual-truth--visual-truth-28642688436-esyxyew4.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&weaponDebug=1&cacheBust=firebase-visual-truth-landing-1783059951830",
+            "cacheToken": "pose-editor-194",
+            "pageUrl": "https://pose-lab-visual-truth--visual-truth-28644885699-lkzvr452.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&weaponDebug=1&cacheBust=firebase-visual-truth-landing-1783062973638",
             "actor": "meshyCharacter",
             "actorLabel": "Meshy Character",
             "clip": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
@@ -897,7 +885,7 @@
               "clientId": "",
               "pageUrl": "",
               "build": "meshy-fps-visual-ik-ready-review",
-              "cacheToken": "pose-editor-192",
+              "cacheToken": "pose-editor-194",
               "connected": false,
               "syncAt": 0
             },
@@ -2010,7 +1998,7 @@
                 "clientId": "",
                 "pageUrl": "",
                 "build": "meshy-fps-visual-ik-ready-review",
-                "cacheToken": "pose-editor-192",
+                "cacheToken": "pose-editor-194",
                 "lastCommand": "",
                 "lastCommandId": "",
                 "lastError": "",
@@ -2027,20 +2015,20 @@
       "id": "tpose",
       "actor": "meshyCharacter",
       "clip": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
-      "url": "https://pose-lab-visual-truth--visual-truth-28642688436-esyxyew4.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&weaponDebug=1&cacheBust=firebase-visual-truth-landing-1783059951830",
+      "url": "https://pose-lab-visual-truth--visual-truth-28644885699-lkzvr452.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&clip=0T-Pose+-%3E+meshyCharacter+%5BFPS-REST-ARMS+roll+-120%5D&qaClip=0T-Pose+-%3E+meshyCharacter+%5BFPS-REST-ARMS+roll+-120%5D&weaponDebug=1&cacheBust=firebase-visual-truth-1783063022611",
       "screenshot": "generated/firebase_visual_truth/latest/tpose.png",
       "contactSheet": "",
-      "loadMs": 456,
+      "loadMs": 467,
       "loadState": "lab meshy-fps-visual-ik-ready-review | selected Meshy Character clip=0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120] extra=1/1 startup=ok",
       "routeSelected": true,
       "error": "",
       "expectedVisibleState": "Accepted stable T-pose/rest Meshy saber baseline remains visible on hosted Firebase page.",
       "accepted": false,
-      "visibleRead": "Hosted Firebase T-pose is red: the visible wrist/saber relationship is mutated from the accepted default.",
+      "visibleRead": "Hosted Firebase tpose is red: T-pose wrist/saber visible relationship is not human-accepted by this telemetry-only gate",
       "evaluation": {
         "ok": false,
         "failures": [
-          "T-pose wrist/saber visible relationship is not human-accepted"
+          "T-pose wrist/saber visible relationship is not human-accepted by this telemetry-only gate"
         ],
         "checks": {
           "routeSelected": true,
@@ -2051,8 +2039,8 @@
           "realWeaponVisible": true,
           "hiltPinnedToSocket": true,
           "finiteHiltDistances": true,
-          "defaultSurfaceAccepted": false,
-          "tposeWristRelationshipAccepted": false
+          "tposeWristRelationshipAccepted": false,
+          "defaultSurfaceAccepted": false
         }
       },
       "cloudTelemetry": {
@@ -2734,7 +2722,7 @@
               "clientId": "",
               "pageUrl": "",
               "build": "meshy-fps-visual-ik-ready-review",
-              "cacheToken": "pose-editor-192",
+              "cacheToken": "pose-editor-194",
               "lastCommand": "",
               "lastCommandId": "",
               "lastError": "",
@@ -2748,7 +2736,7 @@
           "weapon": {
             "schema": "pose-lab-live-weapon-state-v1",
             "build": "meshy-fps-visual-ik-ready-review",
-            "cacheToken": "pose-editor-192",
+            "cacheToken": "pose-editor-194",
             "actor": "meshyCharacter",
             "actorLabel": "Meshy Character",
             "clip": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
@@ -3547,7 +3535,7 @@
               "clientId": "",
               "pageUrl": "",
               "build": "meshy-fps-visual-ik-ready-review",
-              "cacheToken": "pose-editor-192",
+              "cacheToken": "pose-editor-194",
               "lastCommand": "",
               "lastCommandId": "",
               "lastError": "",
@@ -3561,8 +3549,8 @@
           "live": {
             "schema": "pose-lab-live-weapon-hilt-state-v1",
             "build": "meshy-fps-visual-ik-ready-review",
-            "cacheToken": "pose-editor-192",
-            "pageUrl": "https://pose-lab-visual-truth--visual-truth-28642688436-esyxyew4.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&weaponDebug=1&cacheBust=firebase-visual-truth-landing-1783059951830",
+            "cacheToken": "pose-editor-194",
+            "pageUrl": "https://pose-lab-visual-truth--visual-truth-28644885699-lkzvr452.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&weaponDebug=1&cacheBust=firebase-visual-truth-landing-1783062973638",
             "actor": "meshyCharacter",
             "actorLabel": "Meshy Character",
             "clip": "0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
@@ -3575,7 +3563,7 @@
               "clientId": "",
               "pageUrl": "",
               "build": "meshy-fps-visual-ik-ready-review",
-              "cacheToken": "pose-editor-192",
+              "cacheToken": "pose-editor-194",
               "connected": false,
               "syncAt": 0
             },
@@ -4688,7 +4676,7 @@
                 "clientId": "",
                 "pageUrl": "",
                 "build": "meshy-fps-visual-ik-ready-review",
-                "cacheToken": "pose-editor-192",
+                "cacheToken": "pose-editor-194",
                 "lastCommand": "",
                 "lastCommandId": "",
                 "lastError": "",
@@ -4705,20 +4693,20 @@
       "id": "ready",
       "actor": "meshyCharacter",
       "clip": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
-      "url": "https://pose-lab-visual-truth--visual-truth-28642688436-esyxyew4.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&weaponDebug=1&cacheBust=firebase-visual-truth-landing-1783059951830",
+      "url": "https://pose-lab-visual-truth--visual-truth-28644885699-lkzvr452.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&clip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&qaClip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&weaponDebug=1&cacheBust=firebase-visual-truth-1783063025404",
       "screenshot": "generated/firebase_visual_truth/latest/ready.png",
       "contactSheet": "generated/firebase_visual_truth/latest/ready_visual_follow.png",
-      "loadMs": 472,
+      "loadMs": 465,
       "loadState": "lab meshy-fps-visual-ik-ready-review | selected Meshy Character clip=OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90] extra=1/1 startup=ok",
       "routeSelected": true,
       "error": "",
       "expectedVisibleState": "Ready Meshy saber is visible and follows the hand through boring FK on hosted Firebase page.",
       "accepted": false,
-      "visibleRead": "Hosted Firebase Ready is red: the visible hand/hilt/blade relationship does not read as accepted visual IK/FK.",
+      "visibleRead": "Hosted Firebase ready is red: Ready hand/hilt/blade visible relationship is not human-accepted by this telemetry-only gate",
       "evaluation": {
         "ok": false,
         "failures": [
-          "Ready hand/hilt/blade visible relationship is not human-accepted"
+          "Ready hand/hilt/blade visible relationship is not human-accepted by this telemetry-only gate"
         ],
         "checks": {
           "routeSelected": true,
@@ -5422,7 +5410,7 @@
               "clientId": "",
               "pageUrl": "",
               "build": "meshy-fps-visual-ik-ready-review",
-              "cacheToken": "pose-editor-192",
+              "cacheToken": "pose-editor-194",
               "lastCommand": "",
               "lastCommandId": "",
               "lastError": "",
@@ -5436,11 +5424,11 @@
           "weapon": {
             "schema": "pose-lab-live-weapon-state-v1",
             "build": "meshy-fps-visual-ik-ready-review",
-            "cacheToken": "pose-editor-192",
+            "cacheToken": "pose-editor-194",
             "actor": "meshyCharacter",
             "actorLabel": "Meshy Character",
             "clip": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
-            "clipTime": 0.8000000000000002,
+            "clipTime": 0.7500000000000001,
             "socketBone": "WeaponGrip",
             "sourceSocketBone": "",
             "syntheticSourceSocketBone": "",
@@ -5456,43 +5444,43 @@
               "RightHand"
             ],
             "hilt": [
-              -0.39922,
-              1.4107,
-              0.23007
+              -0.39919,
+              1.41037,
+              0.22975
             ],
             "tip": [
-              0.19102,
-              1.99633,
-              -0.21178
+              -0.6646,
+              0.76746,
+              0.60871
             ],
-            "bladeLength": 0.94158,
+            "bladeLength": 0.79208,
             "bladeAxis": [
-              0.62686,
-              0.62197,
-              -0.46926
+              -0.33507,
+              -0.81168,
+              0.47844
             ],
             "socketForward": [
-              -0.11726,
-              -0.95843,
-              0.26012
+              -0.11593,
+              -0.95886,
+              0.25913
             ],
             "socketUp": [
-              0.56199,
-              0.15191,
-              0.81307
+              0.56188,
+              0.15183,
+              0.81316
             ],
             "basketFront": [
-              -0.56199,
-              -0.15191,
-              -0.81307
+              -0.56188,
+              -0.15183,
+              -0.81316
             ],
             "desiredBasketFront": [
-              -0.78979,
-              0.49123,
-              0.36733
+              -0.79019,
+              0.49088,
+              0.36692
             ],
-            "basketFrontErrorDeg": 85.95,
-            "socketForwardToBladeErrorDeg": 142.34,
+            "basketFrontErrorDeg": 85.92,
+            "socketForwardToBladeErrorDeg": 19.76,
             "hiltToHandDistance": 0.00058,
             "socketWorldScale": [
               0.01112,
@@ -5558,16 +5546,16 @@
                 1
               ],
               "sabreMeshLocalInDisplayRoot": [
-                0.3273,
-                -0.6268,
                 0.6268,
-                0.3273
+                0.3273,
+                -0.3273,
+                0.6268
               ],
               "sabreMeshWorld": [
-                -0.3546,
-                0.88363,
-                0.03588,
-                -0.3036
+                0.88335,
+                0.35536,
+                -0.3035,
+                -0.03615
               ]
             }
           },
@@ -5620,7 +5608,7 @@
               "origin": "offline-shared-meshy-ready-runtime",
               "sourceName": "OneHandReady",
               "duration": 1.20833333209157,
-              "time": 0.8000000000000002,
+              "time": 0.7500000000000001,
               "paused": false
             },
             "clipInventory": {
@@ -5681,14 +5669,14 @@
                     "z": 0.07323
                   },
                   "lh": {
-                    "x": 0.29827,
-                    "y": 1.40558,
-                    "z": 0.30736
+                    "x": 0.29747,
+                    "y": 1.40685,
+                    "z": 0.30681
                   },
                   "rh": {
-                    "x": -0.39934,
-                    "y": 1.41034,
-                    "z": 0.22963
+                    "x": -0.3993,
+                    "y": 1.41002,
+                    "z": 0.22931
                   },
                   "hd": {
                     "x": 0,
@@ -5967,10 +5955,10 @@
                     0
                   ],
                   "quaternion": [
-                    -0.01377,
-                    0.58556,
-                    0.34005,
-                    0.73573
+                    -0.01495,
+                    0.58553,
+                    0.33992,
+                    0.73579
                   ],
                   "scale": [
                     1,
@@ -5987,10 +5975,10 @@
                     0
                   ],
                   "quaternion": [
-                    -0.74774,
-                    -0.01208,
-                    0.24383,
-                    0.61749
+                    -0.74973,
+                    -0.01187,
+                    0.24233,
+                    0.61567
                   ],
                   "scale": [
                     1,
@@ -6007,10 +5995,10 @@
                     -0.00001
                   ],
                   "quaternion": [
-                    -0.06215,
-                    -0.38587,
-                    0.14394,
-                    0.90913
+                    -0.06125,
+                    -0.38017,
+                    0.14433,
+                    0.91153
                   ],
                   "scale": [
                     1,
@@ -6047,10 +6035,10 @@
                     0
                   ],
                   "quaternion": [
-                    -0.16685,
-                    0.62729,
-                    0.18477,
-                    -0.73792
+                    -0.16761,
+                    0.62728,
+                    0.18442,
+                    -0.73785
                   ],
                   "scale": [
                     1,
@@ -6067,10 +6055,10 @@
                     0
                   ],
                   "quaternion": [
-                    -0.81824,
-                    0.02242,
-                    -0.08384,
-                    0.56829
+                    -0.81845,
+                    0.02234,
+                    -0.0846,
+                    0.56788
                   ],
                   "scale": [
                     1,
@@ -6235,7 +6223,7 @@
               "clientId": "",
               "pageUrl": "",
               "build": "meshy-fps-visual-ik-ready-review",
-              "cacheToken": "pose-editor-192",
+              "cacheToken": "pose-editor-194",
               "lastCommand": "",
               "lastCommandId": "",
               "lastError": "",
@@ -6249,12 +6237,12 @@
           "live": {
             "schema": "pose-lab-live-weapon-hilt-state-v1",
             "build": "meshy-fps-visual-ik-ready-review",
-            "cacheToken": "pose-editor-192",
-            "pageUrl": "https://pose-lab-visual-truth--visual-truth-28642688436-esyxyew4.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&weaponDebug=1&cacheBust=firebase-visual-truth-landing-1783059951830",
+            "cacheToken": "pose-editor-194",
+            "pageUrl": "https://pose-lab-visual-truth--visual-truth-28644885699-lkzvr452.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&weaponDebug=1&cacheBust=firebase-visual-truth-landing-1783062973638",
             "actor": "meshyCharacter",
             "actorLabel": "Meshy Character",
             "clip": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
-            "clipTime": 0.85,
+            "clipTime": 0.8,
             "viewMode": "orbit",
             "activePanel": "clips",
             "debugBridge": {
@@ -6263,7 +6251,7 @@
               "clientId": "",
               "pageUrl": "",
               "build": "meshy-fps-visual-ik-ready-review",
-              "cacheToken": "pose-editor-192",
+              "cacheToken": "pose-editor-194",
               "connected": false,
               "syncAt": 0
             },
@@ -6276,115 +6264,115 @@
             },
             "world": {
               "hand": [
-                -0.39939,
-                1.41089,
-                0.23016
+                -0.39934,
+                1.41034,
+                0.22963
               ],
               "socketHandBaseline": [
-                -0.39928,
-                1.41124,
-                0.2306
+                -0.39922,
+                1.4107,
+                0.23007
               ],
               "palmTarget": [
-                -0.39829,
-                1.41079,
-                0.22989
+                -0.39824,
+                1.41025,
+                0.22936
               ],
               "socket": [
-                -0.39928,
-                1.41124,
-                0.2306
+                -0.39922,
+                1.4107,
+                0.23007
               ],
               "appliedHilt": [
-                -0.21565,
-                1.38843,
-                0.23096
+                -0.21555,
+                1.3883,
+                0.23036
               ],
               "tip": [
-                0.19237,
-                1.99478,
-                -0.21214
+                -0.66555,
+                0.76854,
+                0.60967
               ],
               "fallbackHilt": [
-                -0.39928,
-                1.41124,
-                0.2306
+                -0.39922,
+                1.4107,
+                0.23007
               ],
               "fallbackBlade": [
-                -0.10345,
-                1.70301,
-                0.00923
+                -0.53238,
+                1.08962,
+                0.41987
               ],
               "modelCenter": [
-                -0.04818,
-                1.61506,
-                0.02582
+                -0.42537,
+                1.14936,
+                0.37309
               ]
             },
             "screen": {
               "hand": {
-                "x": 567.85,
-                "y": 393.48,
+                "x": 567.87,
+                "y": 393.57,
                 "z": 0.9687,
                 "inCanvas": true
               },
               "socketHandBaseline": {
-                "x": 567.86,
-                "y": 393.43,
+                "x": 567.88,
+                "y": 393.51,
                 "z": 0.9687,
                 "inCanvas": true
               },
               "palmTarget": {
-                "x": 568.05,
-                "y": 393.49,
+                "x": 568.07,
+                "y": 393.57,
                 "z": 0.9687,
                 "inCanvas": true
               },
               "socket": {
-                "x": 567.86,
-                "y": 393.43,
+                "x": 567.88,
+                "y": 393.51,
                 "z": 0.9687,
                 "inCanvas": true
               },
               "appliedHilt": {
-                "x": 601.06,
-                "y": 397.52,
+                "x": 601.09,
+                "y": 397.53,
                 "z": 0.9687,
                 "inCanvas": true
               },
               "tip": {
-                "x": 672.95,
-                "y": 284.25,
-                "z": 0.9704,
+                "x": 514.42,
+                "y": 523.2,
+                "z": 0.9672,
                 "inCanvas": true
               },
               "fallbackHilt": {
-                "x": 567.86,
-                "y": 393.43,
+                "x": 567.88,
+                "y": 393.51,
                 "z": 0.9687,
                 "inCanvas": true
               },
               "fallbackBlade": {
-                "x": 621.81,
-                "y": 337.38,
-                "z": 0.9696,
+                "x": 541.73,
+                "y": 456.94,
+                "z": 0.968,
                 "inCanvas": true
               },
               "modelCenter": {
-                "x": 631.53,
-                "y": 353.12,
-                "z": 0.9696,
+                "x": 561.95,
+                "y": 444.56,
+                "z": 0.9682,
                 "inCanvas": true
               }
             },
             "domMarker": {
               "visible": true,
               "inCanvas": "true",
-              "x": 601.06,
-              "y": 397.52,
+              "x": 601.09,
+              "y": 397.53,
               "z": 0.9687,
-              "cssLeft": "601.063px",
-              "cssTop": "397.524px"
+              "cssLeft": "601.085px",
+              "cssTop": "397.532px"
             },
             "distances": {
               "handToSocket": 0.00058,
@@ -6400,10 +6388,10 @@
               "socketToAppliedHiltPx": 33.45,
               "handToAppliedHiltPx": 33.46,
               "handBaselineToAppliedHiltPx": 33.45,
-              "palmTargetToAppliedHiltPx": 33.26,
+              "palmTargetToAppliedHiltPx": 33.25,
               "fallbackHiltToAppliedHiltPx": 33.45,
               "socketToFallbackHiltPx": 0,
-              "domMarkerToAppliedHiltPx": 0
+              "domMarkerToAppliedHiltPx": 0.01
             },
             "checks": {
               "sameLiveMarkerPoint": true,
@@ -6473,15 +6461,15 @@
                   1
                 ],
                 "modelInDisplay": [
-                  0.3084,
+                  -0.0284,
                   0.05525,
-                  -0.26094
+                  0.26094
                 ],
                 "modelQuaternionInDisplay": [
-                  -0.3273,
                   0.6268,
-                  -0.6268,
-                  -0.3273
+                  0.3273,
+                  -0.3273,
+                  0.6268
                 ]
               },
               "thresholds": {
@@ -6535,90 +6523,90 @@
               "savedTuning": null,
               "world": {
                 "hand": [
-                  -0.39939,
-                  1.41089,
-                  0.23016
+                  -0.39934,
+                  1.41034,
+                  0.22963
                 ],
                 "socketHandBaseline": [
-                  -0.39928,
-                  1.41124,
-                  0.2306
+                  -0.39922,
+                  1.4107,
+                  0.23007
                 ],
                 "palmTarget": [
-                  -0.39829,
-                  1.41079,
-                  0.22989
+                  -0.39824,
+                  1.41025,
+                  0.22936
                 ],
                 "socket": [
-                  -0.39928,
-                  1.41124,
-                  0.2306
+                  -0.39922,
+                  1.4107,
+                  0.23007
                 ],
                 "configuredGrip": [
-                  -0.21565,
-                  1.38843,
-                  0.23096
+                  -0.21555,
+                  1.3883,
+                  0.23036
                 ],
                 "appliedHilt": [
-                  -0.21565,
-                  1.38843,
-                  0.23096
+                  -0.21555,
+                  1.3883,
+                  0.23036
                 ],
                 "configuredTip": [
-                  0.19237,
-                  1.99478,
-                  -0.21214
+                  -0.66555,
+                  0.76854,
+                  0.60967
                 ],
                 "savedGrip": null,
                 "savedTip": null,
                 "modelCenter": [
-                  -0.04818,
-                  1.61506,
-                  0.02582
+                  -0.42537,
+                  1.14936,
+                  0.37309
                 ]
               },
               "screen": {
                 "hand": {
-                  "x": 567.85,
-                  "y": 393.48,
+                  "x": 567.87,
+                  "y": 393.57,
                   "z": 0.9687
                 },
                 "socketHandBaseline": {
-                  "x": 567.86,
-                  "y": 393.43,
+                  "x": 567.88,
+                  "y": 393.51,
                   "z": 0.9687
                 },
                 "palmTarget": {
-                  "x": 568.05,
-                  "y": 393.49,
+                  "x": 568.07,
+                  "y": 393.57,
                   "z": 0.9687
                 },
                 "socket": {
-                  "x": 567.86,
-                  "y": 393.43,
+                  "x": 567.88,
+                  "y": 393.51,
                   "z": 0.9687
                 },
                 "configuredGrip": {
-                  "x": 601.06,
-                  "y": 397.52,
+                  "x": 601.09,
+                  "y": 397.53,
                   "z": 0.9687
                 },
                 "appliedHilt": {
-                  "x": 601.06,
-                  "y": 397.52,
+                  "x": 601.09,
+                  "y": 397.53,
                   "z": 0.9687
                 },
                 "configuredTip": {
-                  "x": 672.95,
-                  "y": 284.25,
-                  "z": 0.9704
+                  "x": 514.42,
+                  "y": 523.2,
+                  "z": 0.9672
                 },
                 "savedGrip": null,
                 "savedTip": null,
                 "modelCenter": {
-                  "x": 631.53,
-                  "y": 353.12,
-                  "z": 0.9696
+                  "x": 561.95,
+                  "y": 444.56,
+                  "z": 0.9682
                 }
               },
               "distances": {
@@ -6639,7 +6627,7 @@
                 "handToConfiguredGripPx": 33.46,
                 "handToAppliedHiltPx": 33.46,
                 "handBaselineToAppliedHiltPx": 33.45,
-                "palmTargetToAppliedHiltPx": 33.26,
+                "palmTargetToAppliedHiltPx": 33.25,
                 "socketToAppliedHiltPx": 33.45,
                 "handToSavedGripPx": null
               },
@@ -6694,15 +6682,15 @@
                     1
                   ],
                   "modelInDisplay": [
-                    0.3084,
+                    -0.0284,
                     0.05525,
-                    -0.26094
+                    0.26094
                   ],
                   "modelQuaternionInDisplay": [
-                    -0.3273,
                     0.6268,
-                    -0.6268,
-                    -0.3273
+                    0.3273,
+                    -0.3273,
+                    0.6268
                   ]
                 },
                 "thresholds": {
@@ -6761,7 +6749,7 @@
                 "origin": "offline-shared-meshy-ready-runtime",
                 "sourceName": "OneHandReady",
                 "duration": 1.20833333209157,
-                "time": 0.8500000000000002,
+                "time": 0.8000000000000002,
                 "paused": false
               },
               "clipInventory": {
@@ -6822,14 +6810,14 @@
                       "z": 0.07323
                     },
                     "lh": {
-                      "x": 0.29908,
-                      "y": 1.40425,
-                      "z": 0.30792
+                      "x": 0.29827,
+                      "y": 1.40558,
+                      "z": 0.30736
                     },
                     "rh": {
-                      "x": -0.39939,
-                      "y": 1.41089,
-                      "z": 0.23016
+                      "x": -0.39934,
+                      "y": 1.41034,
+                      "z": 0.22963
                     },
                     "hd": {
                       "x": 0,
@@ -7108,10 +7096,10 @@
                       0
                     ],
                     "quaternion": [
-                      -0.01255,
-                      0.58558,
-                      0.3402,
-                      0.73566
+                      -0.01377,
+                      0.58556,
+                      0.34005,
+                      0.73573
                     ],
                     "scale": [
                       1,
@@ -7128,10 +7116,10 @@
                       0
                     ],
                     "quaternion": [
-                      -0.74567,
-                      -0.01229,
-                      0.24538,
-                      0.61936
+                      -0.74774,
+                      -0.01208,
+                      0.24383,
+                      0.61749
                     ],
                     "scale": [
                       1,
@@ -7148,10 +7136,10 @@
                       -0.00001
                     ],
                     "quaternion": [
-                      -0.0631,
-                      -0.39186,
-                      0.14353,
-                      0.90656
+                      -0.06215,
+                      -0.38587,
+                      0.14394,
+                      0.90913
                     ],
                     "scale": [
                       1,
@@ -7188,10 +7176,10 @@
                       0
                     ],
                     "quaternion": [
-                      -0.16558,
-                      0.6273,
-                      0.18536,
-                      -0.73805
+                      -0.16685,
+                      0.62729,
+                      0.18477,
+                      -0.73792
                     ],
                     "scale": [
                       1,
@@ -7208,10 +7196,10 @@
                       0
                     ],
                     "quaternion": [
-                      -0.81789,
-                      0.02257,
-                      -0.08257,
-                      0.56898
+                      -0.81824,
+                      0.02242,
+                      -0.08384,
+                      0.56829
                     ],
                     "scale": [
                       1,
@@ -7376,7 +7364,7 @@
                 "clientId": "",
                 "pageUrl": "",
                 "build": "meshy-fps-visual-ik-ready-review",
-                "cacheToken": "pose-editor-192",
+                "cacheToken": "pose-editor-194",
                 "lastCommand": "",
                 "lastCommandId": "",
                 "lastError": "",
@@ -7391,7 +7379,7 @@
           "command": "weapon-visual-follow",
           "schema": "pose-lab-live-weapon-visual-follow-v1",
           "build": "meshy-fps-visual-ik-ready-review",
-          "cacheToken": "pose-editor-192",
+          "cacheToken": "pose-editor-194",
           "actor": "meshyCharacter",
           "actorLabel": "Meshy Character",
           "clip": "OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]",
@@ -7420,15 +7408,15 @@
             "handBaseline": 0.22,
             "palmTarget": 0.22,
             "socket": 0.22,
-            "model": 0.34,
-            "tip": 0.88
+            "model": 0.46,
+            "tip": 1.06
           },
           "screenMetrics": {
             "maxHandToSocketPx": 0.02,
             "maxHandBaselineToSocketPx": 0,
             "maxPalmTargetToSocketPx": 0.2,
-            "minSocketToTipPx": 38.99,
-            "maxModelToTipPx": 21.16,
+            "minSocketToTipPx": 36.95,
+            "maxModelToTipPx": 24.15,
             "maxHandToConfiguredGripPx": 33.49,
             "maxHandToAppliedHiltPx": 33.49,
             "maxHandBaselineToAppliedHiltPx": 33.48,
@@ -7501,14 +7489,14 @@
                 0.23478
               ],
               "model": [
-                -0.04597,
-                1.60992,
-                0.02823
+                -0.43047,
+                1.15733,
+                0.3806
               ],
               "tip": [
-                0.20302,
-                1.98233,
-                -0.21493
+                -0.67946,
+                0.78492,
+                0.62375
               ],
               "socketInHand": [
                 -0.02012,
@@ -7538,15 +7526,15 @@
                 1
               ],
               "modelInDisplay": [
-                0.3084,
+                -0.0284,
                 0.05525,
-                -0.26094
+                0.26094
               ],
               "modelQuaternionInDisplay": [
-                -0.3273,
                 0.6268,
-                -0.6268,
-                -0.3273
+                0.3273,
+                -0.3273,
+                0.6268
               ],
               "screen": {
                 "hand": {
@@ -7570,14 +7558,14 @@
                   "z": 0.9687
                 },
                 "model": {
-                  "x": 157.98,
-                  "y": 94.42,
-                  "z": 0.9696
+                  "x": 140.22,
+                  "y": 118.23,
+                  "z": 0.9681
                 },
                 "tip": {
-                  "x": 168.69,
-                  "y": 76.37,
-                  "z": 0.9705
+                  "x": 127.85,
+                  "y": 138.89,
+                  "z": 0.9671
                 },
                 "appliedHilt": {
                   "x": 150.22,
@@ -7677,14 +7665,14 @@
                 0.23324
               ],
               "model": [
-                -0.04726,
-                1.61166,
-                0.02748
+                -0.42856,
+                1.15477,
+                0.37777
               ],
               "tip": [
-                0.19912,
-                1.98693,
-                -0.21392
+                -0.67495,
+                0.7795,
+                0.61917
               ],
               "socketInHand": [
                 -0.02012,
@@ -7714,15 +7702,15 @@
                 1
               ],
               "modelInDisplay": [
-                0.3084,
+                -0.0284,
                 0.05525,
-                -0.26094
+                0.26094
               ],
               "modelQuaternionInDisplay": [
-                -0.3273,
                 0.6268,
-                -0.6268,
-                -0.3273
+                0.3273,
+                -0.3273,
+                0.6268
               ],
               "screen": {
                 "hand": {
@@ -7746,14 +7734,14 @@
                   "z": 0.9687
                 },
                 "model": {
-                  "x": 157.92,
-                  "y": 94.33,
-                  "z": 0.9696
+                  "x": 140.32,
+                  "y": 118.33,
+                  "z": 0.9682
                 },
                 "tip": {
-                  "x": 168.52,
-                  "y": 76.16,
-                  "z": 0.9705
+                  "x": 128.1,
+                  "y": 139.1,
+                  "z": 0.9672
                 },
                 "appliedHilt": {
                   "x": 150.24,
@@ -7853,14 +7841,14 @@
                 0.2307
               ],
               "model": [
-                -0.04942,
-                1.61455,
-                0.02627
+                -0.42537,
+                1.15062,
+                0.37307
               ],
               "tip": [
-                0.19263,
-                1.99449,
-                -0.21221
+                -0.66741,
+                0.77068,
+                0.61155
               ],
               "socketInHand": [
                 -0.02012,
@@ -7890,15 +7878,15 @@
                 1
               ],
               "modelInDisplay": [
-                0.3084,
+                -0.0284,
                 0.05525,
-                -0.26094
+                0.26094
               ],
               "modelQuaternionInDisplay": [
-                -0.3273,
                 0.6268,
-                -0.6268,
-                -0.3273
+                0.3273,
+                -0.3273,
+                0.6268
               ],
               "screen": {
                 "hand": {
@@ -7922,14 +7910,14 @@
                   "z": 0.9687
                 },
                 "model": {
-                  "x": 157.83,
-                  "y": 94.19,
-                  "z": 0.9696
+                  "x": 140.49,
+                  "y": 118.49,
+                  "z": 0.9682
                 },
                 "tip": {
-                  "x": 168.25,
-                  "y": 75.81,
-                  "z": 0.9704
+                  "x": 128.5,
+                  "y": 139.44,
+                  "z": 0.9672
                 },
                 "appliedHilt": {
                   "x": 150.26,
@@ -8029,14 +8017,14 @@
                 0.2297
               ],
               "model": [
-                -0.05026,
-                1.61567,
-                0.02581
+                -0.42411,
+                1.14903,
+                0.37124
               ],
               "tip": [
-                0.19008,
-                1.9974,
-                -0.21152
+                -0.66446,
+                0.7673,
+                0.60857
               ],
               "socketInHand": [
                 -0.02012,
@@ -8066,15 +8054,15 @@
                 1
               ],
               "modelInDisplay": [
-                0.3084,
+                -0.0284,
                 0.05525,
-                -0.26094
+                0.26094
               ],
               "modelQuaternionInDisplay": [
-                -0.3273,
                 0.6268,
-                -0.6268,
-                -0.3273
+                0.3273,
+                -0.3273,
+                0.6268
               ],
               "screen": {
                 "hand": {
@@ -8098,14 +8086,14 @@
                   "z": 0.9687
                 },
                 "model": {
-                  "x": 157.79,
-                  "y": 94.14,
-                  "z": 0.9696
+                  "x": 140.55,
+                  "y": 118.55,
+                  "z": 0.9682
                 },
                 "tip": {
-                  "x": 168.14,
-                  "y": 75.68,
-                  "z": 0.9704
+                  "x": 128.66,
+                  "y": 139.57,
+                  "z": 0.9672
                 },
                 "appliedHilt": {
                   "x": 150.28,
@@ -8205,14 +8193,14 @@
                 0.23239
               ],
               "model": [
-                -0.04799,
-                1.61263,
-                0.02707
+                -0.42749,
+                1.15336,
+                0.37619
               ],
               "tip": [
-                0.19694,
-                1.98949,
-                -0.21335
+                -0.67242,
+                0.7765,
+                0.61661
               ],
               "socketInHand": [
                 -0.02012,
@@ -8242,15 +8230,15 @@
                 1
               ],
               "modelInDisplay": [
-                0.3084,
+                -0.0284,
                 0.05525,
-                -0.26094
+                0.26094
               ],
               "modelQuaternionInDisplay": [
-                -0.3273,
                 0.6268,
-                -0.6268,
-                -0.3273
+                0.3273,
+                -0.3273,
+                0.6268
               ],
               "screen": {
                 "hand": {
@@ -8274,14 +8262,14 @@
                   "z": 0.9687
                 },
                 "model": {
-                  "x": 157.89,
-                  "y": 94.28,
-                  "z": 0.9696
+                  "x": 140.38,
+                  "y": 118.38,
+                  "z": 0.9682
                 },
                 "tip": {
-                  "x": 168.43,
-                  "y": 76.04,
-                  "z": 0.9704
+                  "x": 128.24,
+                  "y": 139.22,
+                  "z": 0.9672
                 },
                 "appliedHilt": {
                   "x": 150.25,
@@ -8381,14 +8369,14 @@
                 0.23481
               ],
               "model": [
-                -0.04594,
-                1.60988,
-                0.02824
+                -0.43052,
+                1.15739,
+                0.38066
               ],
               "tip": [
-                0.20311,
-                1.98222,
-                -0.21495
+                -0.67956,
+                0.78505,
+                0.62386
               ],
               "socketInHand": [
                 -0.02012,
@@ -8418,15 +8406,15 @@
                 1
               ],
               "modelInDisplay": [
-                0.3084,
+                -0.0284,
                 0.05525,
-                -0.26094
+                0.26094
               ],
               "modelQuaternionInDisplay": [
-                -0.3273,
                 0.6268,
-                -0.6268,
-                -0.3273
+                0.3273,
+                -0.3273,
+                0.6268
               ],
               "screen": {
                 "hand": {
@@ -8450,14 +8438,14 @@
                   "z": 0.9687
                 },
                 "model": {
-                  "x": 157.98,
-                  "y": 94.42,
-                  "z": 0.9696
+                  "x": 140.22,
+                  "y": 118.23,
+                  "z": 0.9681
                 },
                 "tip": {
-                  "x": 168.69,
-                  "y": 76.37,
-                  "z": 0.9705
+                  "x": 127.85,
+                  "y": 138.89,
+                  "z": 0.9671
                 },
                 "appliedHilt": {
                   "x": 150.22,
@@ -8583,7 +8571,7 @@
               "origin": "offline-shared-meshy-ready-runtime",
               "sourceName": "OneHandReady",
               "duration": 1.20833333209157,
-              "time": 0.9000000000000002,
+              "time": 0.8500000000000002,
               "paused": false
             },
             "clipInventory": {
@@ -8644,14 +8632,14 @@
                     "z": 0.07323
                   },
                   "lh": {
-                    "x": 0.29987,
-                    "y": 1.40294,
-                    "z": 0.30846
+                    "x": 0.29908,
+                    "y": 1.40425,
+                    "z": 0.30792
                   },
                   "rh": {
-                    "x": -0.39945,
-                    "y": 1.41161,
-                    "z": 0.23086
+                    "x": -0.39939,
+                    "y": 1.41089,
+                    "z": 0.23016
                   },
                   "hd": {
                     "x": 0,
@@ -8930,10 +8918,10 @@
                     0
                   ],
                   "quaternion": [
-                    -0.01135,
-                    0.58561,
-                    0.34034,
-                    0.73559
+                    -0.01255,
+                    0.58558,
+                    0.3402,
+                    0.73566
                   ],
                   "scale": [
                     1,
@@ -8950,10 +8938,10 @@
                     0
                   ],
                   "quaternion": [
-                    -0.74364,
-                    -0.0125,
-                    0.24692,
-                    0.62119
+                    -0.74567,
+                    -0.01229,
+                    0.24538,
+                    0.61936
                   ],
                   "scale": [
                     1,
@@ -8970,10 +8958,10 @@
                     -0.00001
                   ],
                   "quaternion": [
-                    -0.06406,
-                    -0.39787,
-                    0.14311,
-                    0.90394
+                    -0.0631,
+                    -0.39186,
+                    0.14353,
+                    0.90656
                   ],
                   "scale": [
                     1,
@@ -9010,10 +8998,10 @@
                     0
                   ],
                   "quaternion": [
-                    -0.16388,
-                    0.62732,
-                    0.18613,
-                    -0.73822
+                    -0.16558,
+                    0.6273,
+                    0.18536,
+                    -0.73805
                   ],
                   "scale": [
                     1,
@@ -9030,10 +9018,10 @@
                     0
                   ],
                   "quaternion": [
-                    -0.81742,
-                    0.02276,
-                    -0.08088,
-                    0.56988
+                    -0.81789,
+                    0.02257,
+                    -0.08257,
+                    0.56898
                   ],
                   "scale": [
                     1,
@@ -9198,7 +9186,7 @@
               "clientId": "",
               "pageUrl": "",
               "build": "meshy-fps-visual-ik-ready-review",
-              "cacheToken": "pose-editor-192",
+              "cacheToken": "pose-editor-194",
               "lastCommand": "",
               "lastCommandId": "",
               "lastError": "",
@@ -9207,47 +9195,16 @@
           }
         }
       }
-    },
-    {
-      "id": "human-red-build",
-      "actor": "human-review",
-      "clip": "",
-      "url": "https://pose-lab-visual-truth--visual-truth-28642688436-esyxyew4.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&weaponDebug=1&cacheBust=firebase-visual-truth-landing-1783059951830",
-      "screenshot": "",
-      "contactSheet": "",
-      "loadMs": 0,
-      "loadState": "",
-      "routeSelected": false,
-      "error": "",
-      "expectedVisibleState": "Human visual contradiction must keep false-green cloud artifacts red.",
-      "accepted": false,
-      "visibleRead": "Human review rejected this run: T-pose wrist/saber relationship is visibly mutated from the accepted default; Ready hand/hilt/blade relationship does not read as accepted visual IK/FK; cloud telemetry and marker checks passed while the visible relationship remained wrong; default visible surface is not an accepted good default",
-      "evaluation": {
-        "ok": false,
-        "failures": [
-          "T-pose wrist/saber relationship is visibly mutated from the accepted default",
-          "Ready hand/hilt/blade relationship does not read as accepted visual IK/FK",
-          "cloud telemetry and marker checks passed while the visible relationship remained wrong",
-          "default visible surface is not an accepted good default"
-        ],
-        "checks": {
-          "humanAccepted": false,
-          "defaultSurfaceAccepted": false,
-          "tposeWristRelationshipAccepted": false,
-          "readyVisualRelationshipAccepted": false
-        }
-      },
-      "cloudTelemetry": {}
     }
   ],
   "truthLedger": {
     "repo": true,
     "hostedFirebase": true,
     "cloudUrlLoaded": true,
-    "cloudBrowserCapture": true,
-    "landingUsable": true,
+    "cloudBrowserCapture": false,
+    "landingUsable": false,
     "tposeStableIdle": false,
     "readyBoringFk": false,
-    "human": false
+    "human": true
   }
 }
