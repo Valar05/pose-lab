@@ -25,10 +25,22 @@ The build script stages only the static runtime surface needed by Pose Lab:
 - `pose-critique.html`
 - `src/`
 - `vendor/`
-- `assets/models/`
+- selected Meshy/FPS/sabre runtime assets from `assets/models/`
 - `assets/asset_manifest.json`
 
 Do not deploy the repository root directly.
+
+## Cleanup Doctrine
+
+Do not ask for approval to hand-delete temp/cache paths, and do not use ad hoc `rm` as the workflow. Cache cleanup must go through the allowlisted script:
+
+```sh
+node tools/clean_pose_lab_cache.mjs --target firebase-visual-truth --apply
+node tools/clean_pose_lab_cache.mjs --target firebase-hosting --apply
+node tools/clean_pose_lab_cache.mjs --target browser-prune --apply
+```
+
+The script is allowed to remove declared project `generated/` cache and matching Termux tmp folders. Add a new allowlisted target to the script when a new cache family appears.
 
 ## Hosted Capture
 

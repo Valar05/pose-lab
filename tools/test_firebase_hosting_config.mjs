@@ -13,6 +13,7 @@ const gitignore = fs.readFileSync(path.join(projectRoot, '.gitignore'), 'utf8');
 const humanRedBuilds = JSON.parse(fs.readFileSync(path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json'), 'utf8'));
 const packageJson = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
 const cleanupScript = fs.readFileSync(path.join(projectRoot, 'tools', 'clean_pose_lab_cache.mjs'), 'utf8');
+const firebaseDoc = fs.readFileSync(path.join(projectRoot, 'docs', 'FIREBASE_VISUAL_TRUTH.md'), 'utf8');
 
 assert(firebaseJson.hosting?.site === 'pose-lab-visual-truth', 'Firebase Hosting must use the isolated Pose Lab site');
 assert(firebaseJson.hosting?.public === 'generated/firebase_hosting/pose_lab_release', 'Firebase Hosting must deploy the staged release directory');
@@ -51,6 +52,8 @@ assert(workflow.includes('git lfs pull --include="assets/models/meshy_character_
 assert(workflow.includes('Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb') && workflow.includes('Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb') && workflow.includes('-gt 1000000'), 'Firebase workflow must fail if Meshy GLBs are LFS pointer files');
 assert(packageJson.devDependencies?.['@playwright/test'] && packageJson.devDependencies?.['firebase-tools'], 'package.json should declare Firebase/Playwright tool dependencies');
 assert(cleanupScript.includes("schema: 'pose-lab-cache-cleanup-v1'") && cleanupScript.includes('refusing non-generated cleanup path'), 'cleanup script should be allowlisted and refuse non-generated paths');
+assert(cleanupScript.includes('/data/data/com.termux/files/usr/tmp') && cleanupScript.includes('tmp-glob'), 'cleanup script should own Termux tmp cleanup through allowlisted targets');
+assert(firebaseDoc.includes('Cleanup Doctrine') && firebaseDoc.includes('tools/clean_pose_lab_cache.mjs'), 'Firebase docs should route cache cleanup through the cleanup script');
 assert(gitignore.includes('/generated/firebase_hosting/'), 'generated Firebase staging output should stay untracked');
 assert(gitignore.includes('/generated/firebase_visual_truth/artifacts/'), 'Firebase screenshot artifacts should stay untracked');
 
