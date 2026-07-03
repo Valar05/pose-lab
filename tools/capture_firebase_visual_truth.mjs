@@ -42,6 +42,17 @@ function poseUrl(base, clip) {
   return url.toString();
 }
 
+function humanReadPoseUrl(base, clip) {
+  const url = new URL('pose-lab.html', base.endsWith('/') ? base : `${base}/`);
+  url.searchParams.set('mode', 'standard');
+  url.searchParams.set('actor', 'meshyCharacter');
+  url.searchParams.set('qaActor', 'meshyCharacter');
+  url.searchParams.set('clip', clip);
+  url.searchParams.set('qaClip', clip);
+  url.searchParams.set('cacheBust', `firebase-visual-truth-human-${Date.now()}`);
+  return url.toString();
+}
+
 function landingUrl(base) {
   const url = new URL('pose-lab.html', base.endsWith('/') ? base : `${base}/`);
   url.searchParams.set('mode', 'standard');
@@ -468,6 +479,19 @@ for (const capture of captures) {
       visualFollow.image.path = path.relative(projectRoot, contactSheet);
     }
   }
+  let humanReadScreenshot = '';
+  if ((capture.id === 'tpose' || capture.id === 'ready') && !error) {
+    const cleanUrl = humanReadPoseUrl(hostedUrl, capture.clip);
+    const cleanLoaded = await gotoHostedMeshyPage(page, cleanUrl, capture.clip);
+    if (cleanLoaded.ok) {
+      await page.waitForTimeout(1000);
+      const cleanPath = path.join(outDir, `${capture.id}_human_read.png`);
+      const cleanOk = await page.screenshot({ path: cleanPath, fullPage: false }).then(() => true).catch(() => false);
+      if (cleanOk) humanReadScreenshot = path.relative(projectRoot, cleanPath);
+    } else {
+      error = error || `clean human-read route failed: ${cleanLoaded.error}`;
+    }
+  }
   let evaluation;
   if (capture.id === 'landing') {
     const inventory = weapon?.snapshot?.clipInventory || {};
@@ -509,6 +533,7 @@ for (const capture of captures) {
     url,
     screenshot: screenshotOk ? path.relative(projectRoot, screenshot) : '',
     relationshipCloseup: closeupOk ? path.relative(projectRoot, closeup) : '',
+    humanReadScreenshot,
     contactSheet: contactSheet ? path.relative(projectRoot, contactSheet) : '',
     loadMs,
     loadState: loadState || '',

@@ -80,6 +80,7 @@ function tposeSense(capture) {
   for (const key of failuresFromMissing(requiredChecks, (key) => checkValue(capture, key))) failures.push(`T-pose missing ${key}`);
   if (!hasPng(capture?.screenshot)) failures.push('T-pose screenshot PNG is missing');
   if (!hasPng(capture?.relationshipCloseup)) failures.push('T-pose relationship closeup PNG is missing');
+  if (!hasPng(capture?.humanReadScreenshot)) failures.push('T-pose marker-free human-read screenshot PNG is missing');
   return {
     schema: SENSE_SYNTHESIS_SCHEMA,
     captureId: capture?.id || 'tpose',
@@ -97,6 +98,7 @@ function tposeSense(capture) {
     checks: {
       screenshotPresent: hasPng(capture?.screenshot),
       closeupPresent: hasPng(capture?.relationshipCloseup),
+      humanReadScreenshotPresent: hasPng(capture?.humanReadScreenshot),
       acceptedManualHilt: checkValue(capture, 'acceptedHiltOracle'),
       acceptedManualRotation: checkValue(capture, 'acceptedAttachmentRotation'),
       realWeaponVisible: checkValue(capture, 'realWeaponVisible'),
@@ -140,6 +142,7 @@ function readySense(capture) {
   for (const key of failuresFromMissing(requiredChecks, (key) => checkValue(capture, key))) failures.push(`Ready missing ${key}`);
   if (!hasPng(capture?.screenshot)) failures.push('Ready screenshot PNG is missing');
   if (!hasPng(capture?.relationshipCloseup)) failures.push('Ready relationship closeup PNG is missing');
+  if (!hasPng(capture?.humanReadScreenshot)) failures.push('Ready marker-free human-read screenshot PNG is missing');
   if (!hasPng(capture?.contactSheet)) failures.push('Ready visual-follow contact sheet PNG is missing');
   const tipRight = metricValue(capture, 'maxTipRightFromAppliedHiltPx');
   const tipDrop = Math.abs(metricValue(capture, 'maxTipDropFromAppliedHiltPx'));
@@ -162,6 +165,7 @@ function readySense(capture) {
     checks: {
       screenshotPresent: hasPng(capture?.screenshot),
       closeupPresent: hasPng(capture?.relationshipCloseup),
+      humanReadScreenshotPresent: hasPng(capture?.humanReadScreenshot),
       contactSheetPresent: hasPng(capture?.contactSheet),
       routeTruth: checkValue(capture, 'autoLoadedMeshyFromColdUrl') && checkValue(capture, 'manualActorSelectionRequiredFalse'),
       realWeaponVisible: checkValue(capture, 'realWeaponVisible'),

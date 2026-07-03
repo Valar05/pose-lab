@@ -24,6 +24,7 @@ const firebaseDoc = fs.readFileSync(path.join(projectRoot, 'docs', 'FIREBASE_VIS
 const humanRedBuilds = fs.readFileSync(path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json'), 'utf8');
 const captureScript = fs.readFileSync(path.join(projectRoot, 'tools', 'capture_firebase_visual_truth.mjs'), 'utf8');
 const preflightScript = fs.readFileSync(path.join(projectRoot, 'tools', 'pose_lab_visual_truth_preflight.mjs'), 'utf8');
+const senseScript = fs.readFileSync(path.join(projectRoot, 'tools', 'pose_lab_sense_synthesis.mjs'), 'utf8');
 const appSource = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
 
 assert(protocol.includes('Firebase hosted visual truth is tier-one'), 'evidence protocol must make Firebase hosted visual truth tier-one');
@@ -55,6 +56,8 @@ assert(!captureScript.includes('landing hosted review load exceeded'), 'Firebase
 assert(captureScript.includes('tposeWristRelationshipAccepted: relationship.tposeWristRelationshipAccepted'), 'Firebase capture must not hard-code T-pose relationship failure');
 assert(captureScript.includes('readyVisualRelationshipAccepted: relationship.readyVisualRelationshipAccepted'), 'Firebase capture must not hard-code Ready relationship failure');
 assert(captureScript.includes('relationshipCloseup'), 'Firebase capture must preserve relationship close-up screenshots');
+assert(captureScript.includes('humanReadPoseUrl') && captureScript.includes('humanReadScreenshot'), 'Firebase capture must preserve marker-free human-read screenshots');
+assert(senseScript.includes('marker-free human-read screenshot PNG is missing'), 'Sense Synthesis must fail when marker-free human-read screenshots are missing');
 assert(appSource.includes('proxy.activeAttachmentConfig = effectiveConfig'), 'Pose Lab must persist active clip-scoped weapon attachment config');
 assert(appSource.includes('proxy.activeAttachmentConfig || proxy.attachmentConfig || actor.info?.weaponAttachment'), 'Pose Lab weapon diagnostics must read the active clip-scoped attachment config');
 assert(protocol.includes('visible relationship') && firebaseDoc.includes('visible relationship'), 'Pose Lab docs must name visible relationship truth');
