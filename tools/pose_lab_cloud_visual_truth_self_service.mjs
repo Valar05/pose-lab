@@ -255,15 +255,18 @@ if (args.push) {
 
 if (args.wait) {
   const runInfo = await waitForRun(report.commit, args.timeoutMs, args.pollMs);
-  report.run = {
-    id: runInfo.id,
-    status: runInfo.status,
-    conclusion: runInfo.conclusion,
-    htmlUrl: runInfo.html_url,
-    headSha: runInfo.head_sha,
-  };
-  if (runInfo.conclusion && runInfo.conclusion !== 'success') throw new Error(`Firebase visual truth workflow concluded ${runInfo.conclusion}: ${runInfo.html_url}`);
-}
+    report.run = {
+      id: runInfo.id,
+      status: runInfo.status,
+      conclusion: runInfo.conclusion,
+      htmlUrl: runInfo.html_url,
+      headSha: runInfo.head_sha,
+    };
+    if (runInfo.conclusion && runInfo.conclusion !== 'success') {
+      if (!args.download) throw new Error(`Firebase visual truth workflow concluded ${runInfo.conclusion}: ${runInfo.html_url}`);
+      report.next.push(`Firebase visual truth workflow concluded ${runInfo.conclusion}; downloading artifact for visual inspection: ${runInfo.html_url}`);
+    }
+  }
 
 const runId = args.runId || report.run?.id || '';
 if (args.download) {

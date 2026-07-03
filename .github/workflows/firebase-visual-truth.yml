@@ -46,7 +46,6 @@ jobs:
         run: |
           node --check tools/build_firebase_pose_lab_release.mjs
           node tools/test_firebase_hosting_config.mjs
-          node tools/test_firebase_visual_truth_contract.mjs
 
       - name: Install Firebase CLI and Playwright
         run: |
@@ -66,6 +65,9 @@ jobs:
         env:
           GITHUB_SHA: '${{ github.sha }}'
         run: node tools/capture_firebase_visual_truth.mjs --hosted-url "$HOSTED_URL"
+
+      - name: Validate captured Firebase visual truth
+        run: node tools/test_firebase_visual_truth_contract.mjs
 
       - uses: actions/upload-artifact@v4
         if: always()

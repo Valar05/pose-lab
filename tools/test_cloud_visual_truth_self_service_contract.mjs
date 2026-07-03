@@ -23,6 +23,8 @@ assert(selfService.includes('tools/inspect_firebase_visual_artifact.mjs'), 'self
 assert(selfService.includes('refreshingFirebaseEvidence'), 'self-service tool should distinguish stale-evidence refresh from normal preflight');
 assert(selfService.includes("!options.refreshingFirebaseEvidence"), 'self-service tool should skip stale visual-red evidence only while refreshing Firebase artifacts');
 assert(selfService.includes("['node', ['tools/test_pose_lab_visual_red_build_contract.mjs']]"), 'normal self-service preflight should still include the visual red-build contract');
+assert(selfService.includes("if (!args.download) throw new Error(`Firebase visual truth workflow concluded"), 'self-service tool should still fail non-download runs when Firebase visual truth fails');
+assert(selfService.includes('downloading artifact for visual inspection'), 'self-service tool should download failed visual-truth artifacts when inspection was requested');
 assert(selfService.includes("captureUrl(evidence, 'ready')"), 'self-service tool should wake the Ready capture URL, not the Firebase root');
 assert(selfService.includes('refusing to wake base hostedUrl'), 'self-service tool should refuse to wake the base hostedUrl as review proof');
 assert(selfService.includes('prune_and_wake_browser.sh'), 'self-service tool should use the Android browser wake script after artifact inspection');
