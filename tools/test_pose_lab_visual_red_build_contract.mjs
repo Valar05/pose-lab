@@ -75,6 +75,7 @@ assert(appSource.includes('hideReviewObstructionSprites'), 'Pose Lab review rout
 assert(appSource.includes("const fallbackPanel = this.isReviewRoute() ? 'none'"), 'Pose Lab review route must not open a phone-obstructing sheet by default');
 assert(appSource.includes('stop.disabled = Boolean(reviewRequestedClip)'), 'Pose Lab review route must disable Stop so the requested clip cannot be cleared');
 assert(appSource.includes('Review route locked to '), 'Pose Lab review route must visibly lock non-requested clip controls');
+assert(appSource.includes('reviewLockParam') && appSource.includes("reviewLockParam === '0'") && appSource.includes('this.visualQa?.reviewLock === false'), 'Pose Lab review route must allow explicit unlocked calibration review with reviewLock=0');
 
 if (!fs.existsSync(evidencePath)) {
   console.log(JSON.stringify({

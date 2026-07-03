@@ -113,6 +113,7 @@ const textureLoader = new THREE.TextureLoader();
 function visualQaConfig() {
   const params = new URLSearchParams(window.location.search || '');
   const enabled = params.get('beacon') === '1' || params.get('capture') === '1';
+  const reviewLockParam = params.get('reviewLock') || params.get('qaLock') || '';
   return {
     enabled,
     beacon: params.get('beacon') === '1',
@@ -122,6 +123,7 @@ function visualQaConfig() {
     build: LAB_BUILD,
     actor: params.get('qaActor') || params.get('actor') || '',
     clip: params.get('qaClip') || params.get('clip') || '',
+    reviewLock: reviewLockParam === '0' || reviewLockParam === 'false' ? false : true,
     frameMode: params.get('qaFrameMode') || '',
     viewMode: params.get('qaView') || params.get('viewMode') || '',
   };
@@ -5758,7 +5760,7 @@ class PoseLab {
 
   enforceReviewRequestedClip(actor = this.actors.get(this.selected)) {
     const requestedClip = this.visualQa?.clip || '';
-    if (!actor || !requestedClip) return null;
+    if (!actor || !requestedClip || this.visualQa?.reviewLock === false) return null;
     const activeClip = actor.activeClip?.() || actor.activeAction?._clip || null;
     if (activeClip && (clipLabel(activeClip) === requestedClip || activeClip.name === requestedClip || clipKey(activeClip) === requestedClip)) return activeClip;
     const clip = this.findClipByName(actor, requestedClip, { explicit: true });
@@ -10944,7 +10946,7 @@ class PoseLab {
   renderClipButtons() {
     const actor = this.actors.get(this.selected);
     if (!actor || !UI.clipButtons) return;
-    const reviewRequestedClip = this.visualQa?.clip || '';
+    const reviewRequestedClip = this.visualQa?.reviewLock === false ? '' : (this.visualQa?.clip || '');
     if (reviewRequestedClip) this.enforceReviewRequestedClip(actor);
     const active = actor.activeAction ? clipKey(actor.activeAction._clip) : '';
     const query = String(actor.clipSearch || UI.clipSearch?.value || '').trim();
