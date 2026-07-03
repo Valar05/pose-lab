@@ -52,6 +52,8 @@ assert(workflow.includes('actions/cache@v4') && workflow.includes('~/.cache/ms-p
 assert(workflow.includes('npm ci') && !workflow.includes('npm init -y'), 'Firebase workflow should use package-lock-driven npm ci instead of ad hoc npm init/install');
 assert(workflow.includes('git lfs pull --include="assets/models/meshy_character_sheet/**,assets/models/meshy_sabre/**"'), 'Firebase workflow must fetch only Meshy runtime LFS assets before staging');
 assert(workflow.includes('Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb') && workflow.includes('Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb') && workflow.includes('-gt 1000000'), 'Firebase workflow must fail if Meshy GLBs are LFS pointer files');
+assert(workflow.includes('Clear stale Firebase visual artifacts') && workflow.includes('rm -rf generated/firebase_visual_truth/latest'), 'Firebase workflow must clear stale checked-in visual artifacts before capture');
+assert(workflow.includes('set -o pipefail') && workflow.includes('tee "$RUNNER_TEMP/firebase-deploy.json"'), 'Firebase workflow must preserve Firebase deploy output when deploy fails');
 const configStep = workflow.slice(workflow.indexOf('- name: Validate Firebase config'), workflow.indexOf('- name: Install Firebase CLI and Playwright'));
 assert(configStep && !configStep.includes('test_firebase_visual_truth_contract.mjs'), 'Firebase workflow must not validate stale visual-truth artifacts before capture refresh');
 const captureStep = workflow.slice(workflow.indexOf('- name: Capture hosted Pose Lab truth'), workflow.indexOf('- uses: actions/upload-artifact@v4'));
