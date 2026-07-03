@@ -40,16 +40,29 @@ assert(/^https:\/\/.+/.test(String(evidence.hostedUrl || '')), 'Firebase visual 
 assert(evidence.cacheToken === currentCacheToken(), `Firebase visual truth cacheToken must match current ${currentCacheToken()}`);
 assert(evidence.runtimeBuild === currentRuntimeBuild(), `Firebase visual truth runtimeBuild must match current ${currentRuntimeBuild()}`);
 assert(evidence.authority === 'firebase-hosted-cloud-browser', 'Firebase visual truth should be the cloud-hosted browser authority');
+assert(evidence.controller?.role === 'controller-only', 'Firebase visual truth should label Playwright as controller-only');
+assert(evidence.controller?.acceptanceRule?.includes('hosted Firebase HTTPS URL'), 'Firebase visual truth should require a hosted Firebase HTTPS URL');
 assert(evidence.deprecatedAcceptance?.offlineRender === 'diagnostic-only', 'offline render must be diagnostic-only, not acceptance authority');
-assert(Array.isArray(evidence.captures) && evidence.captures.length >= 2, 'Firebase visual truth should include at least T-pose and Ready captures');
+assert(evidence.deprecatedAcceptance?.localPlaywrightAgainstLocalhost === 'not accepted', 'local Playwright against localhost must not be accepted');
+assert(evidence.deprecatedAcceptance?.generatedFirebaseStaging === 'not accepted', 'generated Firebase staging must not be accepted');
+assert(Array.isArray(evidence.captures) && evidence.captures.length >= 3, 'Firebase visual truth should include landing, T-pose, and Ready captures');
+assert(evidence.captures.some((capture) => capture.id === 'landing'), 'Firebase visual truth should include human-review landing capture');
 assert(evidence.captures.some((capture) => capture.id === 'tpose'), 'Firebase visual truth should include T-pose stable idle capture');
 assert(evidence.captures.some((capture) => capture.id === 'ready'), 'Firebase visual truth should include Ready FK capture');
 
 for (const capture of evidence.captures || []) {
+  if (capture.id === 'human-red-build') {
+    assert(capture.actor === 'human-review', 'human red-build capture should be explicitly marked human-review');
+    assert(capture.accepted === false, 'human red-build capture must stay red');
+    assert(capture.evaluation?.ok === false, 'human red-build capture evaluation must stay red');
+    assert(Array.isArray(capture.evaluation?.failures) && capture.evaluation.failures.length > 0, 'human red-build capture must preserve the human failure reasons');
+    continue;
+  }
   assert(capture.actor === 'meshyCharacter', 'Firebase capture actor should be meshyCharacter');
-  assert(typeof capture.clip === 'string' && capture.clip.includes('meshyCharacter'), 'Firebase capture clip should name the Meshy route');
+  if (capture.id !== 'landing') assert(typeof capture.clip === 'string' && capture.clip.includes('meshyCharacter'), 'Firebase capture clip should name the Meshy route');
   assert(typeof capture.screenshot === 'string' && capture.screenshot.endsWith('.png'), 'Firebase capture should name a PNG screenshot');
   assert(typeof capture.url === 'string' && capture.url.startsWith('https://'), 'Firebase capture should preserve the hosted HTTPS URL');
+  assert(capture.url.startsWith('https://pose-lab-visual-truth'), 'Firebase capture must load the pose-lab-visual-truth cloud URL');
   assert(capture.routeSelected === true, `Firebase capture should route-select Meshy Character: ${capture.id}`);
   assert(capture.accepted === true, `Firebase capture should be accepted by cloud telemetry: ${capture.id} ${JSON.stringify(capture.evaluation?.failures || [])}`);
   assert(typeof capture.visibleRead === 'string' && capture.visibleRead.length >= 10, 'Firebase capture should include a human-readable visibleRead');
@@ -57,6 +70,9 @@ for (const capture of evidence.captures || []) {
   assert(capture.cloudTelemetry?.liveHilt?.ok === true, `Firebase capture should include successful cloud live hilt telemetry: ${capture.id}`);
   assert(capture.evaluation?.ok === true, `Firebase capture should include passing evaluation: ${capture.id}`);
 }
+const landing = evidence.captures.find((capture) => capture.id === 'landing');
+assert(landing?.evaluation?.checks?.reviewClipInventoryVisible === true, 'Landing cloud evidence must prove review clip inventory is visible');
+assert(landing?.evaluation?.checks?.loadFastEnough === true, 'Landing cloud evidence must prove review page load is usable');
 const tpose = evidence.captures.find((capture) => capture.id === 'tpose');
 assert(tpose?.evaluation?.checks?.acceptedHiltOracle === true, 'T-pose cloud evidence must preserve the accepted hilt oracle');
 assert(tpose?.evaluation?.checks?.acceptedAttachmentRotation === true, 'T-pose cloud evidence must preserve the accepted attachment rotation');
@@ -71,10 +87,20 @@ assert(ready?.evaluation?.checks?.hiltPinnedToSocket === true || ready?.evaluati
 assert(ready?.evaluation?.checks?.handLocalGripOffsetVisible === true, 'Ready cloud evidence must prove hand-local grip offset is visibly separated from the raw wrist');
 assert(ready?.evaluation?.checks?.hiltAwayFromRawHand === true, 'Ready cloud evidence must prove the hilt has not collapsed onto the raw hand/wrist');
 assert(ready?.evaluation?.checks?.readyHandOrientationSane === true, 'Ready cloud evidence must prove the hand orientation/grip basis is visually sane');
+assert(ready?.evaluation?.checks?.reviewClipInventoryVisible === true, 'Ready cloud evidence must prove review clip inventory is visible');
+assert(ready?.evaluation?.checks?.bodyPoseLandmarksPresent === true, 'Ready cloud evidence must expose body pose landmarks for hand-orientation review');
 assert(ready?.evaluation?.checks?.staticDirectFkProof === true || (ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true), 'Ready cloud evidence must prove static direct FK or hand/saber tip motion together');
+assert(evidence.truthLedger?.landingUsable === true, 'truth ledger must mark landing page usable green');
+assert(evidence.truthLedger?.cloudUrlLoaded === true, 'truth ledger must mark cloud URL loading green');
 assert(evidence.truthLedger?.tposeStableIdle === true, 'truth ledger must mark T-pose stable idle green');
 assert(evidence.truthLedger?.readyBoringFk === true, 'truth ledger must mark Ready boring FK green');
-assert(evidence.ok === true, 'Firebase visual truth evidence must be green only when T-pose and Ready both pass');
+if (evidence.humanRedBuild) {
+  assert(evidence.ok === false, 'human red-build veto must keep Firebase visual truth red');
+  assert(evidence.truthLedger?.human === false, 'truth ledger must mark human truth red when a human red-build veto exists');
+  assert(evidence.captures.some((capture) => capture.id === 'human-red-build'), 'human red-build veto must be preserved as a capture record');
+} else {
+  assert(evidence.ok === true, 'Firebase visual truth evidence must be green only when landing, T-pose, and Ready pass');
+}
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({ checked: ['firebase-visual-truth-contract'], evidencePath: path.relative(projectRoot, evidencePath), cacheToken: currentCacheToken() }, null, 2));

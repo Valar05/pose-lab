@@ -41,13 +41,15 @@ The workflow intentionally does not use `actions/checkout` with `lfs: true`. Thi
 
 Those assets are size-checked before staging so pointer files cannot silently deploy.
 
+Local Playwright may be used as a controller only when the loaded page is a hosted Firebase HTTPS URL such as `https://pose-lab-visual-truth--...web.app`. Controller location is not truth location. A local Playwright pass against localhost, offline render output, or `generated/firebase_hosting/pose_lab_release` is diagnostic-only and cannot promote a Meshy saber visual fix.
+
 The evidence target is:
 
 ```text
 generated/firebase_visual_truth/latest/visual_truth.json
 ```
 
-Screenshots and hosted debug telemetry are workflow artifacts, not local Android evidence. The artifact is the engineering gate for Meshy saber acceptance: `ok` may be true only when T-pose stable idle and Ready boring FK both pass in the hosted Firebase browser. Ready must also prove the visible hand/grip basis is sane: the authored grip offset and applied hilt cannot collapse onto the raw wrist/hand, even if direct FK parent-chain telemetry is stable.
+Screenshots and hosted debug telemetry are workflow artifacts, not local Android evidence. The artifact is the engineering gate for Meshy saber acceptance: `ok` may be true only when the landing page is usable, T-pose stable idle passes, Ready boring FK passes, and no human red-build veto exists for the commit. Ready must also prove the visible hand/grip basis is sane: the authored grip offset and applied hilt cannot collapse onto the raw wrist/hand, even if direct FK parent-chain telemetry is stable.
 
 False-pass checkpoint preserved for regression:
 
@@ -57,6 +59,14 @@ False-pass checkpoint preserved for regression:
 - Artifact: `firebase-visual-truth`
 - Captures: `tpose.png`, `ready.png`, `ready_visual_follow.png`, `visual_truth.json`
 - Runtime route: Meshy Character selected for both configured clips, but human screenshot truth was red: Ready hand orientation/grip basis was wrong and the hilt/marker collapsed around the wrist. This run must never be treated as an accepted green.
+
+Logic-regression checkpoint preserved for regression:
+
+- Commit: `3fc1b14d525c71f60fc4c90069a597944e4f751f`
+- GitHub Actions run: `28638735919`
+- Hosted preview: `https://pose-lab-visual-truth--visual-truth-28638735919-yew7srj2.web.app`
+- Human live Firebase review was red: slow page load, missing expected clips, and the visible Ready clip was wrong.
+- Follow-up rule: the capture controller may be local Playwright, but only the hosted Firebase page plus matching commit/cache identity can contribute visual truth.
 
 ## Rule
 

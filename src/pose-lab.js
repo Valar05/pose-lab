@@ -11689,6 +11689,16 @@ class PoseLab {
         time: Number(actor?.activeAction?.time || 0),
         paused: Boolean(actor?.activeAction?.paused),
       } : null,
+      clipInventory: actor ? {
+        count: actor.clips.length,
+        own: Number(actor.ownClipCount || 0),
+        shared: Number(actor.sharedClipCount || 0),
+        cleanup: Number(actor.cleanupClipCount || 0),
+        extraConfigured: Number(actor.info?.extraClipUrls?.length || 0),
+        extraLoaded: actor.clips.filter((entry) => String(entry.userData?.origin || '').startsWith('own-extra:' + actor.key + ':')).length,
+        labels: actor.clips.map((entry) => clipLabel(entry)),
+      } : null,
+      pose: actor ? poseSnapshot(actor) : null,
       readout: readout.readout,
       diagnostic: readout.diagnostic,
       weaponProxy: proxy ? {

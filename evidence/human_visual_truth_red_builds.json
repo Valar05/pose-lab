@@ -1,0 +1,18 @@
+{
+  "schema": "pose-lab-human-visual-truth-red-builds-v1",
+  "policy": "A commit listed here cannot be promoted by Firebase Visual Truth until a later commit produces fresh human-accepted visual evidence or the red entry is superseded by an explicit acceptance record.",
+  "redBuilds": [
+    {
+      "commit": "3fc1b14d525c71f60fc4c90069a597944e4f751f",
+      "reportedAt": "2026-07-03",
+      "authority": "human-live-firebase-review",
+      "url": "https://pose-lab-visual-truth--visual-truth-28638735919-yew7srj2.web.app",
+      "issues": [
+        "hosted web page loads insanely slowly for manual review",
+        "expected clips are not visible in the clip list",
+        "the visible Ready clip is deeply and obviously wrong"
+      ],
+      "notes": "This preserves the live browser review that disproved the green workflow result for run 28638735919."
+    }
+  ]
+}
