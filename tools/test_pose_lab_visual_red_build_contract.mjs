@@ -31,6 +31,10 @@ assert(captureScript.includes("offlineRender: 'diagnostic-only'"), 'Firebase cap
 assert(!captureScript.includes("captureKind: 'offline-pose-render'"), 'Firebase capture must not emit offline-pose-render evidence');
 assert(captureScript.includes('Ready hilt collapsed onto raw hand/wrist'), 'Firebase capture must fail the red screenshot class where the hilt collapses onto the wrist');
 assert(captureScript.includes('Ready hand orientation/grip evidence is not visually sane'), 'Firebase capture must fail Ready hand-orientation visual regressions');
+assert(captureScript.includes('tposeWristRelationshipAccepted: false'), 'Firebase capture must not greenlight T-pose without explicit wrist/saber relationship acceptance');
+assert(captureScript.includes('readyVisualRelationshipAccepted: false'), 'Firebase capture must not greenlight Ready without explicit hand/hilt/blade relationship acceptance');
+assert(captureScript.includes('defaultSurfaceAccepted: false'), 'Firebase capture must not greenlight a default surface from route/clip selection alone');
+assert(protocol.includes('visible relationship') && firebaseDoc.includes('visible relationship'), 'Pose Lab docs must name visible relationship truth');
 
 if (!fs.existsSync(evidencePath)) {
   console.log(JSON.stringify({
@@ -46,15 +50,28 @@ const evidence = JSON.parse(fs.readFileSync(evidencePath, 'utf8'));
 assert(evidence.schema === 'pose-lab-firebase-visual-truth-v1', 'visual red-build evidence must use Firebase visual truth schema');
 assert(evidence.authority === 'firebase-hosted-cloud-browser', 'visual red-build evidence authority must be Firebase hosted cloud browser');
 assert(evidence.cacheToken === currentCacheToken(), `Firebase visual truth cache token must match served token ${currentCacheToken()}`);
-assert(evidence.ok === true, 'Firebase visual truth must be green before closing a visual red build');
-assert(evidence.truthLedger?.tposeStableIdle === true, 'Firebase visual truth must prove stable T-pose/idle saber placement');
-assert(evidence.truthLedger?.readyBoringFk === true, 'Firebase visual truth must prove Ready boring FK');
+if (evidence.humanRedBuild) {
+  assert(evidence.ok === false, 'human visual contradiction must keep Firebase visual truth red');
+  assert(evidence.truthLedger?.human === false, 'human visual contradiction must mark human truth red');
+} else {
+  assert(evidence.ok === true, 'Firebase visual truth must be green before closing a visual red build');
+  assert(evidence.truthLedger?.tposeStableIdle === true, 'Firebase visual truth must prove stable T-pose/idle saber placement');
+  assert(evidence.truthLedger?.readyBoringFk === true, 'Firebase visual truth must prove Ready boring FK');
+}
 const tpose = evidence.captures?.find((capture) => capture.id === 'tpose');
 const ready = evidence.captures?.find((capture) => capture.id === 'ready');
-assert(tpose?.accepted === true && tpose?.evaluation?.checks?.acceptedHiltOracle === true, 'T-pose cloud capture must preserve accepted hilt oracle');
-assert(ready?.accepted === true && ready?.evaluation?.checks?.tipTracksHand === true, 'Ready cloud capture must prove saber tip tracks hand');
-assert(ready?.accepted === true && ready?.evaluation?.checks?.hiltAwayFromRawHand === true, 'Ready cloud capture must prove hilt is visibly away from the raw hand/wrist');
-assert(ready?.accepted === true && ready?.evaluation?.checks?.readyHandOrientationSane === true, 'Ready cloud capture must prove hand orientation/grip basis is visually sane');
+assert(tpose?.evaluation?.checks?.acceptedHiltOracle === true, 'T-pose cloud capture must preserve accepted hilt oracle');
+assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'tposeWristRelationshipAccepted'), 'T-pose cloud capture must record wrist/saber visible relationship acceptance');
+assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'defaultSurfaceAccepted'), 'T-pose cloud capture must record default-surface visible acceptance');
+assert(Object.hasOwn(ready?.evaluation?.checks || {}, 'readyVisualRelationshipAccepted'), 'Ready cloud capture must record hand/hilt/blade visible relationship acceptance');
+if (!evidence.humanRedBuild) {
+  assert(tpose?.accepted === true && tpose?.evaluation?.checks?.tposeWristRelationshipAccepted === true, 'T-pose cloud capture must prove accepted wrist/saber relationship');
+  assert(tpose?.evaluation?.checks?.defaultSurfaceAccepted === true, 'default cloud surface must prove accepted visible state');
+  assert(ready?.accepted === true && ready?.evaluation?.checks?.tipTracksHand === true, 'Ready cloud capture must prove saber tip tracks hand');
+  assert(ready?.accepted === true && ready?.evaluation?.checks?.hiltAwayFromRawHand === true, 'Ready cloud capture must prove hilt is visibly away from the raw hand/wrist');
+  assert(ready?.accepted === true && ready?.evaluation?.checks?.readyHandOrientationSane === true, 'Ready cloud capture must prove hand orientation/grip basis is visually sane');
+  assert(ready?.evaluation?.checks?.readyVisualRelationshipAccepted === true, 'Ready cloud capture must prove accepted hand/hilt/blade visual relationship');
+}
 assert(typeof tpose?.screenshot === 'string' && tpose.screenshot.endsWith('.png'), 'T-pose cloud capture must include screenshot');
 assert(typeof ready?.contactSheet === 'string' && ready.contactSheet.endsWith('.png'), 'Ready cloud capture must include visual-follow contact sheet');
 

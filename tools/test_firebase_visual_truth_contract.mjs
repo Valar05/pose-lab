@@ -64,11 +64,17 @@ for (const capture of evidence.captures || []) {
   assert(typeof capture.url === 'string' && capture.url.startsWith('https://'), 'Firebase capture should preserve the hosted HTTPS URL');
   assert(capture.url.startsWith('https://pose-lab-visual-truth'), 'Firebase capture must load the pose-lab-visual-truth cloud URL');
   assert(capture.routeSelected === true, `Firebase capture should route-select Meshy Character: ${capture.id}`);
-  assert(capture.accepted === true, `Firebase capture should be accepted by cloud telemetry: ${capture.id} ${JSON.stringify(capture.evaluation?.failures || [])}`);
   assert(typeof capture.visibleRead === 'string' && capture.visibleRead.length >= 10, 'Firebase capture should include a human-readable visibleRead');
   assert(capture.cloudTelemetry?.weapon?.ok === true, `Firebase capture should include successful cloud weapon telemetry: ${capture.id}`);
   assert(capture.cloudTelemetry?.liveHilt?.ok === true, `Firebase capture should include successful cloud live hilt telemetry: ${capture.id}`);
-  assert(capture.evaluation?.ok === true, `Firebase capture should include passing evaluation: ${capture.id}`);
+  if (evidence.humanRedBuild) {
+    assert(capture.accepted === false, `human-red evidence must keep normal captures red: ${capture.id}`);
+    assert(capture.evaluation?.ok === false, `human-red evidence must keep normal capture evaluations red: ${capture.id}`);
+    assert(Array.isArray(capture.evaluation?.failures) && capture.evaluation.failures.length > 0, `human-red capture should preserve visible relationship failures: ${capture.id}`);
+  } else {
+    assert(capture.accepted === true, `Firebase capture should be accepted by cloud telemetry: ${capture.id} ${JSON.stringify(capture.evaluation?.failures || [])}`);
+    assert(capture.evaluation?.ok === true, `Firebase capture should include passing evaluation: ${capture.id}`);
+  }
 }
 const landing = evidence.captures.find((capture) => capture.id === 'landing');
 assert(landing?.evaluation?.checks?.reviewClipInventoryVisible === true, 'Landing cloud evidence must prove review clip inventory is visible');
@@ -78,6 +84,8 @@ assert(tpose?.evaluation?.checks?.acceptedHiltOracle === true, 'T-pose cloud evi
 assert(tpose?.evaluation?.checks?.acceptedAttachmentRotation === true, 'T-pose cloud evidence must preserve the accepted attachment rotation');
 assert(tpose?.evaluation?.checks?.realWeaponVisible === true, 'T-pose cloud evidence must prove real weapon visibility');
 assert(tpose?.evaluation?.checks?.hiltPinnedToSocket === true, 'T-pose cloud evidence must prove hilt pinning');
+assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'tposeWristRelationshipAccepted'), 'T-pose cloud evidence must record wrist/saber visible relationship acceptance');
+assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'defaultSurfaceAccepted'), 'T-pose cloud evidence must record default visible surface acceptance');
 const ready = evidence.captures.find((capture) => capture.id === 'ready');
 assert(typeof ready?.contactSheet === 'string' && ready.contactSheet.endsWith('.png'), 'Ready cloud evidence should include a visual-follow contact sheet PNG');
 assert(ready?.cloudTelemetry?.visualFollow?.ok === true, 'Ready cloud evidence must include successful visual-follow telemetry');
@@ -90,15 +98,21 @@ assert(ready?.evaluation?.checks?.readyHandOrientationSane === true, 'Ready clou
 assert(ready?.evaluation?.checks?.reviewClipInventoryVisible === true, 'Ready cloud evidence must prove review clip inventory is visible');
 assert(ready?.evaluation?.checks?.bodyPoseLandmarksPresent === true, 'Ready cloud evidence must expose body pose landmarks for hand-orientation review');
 assert(ready?.evaluation?.checks?.staticDirectFkProof === true || (ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true), 'Ready cloud evidence must prove static direct FK or hand/saber tip motion together');
+assert(Object.hasOwn(ready?.evaluation?.checks || {}, 'readyVisualRelationshipAccepted'), 'Ready cloud evidence must record hand/hilt/blade visible relationship acceptance');
 assert(evidence.truthLedger?.landingUsable === true, 'truth ledger must mark landing page usable green');
 assert(evidence.truthLedger?.cloudUrlLoaded === true, 'truth ledger must mark cloud URL loading green');
-assert(evidence.truthLedger?.tposeStableIdle === true, 'truth ledger must mark T-pose stable idle green');
-assert(evidence.truthLedger?.readyBoringFk === true, 'truth ledger must mark Ready boring FK green');
+if (!evidence.humanRedBuild) {
+  assert(evidence.truthLedger?.tposeStableIdle === true, 'truth ledger must mark T-pose stable idle green');
+  assert(evidence.truthLedger?.readyBoringFk === true, 'truth ledger must mark Ready boring FK green');
+}
 if (evidence.humanRedBuild) {
   assert(evidence.ok === false, 'human red-build veto must keep Firebase visual truth red');
   assert(evidence.truthLedger?.human === false, 'truth ledger must mark human truth red when a human red-build veto exists');
   assert(evidence.captures.some((capture) => capture.id === 'human-red-build'), 'human red-build veto must be preserved as a capture record');
 } else {
+  assert(tpose?.evaluation?.checks?.tposeWristRelationshipAccepted === true, 'green Firebase evidence must prove accepted T-pose wrist/saber relationship');
+  assert(tpose?.evaluation?.checks?.defaultSurfaceAccepted === true, 'green Firebase evidence must prove accepted default visible surface');
+  assert(ready?.evaluation?.checks?.readyVisualRelationshipAccepted === true, 'green Firebase evidence must prove accepted Ready hand/hilt/blade relationship');
   assert(evidence.ok === true, 'Firebase visual truth evidence must be green only when landing, T-pose, and Ready pass');
 }
 

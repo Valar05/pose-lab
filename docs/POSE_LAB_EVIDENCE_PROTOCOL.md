@@ -40,6 +40,7 @@ Change `--kind` to `cache-server`, `pose-retarget`, `ui-state`, `promotion`, or 
 
 - Source-string tests are support-only for visual bugs. They may protect wiring, but they do not prove rendering, pose, hilt placement, or user-facing state.
 - Screenshot and contact-sheet inspection comes before telemetry for visual bugs. If the visual artifact is red, missing, stale, too distant, or unreadable, the claim is red or blocked even when tests pass.
+- visible relationship truth is mandatory. Name the expected relationship and actual relationship before using telemetry: default clip to visible default pose, wrist to hilt, hand to weapon, blade axis to grip, UI selected row to visible pose.
 - Deprecated standalone Android `screencap`, localhost browser capture, generated-staging browser capture, debug-bridge weapon follow, and offline render are not Meshy saber acceptance evidence.
 - Logic regression to avoid: running Playwright locally against a hosted Firebase URL is permitted as cloud-page control; treating local Playwright, localhost, offline render, or generated staging output as truth is not permitted.
 - User screenshots remain valid red-build reports. The fix path is to make the Firebase hosted visual truth artifact reproduce and prove the same pose/weapon layer, not to spend more time on local capture.

@@ -127,6 +127,7 @@ function evaluateTpose({ routeSelected, weapon, liveHilt }) {
   if (liveChecks.realWeaponVisible !== true || layers.realWeaponVisible !== true) failures.push('T-pose cloud layer does not report real weapon visible');
   if (liveChecks.appliedHiltPinnedToAuthoredSocket !== true) failures.push(`T-pose hilt is not pinned to WeaponGrip: ${JSON.stringify(liveDistances)}`);
   if (!isFiniteNumber(liveDistances.handToAppliedHilt) || !isFiniteNumber(liveDistances.socketToAppliedHilt)) failures.push(`T-pose hilt distances are not finite: ${JSON.stringify(liveDistances)}`);
+  failures.push('T-pose wrist/saber visible relationship is not human-accepted by this telemetry-only gate');
   return {
     ok: failures.length === 0,
     failures,
@@ -139,6 +140,8 @@ function evaluateTpose({ routeSelected, weapon, liveHilt }) {
       realWeaponVisible: weapon?.weapon?.modelVisible === true && liveChecks.realWeaponVisible === true,
       hiltPinnedToSocket: liveChecks.appliedHiltPinnedToAuthoredSocket === true,
       finiteHiltDistances: isFiniteNumber(liveDistances.handToAppliedHilt) && isFiniteNumber(liveDistances.socketToAppliedHilt),
+      tposeWristRelationshipAccepted: false,
+      defaultSurfaceAccepted: false,
     },
   };
 }
@@ -183,6 +186,7 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
   if (followChecks.handLocalGripOffsetVisible !== true) failures.push(`Ready hand local grip offset is not visible; hand orientation/grip basis collapsed to raw wrist: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.appliedHiltAwayFromRawHand !== true) failures.push(`Ready hilt collapsed onto raw hand/wrist instead of the authored visible grip offset: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.readyHandOrientationSane !== true) failures.push(`Ready hand orientation/grip evidence is not visually sane: ${JSON.stringify(screenMetrics)}`);
+  failures.push('Ready hand/hilt/blade visible relationship is not human-accepted by this telemetry-only gate');
   if (!staticDirectFkProof) {
     if (!isFiniteNumber(screenMotion.hand) || !isFiniteNumber(screenMotion.tip)) failures.push(`Ready motion metrics are not finite: ${JSON.stringify(screenMotion)}`);
     if (Number(screenMotion.hand) <= 0.25) failures.push(`Ready hand did not visibly move in cloud capture: ${JSON.stringify(screenMotion)}`);
@@ -212,6 +216,7 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
       tipTracksHand: Number(screenMotion.tip) > Number(screenMotion.hand) * 0.25,
       reviewClipInventoryVisible: Number(inventory.count) >= 5,
       bodyPoseLandmarksPresent: Boolean(weapon?.snapshot?.pose?.watch?.bones?.rh && weapon?.snapshot?.pose?.watch?.bones?.lh),
+      readyVisualRelationshipAccepted: false,
     },
   };
 }
@@ -319,6 +324,7 @@ for (const capture of captures) {
         routeSelected,
         loadFastEnough: loadMs <= LANDING_LOAD_MAX_MS,
         reviewClipInventoryVisible: Number(inventory.count) >= 5,
+        defaultSurfaceAccepted: false,
       },
     };
   } else {

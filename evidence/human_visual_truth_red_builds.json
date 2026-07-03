@@ -27,6 +27,19 @@
         "ready_visual_follow.png was too distant and marker-heavy to prove visual parity"
       ],
       "notes": "This preserves the false-green Firebase workflow result for run 28640974375. It cannot be promoted by telemetry-only evidence."
+    },
+    {
+      "commit": "66ef6e2432672c8d14d956029f6fcdc2a3f1f4f1",
+      "reportedAt": "2026-07-03",
+      "authority": "human-cloud-screenshot-review",
+      "url": "https://pose-lab-visual-truth--visual-truth-28642688436-esyxyew4.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&weaponDebug=1&cacheBust=firebase-visual-truth-landing-1783059951830",
+      "issues": [
+        "T-pose wrist/saber relationship is visibly mutated from the accepted default",
+        "Ready hand/hilt/blade relationship does not read as accepted visual IK/FK",
+        "cloud telemetry and marker checks passed while the visible relationship remained wrong",
+        "default visible surface is not an accepted good default"
+      ],
+      "notes": "This preserves the false-green Firebase workflow result for run 28642688436 and the two Android screenshots from 2026-07-03 01:40. It generalizes the failure: object, route, clip, and marker presence are not visual relationship truth."
     }
   ]
 }
