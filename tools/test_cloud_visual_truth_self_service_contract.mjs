@@ -12,6 +12,8 @@ const refreshDoc = fs.readFileSync(path.join(projectRoot, 'docs', 'VISUAL_EVIDEN
 const packageJson = JSON.parse(fs.readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
 
 assert(selfService.includes('pose-lab-cloud-visual-truth-self-service-v1'), 'self-service tool should write a stable ledger schema');
+assert(selfService.includes('--commit-message') && selfService.includes("run('git', ['add', '-u'])") && selfService.includes("run('git', ['commit', '-m', message])"), 'self-service tool should own tracked-edit staging and commit to avoid ad hoc approval prompts');
+assert(selfService.includes('--include') && selfService.includes('ensureSafeInclude'), 'self-service tool should require explicit include paths for new files instead of sweeping generated artifacts');
 assert(selfService.includes("run('git', ['push'])"), 'self-service tool should use git push to trigger the existing PR workflow');
 assert(!selfService.includes('gh workflow run'), 'self-service tool must not depend on gh workflow dispatch');
 assert(!selfService.includes("'workflow', 'run'"), 'self-service tool must not invoke gh workflow dispatch');
@@ -50,6 +52,7 @@ assert(inspector.includes('artifact commit does not match current checkout'), 'a
 assert(inspector.includes('--strict-commit'), 'artifact inspector should offer strict commit enforcement without breaking PR merge-sha artifacts by default');
 
 assert(firebaseDoc.includes('pose_lab_cloud_visual_truth_self_service.mjs'), 'Firebase docs should route normal cloud refresh through the self-service tool');
+assert(firebaseDoc.includes('--commit-message') && firebaseDoc.includes('--include path/to/file'), 'Firebase docs should document the one-command commit/push/wait/download/inspect path');
 assert(refreshDoc.includes('pose_lab_cloud_visual_truth_self_service.mjs'), 'visual evidence refresh docs should route normal refresh through the self-service tool');
 assert(!refreshDoc.includes('gh workflow run firebase-visual-truth.yml --repo Valar05/pose-lab --ref <branch>'), 'visual refresh docs should not make gh workflow dispatch the default path');
 assert(packageJson.scripts?.['cloud:visual'], 'package.json should expose a self-service cloud visual script');

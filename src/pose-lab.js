@@ -11868,7 +11868,7 @@ class PoseLab {
     } finally {
       if (originalRotation) attachment.rotationDeg = originalRotation;
       if (originalOverrides) attachment.clipOverrides = originalOverrides;
-      this.updateWeaponAttachmentTransform(attachment);
+      actor.updateWeaponAttachmentTransform(attachment);
       actor.model.updateMatrixWorld(true);
     }
     const sorted = rows

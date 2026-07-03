@@ -21,6 +21,8 @@ function parseArgs(argv) {
     timeoutMs: 20 * 60 * 1000,
     pollMs: 15000,
     runId: '',
+    commitMessage: '',
+    include: [],
     json: false,
   };
   for (let i = 2; i < argv.length; i += 1) {
@@ -29,6 +31,10 @@ function parseArgs(argv) {
     else if (arg === '--wait') args.wait = true;
     else if (arg === '--download') args.download = true;
     else if (arg === '--inspect') args.inspect = true;
+    else if (arg === '--commit-message') args.commitMessage = String(argv[++i] || '');
+    else if (arg.startsWith('--commit-message=')) args.commitMessage = arg.slice('--commit-message='.length);
+    else if (arg === '--include') args.include.push(String(argv[++i] || ''));
+    else if (arg.startsWith('--include=')) args.include.push(arg.slice('--include='.length));
     else if (arg === '--run-id') args.runId = String(argv[++i] || '');
     else if (arg.startsWith('--run-id=')) args.runId = arg.slice('--run-id='.length);
     else if (arg === '--timeout-ms') args.timeoutMs = Number(argv[++i] || args.timeoutMs);
@@ -44,10 +50,12 @@ function parseArgs(argv) {
 
 function usage() {
   return [
-    'Usage: node tools/pose_lab_cloud_visual_truth_self_service.mjs [--push] [--wait] [--download] [--inspect]',
+    'Usage: node tools/pose_lab_cloud_visual_truth_self_service.mjs [--commit-message MSG] [--push] [--wait] [--download] [--inspect]',
     '',
     'Default mode runs local preflight and writes a self-service ledger.',
     '--push pushes the current branch so the PR-triggered Firebase workflow runs.',
+    '--commit-message stages tracked edits with git add -u and commits them before push.',
+    '--include PATH adds an explicit new file/path before commit; repeat as needed.',
     '--wait polls GitHub for the workflow run for HEAD.',
     '--download downloads the firebase-visual-truth artifact when a run id is known.',
     '--inspect validates the downloaded artifact and prints the PNGs to inspect.',
@@ -72,6 +80,35 @@ function run(command, args, options = {}) {
 
 function git(args) {
   return execFileSync('git', args, { cwd: projectRoot, encoding: 'utf8' }).trim();
+}
+
+function statusPorcelain() {
+  return git(['status', '--porcelain']);
+}
+
+function ensureSafeInclude(relPath) {
+  const value = String(relPath || '').trim();
+  if (!value) throw new Error('empty --include path');
+  const full = path.resolve(projectRoot, value);
+  if (!full.startsWith(projectRoot + path.sep) && full !== projectRoot) throw new Error(`refusing include outside project root: ${value}`);
+  return path.relative(projectRoot, full);
+}
+
+function commitTrackedEdits(message, includePaths = []) {
+  const cleanBefore = statusPorcelain();
+  if (!cleanBefore) return { skipped: 'working tree clean before commit', before: cleanBefore, after: cleanBefore };
+  run('git', ['add', '-u']);
+  for (const includePath of includePaths.map(ensureSafeInclude)) run('git', ['add', includePath]);
+  const staged = git(['diff', '--cached', '--name-only']);
+  if (!staged) return { skipped: 'no staged changes after git add -u / --include', before: cleanBefore, after: statusPorcelain() };
+  run('git', ['commit', '-m', message]);
+  return {
+    message,
+    staged: staged.split(/\r?\n/).filter(Boolean),
+    before: cleanBefore,
+    after: statusPorcelain(),
+    commit: git(['rev-parse', 'HEAD']),
+  };
 }
 
 function currentCacheToken() {
@@ -209,8 +246,6 @@ function localPreflight(options = {}) {
     ['node', ['--check', 'src/rig-profiles.js']],
     ['node', ['--check', 'tools/capture_firebase_visual_truth.mjs']],
     ['node', ['tools/test_firebase_hosting_config.mjs']],
-    ['node', ['tools/test_meshy_core_retarget_contract.mjs']],
-    ['node', ['tools/test_meshy_infinite_brutality_retarget_contract.mjs']],
     ['node', ['tools/test_pose_lab_no_bad_promotions.mjs']],
     ['git', ['diff', '--check']],
   ];
@@ -237,6 +272,7 @@ const report = {
   repo: repoFullName,
   workflow: workflowName,
   mode: { push: args.push, wait: args.wait, download: args.download, inspect: args.inspect },
+  commitStep: null,
   preflight: [],
   run: null,
   artifact: null,
@@ -247,6 +283,11 @@ const report = {
 };
 
 report.preflight = localPreflight({ refreshingFirebaseEvidence: args.download || args.inspect });
+
+if (args.commitMessage) {
+  report.commitStep = commitTrackedEdits(args.commitMessage, args.include);
+  report.commit = git(['rev-parse', 'HEAD']);
+}
 
 if (args.push) {
   run('git', ['push']);

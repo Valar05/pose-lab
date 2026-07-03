@@ -64,6 +64,12 @@ Use this index to choose the smallest proof surface before editing.
 
 ## Visual Truth, Red Builds, And Cache
 
+### `node tools/pose_lab_cloud_visual_truth_self_service.mjs --commit-message "..." --push --wait --download --inspect`
+
+- Status: current front door for hosted Meshy visual truth.
+- Proves: runs local preflight, commits tracked edits, pushes, waits for the PR Firebase workflow, downloads the artifact, inspects required PNGs, and wakes the exact Ready capture URL.
+- Does not prove: human visual acceptance by itself; the printed `tpose.png`, `ready.png`, and `ready_visual_follow.png` still must be inspected.
+
 ### `node tools/test_pose_lab_visual_red_build_contract.mjs`
 
 - Status: current

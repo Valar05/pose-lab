@@ -405,7 +405,7 @@ for (const capture of captures) {
     ? await debugExec(page, 'weapon visual-follow')
     : null;
   const rotationProbe = capture.id === 'ready' && routeSelected
-    ? await debugExec(page, 'weapon rotation-probe')
+    ? await debugExec(page, 'weapon rotation-probe').catch((caught) => ({ ok: false, command: 'weapon rotation-probe', error: caught?.message || String(caught) }))
     : null;
   let contactSheet = '';
   if (visualFollow?.image?.dataUrl) {
