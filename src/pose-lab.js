@@ -4588,6 +4588,7 @@ class PoseActor {
     const tip = proxy?.tipMarker;
     if (!weaponRoot || !config) return null;
     const effectiveConfig = clipScopedWeaponAttachmentConfig(config, this.activeAction?._clip || null);
+    proxy.activeAttachmentConfig = effectiveConfig;
     weaponLiveTrace('updateWeaponAttachmentTransform BEFORE', {
       actorKey: this.key,
       configId: weaponTraceObjectId(effectiveConfig),
@@ -5214,7 +5215,7 @@ class PoseActor {
     weaponLiveTrace('actor.play BEFORE', {
       actorKey: this.key,
       clip: name,
-      attachmentRotationDeg: this.info?.weaponAttachment?.rotationDeg || this.weaponProxy?.attachmentConfig?.rotationDeg || null,
+      attachmentRotationDeg: (this.weaponProxy?.activeAttachmentConfig || this.weaponProxy?.attachmentConfig || this.info?.weaponAttachment)?.rotationDeg || null,
       proxyAttachmentId: weaponTraceObjectId(this.weaponProxy?.attachmentConfig),
       actorAttachmentId: weaponTraceObjectId(this.info?.weaponAttachment),
       modelRotation: weaponTraceRotation(this.weaponProxy?.model),
@@ -5250,7 +5251,7 @@ class PoseActor {
     weaponLiveTrace('actor.play AFTER', {
       actorKey: this.key,
       clip: name,
-      attachmentRotationDeg: this.info?.weaponAttachment?.rotationDeg || this.weaponProxy?.attachmentConfig?.rotationDeg || null,
+      attachmentRotationDeg: (this.weaponProxy?.activeAttachmentConfig || this.weaponProxy?.attachmentConfig || this.info?.weaponAttachment)?.rotationDeg || null,
       proxyAttachmentId: weaponTraceObjectId(this.weaponProxy?.attachmentConfig),
       actorAttachmentId: weaponTraceObjectId(this.info?.weaponAttachment),
       modelRotation: weaponTraceRotation(this.weaponProxy?.model),
@@ -11188,11 +11189,11 @@ class PoseLab {
         handLocalOffset: proxy.config?.handLocalOffset || null,
         modelLocalOffset: proxy.config?.modelLocalOffset || null,
         socketRotationDeg: proxy.config?.rotationDeg || null,
-        attachmentRotationDeg: actor.info?.weaponAttachment?.rotationDeg || proxy.attachmentConfig?.rotationDeg || null,
+        attachmentRotationDeg: (proxy.activeAttachmentConfig || proxy.attachmentConfig || actor.info?.weaponAttachment)?.rotationDeg || null,
         rotationLayerContract: 'socketRotationDeg applies to WeaponGrip; attachmentRotationDeg applies to sabre mesh under displayRoot',
-        gripLocalPosition: actor.info?.weaponAttachment?.gripLocalPosition || null,
-        tipLocalPosition: actor.info?.weaponAttachment?.tipLocalPosition || null,
-        scale: actor.info?.weaponAttachment?.scale ?? null,
+        gripLocalPosition: (proxy.activeAttachmentConfig || proxy.attachmentConfig || actor.info?.weaponAttachment)?.gripLocalPosition || null,
+        tipLocalPosition: (proxy.activeAttachmentConfig || proxy.attachmentConfig || actor.info?.weaponAttachment)?.tipLocalPosition || null,
+        scale: (proxy.activeAttachmentConfig || proxy.attachmentConfig || actor.info?.weaponAttachment)?.scale ?? null,
       },
       quaternions: {
         weaponGripSocketLocal: roundQuat(socketLocalQuaternion),

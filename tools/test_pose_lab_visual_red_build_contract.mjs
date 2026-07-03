@@ -24,6 +24,7 @@ const firebaseDoc = fs.readFileSync(path.join(projectRoot, 'docs', 'FIREBASE_VIS
 const humanRedBuilds = fs.readFileSync(path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json'), 'utf8');
 const captureScript = fs.readFileSync(path.join(projectRoot, 'tools', 'capture_firebase_visual_truth.mjs'), 'utf8');
 const preflightScript = fs.readFileSync(path.join(projectRoot, 'tools', 'pose_lab_visual_truth_preflight.mjs'), 'utf8');
+const appSource = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
 
 assert(protocol.includes('Firebase hosted visual truth is tier-one'), 'evidence protocol must make Firebase hosted visual truth tier-one');
 assert(protocol.includes('wake the exact Ready capture URL'), 'evidence protocol must require waking the exact Ready capture URL before handoff');
@@ -54,6 +55,8 @@ assert(!captureScript.includes('landing hosted review load exceeded'), 'Firebase
 assert(captureScript.includes('tposeWristRelationshipAccepted: relationship.tposeWristRelationshipAccepted'), 'Firebase capture must not hard-code T-pose relationship failure');
 assert(captureScript.includes('readyVisualRelationshipAccepted: relationship.readyVisualRelationshipAccepted'), 'Firebase capture must not hard-code Ready relationship failure');
 assert(captureScript.includes('relationshipCloseup'), 'Firebase capture must preserve relationship close-up screenshots');
+assert(appSource.includes('proxy.activeAttachmentConfig = effectiveConfig'), 'Pose Lab must persist active clip-scoped weapon attachment config');
+assert(appSource.includes('proxy.activeAttachmentConfig || proxy.attachmentConfig || actor.info?.weaponAttachment'), 'Pose Lab weapon diagnostics must read the active clip-scoped attachment config');
 assert(protocol.includes('visible relationship') && firebaseDoc.includes('visible relationship'), 'Pose Lab docs must name visible relationship truth');
 assert(protocol.includes('Sense Synthesis') && firebaseDoc.includes('Sense Synthesis'), 'Pose Lab docs must require Sense Synthesis for visual acceptance');
 assert(protocol.includes('phone-visible hosted URL is part of cloud truth'), 'evidence protocol must treat Android Chrome hosted review as cloud truth');
@@ -62,7 +65,6 @@ assert(humanRedBuilds.includes('a92fa0bb6dc5b83644688db2d8b04d7c9b2f56b5'), 'hum
 assert(humanRedBuilds.includes('REVIEW ROUTE READY') && humanRedBuilds.includes('T-pose/rest'), 'human red-build ledger must name route-ready and rest-hydration failures');
 assert(humanRedBuilds.includes('e6cc6635631c1f1a983932d01e3233f25640e933') && humanRedBuilds.includes('28678973256'), 'human red-build ledger must preserve the latest false-green strike');
 assert(preflightScript.includes('AUTHORITY_REVOKED_FALSE_GREEN') && preflightScript.includes('allowedNextAction'), 'preflight must revoke authority and provide the only allowed next action for false-green vetoes');
-const appSource = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
 assert(appSource.includes('reviewTruthState') && appSource.includes('REVIEW RED'), 'Pose Lab runtime must expose visible review truth in the UI');
 assert(appSource.includes('Meshy review UI fell back to walking-only clip inventory'), 'Pose Lab runtime must mark walking-only Meshy review inventory red');
 

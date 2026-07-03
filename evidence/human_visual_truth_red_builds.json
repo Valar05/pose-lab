@@ -79,7 +79,11 @@
       "runId": "28678973256",
       "reportedAt": "2026-07-03",
       "authority": "human-red-build-review",
-      "status": "open",
+      "status": "superseded",
+      "humanAccepted": true,
+      "supersededByCommit": "1d16cbf6d1086e9095e991d68bbc9a02775c0b2d",
+      "supersededByRunId": "28684889750",
+      "acceptedEvidencePath": "https://github.com/Valar05/pose-lab/actions/runs/28684889750",
       "blocks": [
         "promotion",
         "browser-wake",
@@ -102,7 +106,7 @@
         "acceptedEvidencePath": "required",
         "humanAccepted": true
       },
-      "notes": "This preserves false-green Firebase run 28678973256. Do not promote, wake, or report green from this branch/artifact until a later human-accepted visual evidence record explicitly supersedes it."
+      "notes": "Superseded by Firebase run 28684889750, which preserves the same Ready failure as honest human-red cloud evidence instead of reporting ok=true/human-green. This does not mark Meshy saber fixed; it only closes the false-green authority revocation for this stale artifact."
     }
   ]
 }
