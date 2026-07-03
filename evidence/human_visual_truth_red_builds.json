@@ -107,6 +107,38 @@
         "humanAccepted": true
       },
       "notes": "Superseded by Firebase run 28684889750, which preserves the same Ready failure as honest human-red cloud evidence instead of reporting ok=true/human-green. This does not mark Meshy saber fixed; it only closes the false-green authority revocation for this stale artifact."
+    },
+    {
+      "commit": "8900908ba196f797bd5b3be0e716b0fdb2e14781",
+      "runId": "28686174246",
+      "reportedAt": "2026-07-03",
+      "authority": "human-phone-visible-cloud-review",
+      "status": "open",
+      "url": "https://pose-lab-visual-truth--visual-truth-pr-28686174246-ls37yuw0.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&clip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&qaClip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&weaponDebug=1&cacheBust=firebase-visual-truth-1783118089130",
+      "screenshots": [
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-174204.png",
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-174209.png"
+      ],
+      "issues": [
+        "Android Chrome screenshot 20260703-174204 shows the requested Ready route with REVIEW ROUTE OK, but the phone-visible review surface is obstructed by large labels and the clip drawer so the hand/hilt/blade relationship cannot be accepted from the live page",
+        "Android Chrome screenshot 20260703-174209 shows the same Ready URL in REVIEW RED because the active visible clip is 0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+        "The Firebase artifact for run 28686174246 reported ok=true and Sense Synthesis human-green, but the phone-visible cloud page contradicted it",
+        "Current acceptance still lets cloud screenshot crops pass while the actual woken mobile review surface can be visually unusable or route-divergent",
+        "Human review says FK and poses are not sane; the next pass must reconcile phone-visible cloud truth before any green/fixed claim"
+      ],
+      "blocks": [
+        "promotion",
+        "browser-wake-as-proof",
+        "green-report",
+        "fk-offset-pose-edits"
+      ],
+      "closureRequired": {
+        "status": "superseded",
+        "supersededByCommit": "required",
+        "acceptedEvidencePath": "required",
+        "humanAccepted": true
+      },
+      "notes": "This records the false-green split between Firebase artifact run 28686174246 and phone-visible Android Chrome screenshots at 2026-07-03 17:42. Do not treat the generated artifact as acceptance until the exact woken mobile review URL remains on the requested clip and exposes an unobstructed hand/hilt/blade relationship."
     }
   ]
 }
