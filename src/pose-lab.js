@@ -19,8 +19,8 @@ import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
 
-const LAB_BUILD = 'meshy-fps-ready-weapongrip-fk';
-const LAB_CACHE_TOKEN = 'pose-editor-198';
+const LAB_BUILD = 'meshy-fps-ready-weapongrip-refresh';
+const LAB_CACHE_TOKEN = 'pose-editor-199';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 const MESHY_REVIEW_CLIPS = [
@@ -4326,6 +4326,7 @@ class PoseActor {
     this.applyGrounding();
     this.updateDebugHelpers();
     this.updateBoneOverlay();
+    this.updateWeaponSocketTransform({ force: true });
     this.updateWeaponProxyVisibility();
   }
 
@@ -5244,6 +5245,7 @@ class PoseActor {
     this.applyGrounding();
     this.updateDebugHelpers();
     this.updateBoneOverlay();
+    this.updateWeaponSocketTransform({ force: true });
     this.updateWeaponProxyVisibility();
     weaponLiveTrace('actor.play AFTER', {
       actorKey: this.key,
