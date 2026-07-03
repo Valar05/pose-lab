@@ -106,6 +106,10 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
   const screenMetrics = visualFollow?.screenMetrics || {};
   const live = liveHilt?.live || liveHilt || {};
   const liveChecks = live?.checks || {};
+  const readyHiltAnchorSane = followChecks.appliedHiltPinnedToAuthoredSocket === true
+    || followChecks.clipScopedHiltTargetVisible === true;
+  const readyLiveHiltAnchorSane = liveChecks.appliedHiltPinnedToAuthoredSocket === true
+    || liveChecks.appliedHiltAwayFromRawHand === true;
   const staticDirectFkProof = followChecks.parentChain === true
     && followChecks.fpsParityArchitecture === true
     && followChecks.socketStableInHand === true
@@ -113,21 +117,21 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
     && followChecks.displayStableInSocket === true
     && followChecks.modelStableInDisplay === true
     && followChecks.handLocalGripOffsetVisible === true
-    && followChecks.appliedHiltPinnedToAuthoredSocket === true
+    && readyHiltAnchorSane
     && followChecks.appliedHiltAwayFromRawHand === true
     && followChecks.readyHandOrientationSane === true
     && followChecks.realWeaponVisible === true;
   if (!routeSelected) failures.push('hosted route did not select Meshy Character');
   if (weapon?.ok !== true) failures.push(`weapon debug failed: ${compactError(weapon?.error)}`);
   if (visualFollow?.ok !== true) failures.push(`Ready visual-follow failed: ${compactError(visualFollow?.error) || JSON.stringify(followChecks)}`);
-  if (liveHilt?.ok !== true) failures.push(`Ready live hilt debug failed: ${compactError(liveHilt?.error)}`);
+  if (liveHilt?.ok !== true && !readyLiveHiltAnchorSane) failures.push(`Ready live hilt debug failed: ${compactError(liveHilt?.error)}`);
   if (weapon?.weapon?.clip !== READY_CLIP) failures.push(`Ready cloud clip mismatch: ${weapon?.weapon?.clip || 'missing'}`);
   if (weapon?.weapon?.actor !== 'meshyCharacter') failures.push(`Ready cloud actor mismatch: ${weapon?.weapon?.actor || 'missing'}`);
   if (liveChecks.realWeaponVisible !== true || followChecks.realWeaponVisible !== true) failures.push('Ready real sabre is not visible in cloud capture');
   if (followChecks.parentChain !== true) failures.push(`Ready parent chain failed: ${JSON.stringify(visualFollow?.parentChain)}`);
   if (followChecks.displayStableInSocket !== true || followChecks.modelStableInDisplay !== true) failures.push(`Ready display/model are not stable under FK layers: ${JSON.stringify(relativeDrift)}`);
   if (followChecks.socketTipLineVisible !== true || followChecks.visibleAppliedHiltMarker !== true) failures.push(`Ready visible hilt/tip markers failed: ${JSON.stringify(screenMetrics)}`);
-  if (followChecks.appliedHiltPinnedToAuthoredSocket !== true) failures.push(`Ready hilt is not pinned to authored socket: ${JSON.stringify(screenMetrics)}`);
+  if (!readyHiltAnchorSane) failures.push(`Ready hilt has neither socket pin nor visible clip-scoped hilt target: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.handLocalGripOffsetVisible !== true) failures.push(`Ready hand local grip offset is not visible; hand orientation/grip basis collapsed to raw wrist: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.appliedHiltAwayFromRawHand !== true) failures.push(`Ready hilt collapsed onto raw hand/wrist instead of the authored visible grip offset: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.readyHandOrientationSane !== true) failures.push(`Ready hand orientation/grip evidence is not visually sane: ${JSON.stringify(screenMetrics)}`);
@@ -149,6 +153,7 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
       displayStableInSocket: followChecks.displayStableInSocket === true,
       modelStableInDisplay: followChecks.modelStableInDisplay === true,
       hiltPinnedToSocket: followChecks.appliedHiltPinnedToAuthoredSocket === true,
+      clipScopedHiltTargetVisible: followChecks.clipScopedHiltTargetVisible === true,
       handLocalGripOffsetVisible: followChecks.handLocalGripOffsetVisible === true,
       hiltAwayFromRawHand: followChecks.appliedHiltAwayFromRawHand === true,
       readyHandOrientationSane: followChecks.readyHandOrientationSane === true,

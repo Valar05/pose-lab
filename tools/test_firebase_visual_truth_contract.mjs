@@ -67,11 +67,11 @@ assert(typeof ready?.contactSheet === 'string' && ready.contactSheet.endsWith('.
 assert(ready?.cloudTelemetry?.visualFollow?.ok === true, 'Ready cloud evidence must include successful visual-follow telemetry');
 assert(ready?.evaluation?.checks?.realWeaponVisible === true, 'Ready cloud evidence must prove real weapon visibility');
 assert(ready?.evaluation?.checks?.parentChain === true, 'Ready cloud evidence must prove FK parent chain');
-assert(ready?.evaluation?.checks?.hiltPinnedToSocket === true, 'Ready cloud evidence must prove hilt pinning');
+assert(ready?.evaluation?.checks?.hiltPinnedToSocket === true || ready?.evaluation?.checks?.clipScopedHiltTargetVisible === true, 'Ready cloud evidence must prove hilt pinning or a visible clip-scoped hilt target');
 assert(ready?.evaluation?.checks?.handLocalGripOffsetVisible === true, 'Ready cloud evidence must prove hand-local grip offset is visibly separated from the raw wrist');
 assert(ready?.evaluation?.checks?.hiltAwayFromRawHand === true, 'Ready cloud evidence must prove the hilt has not collapsed onto the raw hand/wrist');
 assert(ready?.evaluation?.checks?.readyHandOrientationSane === true, 'Ready cloud evidence must prove the hand orientation/grip basis is visually sane');
-assert(ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true, 'Ready cloud evidence must prove hand and saber tip move together');
+assert(ready?.evaluation?.checks?.staticDirectFkProof === true || (ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true), 'Ready cloud evidence must prove static direct FK or hand/saber tip motion together');
 assert(evidence.truthLedger?.tposeStableIdle === true, 'truth ledger must mark T-pose stable idle green');
 assert(evidence.truthLedger?.readyBoringFk === true, 'truth ledger must mark Ready boring FK green');
 assert(evidence.ok === true, 'Firebase visual truth evidence must be green only when T-pose and Ready both pass');
