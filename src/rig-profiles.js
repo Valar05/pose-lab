@@ -314,13 +314,13 @@ const BASE_RIG_PROFILES = {
       clipOverrides: [
         {
           clipPattern: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]',
-          rotationDeg: [11.704, 12.774, -143.407],
-          reason: 'Ready-only cloud-probed sabre mesh basis correction from Firebase run 28685228678: rotates the visible blade under the already-authored FK WeaponGrip without moving the hilt, socket, grip, tip oracle, scale, or T-pose baseline.',
+          rotationDeg: [44.1, -105, -129.2],
+          reason: 'Ready-only vector-solved sabre mesh basis correction from Firebase run 28685426991: rotates the visible blade under the already-authored FK WeaponGrip without moving the hilt, socket, grip, tip oracle, scale, or T-pose baseline.',
         },
         {
           clipPattern: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
-          rotationDeg: [11.704, 12.774, -143.407],
-          reason: 'Review-only Ready uses the same cloud-probed rotation-only blade correction while preserving pure FK and the accepted rest weapon attachment.',
+          rotationDeg: [44.1, -105, -129.2],
+          reason: 'Review-only Ready uses the same vector-solved rotation-only blade correction while preserving pure FK and the accepted rest weapon attachment.',
         },
       ],
     },
