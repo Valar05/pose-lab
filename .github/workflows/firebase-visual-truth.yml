@@ -54,6 +54,7 @@ jobs:
         run: node tools/capture_firebase_visual_truth.mjs --hosted-url "$HOSTED_URL"
 
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: firebase-visual-truth
           path: generated/firebase_visual_truth/latest/

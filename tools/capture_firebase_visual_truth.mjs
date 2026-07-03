@@ -55,21 +55,27 @@ const captures = [
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 }, deviceScaleFactor: 1 });
 const captured = [];
+let failed = false;
 
 for (const capture of captures) {
   const url = poseUrl(args.hostedUrl, capture.clip);
+  let error = '';
   await page.goto(url, { waitUntil: 'networkidle', timeout: 90000 });
-  await page.waitForFunction(() => {
-    const text = document.querySelector('#loadState')?.textContent || '';
-    return /selected Meshy Character/.test(text);
-  }, { timeout: 120000 });
+  try {
+    await page.waitForFunction(() => {
+      const text = document.querySelector('#loadState')?.textContent || '';
+      return /selected Meshy Character/.test(text);
+    }, null, { timeout: 120000 });
+  } catch (caught) {
+    failed = true;
+    error = caught?.message || String(caught);
+  }
   await page.waitForTimeout(1000);
   const screenshot = path.join(outDir, `${capture.id}.png`);
   await page.screenshot({ path: screenshot, fullPage: false });
   const loadState = await page.locator('#loadState').textContent({ timeout: 5000 }).catch(() => '');
-  if (!/selected Meshy Character/.test(loadState || '')) {
-    throw new Error(`hosted capture selected wrong actor for ${capture.id}: ${loadState || 'missing loadState'}`);
-  }
+  const routeSelected = /selected Meshy Character/.test(loadState || '');
+  if (!routeSelected) failed = true;
   captured.push({
     id: capture.id,
     actor: 'meshyCharacter',
@@ -77,9 +83,14 @@ for (const capture of captures) {
     url,
     screenshot: path.relative(projectRoot, screenshot),
     loadState: loadState || '',
+    routeSelected,
+    error,
     expectedVisibleState: capture.expected,
-    visibleRead: `Hosted Firebase screenshot captured for ${capture.id}; human review still decides visual correctness.`,
+    visibleRead: routeSelected
+      ? `Hosted Firebase screenshot captured for ${capture.id}; human review still decides visual correctness.`
+      : `Hosted Firebase capture did not reach Meshy Character for ${capture.id}; route/load truth is red.`,
   });
+  if (!routeSelected) break;
 }
 
 await browser.close();
@@ -93,14 +104,16 @@ const evidence = {
   commit: process.env.GITHUB_SHA || '',
   cacheToken: sourceMatch(/const\s+LAB_CACHE_TOKEN\s*=\s*['"]([^'"]+)['"]/),
   runtimeBuild: sourceMatch(/const\s+LAB_BUILD\s*=\s*['"]([^'"]+)['"]/),
+  ok: !failed && captured.length === captures.length && captured.every((capture) => capture.routeSelected === true),
   captures: captured,
   truthLedger: {
     repo: true,
     hostedFirebase: true,
-    cloudBrowserCapture: true,
+    cloudBrowserCapture: !failed,
     human: false,
   },
 };
 
 fs.writeFileSync(path.join(outDir, 'visual_truth.json'), `${JSON.stringify(evidence, null, 2)}\n`);
 console.log(JSON.stringify(evidence, null, 2));
+if (!evidence.ok) process.exitCode = 1;

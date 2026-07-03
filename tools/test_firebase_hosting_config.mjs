@@ -25,6 +25,8 @@ assert(!buildScript.includes("copyDir('generated'"), 'release build must not sta
 const captureScript = fs.readFileSync(path.join(projectRoot, 'tools', 'capture_firebase_visual_truth.mjs'), 'utf8');
 assert(captureScript.includes("url.searchParams.set('qaActor', 'meshyCharacter')"), 'Firebase capture should force the hosted actor through qaActor');
 assert(captureScript.includes('selected Meshy Character'), 'Firebase capture should wait for the hosted page to actually select Meshy Character');
+assert(captureScript.includes('null, { timeout: 120000 }'), 'Firebase capture should pass the wait timeout as Playwright options');
+assert(captureScript.includes('if (!evidence.ok) process.exitCode = 1'), 'Firebase capture should fail the workflow while preserving evidence');
 assert(gitignore.includes('/generated/firebase_hosting/'), 'generated Firebase staging output should stay untracked');
 assert(gitignore.includes('/generated/firebase_visual_truth/artifacts/'), 'Firebase screenshot artifacts should stay untracked');
 
