@@ -10,6 +10,7 @@ const repoFullName = 'Valar05/pose-lab';
 const workflowName = 'Firebase Visual Truth';
 const outRoot = path.join(projectRoot, 'generated', 'cloud_visual_truth_self_service', 'latest');
 const canonicalArtifactDir = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest');
+const androidWakeScript = '/storage/emulated/0/Documents/GodotProjects/.codex/skills/android-chrome-tab-prune/scripts/prune_and_wake_browser.sh';
 
 function parseArgs(argv) {
   const args = {
@@ -156,6 +157,52 @@ function syncCanonicalArtifact(artifactDir) {
   return canonicalArtifactDir;
 }
 
+function captureUrl(evidence, id) {
+  return evidence?.captures?.find((capture) => capture.id === id)?.url || '';
+}
+
+function reviewWakeUrl(evidence) {
+  return captureUrl(evidence, 'ready') || captureUrl(evidence, 'tpose') || captureUrl(evidence, 'landing') || '';
+}
+
+function readArtifactEvidence(artifactDir) {
+  const file = path.join(artifactDir, 'visual_truth.json');
+  if (!fs.existsSync(file)) return null;
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function parseKeyValueReport(text) {
+  const parsed = {};
+  for (const line of String(text || '').split(/\r?\n/)) {
+    const index = line.indexOf('=');
+    if (index > 0) parsed[line.slice(0, index)] = line.slice(index + 1);
+  }
+  return parsed;
+}
+
+function wakeReviewUrl(artifactDir) {
+  const evidence = readArtifactEvidence(artifactDir);
+  const targetUrl = reviewWakeUrl(evidence);
+  if (!targetUrl) return { ok: false, targetUrl: '', skipped: 'missing capture URL in visual_truth.json' };
+  if (evidence?.hostedUrl && targetUrl === evidence.hostedUrl) {
+    return { ok: false, targetUrl, skipped: 'refusing to wake base hostedUrl; expected a capture URL with route query parameters' };
+  }
+  if (!fs.existsSync(androidWakeScript)) return { ok: false, targetUrl, skipped: `missing Android browser wake script: ${androidWakeScript}` };
+  const stdout = run('sh', [androidWakeScript, '--url', targetUrl], { capture: true });
+  const summary = parseKeyValueReport(stdout);
+  return {
+    ok: summary.open_status === 'opened',
+    targetUrl,
+    report: summary.report || '',
+    openStatus: summary.open_status || '',
+    pruneStatus: summary.prune_status || '',
+    confirmedCloseTaps: summary.confirmed_close_taps || '',
+    forceStartCount: summary.force_start_count || '',
+    forceStopAttempts: summary.force_stop_attempts || '',
+    forceStopCount: summary.force_stop_count || '',
+  };
+}
+
 function localPreflight() {
   const commands = [
     ['node', ['--check', 'src/pose-lab.js']],
@@ -193,6 +240,7 @@ const report = {
   artifact: null,
   canonicalArtifactDir: '',
   inspect: null,
+  browserWake: null,
   next: [],
 };
 
@@ -234,6 +282,8 @@ if (args.inspect) {
   const artifactDir = report.artifact?.artifactDir || path.join(outRoot, 'artifact');
   run('node', ['tools/inspect_firebase_visual_artifact.mjs', '--artifact-dir', artifactDir, '--json']);
   report.inspect = { artifactDir };
+  report.browserWake = wakeReviewUrl(artifactDir);
+  if (report.browserWake.ok !== true) throw new Error(`browser wake failed: ${JSON.stringify(report.browserWake)}`);
 }
 
 if (!args.push) report.next.push('Run with --push after committing to trigger the PR Firebase workflow.');
@@ -247,5 +297,6 @@ else {
   console.log(`self-service report: ${path.relative(projectRoot, path.join(outRoot, 'self_service_report.json'))}`);
   if (report.run) console.log(`run: ${report.run.id} ${report.run.status} ${report.run.conclusion || ''}`);
   if (report.artifact) console.log(`artifact: ${report.artifact.artifactDir}`);
+  if (report.browserWake) console.log(`browserWake: ${report.browserWake.openStatus || 'not-opened'} ${report.browserWake.targetUrl}`);
   for (const next of report.next) console.log(`next: ${next}`);
 }

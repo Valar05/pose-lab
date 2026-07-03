@@ -64,6 +64,14 @@ function requiredFile(dir, name, failures) {
   return file;
 }
 
+function captureUrl(evidence, id) {
+  return evidence?.captures?.find((capture) => capture.id === id)?.url || '';
+}
+
+function reviewWakeUrl(evidence) {
+  return captureUrl(evidence, 'ready') || captureUrl(evidence, 'tpose') || captureUrl(evidence, 'landing') || '';
+}
+
 function commitMatches(current, artifact) {
   if (!current || !artifact) return true;
   return String(current).startsWith(String(artifact)) || String(artifact).startsWith(String(current));
@@ -109,6 +117,9 @@ if (evidence) {
   if (ready && ready.contactSheet && path.basename(ready.contactSheet) !== path.basename(followPath)) {
     failures.push(`ready contactSheet points somewhere unexpected: ${ready.contactSheet}`);
   }
+  if (reviewWakeUrl(evidence) && reviewWakeUrl(evidence) === evidence.hostedUrl) {
+    warnings.push('review wake URL is the base hostedUrl; prefer the Ready capture URL with actor, clip, and debug query parameters');
+  }
   if (args.requireGreen && evidence.ok !== true) failures.push('Firebase visual truth JSON is not green');
 }
 
@@ -120,6 +131,9 @@ const report = {
   strictCommit: args.strictCommit,
   evidenceOk: evidence?.ok === true,
   hostedUrl: evidence?.hostedUrl || '',
+  wakeUrl: reviewWakeUrl(evidence),
+  tposeReviewUrl: captureUrl(evidence, 'tpose'),
+  readyReviewUrl: captureUrl(evidence, 'ready'),
   commit: evidence?.commit || '',
   cacheToken: evidence?.cacheToken || '',
   imagesToInspect: {
@@ -136,6 +150,9 @@ if (args.json) console.log(JSON.stringify(report, null, 2));
 else {
   console.log(`artifact: ${artifactDir}`);
   console.log(`hostedUrl: ${report.hostedUrl || 'missing'}`);
+  console.log(`wakeUrl: ${report.wakeUrl || 'missing'}`);
+  console.log(`tposeReviewUrl: ${report.tposeReviewUrl || 'missing'}`);
+  console.log(`readyReviewUrl: ${report.readyReviewUrl || 'missing'}`);
   console.log(`commit: ${report.commit || 'missing'}`);
   console.log(`cacheToken: ${report.cacheToken || 'missing'}`);
   console.log(`tpose: ${report.imagesToInspect.tpose}`);

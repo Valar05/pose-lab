@@ -19,10 +19,12 @@ const firebaseDoc = fs.readFileSync(path.join(projectRoot, 'docs', 'FIREBASE_VIS
 const captureScript = fs.readFileSync(path.join(projectRoot, 'tools', 'capture_firebase_visual_truth.mjs'), 'utf8');
 
 assert(protocol.includes('Firebase hosted visual truth is tier-one'), 'evidence protocol must make Firebase hosted visual truth tier-one');
-assert(protocol.includes('wake the exact `hostedUrl`'), 'evidence protocol must require waking the exact cloud URL before handoff');
+assert(protocol.includes('wake the exact Ready capture URL'), 'evidence protocol must require waking the exact Ready capture URL before handoff');
+assert(!protocol.includes('wake the exact `hostedUrl`'), 'evidence protocol must not tell agents to wake the base hostedUrl');
 assert(protocol.includes('offline render') && protocol.includes('diagnostic-only'), 'evidence protocol must demote offline render to diagnostic-only');
 assert(firebaseDoc.includes('T-pose stable idle') && firebaseDoc.includes('Ready boring FK'), 'Firebase doc must name both required Meshy saber truths');
-assert(firebaseDoc.includes('wake the exact `hostedUrl`'), 'Firebase doc must require waking the exact cloud URL used by the artifact');
+assert(firebaseDoc.includes('wake the exact Ready capture URL'), 'Firebase doc must require waking the exact Ready capture URL used by the artifact');
+assert(!firebaseDoc.includes('wake the exact `hostedUrl`'), 'Firebase doc must not tell agents to wake the base hostedUrl');
 assert(captureScript.includes('evaluateTpose') && captureScript.includes('evaluateReady'), 'Firebase capture must evaluate both T-pose and Ready');
 assert(captureScript.includes("authority: 'firebase-hosted-cloud-browser'"), 'Firebase capture must declare cloud authority');
 assert(captureScript.includes("offlineRender: 'diagnostic-only'"), 'Firebase capture must reject offline render as acceptance');

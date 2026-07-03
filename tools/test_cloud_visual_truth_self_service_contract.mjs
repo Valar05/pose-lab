@@ -20,6 +20,9 @@ assert(selfService.includes('actions/runs?head_sha='), 'self-service tool should
 assert(selfService.includes('firebase-visual-truth'), 'self-service tool should fetch the Firebase visual truth artifact');
 assert(selfService.includes('generated\', \'firebase_visual_truth\', \'latest'), 'self-service tool should sync downloaded artifacts to the canonical evidence path');
 assert(selfService.includes('tools/inspect_firebase_visual_artifact.mjs'), 'self-service tool should call the artifact inspector');
+assert(selfService.includes("captureUrl(evidence, 'ready')"), 'self-service tool should wake the Ready capture URL, not the Firebase root');
+assert(selfService.includes('refusing to wake base hostedUrl'), 'self-service tool should refuse to wake the base hostedUrl as review proof');
+assert(selfService.includes('prune_and_wake_browser.sh'), 'self-service tool should use the Android browser wake script after artifact inspection');
 for (const required of [
   "'--check', 'src/pose-lab.js'",
   "'--check', 'src/rig-profiles.js'",
