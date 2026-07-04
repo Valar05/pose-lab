@@ -17,7 +17,7 @@ assert(js.includes('function weaponDebugForceVisible()') && js.includes("params.
 assert(profiles.includes("weaponAttachment: {") && profiles.includes("socketBone: 'WeaponGrip'") && profiles.includes("leftHandBone: 'LeftHand'"), 'Meshy profile should attach the real Meshy sabre to the centered WeaponGrip');
 assert(profiles.includes('Saber handle-centered attachment for Meshy Character') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy Character should preserve the semantic/manual saber hilt candidate');
 assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy saber should rotate from the hand origin without shifting the socket');
-assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]') && profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]') && profiles.includes('rotationDeg: [90, 0, -55.145]'), 'Meshy saber should use the saved 3D gizmo socket position and rotation');
+assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]') && profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]') && profiles.includes('rotationDeg: [85, -140, -60]'), 'Meshy saber should use the saved 3D gizmo socket position and rotation');
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy should generate the gated Ready candidate clip');
 assert(profiles.includes("visibleClipPatterns: ['\\\\[FPS-REST-ARMS']"), 'Meshy weapon visibility should include only accepted T-pose rest until Ready is promoted');
 assert(!profiles.includes("sourceWeapon: 'Weapon.R'") && !profiles.includes("targetWeapon: 'WeaponGrip'"), 'normal Meshy Ready should not drive WeaponGrip from FPS Weapon.R tracks');
