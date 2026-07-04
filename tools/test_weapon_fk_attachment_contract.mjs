@@ -23,7 +23,7 @@ const fixed = render([
   '--samples', '3',
 ]);
 
-assert(profilesSource.includes('rotationDeg: [-163.017, 3.942, -12.978]') && profilesSource.includes('rotationDeg: [5.666, 87.396, 0]'), 'Meshy sabre rotation must preserve the user-authored shared FK calibration with a blade-aligned WeaponGrip socket');
+assert(profilesSource.includes('rotationDeg: [0, 0, 0]') && profilesSource.includes('rotationDeg: [-67.582, 76.718, -90.52]'), 'Meshy sabre rotation must preserve the user-authored shared FK calibration on the mesh layer with identity WeaponGrip rotation');
 assert(profilesSource.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy sabre hilt oracle must match the accepted pre-FK T-pose baseline');
 assert(profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must use direct hand-fk for boring FK verification');
 assert(!profilesSource.includes("placementAuthority: 'manual-golden'"), 'Meshy production profile must not keep the failed manual-golden authority label');
@@ -35,8 +35,8 @@ assert(fixed.artifact.generatedClipResolved === true, `accepted T-pose clip shou
 assert(fixed.artifact.checks?.weaponMeshRendered === true, 'offline baseline must render the real sabre mesh');
 assert(fixed.artifact.checks?.parentChainMatchesPureFkShape === true, `offline baseline should keep model -> displayRoot -> WeaponGrip -> RightHand ownership: ${JSON.stringify(fixed.artifact.sampleData?.[0]?.parentChain)}`);
 assert(fixed.artifact.checks?.appliedHiltPinnedToWeaponGrip === true, `applied hilt should stay pinned to WeaponGrip: ${JSON.stringify(fixed.artifact.hiltSocketDistances)}`);
-assert(Number(fixed.artifact.maxDistances?.rawHandToAppliedHilt) >= 0.12, `manual shared FK calibration should keep the hilt visibly displaced from the raw wrist/hand origin: ${JSON.stringify(fixed.artifact.maxDistances)}`);
-assert(Number(fixed.artifact.maxDistances?.palmTargetToAppliedHilt) >= 0.12, `manual shared FK calibration should preserve the authored palm/hilt displacement instead of collapsing to the old palm target: ${JSON.stringify(fixed.artifact.maxDistances)}`);
+assert(fixed.artifact.checks?.appliedHiltInHandRegion === true, `boring FK calibration should keep the applied hilt in the hand/palm region: ${JSON.stringify(fixed.artifact.maxDistances)}`);
+assert(Number(fixed.artifact.maxDistances?.palmTargetToAppliedHilt) <= Number(fixed.artifact.thresholds?.handRegionMaxDistance || 0.025), `applied hilt should be owned by the palm target instead of stale model-space compensation: ${JSON.stringify(fixed.artifact.maxDistances)}`);
 assert(Number(fixed.artifact.maxDistances?.visibleMeshBladeLength) >= Number(fixed.artifact.thresholds?.meshBladeLengthMinDistance || 0.005), `real sabre blade landmark should be visible: ${JSON.stringify(fixed.artifact.maxDistances)}`);
 assert(fixed.artifact.generatedClipStats?.weaponTrackEnabled !== true && fixed.artifact.generatedClipStats?.weaponTrackTarget == null, `accepted T-pose baseline must not emit generated weapon tracks: ${JSON.stringify(fixed.artifact.generatedClipStats)}`);
 

@@ -269,7 +269,7 @@ const BASE_RIG_PROFILES = {
       positionMode: 'right-hand',
       parentMode: 'hand-fk',
       handLocalOffset: [0.095, 0.035, -0.01],
-      modelLocalOffset: [1.01462, 12.80195, -0.47992],
+      modelLocalOffset: [0, 0, 0],
       gripOffset: [0, 0, 0],
       tipOffset: [0, 0, 0.85],
       visibleClipPatterns: ['\\[FPS-REST-ARMS'],
@@ -280,7 +280,7 @@ const BASE_RIG_PROFILES = {
       hiltColor: 0xffd36d,
       debugArcColor: 0x42e9ff,
       debugArcOpacity: 0.92,
-      rotationDeg: [-163.017, 3.942, -12.978],
+      rotationDeg: [0, 0, 0],
     },
     weaponAttachment: {
       url: 'assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb',
@@ -289,7 +289,7 @@ const BASE_RIG_PROFILES = {
       tipMarker: 'WeaponGrip_end',
       scale: 0.47493,
       position: [0, 0, 0],
-      rotationDeg: [5.666, 87.396, 0],
+      rotationDeg: [-67.582, 76.718, -90.52],
       gripLocalPosition: [0.6535, -0.02302, -0.07317],
       tipLocalPosition: [-0.95561, 0.1368, 0],
       sourceBounds: {

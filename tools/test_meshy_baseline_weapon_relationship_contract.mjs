@@ -25,8 +25,8 @@ assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-R
 assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120', '0T-Pose']"), 'SwordReady must not promote a Ready candidate while the visual relationship is red');
 assert(profiles.includes("visibleClipPatterns: ['\\\\[FPS-REST-ARMS']"), 'default weapon visibility must remain scoped to the accepted rest-arms surface');
 
-assert(profiles.includes('rotationDeg: [-163.017, 3.942, -12.978]'), 'base Meshy WeaponGrip socket rotation must align the sword bone to the blade');
-assert(profiles.includes('rotationDeg: [5.666, 87.396, 0]'), 'base Meshy sabre attachment rotation must preserve the composed user-authored shared FK calibration');
+assert(profiles.includes('rotationDeg: [0, 0, 0]'), 'base Meshy WeaponGrip socket rotation must remain identity for boring FK');
+assert(profiles.includes('rotationDeg: [-67.582, 76.718, -90.52]'), 'base Meshy sabre attachment rotation must preserve the user-authored shared FK calibration');
 assert(profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'base Meshy hilt oracle must remain unchanged');
 assert(profiles.includes('tipLocalPosition: [-0.95561, 0.1368, 0]'), 'base Meshy tip oracle must remain unchanged');
 

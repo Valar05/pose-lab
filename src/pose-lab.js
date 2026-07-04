@@ -3,8 +3,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
-import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-206';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-206';
+import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-207';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-207';
 import {
   applyWeaponAttachmentRuntimeRules,
   applyWeaponSocketRuntimeRules,
@@ -13,14 +13,14 @@ import {
   pinWeaponLocalPointToDisplay as pinWeaponLocalPointToDisplayRuntime,
   updateWeaponFallbackFromTipRuntime,
   weaponPlacementConfigSignature,
-} from './weapon-runtime-rules.mjs?v=pose-editor-206';
-import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-206';
-import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-206';
-import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-206';
-import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-206';
+} from './weapon-runtime-rules.mjs?v=pose-editor-207';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-207';
+import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-207';
+import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-207';
+import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-207';
 
 const LAB_BUILD = 'meshy-fps-ready-probe-truth';
-const LAB_CACHE_TOKEN = 'pose-editor-206';
+const LAB_CACHE_TOKEN = 'pose-editor-207';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 const MESHY_REVIEW_CLIPS = [
@@ -7031,7 +7031,10 @@ class PoseLab {
     proxy.root.updateMatrixWorld(true);
     proxy.model?.updateMatrixWorld(true);
     proxy.tipMarker?.updateMatrixWorld(true);
-    const hilt = worldPositionOf(proxy.root);
+    const attachment = actor?.info?.weaponAttachment || proxy?.attachmentConfig || {};
+    const hilt = proxy.model && Array.isArray(attachment.gripLocalPosition)
+      ? proxy.model.localToWorld(new THREE.Vector3().fromArray(attachment.gripLocalPosition))
+      : worldPositionOf(proxy.root);
     const tip = proxy.tipMarker ? worldPositionOf(proxy.tipMarker) : hilt.clone().add(worldDirectionOf(proxy.root, [0, 0, 1]).multiplyScalar(Number(proxy.config?.length || 0.85)));
     return { hilt, tip };
   }

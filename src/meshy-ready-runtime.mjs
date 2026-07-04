@@ -204,7 +204,7 @@ function quaternionFromDeg(THREE, rotationDeg = [0, 0, 0]) {
 export function deriveAttachmentBladeLocal(THREE, attachment = {}) {
   const grip = Array.isArray(attachment.gripLocalPosition) ? attachment.gripLocalPosition : [0.6535, -0.02302, -0.07317];
   const tip = Array.isArray(attachment.tipLocalPosition) ? attachment.tipLocalPosition : [-0.95561, 0.1368, 0];
-  const rotationDeg = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg : [5.666, 87.396, 0];
+  const rotationDeg = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg : [-67.582, 76.718, -90.52];
   const blade = new THREE.Vector3(
     Number(tip[0] || 0) - Number(grip[0] || 0),
     Number(tip[1] || 0) - Number(grip[1] || 0),
@@ -216,7 +216,7 @@ export function deriveAttachmentBladeLocal(THREE, attachment = {}) {
 }
 
 function deriveAttachmentAxisLocal(THREE, attachment = {}, axis = [0, 1, 0]) {
-  const rotationDeg = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg : [5.666, 87.396, 0];
+  const rotationDeg = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg : [-67.582, 76.718, -90.52];
   const q = quaternionFromDeg(THREE, rotationDeg);
   const v = new THREE.Vector3(Number(axis?.[0] || 0), Number(axis?.[1] ?? 1), Number(axis?.[2] || 0));
   if (v.lengthSq() < 1e-8) v.set(0, 1, 0);
@@ -225,13 +225,13 @@ function deriveAttachmentAxisLocal(THREE, attachment = {}, axis = [0, 1, 0]) {
 
 function deriveWeaponBladeLocal(THREE, attachment = {}, proxy = {}) {
   return deriveAttachmentBladeLocal(THREE, attachment)
-    .applyQuaternion(quaternionFromDeg(THREE, Array.isArray(proxy.rotationDeg) ? proxy.rotationDeg : [-163.017, 3.942, -12.978]))
+    .applyQuaternion(quaternionFromDeg(THREE, Array.isArray(proxy.rotationDeg) ? proxy.rotationDeg : [0, 0, 0]))
     .normalize();
 }
 
 function deriveWeaponUpLocal(THREE, attachment = {}, proxy = {}) {
   return deriveAttachmentAxisLocal(THREE, attachment, [0, 1, 0])
-    .applyQuaternion(quaternionFromDeg(THREE, Array.isArray(proxy.rotationDeg) ? proxy.rotationDeg : [-163.017, 3.942, -12.978]))
+    .applyQuaternion(quaternionFromDeg(THREE, Array.isArray(proxy.rotationDeg) ? proxy.rotationDeg : [0, 0, 0]))
     .normalize();
 }
 
@@ -521,7 +521,7 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
     sourceUpAxis: options.weaponBasis?.sourceUpAxis || options.weaponKeyConvert?.sourceUpAxis || [0, 1, 0],
     targetBladeLocal: options.weaponBasis?.targetBladeLocal || options.weaponKeyConvert?.targetBladeLocal || deriveWeaponBladeLocal(THREE, options.weaponAttachment, options.weaponProxy).toArray().map((value) => Number(value.toFixed(5))),
     targetUpLocal: options.weaponBasis?.targetUpLocal || options.weaponKeyConvert?.targetUpLocal || deriveWeaponUpLocal(THREE, options.weaponAttachment, options.weaponProxy).toArray().map((value) => Number(value.toFixed(5))),
-    targetBladeWorldYScale: options.weaponBasis?.targetBladeWorldYScale ?? 0,
+    targetBladeWorldYScale: options.weaponBasis?.targetBladeWorldYScale,
     strength: options.weaponBasis?.strength ?? 1,
   };
   const rightHandWeaponBasisEnabled = options.rightHandWeaponBasis === true

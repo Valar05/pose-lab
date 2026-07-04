@@ -288,8 +288,9 @@ export function applyWeaponAttachmentRuntimeRules(THREE, {
   });
   const attachmentScale = Number(config.scale ?? 1);
   const displayRoot = proxy.displayRoot || weaponRoot.parent || proxy.root;
+  const boringHandFk = proxy?.config?.parentMode === 'hand-fk';
   const socketScaleCompensation = new THREE.Vector3(1, 1, 1);
-  if ((proxy?.config?.parentMode === 'hand-fk' || proxy?.config?.parentMode === 'synthetic-source-socket') && proxy.root && actorModel) {
+  if (!boringHandFk && proxy?.config?.parentMode === 'synthetic-source-socket' && proxy.root && actorModel) {
     actorModel.updateMatrixWorld(true);
     proxy.root.updateMatrixWorld(true);
     const modelWorldScale = actorModel.getWorldScale(new THREE.Vector3());
@@ -321,7 +322,6 @@ export function applyWeaponAttachmentRuntimeRules(THREE, {
     localGrip.multiplyScalar(attachmentScale);
     localGrip.applyQuaternion(weaponRoot.quaternion);
     weaponRoot.position.sub(localGrip);
-    pinWeaponLocalPointToDisplay(THREE, weaponRoot, displayRoot, config.gripLocalPosition, config.position || [0, 0, 0]);
   }
   proxy.visibleMeshHiltPin = findVisibleMeshHiltLocalPoint(THREE, weaponRoot, displayRoot);
   if (tip) {
