@@ -222,6 +222,31 @@ export function applyWeaponSocketRuntimeRules(THREE, {
     };
   }
 
+  if ((config.positionMode || '') === 'right-hand' && proxy.root.parent === proxy.rightHand) {
+    const fkSignature = weaponPlacementConfigSignature(THREE, config, { model, parent: proxy.rightHand });
+    proxy.root.position.copy(vectorFromArray(THREE, config.handLocalOffset));
+    proxy.root.position.add(vectorFromArray(THREE, config.modelLocalOffset));
+    proxy.root.position.add(vectorFromArray(THREE, config.gripOffset));
+    proxy.root.quaternion.copy(quaternionFromDeg(THREE, config.rotationDeg));
+    proxy.root.updateMatrixWorld(true);
+    proxy.fkLocalPosition = proxy.root.position.clone();
+    proxy.fkLocalQuaternion = proxy.root.quaternion.clone().normalize();
+    proxy.fkPlacementSignature = fkSignature;
+    proxy.fkCurrentPlacementSignature = fkSignature;
+    proxy.socketHandBaselineLocal = proxy.root.position.clone();
+    return {
+      handled: true,
+      mode: 'right-hand-fk',
+      local: proxy.root.position.clone(),
+      authoredSocketWorld: weaponWorldPosition(THREE, proxy.root),
+      targetSocketWorld: weaponWorldPosition(THREE, proxy.root),
+      socketHandBaselineLocal: proxy.socketHandBaselineLocal.clone(),
+      fkLocalPosition: proxy.fkLocalPosition.clone(),
+      fkLocalQuaternion: proxy.fkLocalQuaternion.clone(),
+      root: proxy.root,
+    };
+  }
+
   if (!proxy.leftHand) return { handled: false, reason: 'missing-left-hand', local };
   proxy.root.position.copy(local);
   if (!animatedSocketRotation) {

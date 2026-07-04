@@ -199,12 +199,17 @@ function evaluateBoot({ boot, expectedActor, expectedClip, screenshotSummary }) 
   };
 }
 
+function liveHiltPayload(liveHilt) {
+  return liveHilt?.live || liveHilt || {};
+}
+
 function evaluateTpose({ routeSelected, bootEvaluation, weapon, liveHilt }) {
   const failures = [];
+  const live = liveHiltPayload(liveHilt);
   const config = weapon?.weapon?.config || {};
-  const liveChecks = liveHilt?.checks || {};
-  const liveDistances = liveHilt?.distances || {};
-  const layers = liveHilt?.pinning?.layers || {};
+  const liveChecks = live?.checks || {};
+  const liveDistances = live?.distances || {};
+  const layers = live?.pinning?.layers || {};
   failures.push(...(bootEvaluation?.failures || []));
   if (!routeSelected) failures.push('hosted route did not select Meshy Character');
   if (weapon?.ok !== true) failures.push(`weapon debug failed: ${compactError(weapon?.error)}`);
@@ -236,11 +241,12 @@ function evaluateTpose({ routeSelected, bootEvaluation, weapon, liveHilt }) {
 
 function evaluateReady({ routeSelected, bootEvaluation, weapon, visualFollow, liveHilt }) {
   const failures = [];
+  const live = liveHiltPayload(liveHilt);
   const followChecks = visualFollow?.checks || {};
   const screenMotion = visualFollow?.screenMotion || {};
   const relativeDrift = visualFollow?.relativeDrift || {};
   const screenMetrics = visualFollow?.screenMetrics || {};
-  const liveChecks = liveHilt?.checks || {};
+  const liveChecks = live?.checks || {};
   failures.push(...(bootEvaluation?.failures || []));
   if (!routeSelected) failures.push('hosted route did not select Meshy Character');
   if (weapon?.ok !== true) failures.push(`weapon debug failed: ${compactError(weapon?.error)}`);

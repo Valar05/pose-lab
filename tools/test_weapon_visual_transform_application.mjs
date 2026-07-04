@@ -174,7 +174,7 @@ async function main() {
   const proxy = makeProxy(THREE, actorGltf.scene, sabreGltf.scene, config);
 
   const initial = syncWeapon(THREE, actorGltf.scene, proxy, { force: true });
-  assert(initial.socketResult?.mode === 'two-hand-center', `expected restored two-hand-center socket application, got ${JSON.stringify(initial.socketResult)}`);
+  assert(initial.socketResult?.mode === 'right-hand-fk', `expected boring right-hand FK socket application, got ${JSON.stringify(initial.socketResult)}`);
   assert(initial.attachmentResult?.weaponRoot === proxy.model, 'attachment rules must apply to the real sabre model');
   assert(initial.landmarks?.visibleMeshHilt, 'real visible mesh hilt landmark must be measurable');
 
@@ -241,7 +241,7 @@ async function main() {
     checked: 'weapon-visual-transform-application',
     actor: config.actorKey,
     rotationLayerContract: {
-      socketLayer: 'legacy weaponProxy two-hand-center placement / WeaponGrip local quaternion',
+      socketLayer: 'weaponProxy right-hand FK / WeaponGrip local quaternion',
       attachmentLayer: 'weaponAttachment.rotationDeg / sabre mesh local quaternion under displayRoot',
       weaponProxyRotationDeg: config.proxy.rotationDeg,
       weaponAttachmentRotationDegBeforeProbe: config.attachment.rotationDeg,

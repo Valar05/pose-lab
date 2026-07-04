@@ -1,4 +1,4 @@
-import { RIG_PROFILES as GRAVITY_FIST_SOURCE_PROFILES } from './rig-profiles.gravity-fist.js?v=pose-editor-194';
+import { RIG_PROFILES as GRAVITY_FIST_SOURCE_PROFILES } from './rig-profiles.gravity-fist.js?v=pose-editor-195';
 
 const MESHY_FPS_REST_CHAINS = [
   { sourceUpper: 'Arm.R', sourceLower: 'Forearm.R', sourceHand: 'Hand.R', targetUpper: 'RightArm', targetLower: 'RightForeArm', targetHand: 'RightHand' },

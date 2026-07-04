@@ -30,8 +30,11 @@ assert(swordBlock.includes('frameSolve: true') && swordBlock.includes('applyToHa
 assert(profilesSource.includes("positionMode: 'right-hand'"), 'Meshy weapon proxy should declare right-hand FK ownership');
 assert(poseLabSource.includes("else if (handFk || root.userData.positionMode === 'right-hand') rightHand.add(root);"), 'right-hand weapon proxy mode must parent WeaponGrip under RightHand even when leftHandBone exists');
 assert(poseLabSource.includes('else if (leftHand) this.model.add(root);'), 'model-level weapon parenting should remain only for non-right-hand two-hand modes');
-assert(fs.readFileSync(path.join(projectRoot, 'src', 'weapon-runtime-rules.mjs'), 'utf8').includes('const rootUnderRigBone = Boolean(rootParent && rootParent !== actorModel);'), 'weapon display scale compensation must detect rig-bone parenting');
-assert(fs.readFileSync(path.join(projectRoot, 'src', 'weapon-runtime-rules.mjs'), 'utf8').includes('1 / Math.max(0.000001, Math.abs(socketWorldScale.x))'), 'weapon displayRoot should cancel inherited socket scale for right-hand FK parenting');
+const weaponRuntimeSource = fs.readFileSync(path.join(projectRoot, 'src', 'weapon-runtime-rules.mjs'), 'utf8');
+assert(weaponRuntimeSource.includes("if ((config.positionMode || '') === 'right-hand' && proxy.root.parent === proxy.rightHand)"), 'right-hand weapon mode should use boring local FK under RightHand');
+assert(weaponRuntimeSource.includes("mode: 'right-hand-fk'"), 'right-hand FK branch should report its runtime mode');
+assert(weaponRuntimeSource.includes('const rootUnderRigBone = Boolean(rootParent && rootParent !== actorModel);'), 'weapon display scale compensation must detect rig-bone parenting');
+assert(weaponRuntimeSource.includes('1 / Math.max(0.000001, Math.abs(socketWorldScale.x))'), 'weapon displayRoot should cancel inherited socket scale for right-hand FK parenting');
 
 assert(!profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must not use the failed direct hand-fk override');
 assert(!profilesSource.includes("syntheticSourceSocketBone: ''"), 'Meshy production profile must not force an empty synthetic socket');
