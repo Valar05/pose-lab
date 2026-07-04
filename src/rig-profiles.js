@@ -326,7 +326,7 @@ const BASE_RIG_PROFILES = {
           enabled: true,
           mode: 'world-joint-projection',
           restRelative: true,
-          rightRollOffsetDeg: 0,
+          rightRollOffsetDeg: -120,
           leftRollOffsetDeg: -90,
         },
       },

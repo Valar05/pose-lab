@@ -19,7 +19,8 @@ assert(readyBlock.includes("clipNames: [\n          'OneHandReady',\n        ]")
 assert(readyBlock.includes("sourceRestClip: '0T-Pose'"), 'golden Ready should use the FPS 0T-Pose rest reference');
 assert(readyBlock.includes("targetRestProvider: 'skin-bind'"), 'golden Ready should use Meshy skin-bind target rest');
 assert(readyBlock.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(-120)'), 'golden Ready should preserve the accepted right-hand rest correction');
-assert(readyBlock.includes('rightRollOffsetDeg: 0'), 'golden Ready should preserve the current right-hand roll');
+assert(readyBlock.includes('rightRollOffsetDeg: -120'), 'golden Ready should preserve the accepted right-hand roll');
+assert(readyRuntime.includes('orientRightHandToWeaponBlade'), 'right-arm canary should orient the held FK blade through the hand, not by generating weapon tracks');
 assert(readyBlock.includes('leftRollOffsetDeg: -90'), 'golden Ready should preserve the accepted left-hand roll');
 assert(readyBlock.includes("mode: 'world-joint-projection'"), 'active correction method should use constrained world-joint projection');
 assert(readyBlock.includes('restRelative: true'), 'active projection should preserve source keys as rest-relative joint deltas');
