@@ -30,7 +30,7 @@ assert(!fn.includes('.optimize()'), 'accepted converter utility must not collaps
 assert(profiles.includes("retargetMode: 'meshy-fps-visual-ik-ready'"), 'active Meshy Ready profile should use the golden visual IK helper');
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'active Meshy Ready profile should keep the golden clip tag');
 assert(profiles.includes("clipSuffix: '-> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'active Meshy Ready profile should keep the accepted clip label');
-assert(profiles.includes('rightRollOffsetDeg: -120') && profiles.includes('leftRollOffsetDeg: -90'), 'active Meshy Ready profile should preserve the accepted roll split');
+assert(profiles.includes('rightRollOffsetDeg: 0') && profiles.includes('leftRollOffsetDeg: -90'), 'active Meshy Ready profile should preserve the accepted roll split');
 assert(profiles.includes("sourceRestClip: '0T-Pose'") && profiles.includes("targetRestProvider: 'skin-bind'"), 'Meshy Ready should translate from FPS 0T-Pose rest into Meshy skin-bind rest');
 assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(-120)'), 'Meshy should generate the accepted FPS arm rest-pose CAL--120 clip');
 assert(profiles.includes("RestProbe: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe should select the exact accepted CAL--120 T-pose clip');

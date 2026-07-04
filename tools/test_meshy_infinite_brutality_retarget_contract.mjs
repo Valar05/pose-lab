@@ -23,7 +23,7 @@ assert(profiles.includes("positionPolicy: 'none'"), 'Meshy sword clips should no
 assert(profiles.includes("retargetMode: 'meshy-fps-visual-ik-ready'"), 'Meshy should use golden FPS visual IK Ready generation');
 assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'"), 'Meshy FPS Ready clips should preserve golden mapped-arms origin');
 assert(profiles.includes("mode: 'world-joint-projection'"), 'Ready generation should use world-joint projection');
-assert(profiles.includes('rightRollOffsetDeg: -120') && profiles.includes('leftRollOffsetDeg: -90'), 'Ready generation should preserve accepted roll offsets');
+assert(profiles.includes('rightRollOffsetDeg: 0') && profiles.includes('leftRollOffsetDeg: -90'), 'Ready generation should preserve accepted roll offsets');
 assert(!profiles.includes("sourceWeapon: 'Weapon.R'") && !profiles.includes("targetWeapon: 'WeaponGrip'"), 'WeaponGrip should not be converted from authored FPS Weapon.R keys in normal Ready');
 for (const rejected of ["sourceKey: 'orc'", "clipTag: 'IB-MC'", "standing_melee_attack_horizontal -> meshyCharacter", "mixamorigHips", "mixamorigRightUpLeg", "to: 'LeftFoot'", "to: 'RightFoot'", "to: 'Head'"]) {
   assert(!profiles.includes(rejected), `Meshy sword profile must not retain rejected full-body token: ${rejected}`);

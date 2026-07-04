@@ -414,7 +414,7 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
   const sourceRestMap = clipRestQuaternionMap(THREE, restClip);
   let targetRestMap = bindRestLocalMap(THREE, targetClone);
   const chains = options.chains || [
-    { label: 'right', sourceUpper: 'Arm.R', sourceLower: 'Forearm.R', sourceHand: 'Hand.R', targetUpper: 'RightArm', targetLower: 'RightForeArm', targetHand: 'RightHand', sourceDownAxis: [0, -1, 0], targetDownAxis: [0, -1, 0], maxTwistDeg: 180, rollOffsetDeg: -120 },
+    { label: 'right', sourceUpper: 'Arm.R', sourceLower: 'Forearm.R', sourceHand: 'Hand.R', targetUpper: 'RightArm', targetLower: 'RightForeArm', targetHand: 'RightHand', sourceDownAxis: [0, -1, 0], targetDownAxis: [0, -1, 0], maxTwistDeg: 180, rollOffsetDeg: 0 },
     { label: 'left', sourceUpper: 'Arm.L', sourceLower: 'Forearm.L', sourceHand: 'Hand.L', targetUpper: 'LeftArm', targetLower: 'LeftForeArm', targetHand: 'LeftHand', sourceDownAxis: [0, -1, 0], targetDownAxis: [0, -1, 0], maxTwistDeg: 180, rollOffsetDeg: -90 },
   ];
   targetRestMap = buildCalibratedRestMap(THREE, sourceClone, targetClone, sourceRestMap, targetRestMap, {
@@ -422,7 +422,7 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
     targetFrame: 'Spine02',
     chains,
     handDownReferencePairs: [
-      { sourceHand: 'Hand.R', sourceLocalAxis: [0, 0, 1], targetForearm: 'RightForeArm', targetHand: 'RightHand', targetLocalAxis: [0, -1, 0], rollOffsetDeg: -120 },
+      { sourceHand: 'Hand.R', sourceLocalAxis: [0, 0, 1], targetForearm: 'RightForeArm', targetHand: 'RightHand', targetLocalAxis: [0, -1, 0], rollOffsetDeg: 0 },
     ],
   });
   restorePose(sourceClone, sourceInitialPose);
@@ -463,9 +463,6 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
     };
   }).filter(Boolean);
   const specs = [];
-  const attachmentBladeLocal = deriveAttachmentBladeLocal(THREE, options.weaponAttachment);
-  const sourceWeaponName = options.weaponReferenceBone || 'Weapon.R';
-  const sourceWeaponTipLocal = options.weaponReferenceTipLocal || [0.00854, 0.57786, 0.00995];
   for (const setup of setups) {
     for (const bone of [setup.targetUpper, setup.targetLower, setup.targetHand]) {
       if (!specs.some((entry) => canon(entry.bone.name) === canon(bone.name))) specs.push({ bone, values: new Float32Array(outputTimes.length * 4) });
@@ -489,15 +486,6 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
       const handQ = rolledWorldQuaternionToDownReference(THREE, setup.targetLower, setup.targetHand, worldQuaternion(THREE, setup.targetLower).multiply(setup.targetRestLowerToHand).normalize(), setup.targetDownAxis || [0, -1, 0], desiredDown, setup.maxTwistDeg ?? 180, setup.rollOffsetDeg ?? 0);
       setWorldQuaternion(THREE, setup.targetHand, handQ);
       targetClone.updateMatrixWorld(true);
-      if (setup.label === 'right' && options.orientRightHandToWeaponBlade !== false) {
-        const sourceWeapon = findNamedBone(sourceClone, sourceWeaponName);
-        const desiredBlade = sourceWeapon
-          ? mapDirectionBetweenVisualFrames(worldDirection(THREE, sourceWeapon, sourceWeaponTipLocal), sourcePoseFrame, targetPoseFrame)
-          : targetPoseFrame.lateral.clone();
-        const bladeHandQ = quaternionFromBladeFrame(THREE, desiredBlade, targetPoseFrame.up, attachmentBladeLocal.toArray(), [0, 1, 0]);
-        setWorldQuaternion(THREE, setup.targetHand, bladeHandQ);
-        targetClone.updateMatrixWorld(true);
-      }
     }
     for (const spec of specs) {
       const q = spec.bone.quaternion;
@@ -542,8 +530,7 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
       weaponOrientationMode: weaponTrack?.userData?.orientationMode || null,
       weaponTargetBladeLocal: weaponTrack?.userData?.weaponTargetBladeLocal || null,
       weaponTargetUpLocal: weaponTrack?.userData?.weaponTargetUpLocal || null,
-      rightRollOffsetDeg: -120,
-      rightHandBladeReference: 'FPS Weapon.R reference-only; no Meshy WeaponGrip or WeaponR tracks emitted',
+      rightRollOffsetDeg: 0,
       leftRollOffsetDeg: -90,
       rightRestTargetLocalAxis: [0, -1, 0],
       leftRestRollOverride: false,
