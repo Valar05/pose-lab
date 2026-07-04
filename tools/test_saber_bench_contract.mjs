@@ -14,6 +14,7 @@ const builder = read('tools/build_saber_bench_cloud_review.mjs');
 
 assert(html.includes('Meshy Saber Bench'), 'bench should have its own entrypoint');
 assert(html.includes('id="benchCanvas"') && html.includes('id="jsonBox"'), 'bench should expose canvas and JSON contract box');
+assert(html.includes('id="showProxySaber"') && html.includes('bright editable saber'), 'bench should expose an always-visible editable saber toggle');
 assert(js.includes("import * as THREE from 'three'"), 'bench should use Three.js directly');
 assert(js.includes("GLTFLoader"), 'bench should load real GLB assets');
 assert(!js.includes("src/pose-lab.js") && !html.includes("src/pose-lab.js"), 'bench must not import Pose Lab runtime');
@@ -22,6 +23,8 @@ assert(js.includes("findNamed(meshyRoot, 'RightHand', 'Bone')"), 'bench must att
 assert(js.includes("findNamed(sabre.scene, 'Mesh_0')"), 'bench must isolate the real sabre mesh');
 assert(js.includes('hideEverythingBut'), 'bench must hide imported junk helper objects');
 assert(js.includes('pinHiltToWeaponGrip'), 'bench must expose hilt pinning as an explicit rule');
+assert(js.includes('Bright editable saber proxy') && js.includes('proxyBlade'), 'bench must include a visible saber-shaped proxy to position even if the GLB is unreadable');
+assert(js.includes('showRealMesh') && js.includes('showProxySaber'), 'bench must let the user compare the real sabre mesh and visible proxy');
 assert(js.includes('pose-lab-meshy-saber-bench-contract-v1'), 'bench must export a stable contract schema');
 assert(css.includes('@media (max-width: 760px)'), 'bench should stay usable on phone screens');
 

@@ -23,6 +23,8 @@ const BASELINE = Object.freeze({
     gripLocalPosition: [0.6535, -0.02302, -0.07317],
     tipLocalPosition: [-0.95561, 0.1368, 0],
     pinHiltToWeaponGrip: true,
+    showRealMesh: true,
+    showProxySaber: true,
   },
 });
 
@@ -78,6 +80,31 @@ const tipMarker = new THREE.Mesh(
   new THREE.MeshBasicMaterial({ color: 0xffdd72 })
 );
 tipMarker.name = 'Sabre semantic tip marker';
+
+const proxySaber = new THREE.Group();
+proxySaber.name = 'Bright editable saber proxy';
+const proxyBladeLength = 1.15;
+const proxyBlade = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.018, 0.012, proxyBladeLength, 18),
+  new THREE.MeshBasicMaterial({ color: 0x67e8ff })
+);
+proxyBlade.name = 'bright blade';
+proxyBlade.rotation.z = Math.PI / 2;
+proxyBlade.position.x = -proxyBladeLength * 0.5;
+const proxyHilt = new THREE.Mesh(
+  new THREE.CylinderGeometry(0.04, 0.04, 0.28, 18),
+  new THREE.MeshBasicMaterial({ color: 0xffcf5a })
+);
+proxyHilt.name = 'bright hilt';
+proxyHilt.rotation.z = Math.PI / 2;
+proxyHilt.position.x = 0.06;
+const proxyGuard = new THREE.Mesh(
+  new THREE.BoxGeometry(0.045, 0.34, 0.045),
+  new THREE.MeshBasicMaterial({ color: 0xff67d8 })
+);
+proxyGuard.name = 'bright guard';
+proxyGuard.position.set(0, 0, 0);
+proxySaber.add(proxyBlade, proxyHilt, proxyGuard);
 
 let meshyRoot = null;
 let charMesh = null;
@@ -187,6 +214,7 @@ function attachFkHierarchy() {
   sabreRoot.add(gripMarker);
   sabreRoot.add(hiltMarker);
   sabreRoot.add(tipMarker);
+  sabreRoot.add(proxySaber);
   applyStateToScene();
 }
 
@@ -202,10 +230,13 @@ function applyStateToScene() {
   const gripLocal = vectorFromArray(state.sabre.gripLocalPosition);
   sabreMesh.position.set(0, 0, 0);
   if (state.sabre.pinHiltToWeaponGrip) sabreMesh.position.copy(gripLocal).multiplyScalar(-1);
+  sabreMesh.visible = state.sabre.showRealMesh !== false;
+  proxySaber.visible = state.sabre.showProxySaber !== false;
 
   gripMarker.position.set(0, 0, 0);
   hiltMarker.position.copy(gripLocal).add(sabreMesh.position);
   tipMarker.position.copy(vectorFromArray(state.sabre.tipLocalPosition)).add(sabreMesh.position);
+  proxySaber.position.copy(hiltMarker.position);
 
   syncInputs();
   writeJson();
@@ -218,6 +249,8 @@ function syncInputs() {
     input.value = Array.isArray(value) ? '' : String(round(value, input.dataset.field.includes('rotationDeg') ? 3 : 5));
   }
   ui.pinHilt.checked = Boolean(state.sabre.pinHiltToWeaponGrip);
+  ui.showRealMesh.checked = state.sabre.showRealMesh !== false;
+  ui.showProxySaber.checked = state.sabre.showProxySaber !== false;
   ui.selectionReadout.textContent = 'selected: ' + (selectedLayer === 'grip' ? 'WeaponGrip' : 'SabreRoot');
   ui.selectGrip.classList.toggle('active', selectedLayer === 'grip');
   ui.selectSabre.classList.toggle('active', selectedLayer === 'sabre');
@@ -245,6 +278,8 @@ function readInputs() {
     if (Number.isFinite(value)) setField(input.dataset.field, value);
   }
   state.sabre.pinHiltToWeaponGrip = Boolean(ui.pinHilt.checked);
+  state.sabre.showRealMesh = Boolean(ui.showRealMesh.checked);
+  state.sabre.showProxySaber = Boolean(ui.showProxySaber.checked);
   state.generatedAt = new Date().toISOString();
   normalizeState();
   applyStateToScene();
@@ -279,6 +314,8 @@ function contractJson() {
       gripLocalPosition: state.sabre.gripLocalPosition,
       tipLocalPosition: state.sabre.tipLocalPosition,
       pinHiltToWeaponGrip: state.sabre.pinHiltToWeaponGrip,
+      showRealMesh: state.sabre.showRealMesh,
+      showProxySaber: state.sabre.showProxySaber,
     },
   };
 }
@@ -300,6 +337,8 @@ function applyJson() {
     state.sabre.gripLocalPosition = [...parsed.sabreLocal.gripLocalPosition];
     state.sabre.tipLocalPosition = [...parsed.sabreLocal.tipLocalPosition];
     state.sabre.pinHiltToWeaponGrip = parsed.sabreLocal.pinHiltToWeaponGrip !== false;
+    state.sabre.showRealMesh = parsed.sabreLocal.showRealMesh !== false;
+    state.sabre.showProxySaber = parsed.sabreLocal.showProxySaber !== false;
   }
   normalizeState();
   applyStateToScene();
@@ -405,6 +444,8 @@ for (const input of inputs) {
   });
 }
 ui.pinHilt.addEventListener('change', readInputs);
+ui.showRealMesh.addEventListener('change', readInputs);
+ui.showProxySaber.addEventListener('change', readInputs);
 ui.viewFull.addEventListener('click', () => setView('full'));
 ui.viewHand.addEventListener('click', () => setView('hand'));
 ui.viewBlade.addEventListener('click', () => setView('blade'));
