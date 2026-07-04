@@ -8,6 +8,8 @@ For Orc import or merge work, then read `docs/ORC_IMPORT_AND_MERGE_WORKFLOW.md` 
 
 Keep this lab source-focused: inspect assets, record provenance, and keep runtime assumptions in `src/rig-profiles.js`. When importing new source assets, preserve originals under `assets/source/`, place runtime-ready GLB/FBX files under `assets/models/`, and update `assets/asset_manifest.json`.
 
+For Meshy saber recovery, prefer the Blender-first authoring lane in `authoring/meshy_saber/` over further Pose Lab runtime tuning. Blender viewport approval is the authoring truth; Pose Lab imports and verifies the exported contract afterward.
+
 Validate with:
 
 ```sh

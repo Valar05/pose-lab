@@ -29,6 +29,11 @@ __pycache__/
 /generated/firebase_visual_truth/artifacts/
 .firebase/
 
+# Blender-first Meshy saber authoring outputs. Promote deliberately after review.
+/authoring/meshy_saber/exports/
+/authoring/meshy_saber/*.blend
+/authoring/meshy_saber/*.blend1
+
 # durable workflow records that may be intentionally promoted
 !/generated/workflow_state/
 !/generated/workflow_state/**

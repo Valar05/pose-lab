@@ -253,6 +253,13 @@
       "notes": "Meshy Character keeps Meshy walk/run as direct clips. Sword work now accepts only the generated [FPS-SWORD-UPPER] OneHandReady upper-body clip sourced from FPSPlayer.glb. The generated ready clip preserves authored source key times for mapped Meshy upper-body rotation tracks, closes generated quaternion seams for the authored cyclic wrap, avoids IK replacement of arm tracks, solves synthetic WeaponR from the mapped FPS Weapon.R virtual blade frame instead of raw wrist-relative rotation, intentionally excludes hips/root/legs/feet/toes/head translation or full-body motion, Meshy FPV uses a head-centered forward camera for source parity, and the visible Meshy gun-sword is attached below WeaponGrip with manual Meshy offsets. OneHandReadied and OneHandAttack clips are deferred until the ready pose and weapon hold are visually sane."
     },
     {
+      "id": "meshy_saber_blender_authoring_lane",
+      "path": "authoring/meshy_saber/",
+      "source": "Repository-owned Blender-first authoring scaffold created to escape Pose Lab runtime/cloud tuning loops.",
+      "type": "authoring_lane",
+      "notes": "Blender 4.4.3 or newer on THECAULDRON is the preferred authoring surface. The lane imports the animated Meshy rig, FPSPlayer reference, and Meshy sabre, creates RightHand -> WeaponGrip -> Meshy French Revolution Sabre, and exports a human-reviewed JSON/GLB contract only after Blender viewport approval. Pose Lab must consume this output directly instead of retargeting, solving WeaponR parity, or tuning offsets to author the visual hold."
+    },
+    {
       "id": "meshy_character_sheet_static_material_transfer",
       "path": "src/rig-profiles.js#meshyCharacter.materialSource",
       "source": "assets/models/meshy_character_sheet/static/Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb embedded PBR material cloned at runtime onto assets/models/meshy_character_sheet/animated/* char1 skinned mesh.",

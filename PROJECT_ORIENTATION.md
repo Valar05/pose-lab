@@ -157,6 +157,10 @@ First-person view mode uses Arcane Manifold's copied `Player.tscn` camera data: 
 
 Debian/Termux Blender exists at `/usr/bin/blender` version 4.3.2 and can inspect the `.blend`, but exporter paths currently crash inside embedded Python while importing numpy/ctypes. The successful GLB export used Blender 4.4.3 on THECAULDRON.
 
+## Blender-First Meshy Saber Recovery
+
+Meshy saber placement and Ready visual recovery now have a Blender-first escape lane under `authoring/meshy_saber/`. Use Blender as the manual visual authoring surface and Pose Lab as an importer/runtime verifier only. Build the scene with `authoring/meshy_saber/blender_build_meshy_ready_authoring.py`, approve T-pose and Ready from Blender viewport screenshots, then export `authoring/meshy_saber/exports/meshy_ready_saber_contract.json` for Pose Lab intake. Generated exports are ignored until deliberately promoted. Do not use Pose Lab retargeting, WeaponR parity, cloud screenshots, or runtime metrics to author or overwrite this Blender-approved result.
+
 See [docs/MOTIVATED_MODE.md](/storage/emulated/0/Documents/GodotProjects/pose-lab/docs/MOTIVATED_MODE.md:1) for the saved contract and the before-stopping checklist.
 
 The same contract now includes an Initiative Audit: check, document, and test the cheap follow-up work before you stop.

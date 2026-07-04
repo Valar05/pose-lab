@@ -1,0 +1,37 @@
+{
+  "schema": "pose-lab-blender-authoring-lane-v1",
+  "id": "meshy-ready-saber-authoring",
+  "purpose": "Author Meshy Ready and T-pose saber hold in Blender, then export a small transform contract for Pose Lab to consume.",
+  "authority": "human-approved Blender viewport",
+  "status": "scaffolded-no-approved-export",
+  "blender": {
+    "minimumVersion": "4.4.3",
+    "preferredHost": "THECAULDRON",
+    "reason": "The Android/Termux Blender path is known to inspect files but has crashed on exporter Python dependencies."
+  },
+  "sourceAssets": {
+    "meshyAnimatedRig": "assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb",
+    "fpsReference": "assets/models/FPSPlayer.glb",
+    "meshySabre": "assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb",
+    "fpsSourceBlend": "assets/source/FPSPlayer.blend"
+  },
+  "requiredHierarchy": [
+    "RightHand",
+    "WeaponGrip",
+    "Meshy French Revolution Sabre"
+  ],
+  "exportedArtifacts": {
+    "blend": "authoring/meshy_saber/meshy_ready_authoring.blend",
+    "contractJson": "authoring/meshy_saber/exports/meshy_ready_saber_contract.json",
+    "glb": "authoring/meshy_saber/exports/meshy_ready_saber.glb",
+    "screenshots": "authoring/meshy_saber/exports/*.png"
+  },
+  "acceptance": [
+    "T-pose remains the canary and must not be degraded.",
+    "Ready must read as a character holding the sword, not merely as a visible weapon.",
+    "WeaponGrip must be parented to RightHand.",
+    "The sabre mesh must be parented below WeaponGrip.",
+    "Pose Lab may not retarget, solve, or tune this exported weapon hold while importing it."
+  ]
+}
+
