@@ -169,6 +169,37 @@
         "humanAccepted": true
       },
       "notes": "This records the false-green created by treating marker distance as visual acceptance after changing away from the human-authored orientation."
+    },
+    {
+      "commit": "8c1469e0f8b1f703f0f38071c54ee910be3d33ff",
+      "runId": "28702065455",
+      "reportedAt": "2026-07-04",
+      "authority": "human-phone-visible-cloud-review",
+      "status": "open",
+      "url": "https://pose-lab-visual-truth--visual-truth-pr-28702065455-dzhq5l8b.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&clip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&qaClip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&weaponDebug=1&cacheBust=firebase-visual-truth-1783157714006",
+      "screenshots": [
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260704-090830.png",
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260704-090839.png"
+      ],
+      "issues": [
+        "Android Chrome screenshot 20260704-090830 shows the cloud Ready artifact with sane-enough body pose but the saber placement/orientation changed from the expected held-saber visual relationship",
+        "the visible blade is tucked close to the right wrist/face instead of reading as the authored saber projecting cleanly from the grip",
+        "Android Chrome screenshot 20260704-090839 shows route/UI inconsistency: header says Ready while the clip drawer highlights T-pose, so the review surface cannot be used as green proof",
+        "Firebase artifact run 28702065455 reported ok=true and Sense Synthesis human-green while the phone-visible hosted cloud review remained human-red",
+        "the gate accepted object presence, hilt proximity, and blade projection metrics without preserving the human-visible saber placement baseline"
+      ],
+      "blocks": [
+        "promotion",
+        "browser-wake-as-proof",
+        "green-report"
+      ],
+      "closureRequired": {
+        "status": "superseded",
+        "supersededByCommit": "required",
+        "acceptedEvidencePath": "required",
+        "humanAccepted": true
+      },
+      "notes": "This records the false-green reported immediately after waking the cloud Ready URL from run 28702065455. Do not treat the generated artifact as acceptance until a later commit produces fresh phone-visible cloud evidence where the saber placement reads as held."
     }
   ]
 }
