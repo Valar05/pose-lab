@@ -166,7 +166,7 @@ async function main() {
   const config = resolvePoseLabActorRuntimeConfig('meshyCharacter');
   assert(config.proxy.parentMode === 'hand-fk', `Meshy boring FK contract should parent WeaponGrip under RightHand, got ${config.proxy.parentMode}`);
   assert(JSON.stringify(config.proxy.rotationDeg || []) === JSON.stringify([0, 0, 0]), `Meshy socket orientation should remain identity for boring FK, got ${JSON.stringify(config.proxy.rotationDeg)}`);
-  assert(JSON.stringify(config.attachment.rotationDeg || []) === JSON.stringify([-67.582, 76.718, -60.52]), `Meshy mesh-layer orientation should preserve the shared FK calibration, got ${JSON.stringify(config.attachment.rotationDeg)}`);
+  assert(JSON.stringify(config.attachment.rotationDeg || []) === JSON.stringify([-67.582, 76.718, -30.52]), `Meshy mesh-layer orientation should preserve the shared FK calibration, got ${JSON.stringify(config.attachment.rotationDeg)}`);
 
   const actorGltf = await loadGlb(GLTFLoader, path.join(projectRoot, config.actor.url));
   fitModelToHeight(THREE, actorGltf.scene, config.actor.targetHeight);
