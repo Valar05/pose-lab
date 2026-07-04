@@ -11,7 +11,7 @@ const ASSETS = {
 const BASELINE = Object.freeze({
   schema: 'pose-lab-meshy-saber-bench-contract-v1',
   source: 'minimal-saber-bench',
-  hierarchy: 'Meshy character plus real Meshy sabre mesh',
+  hierarchy: 'Meshy character plus direct editable real Meshy sabre mesh',
   grip: {
     position: [0, 0, 0],
     rotationDeg: [0, 0, 0],
@@ -324,22 +324,6 @@ function updateTruthReadout() {
   ].join('\n');
 }
 
-function attachFkHierarchy() {
-  weaponGrip = new THREE.Object3D();
-  weaponGrip.name = 'WeaponGrip';
-  rightHand.add(weaponGrip);
-
-  sabreRoot = new THREE.Object3D();
-  sabreRoot.name = 'SabreRoot';
-  weaponGrip.add(sabreRoot);
-
-  sabreRoot.add(gripMarker);
-  sabreRoot.add(hiltMarker);
-  sabreRoot.add(tipMarker);
-  sabreRoot.add(proxySaber);
-  applyStateToScene();
-}
-
 function applyStateToScene() {
   const gripNode = weaponGrip || fallbackGrip;
   const sabreNode = sabreRoot || fallbackSabreRoot;
@@ -538,12 +522,16 @@ async function loadMeshyReference() {
   sabreMesh = findNamed(sabre.scene, 'Mesh_0') || findLargestMesh(sabre.scene);
   if (!sabreMesh) throw new Error('Sabre Mesh_0 not found');
   hideEverythingBut(sabre.scene, sabreMesh);
-  scene.add(sabre.scene);
-  attachFkHierarchy();
+  sabreRoot = fallbackSabreRoot;
+  weaponGrip = fallbackGrip;
+  sabreRoot.add(gripMarker);
+  sabreRoot.add(hiltMarker);
+  sabreRoot.add(tipMarker);
+  sabreRoot.add(proxySaber);
   sabreRoot.add(sabreMesh);
   applyStateToScene();
 
-  frameLoadedScene();
+  frameObject(sabreMesh);
   setLoadPhase('loaded');
   setStatus('ready: real Meshy character and real sabre mesh loaded');
   window.saberBench = { state, contractJson, scene, rightHand, weaponGrip, sabreRoot, sabreMesh, proxySaber, truthReadout: updateTruthReadout };
