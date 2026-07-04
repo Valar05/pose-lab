@@ -478,8 +478,12 @@ function activeMeshyReadyProfileContract() {
     replacesTracks: false,
     restRelative: activeBlock.includes('restRelative: true'),
     postRollDownDelta: readyRuntime.includes('rolledWorldQuaternionToDownReference'),
-    rightArmCanary: activeBlock.includes('rightRollOffsetDeg: -120') && readyRuntime.includes("rollOffsetDeg: -120"),
-    leftArmBounded: activeBlock.includes('leftRollOffsetDeg: -90') && readyRuntime.includes("rollOffsetDeg: -90"),
+    rightArmCanary: activeBlock.includes('rightRollOffsetDeg: 0')
+      && readyRuntime.includes('const rightRollOffsetDeg = Number(projection.rightRollOffsetDeg ?? 0)')
+      && readyRuntime.includes('maxTwistDeg: 8'),
+    leftArmBounded: activeBlock.includes('leftRollOffsetDeg: -90')
+      && readyRuntime.includes('const leftRollOffsetDeg = Number(projection.leftRollOffsetDeg ?? -90)')
+      && readyRuntime.includes('maxTwistDeg: 95'),
     fullRightChain: readyRuntime.includes("sourceUpper: 'Arm.R'") && readyRuntime.includes("sourceLower: 'Forearm.R'") && readyRuntime.includes("sourceHand: 'Hand.R'"),
     fullLeftChain: readyRuntime.includes("sourceUpper: 'Arm.L'") && readyRuntime.includes("sourceLower: 'Forearm.L'") && readyRuntime.includes("sourceHand: 'Hand.L'"),
     weaponDoesNotOverwriteHand: readyRuntime.includes('weaponConfig.enabled === true && weaponConfig.experimentalWeaponSwing === true'),

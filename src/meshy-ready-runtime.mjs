@@ -413,16 +413,19 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
   const targetInitialPose = capturePose(targetClone);
   const sourceRestMap = clipRestQuaternionMap(THREE, restClip);
   let targetRestMap = bindRestLocalMap(THREE, targetClone);
+  const projection = options.worldJointProjection || {};
+  const rightRollOffsetDeg = Number(projection.rightRollOffsetDeg ?? 0);
+  const leftRollOffsetDeg = Number(projection.leftRollOffsetDeg ?? -90);
   const chains = options.chains || [
-    { label: 'right', sourceUpper: 'Arm.R', sourceLower: 'Forearm.R', sourceHand: 'Hand.R', targetUpper: 'RightArm', targetLower: 'RightForeArm', targetHand: 'RightHand', sourceDownAxis: [0, -1, 0], targetDownAxis: [0, -1, 0], maxTwistDeg: 180, rollOffsetDeg: 0 },
-    { label: 'left', sourceUpper: 'Arm.L', sourceLower: 'Forearm.L', sourceHand: 'Hand.L', targetUpper: 'LeftArm', targetLower: 'LeftForeArm', targetHand: 'LeftHand', sourceDownAxis: [0, -1, 0], targetDownAxis: [0, -1, 0], maxTwistDeg: 180, rollOffsetDeg: -90 },
+    { label: 'right', sourceUpper: 'Arm.R', sourceLower: 'Forearm.R', sourceHand: 'Hand.R', targetUpper: 'RightArm', targetLower: 'RightForeArm', targetHand: 'RightHand', sourceDownAxis: [0, -1, 0], targetDownAxis: [0, -1, 0], maxTwistDeg: 8, rollOffsetDeg: rightRollOffsetDeg },
+    { label: 'left', sourceUpper: 'Arm.L', sourceLower: 'Forearm.L', sourceHand: 'Hand.L', targetUpper: 'LeftArm', targetLower: 'LeftForeArm', targetHand: 'LeftHand', sourceDownAxis: [0, -1, 0], targetDownAxis: [0, -1, 0], maxTwistDeg: 95, rollOffsetDeg: leftRollOffsetDeg },
   ];
   targetRestMap = buildCalibratedRestMap(THREE, sourceClone, targetClone, sourceRestMap, targetRestMap, {
     sourceFrame: 'ShoulderCenter',
     targetFrame: 'Spine02',
     chains,
     handDownReferencePairs: [
-      { sourceHand: 'Hand.R', sourceLocalAxis: [0, 0, 1], targetForearm: 'RightForeArm', targetHand: 'RightHand', targetLocalAxis: [0, -1, 0], rollOffsetDeg: 0 },
+      { sourceHand: 'Hand.R', sourceLocalAxis: [0, 0, 1], targetForearm: 'RightForeArm', targetHand: 'RightHand', targetLocalAxis: [0, -1, 0], rollOffsetDeg: rightRollOffsetDeg },
     ],
   });
   restorePose(sourceClone, sourceInitialPose);
@@ -530,8 +533,8 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
       weaponOrientationMode: weaponTrack?.userData?.orientationMode || null,
       weaponTargetBladeLocal: weaponTrack?.userData?.weaponTargetBladeLocal || null,
       weaponTargetUpLocal: weaponTrack?.userData?.weaponTargetUpLocal || null,
-      rightRollOffsetDeg: 0,
-      leftRollOffsetDeg: -90,
+      rightRollOffsetDeg,
+      leftRollOffsetDeg,
       rightRestTargetLocalAxis: [0, -1, 0],
       leftRestRollOverride: false,
     },

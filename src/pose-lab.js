@@ -6510,6 +6510,7 @@ class PoseLab {
                   sourceRestClip: spec.sourceRestClip || '0T-Pose',
                   timeSourceBone: spec.timeSourceBone || 'Hand.R',
                   dropInitialRestKey: spec.dropInitialRestKey !== false,
+                  worldJointProjection: spec.worldJointProjection || {},
                   weaponAttachment: target.info?.weaponAttachment || {},
                 });
                 const built = generated?.clip ? [generated.clip] : [];
