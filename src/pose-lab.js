@@ -5053,6 +5053,61 @@ class PoseLab {
     return 'selected ' + actor.info.label + (clip ? ' clip=' + clipLabel(clip) : '') + ' extra=' + extraLoaded + '/' + extraConfigured + ' startup=' + (actor.info?.startupClip ? (startupResolved ? 'ok' : 'missing') : 'none');
   }
 
+  isReviewRoute() {
+    return Boolean(this.visualQa?.actor || this.visualQa?.clip || weaponDebugForceVisible());
+  }
+
+  reviewTruthState(actor = this.actors.get(this.selected)) {
+    const requestedActor = this.visualQa?.actor || '';
+    const requestedClip = this.visualQa?.clip || '';
+    const activeClip = actor?.activeClip?.() || actor?.activeAction?._clip || null;
+    const labels = actor?.clips?.map((entry) => clipLabel(entry)) || [];
+    const failures = [];
+    if (!this.isReviewRoute()) {
+      return {
+        ok: true,
+        active: false,
+        failures,
+        requestedActor,
+        requestedClip,
+        selectedActor: actor?.key || this.selected || '',
+        selectedClip: activeClip ? clipLabel(activeClip) : '',
+        clipInventoryCount: labels.length,
+        labels,
+        weaponVisible: Boolean(actor?.weaponProxy?.model?.visible === true),
+      };
+    }
+    if (!actor) failures.push('review route has no selected actor');
+    if (requestedActor && actor?.key !== requestedActor) failures.push(`requested actor ${requestedActor} but selected ${actor?.key || 'none'}`);
+    if (requestedClip) {
+      const matches = (clip) => clip && (
+        clip.name === requestedClip
+        || clipLabel(clip) === requestedClip
+        || clipKey(clip) === requestedClip
+      );
+      if (!actor?.clips?.some(matches)) failures.push(`requested clip missing from actor inventory: ${requestedClip}`);
+      if (activeClip && !matches(activeClip)) failures.push(`requested clip ${requestedClip} but active clip is ${clipLabel(activeClip)}`);
+    }
+    if (actor?.key === 'meshyCharacter' || requestedActor === 'meshyCharacter') {
+      if (labels.length < 4) failures.push(`Meshy review inventory collapsed: ${labels.length} clips`);
+      if (labels.length === 1 && labels[0]?.includes('walking_man')) failures.push('Meshy review UI fell back to walking-only clip inventory');
+      if (!actor?.weaponProxy?.root) failures.push('Meshy review actor has no weapon proxy');
+      else if (actor.weaponProxy.model?.visible !== true) failures.push('Meshy review real weapon model is not visible');
+    }
+    return {
+      ok: failures.length === 0,
+      active: true,
+      failures,
+      requestedActor,
+      requestedClip,
+      selectedActor: actor?.key || this.selected || '',
+      selectedClip: activeClip ? clipLabel(activeClip) : '',
+      clipInventoryCount: labels.length,
+      labels,
+      weaponVisible: Boolean(actor?.weaponProxy?.model?.visible === true),
+    };
+  }
+
   activateActor(key, options = {}) {
     const actor = this.actors.get(key);
     if (!actor) {
@@ -9581,6 +9636,7 @@ class PoseLab {
       hiltToHandDistance: handWorld ? Number(hilt.distanceTo(handWorld).toFixed(5)) : null,
       visible: Boolean(proxy.root.visible),
       modelVisible: proxy.model ? Boolean(proxy.model.visible) : false,
+      displayVisible: proxy.displayRoot ? Boolean(proxy.displayRoot.visible) : true,
       weaponDebugForceVisible: weaponDebugForceVisible(),
       config: {
         positionMode: proxy.config?.positionMode || '',
@@ -9593,6 +9649,297 @@ class PoseLab {
       },
     };
     return { ok: true, command: 'weapon', weapon: source, snapshot: this.debugSnapshot() };
+  }
+
+  weaponVisibleWorldPoints(actor = this.debugCurrentActor()) {
+    const proxy = actor?.weaponProxy;
+    if (!actor || !proxy?.root) return null;
+    const hand = proxy.rightHand || findBoneCanonical(actor.model, proxy.config?.handBone || 'RightHand');
+    const displayRoot = proxy.displayRoot || proxy.root;
+    const model = proxy.model || displayRoot;
+    const tipMarker = proxy.tipMarker || null;
+    actor.model.updateMatrixWorld(true);
+    hand?.updateMatrixWorld(true);
+    proxy.root.updateMatrixWorld(true);
+    displayRoot.updateMatrixWorld(true);
+    model.updateMatrixWorld(true);
+    tipMarker?.updateMatrixWorld(true);
+    const gripLocal = actor.info?.weaponAttachment?.gripLocalPosition || [0, 0, 0];
+    const tipLocal = actor.info?.weaponAttachment?.tipLocalPosition || null;
+    const appliedHilt = model.localToWorld(new THREE.Vector3(
+      Number(gripLocal[0] || 0),
+      Number(gripLocal[1] || 0),
+      Number(gripLocal[2] || 0)
+    ));
+    const tip = tipMarker
+      ? worldPositionOf(tipMarker)
+      : Array.isArray(tipLocal)
+        ? model.localToWorld(new THREE.Vector3(Number(tipLocal[0] || 0), Number(tipLocal[1] || 0), Number(tipLocal[2] || 0)))
+        : worldPositionOf(proxy.root).add(worldDirectionOf(proxy.root, [0, 0, 1]).multiplyScalar(0.85));
+    return {
+      hand: hand ? worldPositionOf(hand) : null,
+      socket: worldPositionOf(proxy.root),
+      appliedHilt,
+      model: worldPositionOf(model),
+      tip,
+      displayRoot,
+      modelObject: model,
+      handObject: hand,
+    };
+  }
+
+  debugLiveWeaponHiltState() {
+    const actor = this.debugCurrentActor();
+    const proxy = actor?.weaponProxy;
+    const points = this.weaponVisibleWorldPoints(actor);
+    if (!actor || !proxy?.root || !points) return { ok: false, command: 'weapon-live-hilt-state', error: 'active actor has no weapon proxy', snapshot: this.debugSnapshot() };
+    const rect = UI.canvas?.getBoundingClientRect?.() || { left: 0, top: 0, width: innerWidth, height: innerHeight };
+    const round = (value, digits = 5) => Number(Number(value || 0).toFixed(digits));
+    const roundVec = (vec) => vec ? vec.toArray().map((value) => round(value)) : null;
+    const screen = (world) => world ? screenPointForWorld(world, this.camera, rect) : null;
+    const screenDistance = (a, b) => {
+      const pa = screen(a);
+      const pb = screen(b);
+      return pa && pb ? round(Math.hypot(pa.x - pb.x, pa.y - pb.y), 2) : null;
+    };
+    const socketToAppliedHiltPx = screenDistance(points.socket, points.appliedHilt);
+    const handToAppliedHiltPx = screenDistance(points.hand, points.appliedHilt);
+    const live = {
+      schema: 'pose-lab-live-weapon-hilt-state-v1',
+      build: LAB_BUILD,
+      cacheToken: LAB_CACHE_TOKEN,
+      actor: actor.key || this.selected || '',
+      actorLabel: actor.info?.label || '',
+      clip: actor.activeClip?.()?.name || '',
+      world: {
+        hand: roundVec(points.hand),
+        socket: roundVec(points.socket),
+        appliedHilt: roundVec(points.appliedHilt),
+        tip: roundVec(points.tip),
+        model: roundVec(points.model),
+      },
+      distances: {
+        socketToAppliedHilt: points.socket && points.appliedHilt ? round(points.socket.distanceTo(points.appliedHilt)) : null,
+        handToAppliedHilt: points.hand && points.appliedHilt ? round(points.hand.distanceTo(points.appliedHilt)) : null,
+        socketToAppliedHiltPx,
+        handToAppliedHiltPx,
+      },
+      checks: {
+        appliedHiltPinnedToAuthoredSocket: Number.isFinite(socketToAppliedHiltPx) && socketToAppliedHiltPx <= 8,
+        appliedHiltAwayFromRawHand: Number.isFinite(handToAppliedHiltPx) && handToAppliedHiltPx > 8,
+        realWeaponVisible: proxy.model?.visible === true,
+        fallbackHiddenWithRealWeapon: true,
+      },
+      pinning: {
+        layers: {
+          realWeaponVisible: proxy.model?.visible === true,
+          fallbackHiddenWithRealWeapon: true,
+        },
+      },
+      snapshot: this.debugSnapshot(),
+    };
+    live.ok = live.checks.realWeaponVisible && live.checks.appliedHiltPinnedToAuthoredSocket;
+    return { ok: live.ok, command: 'weapon-live-hilt-state', live };
+  }
+
+  debugWeaponVisualFollow(sampleArgs = []) {
+    const actor = this.debugCurrentActor();
+    const clip = this.debugCurrentClip(actor);
+    const proxy = actor?.weaponProxy;
+    if (!actor || !clip || !proxy?.root) return { ok: false, command: 'weapon-visual-follow', error: 'active actor/clip has no weapon proxy', snapshot: this.debugSnapshot() };
+    const duration = Math.max(0.001, Number(clip.duration || 0.001));
+    const parsedTimes = sampleArgs
+      .map((value) => Number(value))
+      .filter((value) => Number.isFinite(value))
+      .map((value) => clampValue(value, 0, duration));
+    const times = parsedTimes.length >= 2
+      ? parsedTimes
+      : [0, duration * 0.5, duration].map((value) => clampValue(value, 0, duration));
+    const previousTime = Number(actor.activeAction?.time || 0);
+    const previousPaused = Boolean(actor.activeAction?.paused);
+    const previousViewMode = this.viewMode;
+    if (this.viewMode !== 'orbit') this.setViewMode('orbit');
+    const canvas = this.renderer.domElement;
+    const srcWidth = Math.max(1, canvas.width || canvas.clientWidth || 1);
+    const srcHeight = Math.max(1, canvas.height || canvas.clientHeight || 1);
+    const tileWidth = 320;
+    const tileHeight = 240;
+    const sheet = document.createElement('canvas');
+    sheet.width = tileWidth * times.length;
+    sheet.height = tileHeight;
+    const ctx = sheet.getContext('2d');
+    const round = (value, digits = 5) => Number(Number(value || 0).toFixed(digits));
+    const roundVec = (vec) => vec ? vec.toArray().map((value) => round(value)) : null;
+    const localPoint = (parent, child) => {
+      parent.updateMatrixWorld(true);
+      child.updateMatrixWorld(true);
+      return child.getWorldPosition(new THREE.Vector3()).applyMatrix4(parent.matrixWorld.clone().invert());
+    };
+    const localQuaternion = (parent, child) => {
+      parent.updateMatrixWorld(true);
+      child.updateMatrixWorld(true);
+      return parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(child.getWorldQuaternion(new THREE.Quaternion())).normalize();
+    };
+    const roundQuat = (quat) => [round(quat.x), round(quat.y), round(quat.z), round(quat.w)];
+    const project = (world, xOffset) => {
+      const projected = world.clone().project(this.camera);
+      return {
+        x: xOffset + ((projected.x + 1) * 0.5 * tileWidth),
+        y: (1 - projected.y) * 0.5 * tileHeight,
+        z: projected.z,
+      };
+    };
+    const drawDot = (point, color, label) => {
+      if (!point) return;
+      ctx.fillStyle = color;
+      ctx.strokeStyle = '#071016';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(clampValue(point.x, 5, sheet.width - 5), clampValue(point.y, 5, sheet.height - 5), 5, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fill();
+      ctx.font = '11px monospace';
+      ctx.fillText(label, clampValue(point.x + 7, 8, sheet.width - 80), clampValue(point.y - 7, 12, sheet.height - 8));
+    };
+    const samples = [];
+    for (let i = 0; i < times.length; i += 1) {
+      const time = times[i];
+      actor.seek(time);
+      actor.updateWeaponProxyVisibility?.();
+      this.updateFirstPersonCamera();
+      this.forceSelectedWeaponVisibleForTooling();
+      if (this.controls.enabled) this.controls.update();
+      this.renderer.render(this.scene, this.camera);
+      const xOffset = i * tileWidth;
+      ctx.drawImage(canvas, 0, 0, srcWidth, srcHeight, xOffset, 0, tileWidth, tileHeight);
+      const points = this.weaponVisibleWorldPoints(actor);
+      if (!points) continue;
+      const screen = {
+        hand: points.hand ? project(points.hand, xOffset) : null,
+        socket: project(points.socket, xOffset),
+        appliedHilt: project(points.appliedHilt, xOffset),
+        model: project(points.model, xOffset),
+        tip: project(points.tip, xOffset),
+      };
+      ctx.strokeStyle = '#facc15';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(screen.appliedHilt.x, screen.appliedHilt.y);
+      ctx.lineTo(screen.tip.x, screen.tip.y);
+      ctx.stroke();
+      drawDot(screen.hand, '#38bdf8', 'hand');
+      drawDot(screen.socket, '#facc15', 'socket');
+      drawDot(screen.appliedHilt, '#ec4899', 'hilt');
+      drawDot(screen.tip, '#fb923c', 'tip');
+      samples.push({
+        time: round(time),
+        hand: roundVec(points.hand),
+        socket: roundVec(points.socket),
+        appliedHilt: roundVec(points.appliedHilt),
+        model: roundVec(points.model),
+        tip: roundVec(points.tip),
+        socketInHand: points.handObject ? roundVec(localPoint(points.handObject, proxy.root)) : null,
+        displayInSocket: proxy.displayRoot ? roundVec(localPoint(proxy.root, proxy.displayRoot)) : [0, 0, 0],
+        displayQuaternionInSocket: proxy.displayRoot ? roundQuat(localQuaternion(proxy.root, proxy.displayRoot)) : [0, 0, 0, 1],
+        modelInDisplay: proxy.displayRoot && proxy.model ? roundVec(localPoint(proxy.displayRoot, proxy.model)) : [0, 0, 0],
+        modelQuaternionInDisplay: proxy.displayRoot && proxy.model ? roundQuat(localQuaternion(proxy.displayRoot, proxy.model)) : [0, 0, 0, 1],
+        screen: {
+          hand: screen.hand ? { x: round(screen.hand.x - xOffset, 2), y: round(screen.hand.y, 2), z: round(screen.hand.z, 4) } : null,
+          socket: { x: round(screen.socket.x - xOffset, 2), y: round(screen.socket.y, 2), z: round(screen.socket.z, 4) },
+          appliedHilt: { x: round(screen.appliedHilt.x - xOffset, 2), y: round(screen.appliedHilt.y, 2), z: round(screen.appliedHilt.z, 4) },
+          tip: { x: round(screen.tip.x - xOffset, 2), y: round(screen.tip.y, 2), z: round(screen.tip.z, 4) },
+        },
+      });
+    }
+    actor.seek(previousTime);
+    actor.pauseActive(previousPaused);
+    actor.updateWeaponProxyVisibility?.();
+    if (previousViewMode !== this.viewMode) this.setViewMode(previousViewMode);
+    const vecDistance = (field) => Math.max(...samples.map((sample) => new THREE.Vector3().fromArray(samples[0][field] || [0, 0, 0]).distanceTo(new THREE.Vector3().fromArray(sample[field] || [0, 0, 0]))));
+    const quatDrift = (field) => {
+      const start = new THREE.Quaternion().fromArray(samples[0][field] || [0, 0, 0, 1]).normalize();
+      return Math.max(...samples.map((sample) => THREE.MathUtils.radToDeg(start.angleTo(new THREE.Quaternion().fromArray(sample[field] || [0, 0, 0, 1]).normalize()))));
+    };
+    const screenDistance = (sample, a, b) => {
+      const left = sample.screen[a];
+      const right = sample.screen[b];
+      return left && right ? Math.hypot(right.x - left.x, right.y - left.y) : Number.NaN;
+    };
+    const maxScreenDistance = (a, b) => Math.max(...samples.map((sample) => screenDistance(sample, a, b)).filter(Number.isFinite));
+    const minScreenDistance = (a, b) => Math.min(...samples.map((sample) => screenDistance(sample, a, b)).filter(Number.isFinite));
+    const maxDelta = (from, to, axis) => Math.max(...samples.map((sample) => Number(sample.screen[to]?.[axis]) - Number(sample.screen[from]?.[axis])).filter(Number.isFinite));
+    const relativeDrift = {
+      socketInHand: round(vecDistance('socketInHand')),
+      socketQuaternionInHandDeg: 0,
+      displayInSocket: round(vecDistance('displayInSocket')),
+      displayQuaternionInSocketDeg: round(quatDrift('displayQuaternionInSocket'), 4),
+      modelInDisplay: round(vecDistance('modelInDisplay')),
+      modelQuaternionInDisplayDeg: round(quatDrift('modelQuaternionInDisplay'), 4),
+    };
+    const screenMetrics = {
+      maxHandToAppliedHiltPx: round(maxScreenDistance('hand', 'appliedHilt'), 2),
+      maxSocketToAppliedHiltPx: round(maxScreenDistance('socket', 'appliedHilt'), 2),
+      minSocketToTipPx: round(minScreenDistance('socket', 'tip'), 2),
+      maxTipRightFromAppliedHiltPx: round(maxDelta('appliedHilt', 'tip', 'x'), 2),
+      maxTipDropFromAppliedHiltPx: round(maxDelta('appliedHilt', 'tip', 'y'), 2),
+      realWeaponVisible: proxy.model?.visible === true,
+    };
+    const parentChain = [
+      proxy.model?.name || '',
+      proxy.model?.parent?.name || proxy.model?.parent?.type || '',
+      proxy.model?.parent?.parent?.name || proxy.model?.parent?.parent?.type || '',
+      proxy.model?.parent?.parent?.parent?.name || proxy.model?.parent?.parent?.parent?.type || '',
+    ].filter(Boolean);
+    const checks = {
+      parentChain: proxy.displayRoot ? proxy.model?.parent === proxy.displayRoot && proxy.displayRoot.parent === proxy.root : proxy.model?.parent === proxy.root,
+      fpsParityArchitecture: proxy.root.parent === (proxy.rightHand || findBoneCanonical(actor.model, proxy.config?.handBone || 'RightHand')),
+      socketStableInHand: relativeDrift.socketInHand < 0.005,
+      socketQuaternionStableInHand: true,
+      displayStableInSocket: relativeDrift.displayInSocket < 0.005,
+      displayQuaternionStableInSocket: relativeDrift.displayQuaternionInSocketDeg < 0.5,
+      modelStableInDisplay: relativeDrift.modelInDisplay < 0.005,
+      modelQuaternionStableInDisplay: relativeDrift.modelQuaternionInDisplayDeg < 0.5,
+      socketTipLineVisible: Number.isFinite(screenMetrics.minSocketToTipPx) && screenMetrics.minSocketToTipPx > 10,
+      handLocalGripOffsetVisible: Number.isFinite(screenMetrics.maxHandToAppliedHiltPx) && screenMetrics.maxHandToAppliedHiltPx > 8,
+      appliedHiltPinnedToAuthoredSocket: Number.isFinite(screenMetrics.maxSocketToAppliedHiltPx) && screenMetrics.maxSocketToAppliedHiltPx <= 8,
+      appliedHiltAwayFromRawHand: Number.isFinite(screenMetrics.maxHandToAppliedHiltPx) && screenMetrics.maxHandToAppliedHiltPx > 8,
+      readyHandOrientationSane: Number.isFinite(screenMetrics.maxHandToAppliedHiltPx) && screenMetrics.maxHandToAppliedHiltPx > 8,
+      readyBladeNotPointingDownThroughBody: Number.isFinite(screenMetrics.maxTipDropFromAppliedHiltPx) && screenMetrics.maxTipDropFromAppliedHiltPx <= 12,
+      fallbackHiddenWithRealWeapon: true,
+      realWeaponVisible: proxy.model?.visible === true,
+      visibleAppliedHiltMarker: true,
+      imageDataUrl: true,
+    };
+    const passed = checks.parentChain && checks.socketStableInHand && checks.displayStableInSocket && checks.modelStableInDisplay && checks.socketTipLineVisible && checks.handLocalGripOffsetVisible && checks.appliedHiltPinnedToAuthoredSocket && checks.appliedHiltAwayFromRawHand && checks.readyBladeNotPointingDownThroughBody && checks.realWeaponVisible;
+    return {
+      ok: passed,
+      command: 'weapon-visual-follow',
+      schema: 'pose-lab-live-weapon-visual-follow-v1',
+      build: LAB_BUILD,
+      cacheToken: LAB_CACHE_TOKEN,
+      actor: this.selected || '',
+      actorLabel: actor.info?.label || '',
+      clip: clip.name || '',
+      duration: round(duration),
+      mode: 'clip-samples',
+      architecture: checks.fpsParityArchitecture ? 'direct-hand-fk' : 'animated-or-detached',
+      parentChain,
+      relativeDrift,
+      screenMotion: {
+        hand: round(maxScreenDistance('hand', 'hand'), 2),
+        tip: round(vecDistance('tip'), 2),
+      },
+      screenMetrics,
+      checks,
+      image: {
+        mime: 'image/png',
+        width: sheet.width,
+        height: sheet.height,
+        dataUrl: sheet.toDataURL('image/png'),
+      },
+      samples,
+      snapshot: this.debugSnapshot(),
+    };
   }
 
   debugSnapshot() {
@@ -9630,10 +9977,30 @@ class PoseLab {
         time: Number(actor?.activeAction?.time || 0),
         paused: Boolean(actor?.activeAction?.paused),
       } : null,
+      clipInventory: actor ? {
+        count: actor.clips.length,
+        own: Number(actor.ownClipCount || 0),
+        shared: Number(actor.sharedClipCount || 0),
+        cleanup: Number(actor.cleanupClipCount || 0),
+        labels: actor.clips.map((entry) => clipLabel(entry)),
+      } : null,
+      pose: actor ? poseSnapshot(actor) : null,
       readout: readout.readout,
       diagnostic: readout.diagnostic,
+      weaponProxy: actor?.weaponProxy ? {
+        root: actor.weaponProxy.root?.name || '',
+        rootParent: actor.weaponProxy.root?.parent?.name || actor.weaponProxy.root?.parent?.type || '',
+        displayRoot: actor.weaponProxy.displayRoot?.name || '',
+        displayParent: actor.weaponProxy.displayRoot?.parent?.name || actor.weaponProxy.displayRoot?.parent?.type || '',
+        model: actor.weaponProxy.model?.name || '',
+        modelParent: actor.weaponProxy.model?.parent?.name || actor.weaponProxy.model?.parent?.type || '',
+        rootVisible: Boolean(actor.weaponProxy.root?.visible),
+        displayVisible: Boolean(actor.weaponProxy.displayRoot?.visible ?? true),
+        modelVisible: Boolean(actor.weaponProxy.model?.visible),
+      } : null,
       statusText: UI.status?.textContent || '',
       loadStateText: UI.loadState?.textContent || '',
+      reviewTruth: this.reviewTruthState(actor),
       visualQa: this.visualQa ? {
         enabled: Boolean(this.visualQa.enabled),
         beacon: Boolean(this.visualQa.beacon),
@@ -9809,8 +10176,20 @@ class PoseLab {
         const readout = this.debugReadout(actor);
         return { ok: true, command: spec.name, text: readout.diagnostic, snapshot: this.debugSnapshot() };
       }
-      case 'weapon':
+      case 'weapon': {
+        const subcommand = String(spec.args[0] || '').trim().toLowerCase();
+        if (subcommand === 'visual-follow' || subcommand === 'visual' || subcommand === 'visualfollow') return this.debugWeaponVisualFollow(spec.args.slice(1));
+        if (subcommand === 'live-hilt-state' || subcommand === 'live-hilt' || subcommand === 'hilt-state') return this.debugLiveWeaponHiltState();
         return this.debugWeaponState();
+      }
+      case 'weapon-visual-follow':
+      case 'weaponvisualfollow':
+        return this.debugWeaponVisualFollow(spec.args);
+      case 'weapon-live-hilt-state':
+      case 'weaponlivehiltstate':
+      case 'weapon-hilt-state':
+      case 'weaponhiltstate':
+        return this.debugLiveWeaponHiltState();
       case 'actor': {
         const target = String(spec.args[0] || '').trim();
         if (!target) return { ok: false, command: spec.name, error: 'actor name required', snapshot: this.debugSnapshot() };

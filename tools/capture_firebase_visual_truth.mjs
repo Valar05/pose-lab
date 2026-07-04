@@ -402,12 +402,29 @@ async function waitForHostedMeshyPage(pageInstance, clipName = '') {
     const apiReady = Boolean(window.__poseLabDebug || window.poseLabDebug);
     if (!apiReady || !/selected Meshy Character/.test(text)) return false;
     if (!expectedClip) return true;
-    return text.includes(expectedClip);
+    const api = window.__poseLabDebug || window.poseLabDebug;
+    const snapshot = api?.snapshot?.();
+    const active = snapshot?.activeClip || {};
+    return text.includes(expectedClip)
+      || active.name === expectedClip
+      || active.key === expectedClip
+      || String(active.key || '').includes(expectedClip);
   }, clipName, { timeout: ROUTE_LOAD_TIMEOUT_MS });
+  const snapshot = await pageInstance.evaluate(() => {
+    const api = window.__poseLabDebug || window.poseLabDebug;
+    return api?.snapshot?.() || null;
+  }).catch(() => null);
   const text = await pageInstance.locator('#loadState').textContent({ timeout: 5000 }).catch(() => '');
   if (/module failed|boot error|boot rejection/i.test(text || '')) throw new Error(text);
   if (!/selected Meshy Character/.test(text || '')) throw new Error(`hosted route did not select Meshy Character: ${text || 'missing load state'}`);
-  if (clipName && !String(text || '').includes(clipName)) throw new Error(`hosted route selected wrong clip: ${text || 'missing load state'}`);
+  if (clipName
+    && !String(text || '').includes(clipName)
+    && snapshot?.activeClip?.name !== clipName
+    && snapshot?.activeClip?.key !== clipName
+    && !String(snapshot?.activeClip?.key || '').includes(clipName)
+  ) {
+    throw new Error(`hosted route selected wrong clip: ${snapshot?.activeClip?.name || text || 'missing load state'}`);
+  }
 }
 
 async function gotoHostedMeshyPage(pageInstance, url, clipName = '') {
