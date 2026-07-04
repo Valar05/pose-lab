@@ -11,13 +11,13 @@ assert(js.includes('function sharedSameNameRotationPairs'), 'runtime should keep
 assert(!js.includes("mapped-chain-up-all-rest-delta"), 'runtime must not expose chain-up-all; it recreated the arm-straight-up Meshy regression');
 assert(js.includes("mapped-chain-up-basis-rest-delta"), 'mapped clips should report chain-up basis rest-delta mode');
 assert(js.includes("spec.retargetMode === 'mapped-rotation'"), 'auto retarget should keep mapped-rotation mode available');
-assert(js.includes("spec.retargetMode === 'fps-upper-key-convert'"), 'auto retarget should dispatch Meshy sword clips through source-key conversion');
-assert(js.includes("const mappedTag = spec.clipTag || (spec.retargetMode === 'weapon-path-ik' ? 'SABRE' : 'MC')"), 'mapped clips should support explicit FPS-SWORD-UPPER suffix tags');
-assert(profiles.includes("retargetMode: 'fps-upper-key-convert'"), 'Meshy profile should request source-authored upper-body key conversion');
+assert(js.includes("spec.retargetMode === 'meshy-fps-visual-ik-ready'"), 'auto retarget should dispatch Meshy Ready through the golden visual IK helper');
+assert(js.includes("const mappedTag = spec.clipTag || (spec.retargetMode === 'weapon-path-ik' ? 'SABRE' : 'MC')"), 'mapped clips should support explicit FPS-VISUAL-IK-GOLDEN suffix tags');
+assert(profiles.includes("retargetMode: 'meshy-fps-visual-ik-ready'"), 'Meshy profile should request golden visual IK Ready generation');
 assert(profiles.includes("channels: { translate: false, rotate: true, scale: false }"), 'Meshy FPS sword clips should be rotate-only');
 assert(!profiles.includes("sampleFps: 30"), 'Meshy accepted FPS sword path must not use uniform sampled retarget frames');
-assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy profile should generate FPS-SWORD-UPPER clips');
-assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]'"), 'Meshy aliases should prefer the accepted T-pose calibration during recovery');
+assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy profile should generate the accepted golden Ready clip');
+assert(profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'Meshy aliases should prefer the accepted golden Ready clip while startup stays T-pose');
 assert(!profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Meshy aliases must not promote rejected FPS OneHandReady retarget during recovery');
 assert(!profiles.includes("SwordAttack1: ['OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Meshy should defer FPS OneHandAttack1 until ready pose is accepted');
 for (const rejected of ['Hips', 'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg', 'LeftFoot', 'RightFoot', 'LeftToeBase', 'RightToeBase', 'Head']) {
@@ -26,4 +26,4 @@ for (const rejected of ['Hips', 'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg'
 assert(!profiles.includes('Armature|Swing1 -> meshyCharacter [CORE]') && !profiles.includes('Armature|Swing1 -> meshyCharacter [MC]'), 'rejected Scavenger mapped fallbacks should not remain in Meshy aliases');
 
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['fps-sword-source-key-convert-retarget', 'lower-body-targets-excluded'] }, null, 2));
+console.log(JSON.stringify({ checked: ['fps-visual-ik-golden-retarget', 'lower-body-targets-excluded'] }, null, 2));

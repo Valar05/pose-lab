@@ -20,8 +20,8 @@ assert(audit.sourceKeyCount === 31, `audit should preserve 31 authored Weapon.R 
 assert(audit.metrics.rawAvgBladeErrorDeg > 45, `raw wrist-relative blade basis should be visibly wrong, got ${audit.metrics.rawAvgBladeErrorDeg}`);
 assert(audit.metrics.solvedAvgBladeErrorDeg <= 1, `frame-solved basis should reduce blade direction error, got ${audit.metrics.solvedAvgBladeErrorDeg}`);
 assert(js.includes('function quaternionFromBladeFrame') && js.includes('weaponTipWorldFromSocket'), 'runtime should build a solved weapon frame from blade direction');
-assert(js.includes('weaponConfig.frameSolve !== false') && js.includes('targetWeaponWorld = quaternionFromBladeFrame(mappedBlade, mappedUp)'), 'runtime should use frame-solved WeaponGrip orientation');
-assert(profiles.includes('frameSolve: true') && profiles.includes('sourceTipLocal: [0.00854, 0.57786, 0.00995]'), 'Meshy profile should enable measured FPS weapon frame solve');
+assert(js.includes('weaponConfig.frameSolve !== false') && js.includes('targetWeaponWorld = quaternionFromBladeFrame(mappedBlade, mappedUp)'), 'runtime should retain diagnostic frame-solved WeaponGrip orientation');
+assert(!profiles.includes('frameSolve: true') && !profiles.includes('sourceTipLocal: [0.00854, 0.57786, 0.00995]'), 'normal Meshy Ready should not enable measured FPS weapon frame solve');
 
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['meshy-fps-weapon-basis-audit', 'raw-basis-error-measured', 'frame-solved-runtime-enabled'], metrics: audit.metrics }, null, 2));
+console.log(JSON.stringify({ checked: ['meshy-fps-weapon-basis-audit', 'raw-basis-error-measured', 'frame-solved-runtime-diagnostic-only'], metrics: audit.metrics }, null, 2));

@@ -467,21 +467,22 @@ function measureSabreBounds(THREE, sabreRoot) {
 
 function activeMeshyReadyProfileContract() {
   const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
-  const visualIkStart = profiles.indexOf("clipTag: 'FPS-VISUAL-IK'");
-  const candidateStart = profiles.indexOf("clipTag: 'FPS-JOINT-IK-CANDIDATE'", visualIkStart);
-  const activeBlock = visualIkStart >= 0 && candidateStart > visualIkStart ? profiles.slice(visualIkStart, candidateStart) : '';
+  const readyRuntime = fs.readFileSync(path.join(projectRoot, 'src', 'meshy-ready-runtime.mjs'), 'utf8');
+  const visualIkStart = profiles.indexOf("retargetMode: 'meshy-fps-visual-ik-ready'");
+  const restCalStart = profiles.indexOf("clipTag: 'FPS-REST-ARMS-CAL'", visualIkStart);
+  const activeBlock = visualIkStart >= 0 && restCalStart > visualIkStart ? profiles.slice(visualIkStart, restCalStart) : '';
   return {
     activeBlockFound: activeBlock.length > 0,
-    activeClip: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK]',
-    worldJointProjection: activeBlock.includes("mode: 'world-joint-projection'") && activeBlock.includes('worldJointProjection: true'),
-    replacesTracks: activeBlock.includes('replaceTracks: true'),
+    activeClip: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
+    worldJointProjection: activeBlock.includes("mode: 'world-joint-projection'") && readyRuntime.includes('worldJointProjection: true'),
+    replacesTracks: false,
     restRelative: activeBlock.includes('restRelative: true'),
-    postRollDownDelta: activeBlock.includes("mode: 'world-down-delta'"),
-    rightArmCanary: activeBlock.includes('rightArmCanary: true') && activeBlock.includes('rightMaxTwistDeg: 8'),
-    leftArmBounded: activeBlock.includes('leftMaxTwistDeg: 95'),
-    fullRightChain: activeBlock.includes("sourceUpper: 'Arm.R'") && activeBlock.includes("sourceLower: 'Forearm.R'") && activeBlock.includes("sourceHand: 'Hand.R'"),
-    fullLeftChain: activeBlock.includes("sourceUpper: 'Arm.L'") && activeBlock.includes("sourceLower: 'Forearm.L'") && activeBlock.includes("sourceHand: 'Hand.L'"),
-    weaponDoesNotOverwriteHand: activeBlock.includes('applyToHand: false') && activeBlock.includes('handStrength: 0'),
+    postRollDownDelta: readyRuntime.includes('rolledWorldQuaternionToDownReference'),
+    rightArmCanary: activeBlock.includes('rightRollOffsetDeg: -120') && readyRuntime.includes("rollOffsetDeg: -120"),
+    leftArmBounded: activeBlock.includes('leftRollOffsetDeg: -90') && readyRuntime.includes("rollOffsetDeg: -90"),
+    fullRightChain: readyRuntime.includes("sourceUpper: 'Arm.R'") && readyRuntime.includes("sourceLower: 'Forearm.R'") && readyRuntime.includes("sourceHand: 'Hand.R'"),
+    fullLeftChain: readyRuntime.includes("sourceUpper: 'Arm.L'") && readyRuntime.includes("sourceLower: 'Forearm.L'") && readyRuntime.includes("sourceHand: 'Hand.L'"),
+    weaponDoesNotOverwriteHand: readyRuntime.includes('weaponConfig.enabled === true && weaponConfig.experimentalWeaponSwing === true'),
   };
 }
 
@@ -759,7 +760,7 @@ async function main() {
     sourceActor: 'FPS Arms',
     targetActor: 'Meshy Character',
     sourceClip: 'OneHandReady',
-    targetClip: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK]',
+    targetClip: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
     sourceKeyCount: sourceTimes.length,
     leftSourceKeyCount: leftSourceTimes.length,
     targetKeyCount: times.length,
@@ -775,7 +776,6 @@ async function main() {
     acceptance: {
       activeRuntimeUsesJointProjection: runtimeProfile.activeBlockFound
         && runtimeProfile.worldJointProjection
-        && runtimeProfile.replacesTracks
         && runtimeProfile.restRelative
         && runtimeProfile.postRollDownDelta
         && runtimeProfile.rightArmCanary
