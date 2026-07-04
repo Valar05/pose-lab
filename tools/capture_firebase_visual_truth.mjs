@@ -64,12 +64,43 @@ async function debugExec(page, command) {
   }, command);
 }
 
-function evaluateTpose({ routeSelected, weapon, liveHilt }) {
+function evaluateBoot({ boot, expectedActor, expectedClip }) {
+  const failures = [];
+  const tabs = Array.isArray(boot?.tabs) ? boot.tabs : [];
+  if (boot?.ok !== true) failures.push(`boot debug failed: ${compactError(boot?.error) || JSON.stringify(boot?.failures || [])}`);
+  if (boot?.startupReady !== true) failures.push('hosted page did not reach startupReady');
+  if (!tabs.some((tab) => tab.actor === 'meshyCharacter')) failures.push('Meshy Character tab missing after runtime boot');
+  if (!tabs.some((tab) => tab.actor === 'player')) failures.push('FPS Arms tab missing after runtime boot');
+  if (!Array.isArray(boot?.loadedKeys) || !boot.loadedKeys.includes('meshyCharacter')) failures.push('Meshy Character actor not loaded');
+  if (!Array.isArray(boot?.loadedKeys) || !boot.loadedKeys.includes('player')) failures.push('FPS Arms actor not loaded');
+  if (boot?.selectedActor !== expectedActor) failures.push(`selected actor mismatch: ${boot?.selectedActor || 'missing'} expected ${expectedActor}`);
+  if (boot?.activeClip?.name !== expectedClip) failures.push(`selected clip mismatch: ${boot?.activeClip?.name || 'missing'} expected ${expectedClip}`);
+  if (/booting|Booting module|module failed|boot error|boot rejection|webgl failed|failed:/i.test(String(boot?.loadState || ''))) failures.push(`bad loadState: ${boot?.loadState || 'missing'}`);
+  if (boot?.canvas?.nonBlank !== true) failures.push(`canvas blank or unproven: ${JSON.stringify(boot?.canvas || {})}`);
+  return {
+    ok: failures.length === 0,
+    failures,
+    checks: {
+      startupReady: boot?.startupReady === true,
+      meshyTabVisible: tabs.some((tab) => tab.actor === 'meshyCharacter'),
+      fpsTabVisible: tabs.some((tab) => tab.actor === 'player'),
+      meshyActorLoaded: Array.isArray(boot?.loadedKeys) && boot.loadedKeys.includes('meshyCharacter'),
+      fpsActorLoaded: Array.isArray(boot?.loadedKeys) && boot.loadedKeys.includes('player'),
+      actorSelected: boot?.selectedActor === expectedActor,
+      clipSelected: boot?.activeClip?.name === expectedClip,
+      loadStateReady: !/booting|Booting module|module failed|boot error|boot rejection|webgl failed|failed:/i.test(String(boot?.loadState || '')),
+      canvasNonBlank: boot?.canvas?.nonBlank === true,
+    },
+  };
+}
+
+function evaluateTpose({ routeSelected, bootEvaluation, weapon, liveHilt }) {
   const failures = [];
   const config = weapon?.weapon?.config || {};
   const liveChecks = liveHilt?.checks || {};
   const liveDistances = liveHilt?.distances || {};
   const layers = liveHilt?.pinning?.layers || {};
+  failures.push(...(bootEvaluation?.failures || []));
   if (!routeSelected) failures.push('hosted route did not select Meshy Character');
   if (weapon?.ok !== true) failures.push(`weapon debug failed: ${compactError(weapon?.error)}`);
   if (liveHilt?.ok !== true) failures.push(`live hilt debug failed: ${compactError(liveHilt?.error)}`);
@@ -86,6 +117,7 @@ function evaluateTpose({ routeSelected, weapon, liveHilt }) {
     failures,
     checks: {
       routeSelected,
+      bootReady: bootEvaluation?.ok === true,
       actorSelected: weapon?.weapon?.actor === 'meshyCharacter',
       clipSelected: weapon?.weapon?.clip === TPOSE_CLIP,
       acceptedHiltOracle: closeArray(config.gripLocalPosition, ACCEPTED_MESHY_HILT),
@@ -97,13 +129,14 @@ function evaluateTpose({ routeSelected, weapon, liveHilt }) {
   };
 }
 
-function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
+function evaluateReady({ routeSelected, bootEvaluation, weapon, visualFollow, liveHilt }) {
   const failures = [];
   const followChecks = visualFollow?.checks || {};
   const screenMotion = visualFollow?.screenMotion || {};
   const relativeDrift = visualFollow?.relativeDrift || {};
   const screenMetrics = visualFollow?.screenMetrics || {};
   const liveChecks = liveHilt?.checks || {};
+  failures.push(...(bootEvaluation?.failures || []));
   if (!routeSelected) failures.push('hosted route did not select Meshy Character');
   if (weapon?.ok !== true) failures.push(`weapon debug failed: ${compactError(weapon?.error)}`);
   if (visualFollow?.ok !== true) failures.push(`Ready visual-follow failed: ${compactError(visualFollow?.error) || JSON.stringify(followChecks)}`);
@@ -124,6 +157,7 @@ function evaluateReady({ routeSelected, weapon, visualFollow, liveHilt }) {
     failures,
     checks: {
       routeSelected,
+      bootReady: bootEvaluation?.ok === true,
       actorSelected: weapon?.weapon?.actor === 'meshyCharacter',
       clipSelected: weapon?.weapon?.clip === READY_CLIP,
       realWeaponVisible: liveChecks.realWeaponVisible === true && followChecks.realWeaponVisible === true,
@@ -180,9 +214,12 @@ for (const capture of captures) {
   await page.screenshot({ path: screenshot, fullPage: false });
   const loadState = await page.locator('#loadState').textContent({ timeout: 5000 }).catch(() => '');
   const routeSelected = /selected Meshy Character/.test(loadState || '');
-  const weapon = routeSelected ? await debugExec(page, 'weapon') : { ok: false, error: 'route not selected' };
-  const liveHilt = routeSelected ? await debugExec(page, 'weapon live-hilt-state') : { ok: false, error: 'route not selected' };
-  const visualFollow = capture.id === 'ready' && routeSelected
+  const boot = await debugExec(page, 'boot').catch((caught) => ({ ok: false, command: 'boot', error: caught?.message || String(caught) }));
+  const bootEvaluation = evaluateBoot({ boot, expectedActor: 'meshyCharacter', expectedClip: capture.clip });
+  const bootSelected = routeSelected && bootEvaluation.ok;
+  const weapon = bootSelected ? await debugExec(page, 'weapon') : { ok: false, error: 'route/boot not selected' };
+  const liveHilt = bootSelected ? await debugExec(page, 'weapon live-hilt-state') : { ok: false, error: 'route/boot not selected' };
+  const visualFollow = capture.id === 'ready' && bootSelected
     ? await debugExec(page, 'weapon visual-follow')
     : null;
   let contactSheet = '';
@@ -196,8 +233,8 @@ for (const capture of captures) {
     }
   }
   const evaluation = capture.id === 'tpose'
-    ? evaluateTpose({ routeSelected, weapon, liveHilt })
-    : evaluateReady({ routeSelected, weapon, visualFollow, liveHilt });
+    ? evaluateTpose({ routeSelected, bootEvaluation, weapon, liveHilt })
+    : evaluateReady({ routeSelected, bootEvaluation, weapon, visualFollow, liveHilt });
   if (!evaluation.ok || error) failed = true;
   captured.push({
     id: capture.id,
@@ -208,6 +245,8 @@ for (const capture of captures) {
     contactSheet: contactSheet ? path.relative(projectRoot, contactSheet) : '',
     loadState: loadState || '',
     routeSelected,
+    boot,
+    bootEvaluation,
     error,
     expectedVisibleState: capture.expected,
     accepted: evaluation.ok && !error,
@@ -217,6 +256,7 @@ for (const capture of captures) {
     evaluation,
     cloudTelemetry: {
       weapon,
+      boot,
       liveHilt,
       visualFollow,
     },

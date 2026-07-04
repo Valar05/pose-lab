@@ -3,8 +3,8 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { clone as cloneSkinnedObject, retargetClip } from 'three/addons/utils/SkeletonUtils.js';
-import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-128';
-import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-189';
+import { applyGodotRestPose } from './godot-rest-poses.js?v=pose-editor-190';
+import { RIG_PROFILES, actorTransform, clipOptions } from './rig-profiles.js?v=pose-editor-190';
 import {
   applyWeaponAttachmentRuntimeRules,
   applyWeaponSocketRuntimeRules,
@@ -13,14 +13,14 @@ import {
   pinWeaponLocalPointToDisplay as pinWeaponLocalPointToDisplayRuntime,
   updateWeaponFallbackFromTipRuntime,
   weaponPlacementConfigSignature,
-} from './weapon-runtime-rules.mjs?v=pose-editor-189';
-import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-189';
-import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-128';
-import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-128';
-import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-148';
+} from './weapon-runtime-rules.mjs?v=pose-editor-190';
+import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-190';
+import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-190';
+import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-190';
+import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-190';
 
 const LAB_BUILD = 'meshy-fps-sword-upper-body-retarget';
-const LAB_CACHE_TOKEN = 'pose-editor-189';
+const LAB_CACHE_TOKEN = 'pose-editor-190';
 const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 
@@ -10925,7 +10925,7 @@ class PoseLab {
   }
 
   debugCommandNames() {
-    return ['help', 'status', 'snapshot', 'inspect', 'state', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'weapon', 'weapon-follow', 'weapon-visual-follow', 'weapon-live-hilt-state', 'weapon-tuning-state', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'fpv', 'beacon', 'capture', 'qa'];
+    return ['help', 'status', 'snapshot', 'inspect', 'state', 'boot', 'readout', 'diagnostic', 'actor', 'clip', 'bone', 'weapon', 'weapon-follow', 'weapon-visual-follow', 'weapon-live-hilt-state', 'weapon-tuning-state', 'view', 'panel', 'play', 'pause', 'stop', 'seek', 'frame', 'fpv', 'beacon', 'capture', 'qa'];
   }
 
   debugHelpText() {
@@ -10934,6 +10934,7 @@ class PoseLab {
       this.debugCommandNames().join(', '),
       'Examples:',
       '  status',
+      '  boot',
       '  actor orc',
       '  clip standing_melee_attack_horizontal [smooth]',
       '  bone mixamorig:LeftHand',
@@ -10957,6 +10958,91 @@ class PoseLab {
 
   debugCurrentClip(actor = this.debugCurrentActor()) {
     return actor?.activeClip() || null;
+  }
+
+  debugCanvasPixelSummary() {
+    const gl = this.renderer?.getContext?.();
+    if (!gl) return { ok: false, error: 'missing WebGL context' };
+    const width = Number(gl.drawingBufferWidth || UI.canvas?.width || 0);
+    const height = Number(gl.drawingBufferHeight || UI.canvas?.height || 0);
+    if (!width || !height) return { ok: false, error: 'empty canvas buffer', width, height };
+    const pixel = new Uint8Array(4);
+    const colors = new Set();
+    let sampled = 0;
+    let brightPixels = 0;
+    let alphaPixels = 0;
+    const columns = 9;
+    const rows = 7;
+    for (let row = 0; row < rows; row += 1) {
+      for (let column = 0; column < columns; column += 1) {
+        const x = Math.max(0, Math.min(width - 1, Math.round((width * (column + 0.5)) / columns)));
+        const y = Math.max(0, Math.min(height - 1, Math.round((height * (row + 0.5)) / rows)));
+        gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel);
+        sampled += 1;
+        if (pixel[3] > 0) alphaPixels += 1;
+        if (pixel[0] + pixel[1] + pixel[2] > 80) brightPixels += 1;
+        colors.add([pixel[0], pixel[1], pixel[2], pixel[3]].join(','));
+      }
+    }
+    return {
+      ok: true,
+      width,
+      height,
+      sampled,
+      uniqueColors: colors.size,
+      brightPixels,
+      alphaPixels,
+      nonBlank: colors.size >= 3 && brightPixels >= 2 && alphaPixels === sampled,
+    };
+  }
+
+  debugBootState() {
+    const actor = this.debugCurrentActor();
+    const clip = this.debugCurrentClip(actor);
+    const tabs = [...document.querySelectorAll('#actorTabs button')].map((button) => ({
+      actor: button.dataset.actor || '',
+      label: button.textContent || '',
+      active: button.classList.contains('active'),
+      failed: button.classList.contains('failed'),
+      unloaded: button.classList.contains('unloaded'),
+    }));
+    const profileKeys = Object.keys(ACTORS);
+    const loadedKeys = [...this.actors.keys()];
+    const loadState = UI.loadState?.textContent || '';
+    const statusText = UI.status?.textContent || '';
+    const canvas = this.debugCanvasPixelSummary();
+    const failures = [];
+    if (this.startupReady !== true) failures.push('startupReady is false');
+    if (!profileKeys.includes('meshyCharacter')) failures.push('RIG_PROFILES missing meshyCharacter');
+    if (!profileKeys.includes('player')) failures.push('RIG_PROFILES missing player/FPS Arms');
+    if (!loadedKeys.includes('meshyCharacter')) failures.push('Meshy Character actor not loaded');
+    if (!loadedKeys.includes('player')) failures.push('FPS Arms actor not loaded');
+    if (!tabs.some((tab) => tab.actor === 'meshyCharacter')) failures.push('Meshy Character tab missing');
+    if (!tabs.some((tab) => tab.actor === 'player')) failures.push('FPS Arms tab missing');
+    if (/booting|Booting module|module failed|boot error|boot rejection|webgl failed|failed:/i.test(loadState)) failures.push('loadState is not review-ready: ' + loadState);
+    if (canvas.nonBlank !== true) failures.push('canvas did not produce nonblank WebGL samples');
+    return {
+      ok: failures.length === 0,
+      command: 'boot',
+      failures,
+      build: LAB_BUILD,
+      cacheToken: LAB_CACHE_TOKEN,
+      labMode: this.labMode,
+      startupReady: Boolean(this.startupReady),
+      selectedActor: this.selected || '',
+      actorLabel: actor?.info?.label || '',
+      activeClip: clip ? {
+        name: clip.name || '',
+        key: clipKey(clip),
+        origin: clip.userData?.origin || '',
+      } : null,
+      profileKeys,
+      loadedKeys,
+      tabs,
+      canvas,
+      loadState,
+      statusText,
+    };
   }
 
   debugReadout(actor = this.debugCurrentActor()) {
@@ -11843,6 +11929,8 @@ class PoseLab {
       case 'inspect':
       case 'state':
         return respond();
+      case 'boot':
+        return this.debugBootState();
       case 'readout': {
         const readout = this.debugReadout(actor);
         return { ok: true, command: spec.name, text: readout.readout, diagnostic: readout.diagnostic, snapshot: this.debugSnapshot() };

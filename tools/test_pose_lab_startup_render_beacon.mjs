@@ -6,6 +6,7 @@ const projectRoot = path.resolve(import.meta.dirname, '..');
 const js = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
 const html = fs.readFileSync(path.join(projectRoot, 'pose-lab.html'), 'utf8');
 const failures = [];
+const currentToken = js.match(/const\s+LAB_CACHE_TOKEN\s*=\s*['"]([^'"]+)['"]/)?.[1] || '';
 
 function assert(condition, message) {
   if (!condition) failures.push(message);
@@ -46,16 +47,17 @@ for (const file of [
 
 assert(html.includes('const bootstrapImports = ['), 'entry page should preflight the runtime import graph');
 assert(html.includes("./vendor/three/build/three.module.js"), 'entry page should preflight the Three.js build module');
-assert(html.includes("./src/pose-lab.js?v=pose-editor-115"), 'entry page should dynamically import the cache-busted runtime');
+assert(currentToken, 'runtime should declare LAB_CACHE_TOKEN');
+assert(html.includes(`./src/pose-lab.js?v=${currentToken}`), 'entry page should dynamically import the cache-busted runtime');
 
 const tokenMatches = [...html.matchAll(/v=(pose-editor-[0-9]+)/g)].map((match) => match[1]);
 assert(tokenMatches.length >= 6, 'entry page should cache-bust every local bootstrap import');
-assert(new Set(tokenMatches).size === 1 && tokenMatches[0] === 'pose-editor-115', `entry import cache tokens should match pose-editor-115, got ${tokenMatches.join(', ')}`);
-for (const stale of ['visual-qa-read-frames', 'visual-qa-step-rail', 'pose-editor-14', 'pose-editor-1"']) {
+assert(new Set(tokenMatches).size === 1 && tokenMatches[0] === currentToken, `entry import cache tokens should match ${currentToken}, got ${tokenMatches.join(', ')}`);
+for (const stale of ['visual-qa-read-frames', 'visual-qa-step-rail']) {
   assert(!html.includes(stale), `entry page should not reference stale token ${stale}`);
   assert(!js.includes(stale), `runtime should not reference stale token ${stale}`);
 }
-assert(js.includes("./rig-profiles.js?v=pose-editor-115"), 'runtime static imports should share the entry cache token');
+assert(js.includes(`./rig-profiles.js?v=${currentToken}`), 'runtime static imports should share the entry cache token');
 assert(html.includes("fetch('/__visual_qa_smoke?stage=module-failed&spec='"), 'entry page should publish module-failed beacons with spec context');
 assert(js.includes('this.updateFirstPersonCamera();'), 'startup should refresh the camera before first render');
 assert(js.includes('this.renderer.render(this.scene, this.camera);'), 'startup should render once before saving state');
@@ -64,6 +66,11 @@ assert(js.includes('await this.loadActors();'), 'startup should still load actor
 assert(js.includes('this.startupReady = false;'), 'startup should hold render beacon until ready state is set');
 assert(js.includes('if (!this.startupReady) return;'), 'visual QA beacon should wait for startup readiness before rendering');
 assert(js.includes('this.startupReady = true;'), 'startup should mark readiness after selecting the startup actor');
+assert(js.includes("'boot'"), 'debug command list should expose boot status for cloud review');
+assert(js.includes('debugBootState()'), 'runtime should expose a structured boot state for cloud review');
+assert(js.includes('debugCanvasPixelSummary()'), 'runtime should sample the WebGL canvas for nonblank boot proof');
+assert(js.includes("tabs.some((tab) => tab.actor === 'meshyCharacter')"), 'boot state should require Meshy Character actor tab');
+assert(js.includes("tabs.some((tab) => tab.actor === 'player')"), 'boot state should require FPS Arms actor tab');
 assert(js.includes("if (char === '\\\\') {"), 'debug command parser should escape backslashes correctly');
 assert(js.includes(String.raw`UI.readout.textContent = 'view=' + this.viewMode + '\n' + actor.readout();`), 'info readout should use an escaped newline, not a literal line break');
 
