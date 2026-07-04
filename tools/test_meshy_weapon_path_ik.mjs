@@ -19,7 +19,7 @@ assert(profiles.includes('Saber handle-centered attachment for Meshy Character')
 assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy saber should rotate from the hand origin without shifting the socket');
 assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]') && profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]') && profiles.includes('rotationDeg: [90, 0, -55.145]'), 'Meshy saber should use the saved 3D gizmo socket position and rotation');
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy should generate the gated Ready candidate clip');
-assert(profiles.includes("visibleClipPatterns: ['\\\\[FPS-REST-ARMS']"), 'Meshy weapon visibility should include only accepted T-pose rest until Ready is promoted');
+assert(profiles.includes("visibleClipPatterns: ['\\\\[FPS-REST-ARMS', '\\\\[FPS-VISUAL-IK']"), 'Meshy weapon visibility should include accepted T-pose rest and the current Ready review clip');
 assert(!profiles.includes("sourceWeapon: 'Weapon.R'") && !profiles.includes("targetWeapon: 'WeaponGrip'"), 'normal Meshy Ready should not drive WeaponGrip from FPS Weapon.R tracks');
 assert(!profiles.includes("retargetMode: 'weapon-path-ik'"), 'Meshy active profile should not request the rejected weapon-path IK acceptance path');
 assert(!profiles.includes("clipTag: 'IB-MC'") && !profiles.includes("clipTag: 'RA-FULL'"), 'Meshy active profile should not generate rejected full-body/RA weapon clips');

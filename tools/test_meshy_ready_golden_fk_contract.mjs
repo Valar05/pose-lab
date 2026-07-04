@@ -23,7 +23,7 @@ for (const literal of [
 }
 
 assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120', '0T-Pose']"), 'SwordReady should stay on accepted T-pose aliases until Ready has fresh promotion evidence');
-assert(profiles.includes("visibleClipPatterns: ['\\\\[FPS-REST-ARMS']"), 'weapon visibility should stay on accepted T-pose rest patterns until Ready has fresh promotion evidence');
+assert(profiles.includes("visibleClipPatterns: ['\\\\[FPS-REST-ARMS', '\\\\[FPS-VISUAL-IK']"), 'weapon visibility should include the accepted T-pose canary and the current Ready review clip');
 assert(profiles.includes("retargetMode: 'meshy-fps-visual-ik-ready'"), 'Meshy Ready should use the explicit golden Ready helper mode');
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy Ready candidate generator should keep the reviewable clip tag');
 assert(profiles.includes("clipSuffix: '-> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'Meshy Ready candidate generator should keep the reviewable visual IK label');
