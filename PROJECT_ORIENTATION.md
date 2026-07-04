@@ -92,6 +92,28 @@ Required order:
 
 Chrome wake is browser hygiene only. It does not replace Firebase visual truth, Android screenshots, or user review.
 
+## Attention Handoff Doctrine
+
+If the work requires the user's attention, especially after a cloud visual-truth run, Chrome wake, screenshot review, or "ready to check" handoff, notify the user explicitly instead of assuming a browser launch was noticed.
+
+Required order:
+
+1. Wake the exact cloud URL in Chrome using the Chrome Wake Doctrine above.
+2. Send an Android-visible notification when `termux-notification` is available. Include the project, branch/run, verdict, and exact URL. Prefer the repo helper:
+
+   ```sh
+   sh tools/notify_pose_lab_attention.sh --title "Pose Lab ready" --content "Cloud visual truth is ready: $URL" --url "$URL"
+   ```
+
+   Direct command example:
+
+   ```sh
+   termux-notification --title "Pose Lab ready" --content "Cloud visual truth is ready: $URL"
+   ```
+
+3. If `termux-notification` is unavailable, use the strongest available local attention channel, such as `termux-toast`, then report that notification support was unavailable.
+4. Record the wake result and notification result in the final handoff. A browser-open report without an attention notification is an incomplete handoff when user attention was requested.
+
 ## Validation
 
 ```sh

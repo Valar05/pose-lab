@@ -16,6 +16,7 @@ Own the outcome, not the task.
 - Use `apply_patch` for manual repo edits, including shared-storage project files.
 - The old `workspace-write-operator` editing workaround is deprecated for this project; do not route normal source/doc/test edits through it.
 - Before handing back Pose Lab work, verify the durable Termux server on port `8798` returns `http://127.0.0.1:8798/pose-lab/pose-lab.html` and tail `generated/server_logs/pose-lab-server-8798.log`; start tmux session `pose-lab-server-8798` with the logged restart loop if it is down.
+- When the handoff needs user attention, especially after cloud visual truth, Chrome wake, screenshot review, or a ready-to-check URL, send an Android-visible notification with `termux-notification` when available and include the exact URL/verdict. If notification tooling is unavailable, use the strongest available fallback such as `termux-toast` and report that fallback. A browser-open result alone is not a complete attention handoff.
 
 ## Working Rule
 
