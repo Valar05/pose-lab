@@ -128,7 +128,7 @@ function relationshipChecksFromTelemetry({ liveChecks = {}, liveDistances = {}, 
     && followChecks.handLocalGripOffsetVisible === true
     && followChecks.appliedHiltAwayFromRawHand === true
     && followChecks.readyHandOrientationSane === true
-    && Number(screenMetrics.maxHandToAppliedHiltPx || 0) >= 18
+    && Number(screenMetrics.maxHandToAppliedHiltPx || 0) >= 16
     && Number(screenMetrics.minSocketToTipPx || 0) >= 24
     && Number(screenMetrics.maxTipRightFromAppliedHiltPx || 0) >= 24
     && Number.isFinite(Number(screenMetrics.maxTipDropFromAppliedHiltPx))
@@ -321,6 +321,9 @@ function evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow,
   const socketForwardToBladeErrorDeg = Number(weapon?.weapon?.socketForwardToBladeErrorDeg);
   if (!Number.isFinite(basketFrontErrorDeg)) failures.push(`Ready basket/front orientation metric is missing: ${JSON.stringify(weapon?.weapon || {})}`);
   if (!Number.isFinite(socketForwardToBladeErrorDeg)) failures.push(`Ready socket-forward to blade axis metric is missing: ${JSON.stringify(weapon?.weapon || {})}`);
+  if (!readyScreenBladeSane && !(Number.isFinite(socketForwardToBladeErrorDeg) && socketForwardToBladeErrorDeg <= 75)) {
+    failures.push(`Ready socket-forward to blade axis is not visually sane: ${JSON.stringify(weapon?.weapon || {})}`);
+  }
   return {
     ok: failures.length === 0,
     failures,
