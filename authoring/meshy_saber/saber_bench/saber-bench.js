@@ -11,7 +11,7 @@ const ASSETS = {
 const BASELINE = Object.freeze({
   schema: 'pose-lab-meshy-saber-bench-contract-v1',
   source: 'minimal-saber-bench',
-  hierarchy: 'Standalone visible saber mesh',
+  hierarchy: 'Meshy character plus real Meshy sabre mesh',
   grip: {
     position: [0, 0, 0],
     rotationDeg: [0, 0, 0],
@@ -23,8 +23,8 @@ const BASELINE = Object.freeze({
     gripLocalPosition: [0, 0, 0],
     tipLocalPosition: [-1.65, 0, 0],
     pinHiltToWeaponGrip: true,
-    showRealMesh: false,
-    showProxySaber: true,
+    showRealMesh: true,
+    showProxySaber: false,
   },
 });
 
@@ -123,6 +123,7 @@ let weaponGrip = null;
 let sabreRoot = null;
 let sabreMesh = null;
 let selectedLayer = 'grip';
+let lastTruthReadoutAt = 0;
 
 function setStatus(message) {
   ui.status.textContent = message;
@@ -142,6 +143,10 @@ function roundArray(values, places = 5) {
 
 function vectorFromArray(values) {
   return new THREE.Vector3(values[0] || 0, values[1] || 0, values[2] || 0);
+}
+
+function formatVector(vector) {
+  return [vector.x, vector.y, vector.z].map((value) => round(value, 4));
 }
 
 function findNamed(rootObject, name, type = '') {
@@ -212,6 +217,60 @@ async function loadGltf(url) {
   return await loader.loadAsync(url);
 }
 
+function worldBoundsFor(...objects) {
+  const box = new THREE.Box3();
+  let hasObject = false;
+  for (const object of objects) {
+    if (!object) continue;
+    object.updateMatrixWorld(true);
+    const objectBox = new THREE.Box3().setFromObject(object);
+    if (objectBox.isEmpty()) continue;
+    if (!hasObject) box.copy(objectBox);
+    else box.union(objectBox);
+    hasObject = true;
+  }
+  return hasObject ? box : null;
+}
+
+function isCameraFramed(object) {
+  if (!object) return false;
+  const box = worldBoundsFor(object);
+  if (!box) return false;
+  const center = box.getCenter(new THREE.Vector3()).project(camera);
+  return center.z > -1 && center.z < 1 && Math.abs(center.x) <= 1.05 && Math.abs(center.y) <= 1.05;
+}
+
+function frameLoadedScene() {
+  const box = worldBoundsFor(charMesh, sabreMesh);
+  if (!box) {
+    setView('full');
+    return;
+  }
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z, 0.5);
+  const distance = Math.max(1.8, maxDim / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2)) * 1.35);
+  controls.target.copy(center);
+  camera.position.copy(center).add(new THREE.Vector3(0.35 * distance, -distance, 0.22 * distance));
+  camera.near = 0.01;
+  camera.far = Math.max(80, distance * 8);
+  camera.updateProjectionMatrix();
+  controls.update();
+}
+
+function updateTruthReadout() {
+  if (!ui.truthReadout) return;
+  const sabreBox = worldBoundsFor(sabreMesh);
+  const sabreSize = sabreBox?.getSize(new THREE.Vector3()) || new THREE.Vector3();
+  ui.truthReadout.textContent = [
+    `real mesh loaded: ${sabreMesh ? 'yes' : 'no'}`,
+    `mesh name: ${sabreMesh?.name || 'none'}`,
+    `world bounds size: ${JSON.stringify(formatVector(sabreSize))}`,
+    `camera framed: ${isCameraFramed(sabreMesh) ? 'yes' : 'no'}`,
+    `proxy visible: ${proxySaber.visible ? 'yes' : 'no'}`,
+  ].join('\n');
+}
+
 function attachFkHierarchy() {
   weaponGrip = new THREE.Object3D();
   weaponGrip.name = 'WeaponGrip';
@@ -254,6 +313,7 @@ function applyStateToScene() {
 
   syncInputs();
   writeJson();
+  updateTruthReadout();
 }
 
 function syncInputs() {
@@ -361,13 +421,13 @@ function applyJson() {
 function setView(kind) {
   if (kind === 'hand') {
     const target = new THREE.Vector3();
-    (rightHand || proxySaber).getWorldPosition(target);
+    (rightHand || sabreMesh || proxySaber).getWorldPosition(target);
     controls.target.copy(target);
     camera.position.copy(target).add(new THREE.Vector3(0.48, -0.82, 0.25));
     camera.fov = 38;
   } else if (kind === 'blade') {
     const target = new THREE.Vector3();
-    proxySaber.getWorldPosition(target);
+    (sabreMesh || proxySaber).getWorldPosition(target);
     controls.target.copy(target);
     camera.position.copy(target).add(new THREE.Vector3(0.95, -1.45, 0.42));
     camera.fov = 32;
@@ -378,6 +438,7 @@ function setView(kind) {
   }
   camera.updateProjectionMatrix();
   controls.update();
+  updateTruthReadout();
 }
 
 function nudge(axis, direction) {
@@ -403,7 +464,7 @@ async function copyJson() {
 }
 
 async function loadMeshyReference() {
-  setStatus('loading Meshy');
+  setStatus('loading real Meshy character and sabre mesh');
   const [meshy, pbr, sabre] = await Promise.all([
     loadGltf(ASSETS.meshyAnimated),
     loadGltf(ASSETS.meshyStaticPbr),
@@ -428,9 +489,10 @@ async function loadMeshyReference() {
   sabreRoot.add(sabreMesh);
   applyStateToScene();
 
-  setView('hand');
-  setStatus('ready: live FK editor');
-  window.saberBench = { state, contractJson, scene, rightHand, weaponGrip, sabreRoot, sabreMesh };
+  frameLoadedScene();
+  setStatus('ready: real Meshy character and real sabre mesh loaded');
+  window.saberBench = { state, contractJson, scene, rightHand, weaponGrip, sabreRoot, sabreMesh, proxySaber, truthReadout: updateTruthReadout };
+  updateTruthReadout();
 }
 
 function resize() {
@@ -444,6 +506,10 @@ function animate() {
   requestAnimationFrame(animate);
   clock.getDelta();
   controls.update();
+  if (performance.now() - lastTruthReadoutAt > 500) {
+    lastTruthReadoutAt = performance.now();
+    updateTruthReadout();
+  }
   renderer.render(scene, camera);
 }
 
@@ -486,7 +552,9 @@ for (const button of document.querySelectorAll('[data-nudge]')) {
 window.addEventListener('resize', resize);
 resize();
 applyStateToScene();
-setView('full');
-setStatus('ready: visible saber editor');
 animate();
-window.saberBench = { state, contractJson, scene, proxySaber };
+window.saberBench = { state, contractJson, scene, proxySaber, truthReadout: updateTruthReadout };
+loadMeshyReference().catch((error) => {
+  setStatus('real mesh load failed: ' + error.message);
+  updateTruthReadout();
+});

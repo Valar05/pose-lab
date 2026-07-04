@@ -14,24 +14,28 @@ const builder = read('tools/build_saber_bench_cloud_review.mjs');
 
 assert(html.includes('Meshy Saber Bench'), 'bench should have its own entrypoint');
 assert(html.includes('id="benchCanvas"') && html.includes('id="jsonBox"'), 'bench should expose canvas and JSON contract box');
-assert(html.includes('id="showProxySaber"') && html.includes('bright editable saber'), 'bench should expose an always-visible editable saber toggle');
+assert(html.includes('id="showProxySaber"') && html.includes('bright diagnostic proxy'), 'bench should expose proxy only as an explicit diagnostic toggle');
+assert(html.includes('id="truthReadout"'), 'bench should expose active real-mesh truth readout');
 assert(js.includes("import * as THREE from 'three'"), 'bench should use Three.js directly');
 assert(js.includes("GLTFLoader"), 'bench should load real GLB assets');
 assert(!js.includes("src/pose-lab.js") && !html.includes("src/pose-lab.js"), 'bench must not import Pose Lab runtime');
-assert(js.includes('Standalone visible saber mesh'), 'bench must default to a standalone visible saber, not a rig-dependent path');
+assert(js.includes('Meshy character plus real Meshy sabre mesh'), 'bench must default to real Meshy character plus real sabre mesh');
+assert(js.includes('showRealMesh: true'), 'real sabre mesh must be enabled by default');
+assert(js.includes('showProxySaber: false'), 'proxy saber must be hidden by default');
 assert(js.includes("findNamed(meshyRoot, 'RightHand', 'Bone')"), 'bench must attach to the real RightHand bone');
 assert(js.includes("findNamed(sabre.scene, 'Mesh_0')"), 'bench must isolate the real sabre mesh');
 assert(js.includes('hideEverythingBut'), 'bench must hide imported junk helper objects');
 assert(js.includes('pinHiltToWeaponGrip'), 'bench must expose hilt pinning as an explicit rule');
-assert(js.includes('Bright editable saber proxy') && js.includes('proxyBlade'), 'bench must include a visible saber-shaped proxy to position even if the GLB is unreadable');
+assert(js.includes('Bright editable saber proxy') && js.includes('proxyBlade'), 'bench may retain proxy geometry as a hidden diagnostic');
 assert(js.includes('showRealMesh') && js.includes('showProxySaber'), 'bench must let the user compare the real sabre mesh and visible proxy');
-assert(js.includes('FallbackVisibleWeaponGrip') && js.includes('fallbackSabreRoot.add(proxySaber'), 'bench must show a saber before Meshy rig/hand attachment succeeds');
-assert(js.includes('applyStateToScene();\nsetView(\'full\');\nsetStatus(\'ready: visible saber editor\');\nanimate();'), 'bench must apply the visible saber transform before any async asset loading');
-assert(js.includes('setStatus(\'ready: visible saber editor\')'), 'bench must report the visible saber editor as ready before any Meshy load');
-assert(!js.includes('boot().catch'), 'bench must not auto-load Meshy or real sabre assets on startup');
-assert(js.includes('function loadMeshyReference()'), 'Meshy loading should remain available only as an explicit reference path');
+assert(!js.includes('setStatus(\'ready: visible saber editor\')'), 'bench must not report ready before real asset loading');
+assert(js.includes('loadMeshyReference().catch'), 'bench must auto-load Meshy and real sabre assets on startup');
+assert(js.includes('setStatus(\'ready: real Meshy character and real sabre mesh loaded\')'), 'ready status must mean real character and real sabre mesh are loaded');
+assert(js.includes('frameLoadedScene()'), 'bench must frame the loaded real character and sabre mesh');
+assert(js.includes('worldBoundsFor') && js.includes('camera framed'), 'truth readout should report real mesh bounds and camera framing');
 assert(js.includes('pose-lab-meshy-saber-bench-contract-v1'), 'bench must export a stable contract schema');
 assert(css.includes('@media (max-width: 760px)'), 'bench should stay usable on phone screens');
+assert(css.includes('#truthReadout'), 'truth readout should be styled for phone review');
 
 for (const asset of [
   'assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb',
