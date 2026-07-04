@@ -75,6 +75,19 @@ Use the visual QA harness or a fresh Android screenshot from the live browser wh
 4. Do not rely on the old standalone `screencap` path. It is not the source of truth for this workflow.
 5. If the page looks stale, bump the cache token or hard-refresh before changing animation logic.
 
+## Chrome Wake Doctrine
+
+For phone-visible cloud review, a generic URL-open report is not enough. If the user asks to wake Chrome, explicitly target Chrome and verify the wake attempt.
+
+Required order:
+
+1. Run the Android Chrome prune/wake workflow with the exact cloud review URL, scoped to `com.android.chrome` when possible.
+2. If the user still reports Chrome did not wake, launch the same URL with an explicit Android intent against Chrome, for example `am start -S -n com.android.chrome/com.google.android.apps.chrome.Main -a android.intent.action.VIEW -d "$URL"`.
+3. Inspect the wake report or `dumpsys` output. Report `open_status`, `force_start_count`, current focus/top activity when available, and the exact URL.
+4. Do not treat `termux-open-url` or a wrapper returning `open_status=opened` as sufficient by itself when Chrome foregrounding is the requirement.
+
+Chrome wake is browser hygiene only. It does not replace Firebase visual truth, Android screenshots, or user review.
+
 ## Validation
 
 ```sh
