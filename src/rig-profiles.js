@@ -271,7 +271,7 @@ const BASE_RIG_PROFILES = {
       modelLocalOffset: [-0.11512, 0.00773, -0.01127],
       gripOffset: [0, 0, 0],
       tipOffset: [0, 0, 0.85],
-      visibleClipPatterns: ['\\[FPS-REST-ARMS'],
+      visibleClipPatterns: ['\\[FPS-REST-ARMS', '\\[FPS-SWORD-UPPER\\]', 'OneHandReady'],
       length: 0.85,
       bladeRadius: 0.022,
       bladeOpacity: 0.95,
@@ -322,6 +322,7 @@ const BASE_RIG_PROFILES = {
         clipSuffix: '-> meshyCharacter [FPS-SWORD-UPPER]',
         originPrefix: 'mapped-arms:player->meshyCharacter',
         weaponKeyConvert: {
+          enabled: false,
           sourceHand: 'Hand.R',
           sourceWeapon: 'Weapon.R',
           sourceFrame: 'ShoulderCenter',

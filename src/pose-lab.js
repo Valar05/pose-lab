@@ -1466,7 +1466,7 @@ function buildFpsUpperKeyConvertClips(sharedClips, sourceRoot, targetRoot, optio
   const clipNames = new Set(options.clipNames || options.clips || []);
   const clipPattern = options.clipPattern ? new RegExp(options.clipPattern) : null;
   const boneRollCorrection = options.boneRollCorrection || 'none';
-  const weaponConfig = options.weaponKeyConvert || {};
+  const weaponConfig = options.weaponKeyConvert?.enabled === false ? null : (options.weaponKeyConvert || null);
   const sourceRestClipName = options.sourceRestClip || '';
   const sourceRestClip = sourceRestClipName ? (sharedClips || []).find((entry) => entry.name === sourceRestClipName) : null;
   const sourceRestMap = clipRestQuaternionMap(sourceRestClip);
@@ -1634,14 +1634,14 @@ function buildFpsUpperKeyConvertClips(sharedClips, sourceRoot, targetRoot, optio
         ikGuidedTrackCount = guidedTracks.length;
       }
     }
-    const sourceWeaponName = weaponConfig.sourceWeapon || 'Weapon.R';
-    const sourceHandName = weaponConfig.sourceHand || 'Hand.R';
-    const targetHandName = weaponConfig.targetHand || 'RightHand';
-    const targetWeaponName = weaponConfig.targetWeapon || 'WeaponGrip';
-    const sourceWeaponFrameName = weaponConfig.sourceFrame || weaponConfig.sourceChest || 'ShoulderCenter';
-    const targetWeaponFrameName = weaponConfig.targetFrame || weaponConfig.targetChest || 'Spine02';
+    const sourceWeaponName = weaponConfig?.sourceWeapon || 'Weapon.R';
+    const sourceHandName = weaponConfig?.sourceHand || 'Hand.R';
+    const targetHandName = weaponConfig?.targetHand || 'RightHand';
+    const targetWeaponName = weaponConfig?.targetWeapon || 'WeaponGrip';
+    const sourceWeaponFrameName = weaponConfig?.sourceFrame || weaponConfig?.sourceChest || 'ShoulderCenter';
+    const targetWeaponFrameName = weaponConfig?.targetFrame || weaponConfig?.targetChest || 'Spine02';
     const sourceWeaponTrack = sourceTrackByName.get(canonicalBoneName(sourceWeaponName));
-    if (sourceWeaponTrack) {
+    if (weaponConfig && sourceWeaponTrack) {
       const sourceClone = cloneSkinnedObject(sourceRoot);
       const targetClone = cloneSkinnedObject(targetRoot);
       const sourceHand = findNamedBone(sourceClone, sourceHandName);
@@ -1733,8 +1733,8 @@ function buildFpsUpperKeyConvertClips(sharedClips, sourceRoot, targetRoot, optio
     }
     const loopSeam = options.preserveLoopSeam ? closeQuaternionLoopSeams(tracks) : { closedTrackCount: 0, maxSeamBeforeDeg: 0 };
     const handRestLeakage = generatedHandRestLeakageMetrics(targetRoot, tracks, targetRestMap, {
-      frame: options.handRestLeakageFrame || options.targetFrame || ikGuide.targetChest || weaponConfig.targetFrame || 'Spine02',
-      rightHand: options.handRestLeakageRightHand || weaponConfig.targetHand || 'RightHand',
+      frame: options.handRestLeakageFrame || options.targetFrame || ikGuide.targetChest || weaponConfig?.targetFrame || 'Spine02',
+      rightHand: options.handRestLeakageRightHand || weaponConfig?.targetHand || 'RightHand',
       leftHand: options.handRestLeakageLeftHand || 'LeftHand',
       time: Number(options.handRestLeakageTime ?? 0.254),
       duration: clip.duration,
@@ -1770,8 +1770,8 @@ function buildFpsUpperKeyConvertClips(sharedClips, sourceRoot, targetRoot, optio
         ikPreservesSourceTracks,
         ikCorrectedTrackCount,
         ikCorrectionJitterMaxDeg: Number(ikCorrectionJitterMaxDeg.toFixed(3)),
-        weaponFrameSolve: weaponConfig.frameSolve !== false,
-        solvedWeaponFrames: Number(weaponConfig.solvedWeaponFrames || 0),
+        weaponFrameSolve: Boolean(weaponConfig && weaponConfig.frameSolve !== false),
+        solvedWeaponFrames: Number(weaponConfig?.solvedWeaponFrames || 0),
         weaponSocket: targetWeaponName,
         weaponSource: sourceWeaponName,
         handRestLeakage,
@@ -3833,9 +3833,11 @@ class PoseActor {
     const root = new THREE.Bone();
     root.name = config.socketBone || config.boneName || this.info.weaponAttachment?.socketBone || 'WeaponR';
     root.userData.syntheticWeaponBone = true;
-    root.userData.twoHandCenteredWeaponBone = Boolean(leftHand && !sourceSocket && (config.positionMode || 'two-hand-center') !== 'right-hand');
+    const positionMode = config.positionMode || (leftHand && !sourceSocket ? 'two-hand-center' : 'right-hand');
+    const useRightHandFk = positionMode === 'right-hand' && !sourceSocket;
+    root.userData.twoHandCenteredWeaponBone = Boolean(leftHand && !sourceSocket && !useRightHandFk);
     root.userData.sourceSocketBone = sourceSocket?.name || '';
-    root.userData.positionMode = config.positionMode || (leftHand && !sourceSocket ? 'two-hand-center' : 'right-hand');
+    root.userData.positionMode = positionMode;
     const blade = new THREE.Mesh(
       new THREE.CylinderGeometry(Number(config.bladeRadius || 0.012), Number(config.bladeRadius || 0.018), Math.max(0.05, length), 8),
       new THREE.MeshBasicMaterial({ color: Number(config.bladeColor || 0xd8f1ff), transparent: true, opacity: Number(config.bladeOpacity ?? 0.82) })
@@ -3856,6 +3858,7 @@ class PoseActor {
     if (Array.isArray(config.rotationDeg)) root.rotation.set(...config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
     root.visible = false;
     if (sourceSocket) sourceSocket.add(root);
+    else if (useRightHandFk) rightHand.add(root);
     else if (leftHand) this.model.add(root);
     else rightHand.add(root);
     this.boneByName.set(root.name, root);
@@ -3885,6 +3888,16 @@ class PoseActor {
       proxy.root.position.set(0, 0, 0);
       if (Array.isArray(proxy.config.modelLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
       if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
+      return;
+    }
+    if ((proxy.config.positionMode || 'two-hand-center') === 'right-hand' && proxy.root.parent === proxy.rightHand) {
+      proxy.root.position.set(0, 0, 0);
+      if (Array.isArray(proxy.config.handLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.handLocalOffset));
+      if (Array.isArray(proxy.config.modelLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
+      if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
+      if (!animatedSocketRotation && Array.isArray(proxy.config.rotationDeg)) {
+        proxy.root.rotation.set(...proxy.config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
+      }
       return;
     }
     if (!proxy.leftHand || !proxy.rightHand) return;
