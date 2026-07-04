@@ -27,6 +27,9 @@ const swordBlock = swordBlockStart >= 0 && swordBlockEnd > swordBlockStart ? pro
 assert(swordBlock.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-SWORD-UPPER'"), 'FPS-SWORD-UPPER should use the restored exact mapped-arms origin group');
 assert(swordBlock.includes("sourceWeapon: 'Weapon.R'") && swordBlock.includes("targetWeapon: 'WeaponGrip'"), 'FPS-SWORD-UPPER should keep the restored source Weapon.R -> WeaponGrip bridge');
 assert(swordBlock.includes('frameSolve: true') && swordBlock.includes('applyToHand: false'), 'restored weapon bridge should solve the weapon frame without rewriting the hand track');
+assert(profilesSource.includes("positionMode: 'right-hand'"), 'Meshy weapon proxy should declare right-hand FK ownership');
+assert(poseLabSource.includes("else if (handFk || root.userData.positionMode === 'right-hand') rightHand.add(root);"), 'right-hand weapon proxy mode must parent WeaponGrip under RightHand even when leftHandBone exists');
+assert(poseLabSource.includes('else if (leftHand) this.model.add(root);'), 'model-level weapon parenting should remain only for non-right-hand two-hand modes');
 
 assert(!profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must not use the failed direct hand-fk override');
 assert(!profilesSource.includes("syntheticSourceSocketBone: ''"), 'Meshy production profile must not force an empty synthetic socket');
