@@ -42,6 +42,17 @@ blender --background --python authoring/meshy_saber/blender_build_meshy_ready_au
 
 The export is still candidate material until a human approves the Blender review artifacts. Generated exports under `authoring/meshy_saber/exports/` should not be committed casually.
 
+## Thin Cloud Review
+
+If the user cannot see it, it does not count. Publish the headless Blender artifacts through the thin cloud layer instead of the full Pose Lab runtime:
+
+```sh
+node tools/build_meshy_saber_blender_cloud_review.mjs
+firebase hosting:channel:deploy meshy-saber-blender --project home-center-dclar --config generated/firebase_hosting/meshy_saber_blender_review/firebase.json --expires 7d
+```
+
+This deploys only the two Blender PNGs, the contact sheet, the contract JSON, and a small `index.html`. It is visible evidence, not Pose Lab runtime acceptance.
+
 Before any Pose Lab runtime fix or browser wake, run:
 
 ```sh

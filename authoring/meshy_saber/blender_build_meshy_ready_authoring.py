@@ -18,7 +18,7 @@ from pathlib import Path
 
 import bpy
 import numpy  # noqa: F401 - preload for Blender's GLTF importer inside Debian proot.
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 
 MESHY_RIG = "assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb"
@@ -75,10 +75,40 @@ def find_object(objects: list[bpy.types.Object], contains: str) -> bpy.types.Obj
     return None
 
 
+def find_mesh(objects: list[bpy.types.Object], name: str) -> bpy.types.Object | None:
+    for obj in objects:
+        if obj.type == "MESH" and obj.name == name:
+            return obj
+    return None
+
+
 def hide_from_review(objects: list[bpy.types.Object]) -> None:
     for obj in objects:
         obj.hide_viewport = True
         obj.hide_render = True
+
+
+def isolate_meshy_character(meshy_objects: list[bpy.types.Object]) -> bpy.types.Object:
+    char_mesh = find_mesh(meshy_objects, "char1")
+    if char_mesh is None:
+        raise RuntimeError("Meshy visible skinned mesh char1 not found")
+    for obj in meshy_objects:
+        obj.hide_viewport = obj not in {char_mesh}
+        obj.hide_render = obj not in {char_mesh}
+    return char_mesh
+
+
+def isolate_sabre_mesh(sabre_objects: list[bpy.types.Object]) -> bpy.types.Object:
+    sabre_mesh = find_mesh(sabre_objects, "Mesh_0")
+    if sabre_mesh is None:
+        meshes = [obj for obj in sabre_objects if obj.type == "MESH"]
+        if not meshes:
+            raise RuntimeError("Meshy sabre visible mesh not found")
+        sabre_mesh = max(meshes, key=lambda obj: obj.dimensions.length)
+    for obj in sabre_objects:
+        obj.hide_viewport = obj is not sabre_mesh
+        obj.hide_render = obj is not sabre_mesh
+    return sabre_mesh
 
 
 def ensure_weapon_grip(meshy_armature: bpy.types.Object) -> bpy.types.Object:
@@ -91,7 +121,13 @@ def ensure_weapon_grip(meshy_armature: bpy.types.Object) -> bpy.types.Object:
     grip.parent = meshy_armature
     grip.parent_type = "BONE"
     grip.parent_bone = "RightHand"
-    grip.location = Vector((0.095 - 0.11512, 0.035 + 0.00773, -0.01 - 0.01127))
+    bpy.context.view_layer.update()
+    hand_bone = meshy_armature.data.bones.get("RightHand")
+    if hand_bone is None:
+        raise RuntimeError("RightHand bone not found")
+    hand_offset_world = Vector((0.095 - 0.11512, 0.035 + 0.00773, -0.01 - 0.01127))
+    hand_world = meshy_armature.matrix_world @ hand_bone.head_local
+    grip.matrix_world = Matrix.Translation(hand_world + hand_offset_world)
     grip.rotation_euler = (0.0, 0.0, 0.0)
     grip["pose_lab_contract"] = "RightHand -> WeaponGrip"
     return grip
@@ -111,7 +147,7 @@ def look_at(obj: bpy.types.Object, target: Vector) -> None:
     obj.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
 
 
-def setup_review_scene(meshy_armature: bpy.types.Object, grip: bpy.types.Object, sabre: bpy.types.Object, resolution: int) -> None:
+def setup_review_scene(meshy_armature: bpy.types.Object, grip: bpy.types.Object, sabre: bpy.types.Object, resolution: int) -> bpy.types.Object:
     try:
         bpy.context.scene.render.engine = "CYCLES"
         bpy.context.scene.cycles.device = "CPU"
@@ -159,26 +195,54 @@ def setup_review_scene(meshy_armature: bpy.types.Object, grip: bpy.types.Object,
     for obj in (meshy_armature, grip, sabre):
         obj.hide_viewport = False
         obj.hide_render = False
+    return camera
 
 
-def render_review_frame(path: Path, frame: int) -> None:
+def bone_world_position(armature: bpy.types.Object, bone_name: str) -> Vector:
+    bone = armature.data.bones.get(bone_name)
+    if bone is None:
+        raise RuntimeError(f"Missing bone {bone_name}")
+    return armature.matrix_world @ bone.head_local
+
+
+def object_world_bounds(obj: bpy.types.Object) -> dict[str, list[float]]:
+    corners = [obj.matrix_world @ Vector(corner) for corner in obj.bound_box]
+    min_v = [min(corner[i] for corner in corners) for i in range(3)]
+    max_v = [max(corner[i] for corner in corners) for i in range(3)]
+    return {
+        "min": [round(v, 6) for v in min_v],
+        "max": [round(v, 6) for v in max_v],
+        "size": [round(max_v[i] - min_v[i], 6) for i in range(3)],
+    }
+
+
+def render_review_frame(path: Path, frame: int, meshy_armature: bpy.types.Object, rest_pose: bool) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
+    meshy_armature.data.pose_position = "REST" if rest_pose else "POSE"
     bpy.context.scene.frame_set(frame)
     bpy.context.scene.render.filepath = str(path)
     bpy.ops.render.render(write_still=True)
 
 
-def write_contact_sheet(path: Path, tpose_png: Path, ready_png: Path) -> None:
+def aim_camera_at_right_hand(camera: bpy.types.Object, meshy_armature: bpy.types.Object) -> None:
+    target = bone_world_position(meshy_armature, "RightHand")
+    camera.location = target + Vector((0.65, -1.05, 0.25))
+    camera.data.lens = 90
+    look_at(camera, target)
+
+
+def write_contact_sheet(path: Path, tpose_png: Path, ready_png: Path, close_png: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         "\n".join([
             "<!doctype html>",
             "<meta charset=\"utf-8\">",
             "<title>Pose Lab Meshy Saber Headless Blender Review</title>",
-            "<style>body{margin:0;background:#111;color:#eee;font:16px sans-serif}main{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px}figure{margin:0}img{width:100%;display:block;background:#222}figcaption{padding:8px 0}</style>",
+            "<style>body{margin:0;background:#111;color:#eee;font:16px sans-serif}main{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:12px}figure{margin:0}img{width:100%;display:block;background:#222}figcaption{padding:8px 0}@media(max-width:900px){main{grid-template-columns:1fr}}</style>",
             "<main>",
             f"<figure><img src=\"{tpose_png.name}\" alt=\"Meshy saber T-pose\"><figcaption>T-pose/rest canary</figcaption></figure>",
-            f"<figure><img src=\"{ready_png.name}\" alt=\"Meshy saber Ready\"><figcaption>Ready review</figcaption></figure>",
+            f"<figure><img src=\"{ready_png.name}\" alt=\"Meshy saber rest duplicate\"><figcaption>Rest duplicate; no authored Ready source yet</figcaption></figure>",
+            f"<figure><img src=\"{close_png.name}\" alt=\"Meshy saber right hand close-up\"><figcaption>Right hand / sabre close-up</figcaption></figure>",
             "</main>",
         ]) + "\n",
         encoding="utf-8",
@@ -213,6 +277,10 @@ def write_contract(path: Path, meshy_armature: bpy.types.Object, grip: bpy.types
             "rotationEulerXYZ": [round(v, 6) for v in sabre.rotation_euler],
             "scale": [round(v, 6) for v in sabre.scale],
         },
+        "worldBounds": {
+            "rightHand": [round(v, 6) for v in bone_world_position(meshy_armature, "RightHand")],
+            "sabre": object_world_bounds(sabre),
+        },
         "reviewArtifacts": render_artifacts or {},
         "promotionRequired": [
             "Human-approved T-pose render",
@@ -231,11 +299,12 @@ def main() -> None:
     fps_objects = import_glb(repo / FPS_REFERENCE, "FPS Arms Reference")
     sabre_objects = import_glb(repo / MESHY_SABRE, "Meshy Sabre Source")
     hide_from_review(fps_objects)
+    isolate_meshy_character(meshy_objects)
 
     meshy_armature = find_armature(meshy_objects)
     if meshy_armature is None:
         raise RuntimeError("Meshy armature not found")
-    sabre = find_object(sabre_objects, "Meshy") or find_object(sabre_objects, "Sabre") or find_object(sabre_objects, "A_French") or sabre_objects[0]
+    sabre = isolate_sabre_mesh(sabre_objects)
     grip = ensure_weapon_grip(meshy_armature)
     parent_sabre_to_grip(sabre, grip)
 
@@ -245,14 +314,18 @@ def main() -> None:
         render_dir = repo / args.render_dir
         tpose_png = render_dir / "meshy_saber_tpose.png"
         ready_png = render_dir / "meshy_saber_ready.png"
+        close_png = render_dir / "meshy_saber_right_hand_close.png"
         contact_sheet = render_dir / "meshy_saber_contact_sheet.html"
-        setup_review_scene(meshy_armature, grip, sabre, args.resolution)
-        render_review_frame(tpose_png, args.tpose_frame)
-        render_review_frame(ready_png, args.ready_frame)
-        write_contact_sheet(contact_sheet, tpose_png, ready_png)
+        camera = setup_review_scene(meshy_armature, grip, sabre, args.resolution)
+        render_review_frame(tpose_png, args.tpose_frame, meshy_armature, True)
+        render_review_frame(ready_png, args.ready_frame, meshy_armature, True)
+        aim_camera_at_right_hand(camera, meshy_armature)
+        render_review_frame(close_png, args.tpose_frame, meshy_armature, True)
+        write_contact_sheet(contact_sheet, tpose_png, ready_png, close_png)
         render_artifacts = {
             "tposePng": str(tpose_png.relative_to(repo)),
             "readyPng": str(ready_png.relative_to(repo)),
+            "rightHandClosePng": str(close_png.relative_to(repo)),
             "contactSheet": str(contact_sheet.relative_to(repo)),
             "tposeFrame": args.tpose_frame,
             "readyFrame": args.ready_frame,

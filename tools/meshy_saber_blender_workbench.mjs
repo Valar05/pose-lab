@@ -165,6 +165,7 @@ function run() {
     contractJson: artifact(args.exportJson),
     tposePng: artifact(path.join(args.renderDir, 'meshy_saber_tpose.png')),
     readyPng: artifact(path.join(args.renderDir, 'meshy_saber_ready.png')),
+    rightHandClosePng: artifact(path.join(args.renderDir, 'meshy_saber_right_hand_close.png')),
     contactSheet: artifact(path.join(args.renderDir, 'meshy_saber_contact_sheet.html')),
     blend: artifact(args.saveBlend),
     glb: artifact(args.exportGlb),
@@ -172,6 +173,7 @@ function run() {
   const requiredArtifactsExist = artifacts.contractJson.exists
     && artifacts.tposePng.exists
     && artifacts.readyPng.exists
+    && artifacts.rightHandClosePng.exists
     && artifacts.contactSheet.exists;
   const outputLooksFailed = /Traceback|ModuleNotFoundError|RuntimeError|Error: Python/i.test(`${result.stdout}\n${result.stderr}`);
   report.exitCode = result.status;
@@ -181,7 +183,7 @@ function run() {
   report.artifacts = artifacts;
   report.ok = result.status === 0 && requiredArtifactsExist && !outputLooksFailed;
   report.status = report.ok ? 'HEADLESS_BLENDER_ARTIFACTS_WRITTEN' : 'HEADLESS_BLENDER_FAILED';
-  if (!requiredArtifactsExist) report.message = 'Blender exited without writing the required contract, T-pose render, Ready render, and contact sheet.';
+  if (!requiredArtifactsExist) report.message = 'Blender exited without writing the required contract, T-pose render, Ready/rest render, right-hand close-up, and contact sheet.';
   if (outputLooksFailed) report.message = `${report.message ? `${report.message} ` : ''}Blender output contained an error or traceback.`;
   if (args.json) console.log(JSON.stringify(report, null, 2));
   else {
