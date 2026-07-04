@@ -55,7 +55,8 @@ for (const capture of evidence.captures || []) {
   assert(capture.bootEvaluation?.ok === true, `Firebase capture should pass boot evaluation before visual acceptance: ${capture.id} ${JSON.stringify(capture.bootEvaluation?.failures || [])}`);
   assert(capture.bootEvaluation?.checks?.meshyTabVisible === true, `Firebase capture should prove Meshy Character tab is visible: ${capture.id}`);
   assert(capture.bootEvaluation?.checks?.fpsTabVisible === true, `Firebase capture should prove FPS Arms tab is visible: ${capture.id}`);
-  assert(capture.bootEvaluation?.checks?.canvasNonBlank === true, `Firebase capture should prove nonblank rendered canvas: ${capture.id}`);
+  assert(capture.bootEvaluation?.checks?.cloudScreenshotNonBlank === true, `Firebase capture should prove nonblank cloud screenshot: ${capture.id}`);
+  assert(capture.screenshotSummary?.nonBlank === true, `Firebase capture should include nonblank cloud screenshot evidence: ${capture.id}`);
   assert(capture.accepted === true, `Firebase capture should be accepted by cloud telemetry: ${capture.id} ${JSON.stringify(capture.evaluation?.failures || [])}`);
   assert(typeof capture.visibleRead === 'string' && capture.visibleRead.length >= 10, 'Firebase capture should include a human-readable visibleRead');
   assert(capture.cloudTelemetry?.weapon?.ok === true, `Firebase capture should include successful cloud weapon telemetry: ${capture.id}`);

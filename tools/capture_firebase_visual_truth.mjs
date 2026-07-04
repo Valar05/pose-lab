@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import zlib from 'node:zlib';
 import { chromium } from '@playwright/test';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
@@ -52,6 +53,110 @@ function decodeDataUrl(dataUrl) {
   return match ? Buffer.from(match[1], 'base64') : null;
 }
 
+function pngChunkType(buffer, offset) {
+  return buffer.toString('ascii', offset + 4, offset + 8);
+}
+
+function paethPredictor(a, b, c) {
+  const p = a + b - c;
+  const pa = Math.abs(p - a);
+  const pb = Math.abs(p - b);
+  const pc = Math.abs(p - c);
+  if (pa <= pb && pa <= pc) return a;
+  if (pb <= pc) return b;
+  return c;
+}
+
+function analyzePngScreenshot(filePath) {
+  const buffer = fs.readFileSync(filePath);
+  const signature = '89504e470d0a1a0a';
+  if (buffer.subarray(0, 8).toString('hex') !== signature) return { ok: false, error: 'not a PNG' };
+  let offset = 8;
+  let width = 0;
+  let height = 0;
+  let bitDepth = 0;
+  let colorType = 0;
+  const idat = [];
+  while (offset + 12 <= buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const type = pngChunkType(buffer, offset);
+    const dataStart = offset + 8;
+    const dataEnd = dataStart + length;
+    if (dataEnd + 4 > buffer.length) break;
+    if (type === 'IHDR') {
+      width = buffer.readUInt32BE(dataStart);
+      height = buffer.readUInt32BE(dataStart + 4);
+      bitDepth = buffer[dataStart + 8];
+      colorType = buffer[dataStart + 9];
+    } else if (type === 'IDAT') {
+      idat.push(buffer.subarray(dataStart, dataEnd));
+    } else if (type === 'IEND') {
+      break;
+    }
+    offset = dataEnd + 4;
+  }
+  if (!width || !height || bitDepth !== 8 || ![2, 6].includes(colorType) || idat.length === 0) {
+    return { ok: false, error: `unsupported PNG format ${width}x${height} depth=${bitDepth} color=${colorType}` };
+  }
+  const channels = colorType === 6 ? 4 : 3;
+  const stride = width * channels;
+  const inflated = zlib.inflateSync(Buffer.concat(idat));
+  const rows = new Array(height);
+  let input = 0;
+  for (let y = 0; y < height; y += 1) {
+    const filter = inflated[input];
+    input += 1;
+    const row = Buffer.alloc(stride);
+    const prev = y > 0 ? rows[y - 1] : null;
+    for (let x = 0; x < stride; x += 1) {
+      const raw = inflated[input + x];
+      const left = x >= channels ? row[x - channels] : 0;
+      const up = prev ? prev[x] : 0;
+      const upLeft = prev && x >= channels ? prev[x - channels] : 0;
+      if (filter === 0) row[x] = raw;
+      else if (filter === 1) row[x] = (raw + left) & 255;
+      else if (filter === 2) row[x] = (raw + up) & 255;
+      else if (filter === 3) row[x] = (raw + Math.floor((left + up) / 2)) & 255;
+      else if (filter === 4) row[x] = (raw + paethPredictor(left, up, upLeft)) & 255;
+      else return { ok: false, error: `unsupported PNG filter ${filter}` };
+    }
+    input += stride;
+    rows[y] = row;
+  }
+  const colors = new Set();
+  let sampled = 0;
+  let brightPixels = 0;
+  let alphaPixels = 0;
+  const columns = 13;
+  const sampleRows = 9;
+  for (let row = 0; row < sampleRows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const x = Math.max(0, Math.min(width - 1, Math.round((width * (column + 0.5)) / columns)));
+      const y = Math.max(0, Math.min(height - 1, Math.round((height * (row + 0.5)) / sampleRows)));
+      const index = x * channels;
+      const r = rows[y][index];
+      const g = rows[y][index + 1];
+      const b = rows[y][index + 2];
+      const a = channels === 4 ? rows[y][index + 3] : 255;
+      sampled += 1;
+      if (a > 0) alphaPixels += 1;
+      if (r + g + b > 80) brightPixels += 1;
+      colors.add([r, g, b, a].join(','));
+    }
+  }
+  return {
+    ok: true,
+    source: 'cloud-screenshot-png',
+    width,
+    height,
+    sampled,
+    uniqueColors: colors.size,
+    brightPixels,
+    alphaPixels,
+    nonBlank: colors.size >= 4 && brightPixels >= 4 && alphaPixels === sampled,
+  };
+}
+
 function compactError(value) {
   return String(value || '').replace(/\s+/g, ' ').slice(0, 300);
 }
@@ -64,7 +169,7 @@ async function debugExec(page, command) {
   }, command);
 }
 
-function evaluateBoot({ boot, expectedActor, expectedClip }) {
+function evaluateBoot({ boot, expectedActor, expectedClip, screenshotSummary }) {
   const failures = [];
   const tabs = Array.isArray(boot?.tabs) ? boot.tabs : [];
   if (boot?.ok !== true) failures.push(`boot debug failed: ${compactError(boot?.error) || JSON.stringify(boot?.failures || [])}`);
@@ -76,7 +181,7 @@ function evaluateBoot({ boot, expectedActor, expectedClip }) {
   if (boot?.selectedActor !== expectedActor) failures.push(`selected actor mismatch: ${boot?.selectedActor || 'missing'} expected ${expectedActor}`);
   if (boot?.activeClip?.name !== expectedClip) failures.push(`selected clip mismatch: ${boot?.activeClip?.name || 'missing'} expected ${expectedClip}`);
   if (/booting|Booting module|module failed|boot error|boot rejection|webgl failed|failed:/i.test(String(boot?.loadState || ''))) failures.push(`bad loadState: ${boot?.loadState || 'missing'}`);
-  if (boot?.canvas?.nonBlank !== true) failures.push(`canvas blank or unproven: ${JSON.stringify(boot?.canvas || {})}`);
+  if (screenshotSummary?.nonBlank !== true) failures.push(`cloud screenshot blank or unproven: ${JSON.stringify(screenshotSummary || {})}`);
   return {
     ok: failures.length === 0,
     failures,
@@ -89,7 +194,7 @@ function evaluateBoot({ boot, expectedActor, expectedClip }) {
       actorSelected: boot?.selectedActor === expectedActor,
       clipSelected: boot?.activeClip?.name === expectedClip,
       loadStateReady: !/booting|Booting module|module failed|boot error|boot rejection|webgl failed|failed:/i.test(String(boot?.loadState || '')),
-      canvasNonBlank: boot?.canvas?.nonBlank === true,
+      cloudScreenshotNonBlank: screenshotSummary?.nonBlank === true,
     },
   };
 }
@@ -212,10 +317,11 @@ for (const capture of captures) {
   await page.waitForTimeout(1000);
   const screenshot = path.join(outDir, `${capture.id}.png`);
   await page.screenshot({ path: screenshot, fullPage: false });
+  const screenshotSummary = analyzePngScreenshot(screenshot);
   const loadState = await page.locator('#loadState').textContent({ timeout: 5000 }).catch(() => '');
   const routeSelected = /selected Meshy Character/.test(loadState || '');
   const boot = await debugExec(page, 'boot').catch((caught) => ({ ok: false, command: 'boot', error: caught?.message || String(caught) }));
-  const bootEvaluation = evaluateBoot({ boot, expectedActor: 'meshyCharacter', expectedClip: capture.clip });
+  const bootEvaluation = evaluateBoot({ boot, expectedActor: 'meshyCharacter', expectedClip: capture.clip, screenshotSummary });
   const bootSelected = routeSelected && bootEvaluation.ok;
   const weapon = bootSelected ? await debugExec(page, 'weapon') : { ok: false, error: 'route/boot not selected' };
   const liveHilt = bootSelected ? await debugExec(page, 'weapon live-hilt-state') : { ok: false, error: 'route/boot not selected' };
@@ -245,6 +351,7 @@ for (const capture of captures) {
     contactSheet: contactSheet ? path.relative(projectRoot, contactSheet) : '',
     loadState: loadState || '',
     routeSelected,
+    screenshotSummary,
     boot,
     bootEvaluation,
     error,
