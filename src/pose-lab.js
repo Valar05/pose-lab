@@ -14,7 +14,6 @@ import {
   updateWeaponFallbackFromTipRuntime,
   weaponPlacementConfigSignature,
 } from './weapon-runtime-rules.mjs?v=pose-editor-207';
-import { buildMeshyFpsVisualIkReadyClip } from './meshy-ready-runtime.mjs?v=pose-editor-207';
 import { preferSavedClipForActor } from './startup-policy.js?v=pose-editor-207';
 import { resolveLabMode } from './lab-mode.mjs?v=pose-editor-207';
 import { clipLabel, defaultClipEntries, isSf2PoseClip, searchableClipEntries, searchClipEntries } from './clip-search.js?v=pose-editor-207';
@@ -25,13 +24,12 @@ const LAB_MODE = resolveLabMode(window.location.search || '');
 const STATUS_PREFIX = LAB_MODE === 'critique' ? 'critique' : 'lab';
 const MESHY_REVIEW_CLIPS = [
   '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]',
-  'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
   'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]',
 ];
 
 function isMeshyReadyReviewClipName(name = '') {
   const value = String(name || '');
-  return value.includes('[FPS-SWORD-UPPER]') || value.includes('[FPS-VISUAL-IK R-120 L-90]');
+  return value.includes('[FPS-SWORD-UPPER]');
 }
 
 function validateAutoRetargetGenerationGroups(profiles) {
@@ -1686,25 +1684,6 @@ function armSideProjectionSetup(sourceRoot, targetRoot, side, sourceRestFrame, t
 }
 
 function buildFpsWorldJointProjectionClips(sharedClips, sourceRoot, targetRoot, options = {}) {
-  if (String(options.clipSuffix || '').includes('[FPS-VISUAL-IK R-120 L-90]')) {
-    const generated = buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, sourceRoot, targetRoot, sharedClips || [], {
-      clipName: 'OneHandReady ' + (options.clipSuffix || '-> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'),
-      sourceClipName: 'OneHandReady',
-      sourceRestClip: options.sourceRestClip || '0T-Pose',
-      timeSourceBone: options.timeSourceBone || 'Hand.R',
-      dropInitialRestKey: options.dropInitialRestKey !== false,
-      weaponProxy: options.weaponProxy || {},
-      weaponAttachment: options.weaponAttachment || {},
-      weaponBasis: options.weaponBasis || {},
-      weaponKeyConvert: options.weaponKeyConvert || {},
-    });
-    if (generated?.clip) {
-      const built = [generated.clip];
-      built.failures = 0;
-      built.fallback = false;
-      return built;
-    }
-  }
   const sourceLabel = options.sourceLabel || 'source';
   const targetLabel = options.targetLabel || 'target';
   const skipClipNames = new Set(options.skipClipNames || []);
@@ -6413,9 +6392,8 @@ class PoseLab {
       landmarks,
       snapshot: this.debugSnapshot(),
     };
-    const readyClipUsesScopedHiltTarget = isMeshyReadyReviewClipName(clip?.name || '');
     live.ok = Boolean(live.checks.sameLiveMarkerPoint
-      && (live.checks.appliedHiltPinnedToAuthoredSocket || (readyClipUsesScopedHiltTarget && live.checks.appliedHiltAwayFromRawHand))
+      && live.checks.appliedHiltPinnedToAuthoredSocket
       && (live.checks.weaponGripHasSourceSocketLocal || live.checks.weaponGripHasHandLocal)
       && live.checks.displayRootHasWeaponGripLocal
       && live.checks.weaponMeshHasDisplayRootLocal

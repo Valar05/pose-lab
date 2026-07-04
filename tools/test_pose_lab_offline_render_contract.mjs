@@ -29,7 +29,7 @@ assert(!/screencap|-p\s+\/storage\/emulated\/0\/Pictures|debugBridge|termux-open
 const cacheToken = poseSource.match(/const LAB_CACHE_TOKEN = '([^']+)'/)?.[1] || '';
 assert(cacheToken, 'browser runtime must declare a cache token');
 assert(poseSource.includes(`from './weapon-runtime-rules.mjs?v=${cacheToken}'`), 'browser runtime must import the shared weapon runtime module with the current cache token');
-assert(poseSource.includes(`from './meshy-ready-runtime.mjs?v=${cacheToken}'`), 'browser runtime must import the shared Meshy ready runtime module with the current cache token');
+assert(!poseSource.includes('meshy-ready-runtime'), 'browser runtime must not import the quarantined Meshy ready runtime module');
 assert(readySource.includes("sourceHand: 'Hand.R'") && readySource.includes("targetHand: 'RightHand'") && readySource.includes('targetLocalAxis: [0, -1, 0]') && readySource.includes('rollOffsetDeg: -120'), 'shared ready builder should keep the accepted right-hand rest correction axis');
 assert(!readySource.includes("sourceHand: 'Hand.L', sourceLocalAxis") && !readySource.includes("targetHand: 'LeftHand', targetLocalAxis"), 'shared ready builder must not apply a hidden left-hand rest-roll override');
 assert(readySource.includes('experimentalWeaponTrack') && readySource.includes('experimentalWeaponSwing === true'), 'ready builder must quarantine generated weapon tracks behind an explicit experimental flag');

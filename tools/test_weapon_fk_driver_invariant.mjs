@@ -31,9 +31,9 @@ const swordBlockStart = swordClipTag >= 0 ? profilesSource.lastIndexOf('      {'
 const swordBlockEnd = profilesSource.indexOf("clipTag: 'FPS-REST-ARMS-CAL'", swordClipTag);
 const swordBlock = swordBlockStart >= 0 && swordBlockEnd > swordBlockStart ? profilesSource.slice(swordBlockStart, swordBlockEnd) : '';
 assert(swordBlock.includes("originPrefix: 'mapped-arms:player->meshyCharacter'"), 'FPS-SWORD-UPPER should use the restored mapped-arms origin group');
-assert(swordBlock.includes("retargetMode: 'world-joint-projection'"), 'FPS-SWORD-UPPER should use the world-joint Ready pose generator instead of the red direct quaternion copy');
-assert(swordBlock.includes("sourceUpper: 'Arm.R'") && swordBlock.includes("targetUpper: 'RightArm'"), 'FPS-SWORD-UPPER should solve the right arm from authored FPS world joints');
-assert(!swordBlock.includes('weaponKeyConvert'), 'FPS-SWORD-UPPER must not key WeaponGrip; direct hand FK owns the weapon at runtime');
+assert(swordBlock.includes("retargetMode: 'fps-upper-key-convert'"), 'FPS-SWORD-UPPER should use the restored upper-body converter instead of the quarantined Ready solver');
+assert(swordBlock.includes("from: 'Hand.R'") && swordBlock.includes("to: 'RightHand'"), 'FPS-SWORD-UPPER should keep authored upper-body hand mapping');
+assert(swordBlock.includes('weaponKeyConvert') && swordBlock.includes('applyToHand: false'), 'FPS-SWORD-UPPER may reference FPS Weapon.R only for source conversion, never to drive Meshy WeaponGrip');
 const attachmentBlock = meshyProfileBlock.slice(meshyProfileBlock.indexOf('weaponAttachment: {'), meshyProfileBlock.indexOf('extraClipUrls: ['));
 const weaponProxyBlock = meshyProfileBlock.slice(meshyProfileBlock.indexOf('weaponProxy: {'), meshyProfileBlock.indexOf('weaponAttachment: {'));
 assert(!weaponProxyBlock.includes('clipOverrides:'), 'Meshy shared FK weapon proxy must not use Ready-only WeaponGrip offsets');
@@ -44,6 +44,8 @@ assert(profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profi
 assert(!profilesSource.includes("syntheticSourceSocketBone: ''"), 'Meshy production profile must not force an empty synthetic socket');
 assert(!profilesSource.includes("placementAuthority: 'manual-golden'"), 'Meshy production profile must not keep the failed manual-golden authority label');
 assert(!profilesSource.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'failed Visual-IK Ready generator must not remain promoted');
+assert(!profilesSource.includes("clipTag: 'FPS-VISUAL-IK-READY'"), 'Ready-specific Visual-IK generator must not remain promoted');
+assert(!poseLabSource.includes('meshy-ready-runtime'), 'browser runtime must not import the quarantined Ready solver');
 assert(resolverSource.includes("parentMode: typeof proxy.parentMode === 'string' ? proxy.parentMode : ''"), 'profile resolver should preserve legacy/no-parentMode Meshy profiles');
 
 if (failures.length) throw new Error(failures.join('\n'));

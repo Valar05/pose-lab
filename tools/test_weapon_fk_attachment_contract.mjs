@@ -23,12 +23,14 @@ const fixed = render([
   '--samples', '3',
 ]);
 
-assert(profilesSource.includes('rotationDeg: [0, 0, 0]') && profilesSource.includes('rotationDeg: [-67.582, 76.718, -30.52]'), 'Meshy sabre rotation must preserve the user-authored shared FK calibration on the mesh layer with identity WeaponGrip rotation');
-assert(profilesSource.includes('gripLocalPosition: [0.73272, 0.0091, -0.01674]'), 'Meshy sabre hilt oracle must match the visible mesh hilt baseline');
+assert(profilesSource.includes('rotationDeg: [0, 0, 0]') && profilesSource.includes('rotationDeg: [90, 0, -55.145]'), 'Meshy sabre rotation must preserve the accepted T-pose FK calibration on the mesh layer with identity WeaponGrip rotation');
+assert(profilesSource.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]'), 'Meshy weapon proxy offset must match the accepted T-pose display baseline');
+assert(profilesSource.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy sabre hilt oracle must match the accepted T-pose baseline');
 assert(profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must use direct hand-fk for boring FK verification');
 assert(!profilesSource.includes("placementAuthority: 'manual-golden'"), 'Meshy production profile must not keep the failed manual-golden authority label');
 assert(!profilesSource.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'failed Visual-IK Ready generator must not be promoted');
-assert(!profilesSource.includes("targetWeapon: 'WeaponGrip'") && !profilesSource.includes("targetWeapon: 'WeaponR'"), 'Ready candidates must not target WeaponGrip or WeaponR; boring FK owns weapon follow');
+assert(!profilesSource.includes("clipTag: 'FPS-VISUAL-IK-READY'"), 'Ready-specific Visual-IK candidates must not be promoted; boring FK owns weapon follow');
+assert(!profilesSource.includes("targetWeapon: 'WeaponGrip'") || profilesSource.includes('applyToHand: false'), 'FPS Weapon.R may be referenced only as source conversion data, never as a Meshy WeaponGrip driver');
 
 assert(fixed.artifact.schema === 'pose-lab-offline-pose-weapon-render-v1', 'fixed render should use canonical offline schema');
 assert(fixed.artifact.generatedClipResolved === true, `accepted T-pose clip should resolve offline: ${fixed.artifact.generatedClipReason}`);
