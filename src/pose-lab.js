@@ -5000,6 +5000,15 @@ class PoseLab {
     if (this.viewMode === 'firstPerson' && !actor.info?.firstPersonCamera) this.setViewMode('orbit');
     const savedClip = options.preferSaved && this.savedState?.actorKey === key ? this.findSavedClip(actor, this.savedState) : null;
     const requestedClip = options.clipName ? this.findClipByName(actor, options.clipName) : null;
+    if (options.clipName && !requestedClip) {
+      actor.stop();
+      this.renderClipButtons();
+      this.setPanel(this.labMode === 'critique' ? 'none' : (actor.info?.startupPanel || 'clips'));
+      this.updateCleanupUi('requested clip missing: ' + options.clipName);
+      this.updateReadout();
+      setStatus('requested clip missing for ' + actor.info.label + ': ' + options.clipName);
+      return;
+    }
     const clip = this.preferredSabreClip(actor, requestedClip || savedClip || this.findStartupClip(actor) || actor.activeClip() || this.findFirstPlayableClip(actor));
     if (clip) actor.play(clipKey(clip));
     this.renderClipButtons();
