@@ -139,6 +139,36 @@
         "humanAccepted": true
       },
       "notes": "This records the false-green split between Firebase artifact run 28686174246 and phone-visible Android Chrome screenshots at 2026-07-03 17:42. Do not treat the generated artifact as acceptance until the exact woken mobile review URL remains on the requested clip and exposes an unobstructed hand/hilt/blade relationship."
+    },
+    {
+      "commit": "1fc7ebdfac99d4f1adcf3814a29ca89fb405faa6",
+      "runId": "28688603643",
+      "reportedAt": "2026-07-03",
+      "authority": "human-phone-visible-cloud-review",
+      "status": "open",
+      "url": "https://pose-lab-visual-truth--visual-truth-pr-28688603643-iwsau3md.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&clip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&qaClip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&weaponDebug=1&cacheBust=firebase-visual-truth-1783123387020",
+      "screenshots": [
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-190526.png"
+      ],
+      "issues": [
+        "Android Chrome screenshot 20260703-190526 shows the exact cloud Ready review URL with REVIEW ROUTE OK, but the sword bone/orientation is not the authored Meshy saber orientation",
+        "Firebase artifact run 28688603643 reported ok=true and Sense Synthesis human-green while the phone-visible sword-bone relationship remained human-red",
+        "The gate accepted hilt distance and blade projection while failing to enforce the user-authored weaponAttachment.rotationDeg [-67.582, 76.718, -90.52]",
+        "The branch had drifted to rotationDeg [-67.582, 76.718, -0.52] and a nudged modelLocalOffset, so generated evidence blessed a non-authored weapon pose",
+        "Future acceptance must prove the visible sword bone/mesh orientation matches the authored transform, not just that the hilt marker is near the hand"
+      ],
+      "blocks": [
+        "promotion",
+        "browser-wake-as-proof",
+        "green-report"
+      ],
+      "closureRequired": {
+        "status": "superseded",
+        "supersededByCommit": "required",
+        "acceptedEvidencePath": "required",
+        "humanAccepted": true
+      },
+      "notes": "This records the false-green created by treating marker distance as visual acceptance after changing away from the human-authored orientation."
     }
   ]
 }

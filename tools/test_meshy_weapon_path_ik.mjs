@@ -16,7 +16,7 @@ assert(js.includes('this.weaponProxy.root.visible = true') && js.includes('this.
 assert(profiles.includes("weaponAttachment: {") && profiles.includes("socketBone: 'WeaponGrip'") && profiles.includes("leftHandBone: 'LeftHand'"), 'Meshy profile should attach the real Meshy sabre to the centered WeaponGrip');
 assert(profiles.includes('Saber handle-centered attachment for Meshy Character') && profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy Character should preserve the restored visible hilt saber candidate');
 assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy saber should rotate from the hand origin without shifting the socket');
-assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]') && profiles.includes('modelLocalOffset: [1.15887, 14.47175, -0.54361]') && profiles.includes('rotationDeg: [-67.582, 76.718, -0.52]'), 'Meshy saber should use the user-authored shared FK socket position and manual rotation');
+assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]') && profiles.includes('modelLocalOffset: [1.01462, 12.80195, -0.47992]') && profiles.includes('rotationDeg: [-67.582, 76.718, -90.52]'), 'Meshy saber should use the user-authored shared FK socket position and manual rotation');
 assert(profiles.includes("parentMode: 'hand-fk'") && !profiles.includes("syntheticSourceSocketBone: ''"), 'Meshy saber should use the accepted boring direct hand-FK profile path');
 assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy FPS-SWORD-UPPER remains available as an unpromoted weapon diagnostic');
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-READY'"), 'Meshy Visual-IK Ready should be available as an explicit review candidate');
