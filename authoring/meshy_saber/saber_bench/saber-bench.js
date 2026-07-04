@@ -1,0 +1,437 @@
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+const ASSETS = {
+  meshyAnimated: './assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb',
+  meshyStaticPbr: './assets/models/meshy_character_sheet/static/Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb',
+  sabre: './assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb',
+};
+
+const BASELINE = Object.freeze({
+  schema: 'pose-lab-meshy-saber-bench-contract-v1',
+  source: 'minimal-saber-bench',
+  hierarchy: 'RightHand -> WeaponGrip -> SabreRoot -> sabre mesh',
+  grip: {
+    position: [-0.02012, 0.04273, -0.02127],
+    rotationDeg: [0, 0, 0],
+  },
+  sabre: {
+    position: [0, 0, 0],
+    rotationDeg: [90, 0, -55.145],
+    scale: 0.47493,
+    gripLocalPosition: [0.6535, -0.02302, -0.07317],
+    tipLocalPosition: [-0.95561, 0.1368, 0],
+    pinHiltToWeaponGrip: true,
+  },
+});
+
+const state = structuredClone(BASELINE);
+state.generatedAt = new Date().toISOString();
+
+const ui = Object.fromEntries([...document.querySelectorAll('[id]')].map((el) => [el.id, el]));
+const inputs = [...document.querySelectorAll('[data-field]')];
+const loader = new GLTFLoader();
+const clock = new THREE.Clock();
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x101213);
+
+const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 80);
+camera.position.set(2.4, -4.2, 1.55);
+
+const renderer = new THREE.WebGLRenderer({ canvas: ui.benchCanvas, antialias: true, alpha: false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+
+const controls = new OrbitControls(camera, ui.benchCanvas);
+controls.enableDamping = true;
+controls.target.set(0, 0, 1.0);
+
+const root = new THREE.Group();
+root.name = 'SaberBenchRoot';
+scene.add(root);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x2c3135, 2.0));
+const key = new THREE.DirectionalLight(0xffffff, 3.2);
+key.position.set(2.5, -3.5, 4.0);
+scene.add(key);
+
+const grid = new THREE.GridHelper(3, 12, 0x47525a, 0x2a3034);
+grid.position.y = 0;
+root.add(grid);
+
+const gripMarker = new THREE.Mesh(
+  new THREE.SphereGeometry(0.025, 16, 10),
+  new THREE.MeshBasicMaterial({ color: 0x6ad8ff })
+);
+gripMarker.name = 'WeaponGrip visible marker';
+
+const hiltMarker = new THREE.Mesh(
+  new THREE.SphereGeometry(0.018, 16, 10),
+  new THREE.MeshBasicMaterial({ color: 0xff4ad8 })
+);
+hiltMarker.name = 'Sabre semantic hilt marker';
+
+const tipMarker = new THREE.Mesh(
+  new THREE.SphereGeometry(0.018, 16, 10),
+  new THREE.MeshBasicMaterial({ color: 0xffdd72 })
+);
+tipMarker.name = 'Sabre semantic tip marker';
+
+let meshyRoot = null;
+let charMesh = null;
+let rightHand = null;
+let weaponGrip = null;
+let sabreRoot = null;
+let sabreMesh = null;
+let selectedLayer = 'grip';
+
+function setStatus(message) {
+  ui.status.textContent = message;
+}
+
+function degToRadArray(values) {
+  return values.map((value) => THREE.MathUtils.degToRad(Number(value) || 0));
+}
+
+function round(value, places = 5) {
+  return Number(Number(value || 0).toFixed(places));
+}
+
+function roundArray(values, places = 5) {
+  return values.map((value) => round(value, places));
+}
+
+function vectorFromArray(values) {
+  return new THREE.Vector3(values[0] || 0, values[1] || 0, values[2] || 0);
+}
+
+function findNamed(rootObject, name, type = '') {
+  let found = null;
+  rootObject.traverse((node) => {
+    if (!found && node.name === name && (!type || node.type === type)) found = node;
+  });
+  return found;
+}
+
+function findLargestMesh(rootObject) {
+  let winner = null;
+  let winnerSize = -Infinity;
+  rootObject.traverse((node) => {
+    if (!node.isMesh) return;
+    const size = node.geometry?.boundingSphere?.radius || node.geometry?.boundingBox?.getSize(new THREE.Vector3()).length() || 0;
+    if (size > winnerSize) {
+      winner = node;
+      winnerSize = size;
+    }
+  });
+  return winner;
+}
+
+function hideEverythingBut(rootObject, keep) {
+  rootObject.traverse((node) => {
+    if (!node.isMesh && !node.isCamera && !node.isLight) return;
+    const visible = node === keep;
+    node.visible = visible;
+    if (node.isMesh) {
+      node.frustumCulled = false;
+      node.castShadow = false;
+      node.receiveShadow = false;
+    }
+  });
+}
+
+function materialList(rootObject) {
+  const materials = [];
+  rootObject.traverse((node) => {
+    if (!node.isMesh) return;
+    for (const material of Array.isArray(node.material) ? node.material : [node.material]) {
+      if (material) materials.push(material);
+    }
+  });
+  return materials;
+}
+
+function cloneMaterial(material) {
+  const clone = material?.clone?.() || new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+  for (const keyName of ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'emissiveMap', 'aoMap']) {
+    if (clone[keyName]) clone[keyName].needsUpdate = true;
+  }
+  clone.needsUpdate = true;
+  return clone;
+}
+
+function applyPbrMaterialSource(target, staticScene) {
+  const source = materialList(staticScene);
+  if (!source.length || !target) return;
+  const current = Array.isArray(target.material) ? target.material : [target.material];
+  target.material = current.length > 1
+    ? current.map((_, index) => cloneMaterial(source[index] || source[0]))
+    : cloneMaterial(source[0]);
+}
+
+async function loadGltf(url) {
+  return await loader.loadAsync(url);
+}
+
+function attachFkHierarchy() {
+  weaponGrip = new THREE.Object3D();
+  weaponGrip.name = 'WeaponGrip';
+  rightHand.add(weaponGrip);
+
+  sabreRoot = new THREE.Object3D();
+  sabreRoot.name = 'SabreRoot';
+  weaponGrip.add(sabreRoot);
+
+  sabreRoot.add(gripMarker);
+  sabreRoot.add(hiltMarker);
+  sabreRoot.add(tipMarker);
+  applyStateToScene();
+}
+
+function applyStateToScene() {
+  if (!weaponGrip || !sabreRoot || !sabreMesh) return;
+  weaponGrip.position.fromArray(state.grip.position);
+  weaponGrip.rotation.set(...degToRadArray(state.grip.rotationDeg), 'XYZ');
+
+  sabreRoot.position.fromArray(state.sabre.position);
+  sabreRoot.rotation.set(...degToRadArray(state.sabre.rotationDeg), 'XYZ');
+  sabreRoot.scale.setScalar(Number(state.sabre.scale) || 1);
+
+  const gripLocal = vectorFromArray(state.sabre.gripLocalPosition);
+  sabreMesh.position.set(0, 0, 0);
+  if (state.sabre.pinHiltToWeaponGrip) sabreMesh.position.copy(gripLocal).multiplyScalar(-1);
+
+  gripMarker.position.set(0, 0, 0);
+  hiltMarker.position.copy(gripLocal).add(sabreMesh.position);
+  tipMarker.position.copy(vectorFromArray(state.sabre.tipLocalPosition)).add(sabreMesh.position);
+
+  syncInputs();
+  writeJson();
+}
+
+function syncInputs() {
+  for (const input of inputs) {
+    if (document.activeElement === input) continue;
+    const value = getField(input.dataset.field);
+    input.value = Array.isArray(value) ? '' : String(round(value, input.dataset.field.includes('rotationDeg') ? 3 : 5));
+  }
+  ui.pinHilt.checked = Boolean(state.sabre.pinHiltToWeaponGrip);
+  ui.selectionReadout.textContent = 'selected: ' + (selectedLayer === 'grip' ? 'WeaponGrip' : 'SabreRoot');
+  ui.selectGrip.classList.toggle('active', selectedLayer === 'grip');
+  ui.selectSabre.classList.toggle('active', selectedLayer === 'sabre');
+}
+
+function getField(path) {
+  const parts = path.split('.');
+  let current = state;
+  for (const part of parts) current = current?.[part];
+  return current;
+}
+
+function setField(path, value) {
+  const parts = path.split('.');
+  const last = parts.pop();
+  let current = state;
+  for (const part of parts) current = current[part];
+  if (Array.isArray(current)) current[Number(last)] = value;
+  else current[last] = value;
+}
+
+function readInputs() {
+  for (const input of inputs) {
+    const value = Number(input.value);
+    if (Number.isFinite(value)) setField(input.dataset.field, value);
+  }
+  state.sabre.pinHiltToWeaponGrip = Boolean(ui.pinHilt.checked);
+  state.generatedAt = new Date().toISOString();
+  normalizeState();
+  applyStateToScene();
+}
+
+function normalizeState() {
+  state.grip.position = roundArray(state.grip.position);
+  state.grip.rotationDeg = roundArray(state.grip.rotationDeg, 3);
+  state.sabre.position = roundArray(state.sabre.position);
+  state.sabre.rotationDeg = roundArray(state.sabre.rotationDeg, 3);
+  state.sabre.scale = round(state.sabre.scale, 5);
+  state.sabre.gripLocalPosition = roundArray(state.sabre.gripLocalPosition);
+}
+
+function contractJson() {
+  return {
+    schema: state.schema,
+    source: state.source,
+    generatedAt: state.generatedAt,
+    assets: ASSETS,
+    hierarchy: state.hierarchy,
+    weaponGripLocal: {
+      parentBone: 'RightHand',
+      position: state.grip.position,
+      rotationDeg: state.grip.rotationDeg,
+    },
+    sabreLocal: {
+      parent: 'WeaponGrip',
+      position: state.sabre.position,
+      rotationDeg: state.sabre.rotationDeg,
+      scale: state.sabre.scale,
+      gripLocalPosition: state.sabre.gripLocalPosition,
+      tipLocalPosition: state.sabre.tipLocalPosition,
+      pinHiltToWeaponGrip: state.sabre.pinHiltToWeaponGrip,
+    },
+  };
+}
+
+function writeJson() {
+  ui.jsonBox.value = JSON.stringify(contractJson(), null, 2);
+}
+
+function applyJson() {
+  const parsed = JSON.parse(ui.jsonBox.value);
+  if (parsed.weaponGripLocal) {
+    state.grip.position = [...parsed.weaponGripLocal.position];
+    state.grip.rotationDeg = [...parsed.weaponGripLocal.rotationDeg];
+  }
+  if (parsed.sabreLocal) {
+    state.sabre.position = [...parsed.sabreLocal.position];
+    state.sabre.rotationDeg = [...parsed.sabreLocal.rotationDeg];
+    state.sabre.scale = parsed.sabreLocal.scale;
+    state.sabre.gripLocalPosition = [...parsed.sabreLocal.gripLocalPosition];
+    state.sabre.tipLocalPosition = [...parsed.sabreLocal.tipLocalPosition];
+    state.sabre.pinHiltToWeaponGrip = parsed.sabreLocal.pinHiltToWeaponGrip !== false;
+  }
+  normalizeState();
+  applyStateToScene();
+}
+
+function setView(kind) {
+  if (kind === 'hand') {
+    const target = new THREE.Vector3();
+    rightHand?.getWorldPosition(target);
+    controls.target.copy(target);
+    camera.position.copy(target).add(new THREE.Vector3(0.48, -0.82, 0.25));
+    camera.fov = 38;
+  } else if (kind === 'blade') {
+    const target = new THREE.Vector3();
+    sabreRoot?.getWorldPosition(target);
+    controls.target.copy(target);
+    camera.position.copy(target).add(new THREE.Vector3(0.95, -1.45, 0.42));
+    camera.fov = 32;
+  } else {
+    controls.target.set(0, 0, 1.0);
+    camera.position.set(2.4, -4.2, 1.55);
+    camera.fov = 45;
+  }
+  camera.updateProjectionMatrix();
+  controls.update();
+}
+
+function nudge(axis, direction) {
+  const target = selectedLayer === 'grip' ? state.grip.position : state.sabre.position;
+  const index = { x: 0, y: 1, z: 2 }[axis];
+  target[index] = round(target[index] + Number(direction) * 0.01);
+  state.generatedAt = new Date().toISOString();
+  applyStateToScene();
+}
+
+function downloadJson() {
+  const blob = new Blob([JSON.stringify(contractJson(), null, 2) + '\n'], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'meshy-saber-bench-contract.json';
+  link.click();
+  URL.revokeObjectURL(link.href);
+}
+
+async function copyJson() {
+  await navigator.clipboard?.writeText(JSON.stringify(contractJson(), null, 2));
+  setStatus('contract copied');
+}
+
+async function boot() {
+  setStatus('loading Meshy');
+  const [meshy, pbr, sabre] = await Promise.all([
+    loadGltf(ASSETS.meshyAnimated),
+    loadGltf(ASSETS.meshyStaticPbr),
+    loadGltf(ASSETS.sabre),
+  ]);
+
+  meshyRoot = meshy.scene;
+  root.add(meshyRoot);
+  charMesh = findNamed(meshyRoot, 'char1') || findLargestMesh(meshyRoot);
+  if (!charMesh) throw new Error('Meshy visible mesh char1 not found');
+  hideEverythingBut(meshyRoot, charMesh);
+  applyPbrMaterialSource(charMesh, pbr.scene);
+
+  rightHand = findNamed(meshyRoot, 'RightHand', 'Bone');
+  if (!rightHand) throw new Error('RightHand bone not found');
+
+  sabreMesh = findNamed(sabre.scene, 'Mesh_0') || findLargestMesh(sabre.scene);
+  if (!sabreMesh) throw new Error('Sabre Mesh_0 not found');
+  hideEverythingBut(sabre.scene, sabreMesh);
+  scene.add(sabre.scene);
+  attachFkHierarchy();
+  sabreRoot.add(sabreMesh);
+  applyStateToScene();
+
+  setView('hand');
+  setStatus('ready: live FK editor');
+  window.saberBench = { state, contractJson, scene, rightHand, weaponGrip, sabreRoot, sabreMesh };
+}
+
+function resize() {
+  const rect = ui.benchCanvas.getBoundingClientRect();
+  renderer.setSize(Math.max(1, rect.width), Math.max(1, rect.height), false);
+  camera.aspect = Math.max(1, rect.width) / Math.max(1, rect.height);
+  camera.updateProjectionMatrix();
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  clock.getDelta();
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+for (const input of inputs) {
+  input.addEventListener('change', readInputs);
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      input.blur();
+      readInputs();
+    }
+  });
+}
+ui.pinHilt.addEventListener('change', readInputs);
+ui.viewFull.addEventListener('click', () => setView('full'));
+ui.viewHand.addEventListener('click', () => setView('hand'));
+ui.viewBlade.addEventListener('click', () => setView('blade'));
+ui.selectGrip.addEventListener('click', () => { selectedLayer = 'grip'; syncInputs(); });
+ui.selectSabre.addEventListener('click', () => { selectedLayer = 'sabre'; syncInputs(); });
+ui.resetBaseline.addEventListener('click', () => {
+  Object.assign(state, structuredClone(BASELINE), { generatedAt: new Date().toISOString() });
+  applyStateToScene();
+});
+ui.copyJson.addEventListener('click', () => copyJson().catch((error) => setStatus(error.message)));
+ui.downloadJson.addEventListener('click', downloadJson);
+ui.applyJson.addEventListener('click', () => {
+  try {
+    applyJson();
+    setStatus('contract applied');
+  } catch (error) {
+    setStatus('bad JSON: ' + error.message);
+  }
+});
+for (const button of document.querySelectorAll('[data-nudge]')) {
+  button.addEventListener('click', () => nudge(...button.dataset.nudge.split(',')));
+}
+
+window.addEventListener('resize', resize);
+resize();
+animate();
+boot().catch((error) => {
+  console.error(error);
+  setStatus('failed: ' + error.message);
+});
