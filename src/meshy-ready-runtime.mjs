@@ -524,7 +524,7 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
     targetUpLocal: weaponConfig.targetUpLocal || [0, 1, 0],
   }) : null;
   if (weaponTrack) tracks.push(weaponTrack);
-  const clipName = options.clipName || 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]';
+  const clipName = options.clipName || 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R0 L-90]';
   const duration = outputTimes[outputTimes.length - 1] || Math.max(0.001, sourceClip.duration - firstSampleTime);
   const clip = new THREE.AnimationClip(clipName, duration, tracks);
   clip.userData = {

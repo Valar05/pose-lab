@@ -645,7 +645,7 @@ async function main() {
     sourceKeyCount: times.length,
     sourceKeyTimes: times,
     coordinateBridge: {
-      targetBaseline: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]',
+      targetBaseline: '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]',
       policy: 'project FPS hilt/tip through calibrated T-pose frame; fixed FK arm projection; no IK, no roll, no retarget mutation',
       scale: round(scale, 6),
     },

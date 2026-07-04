@@ -18,7 +18,7 @@ assert(fs.existsSync(path.join(projectRoot, result.png)), 'weapon basis PNG shou
 assert(fs.existsSync(path.join(projectRoot, result.diagnosticSummary)), 'weapon basis summary should exist');
 assert(data.schema === 'pose-lab-meshy-weapon-basis-workspace-v1', `unexpected schema ${data.schema}`);
 assert(data.diagnosticOnly === true && data.productionBehaviorModified === false, 'workspace must be diagnostic-only');
-assert(data.coordinateBridge.targetBaseline === '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', 'workspace should use accepted calibration');
+assert(data.coordinateBridge.targetBaseline === '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]', 'workspace should use accepted calibration');
 assert(data.coordinateBridge.fkPolicy.includes('no IK') && data.coordinateBridge.fkPolicy.includes('no roll correction'), 'workspace must quarantine IK/roll');
 assert(data.sourceKeyCount === 31, `workspace should preserve 31 OneHandReady keys, got ${data.sourceKeyCount}`);
 for (const layer of ['grip-position', 'grip-orientation', 'blade-axis', 'blade-tip', 'attachment-rotation', 'attachment-local-basis', 'attachment-scale']) {
@@ -36,7 +36,7 @@ assert(data.diagnostics.findings.some((line) => line.includes('not automatically
 const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
 const runtime = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
 assert(!profiles.includes('weapon_basis_workspace') && !runtime.includes('weapon_basis_workspace'), 'workspace must not be wired into production profile/runtime');
-assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }"), 'accepted Meshy startup baseline must remain protected');
+assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]' }"), 'accepted Meshy startup baseline must remain protected');
 
 const disabledOut = path.join(projectRoot, 'generated', 'test_runs', `weapon-basis-disabled-${process.pid}`);
 const disabledOutput = execFileSync('node', [

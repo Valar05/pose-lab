@@ -29,12 +29,12 @@ assert(!fn.includes('.optimize()'), 'accepted converter utility must not collaps
 
 assert(profiles.includes("retargetMode: 'meshy-fps-visual-ik-ready'"), 'active Meshy Ready profile should use the golden visual IK helper');
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'active Meshy Ready profile should keep the golden clip tag');
-assert(profiles.includes("clipSuffix: '-> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'active Meshy Ready profile should keep the accepted clip label');
+assert(profiles.includes("clipSuffix: '-> meshyCharacter [FPS-VISUAL-IK R0 L-90]'"), 'active Meshy Ready profile should keep the neutral-right clip label');
 assert(profiles.includes('rightRollOffsetDeg: 0') && profiles.includes('leftRollOffsetDeg: -90'), 'active Meshy Ready profile should keep right roll neutral and preserve left roll');
 assert(profiles.includes("sourceRestClip: '0T-Pose'") && profiles.includes("targetRestProvider: 'skin-bind'"), 'Meshy Ready should translate from FPS 0T-Pose rest into Meshy skin-bind rest');
 assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(0)'), 'Meshy should keep the FPS arm rest-pose calibration right-hand roll neutral');
-assert(profiles.includes("RestProbe: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe should select the exact accepted CAL--120 T-pose clip');
-assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe generated label should preserve the accepted CAL--120 origin path');
+assert(profiles.includes("RestProbe: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL-0'"), 'Meshy RestProbe should select the exact accepted neutral T-pose clip');
+assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-REST-ARMS-CAL-0'"), 'Meshy RestProbe generated label should preserve the neutral origin path');
 assert(!profiles.includes('...[-150') && !profiles.includes('FPS-REST-ARMS-CAL-120') && !profiles.includes('FPS-REST-ARMS-CAL-90') && !profiles.includes('FPS-REST-ARMS-CAL--90'), 'Meshy should not generate rejected positive or sweep FPS arm rest-pose hand-roll clips');
 assert(js.includes('preserveLoopSeam: spec.preserveLoopSeam === true'), 'auto retarget dispatcher should still pass preserveLoopSeam into the generic converter');
 assert(profiles.includes("clipNames: [\n          'OneHandReady',\n        ]"), 'Meshy Ready should generate only OneHandReady in this slice');

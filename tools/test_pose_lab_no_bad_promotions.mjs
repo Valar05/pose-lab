@@ -20,7 +20,7 @@ function assert(condition, message) { if (!condition) failures.push(message); }
 const baseline = readJson(baselinePath);
 assert(baseline.schema === 'pose-lab-accepted-baseline-v1', 'baseline manifest should use accepted-baseline schema');
 assert(baseline.actorKey === 'meshyCharacter', 'baseline should protect Meshy Character');
-assert(baseline.acceptedClip.includes('[FPS-REST-ARMS roll -120]'), 'baseline should protect the accepted -120 rest calibration');
+assert(baseline.acceptedClip.includes('[FPS-REST-ARMS no right roll]'), 'baseline should protect the accepted neutral rest calibration');
 assert(baseline.promotionRules?.requiresFreshVisualEvidence === true, 'baseline should require fresh visual evidence');
 assert(baseline.promotionRules?.requiresMetricEvidence === true, 'baseline should require metric evidence');
 

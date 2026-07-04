@@ -6,8 +6,8 @@ import { synthesizeCaptureSense, synthesizeEvidenceSense } from './pose_lab_sens
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const outDir = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest');
-const TPOSE_CLIP = '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]';
-const READY_CLIP = 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]';
+const TPOSE_CLIP = '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]';
+const READY_CLIP = 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R0 L-90]';
 const ACCEPTED_MESHY_HILT = [0.6535, -0.02302, -0.07317];
 const ACCEPTED_MESHY_SOCKET_ROTATION = [0, 0, 0];
 const ACCEPTED_MESHY_ATTACHMENT_ROTATION = [90, 0, -55.145];

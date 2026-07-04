@@ -12,7 +12,7 @@ function assert(condition, message) {
 }
 
 for (const literal of [
-  "startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }",
+  "startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]' }",
   "handLocalOffset: [0.095, 0.035, -0.01]",
   "modelLocalOffset: [-0.11512, 0.00773, -0.01127]",
   "rotationDeg: [90, 0, -55.145]",
@@ -22,11 +22,11 @@ for (const literal of [
   assert(profiles.includes(literal), `protected T-pose/manual weapon literal changed: ${literal}`);
 }
 
-assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120', '0T-Pose']"), 'SwordReady should stay on accepted T-pose aliases until Ready has fresh promotion evidence');
+assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL-0', '0T-Pose']"), 'SwordReady should stay on accepted T-pose aliases until Ready has fresh promotion evidence');
 assert(profiles.includes("visibleClipPatterns: ['\\\\[FPS-REST-ARMS']"), 'weapon visibility should stay on accepted T-pose rest patterns until Ready has fresh promotion evidence');
 assert(profiles.includes("retargetMode: 'meshy-fps-visual-ik-ready'"), 'Meshy Ready should use the explicit golden Ready helper mode');
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy Ready candidate generator should keep the reviewable clip tag');
-assert(profiles.includes("clipSuffix: '-> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'Meshy Ready candidate generator should keep the reviewable visual IK label');
+assert(profiles.includes("clipSuffix: '-> meshyCharacter [FPS-VISUAL-IK R0 L-90]'"), 'Meshy Ready candidate generator should keep the reviewable visual IK label');
 assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'"), 'Meshy Ready candidate generator should keep the generated-group identity');
 assert(profiles.includes('rightRollOffsetDeg: 0'), 'Meshy Ready should remove the bad right hand roll offset');
 assert(profiles.includes('leftRollOffsetDeg: -90'), 'Meshy Ready should preserve left hand roll -90');

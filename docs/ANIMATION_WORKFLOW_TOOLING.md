@@ -65,7 +65,7 @@ Use this when Meshy saber rotation looks sideways or rolled. It compares the rej
 node tools/meshy_projection_workspace.mjs --out generated/projection_workspace/onehand_ready --max-render-frames 7
 ```
 
-Use this before changing Meshy/FPS `OneHandReady` retarget code. It is a diagnostic laboratory only: it samples the authored FPS source keys, projects scoped FPS landmarks through the accepted `0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]` bridge, reconstructs FK position targets, optionally overlays IK, measures sword grip/blade-tip divergence, and measures roll error around the solved bone-forward axis. The output is `projection_workspace.json` plus `projection_workspace.png`; neither file is promotion evidence by itself, and this tool must not edit `startupClip`, aliases, `visibleClipPatterns`, or production retarget settings.
+Use this before changing Meshy/FPS `OneHandReady` retarget code. It is a diagnostic laboratory only: it samples the authored FPS source keys, projects scoped FPS landmarks through the accepted `0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]` bridge, reconstructs FK position targets, optionally overlays IK, measures sword grip/blade-tip divergence, and measures roll error around the solved bone-forward axis. The output is `projection_workspace.json` plus `projection_workspace.png`; neither file is promotion evidence by itself, and this tool must not edit `startupClip`, aliases, `visibleClipPatterns`, or production retarget settings.
 
 Independent layers can be toggled with `--enable projected-pins,fk,ik,sword,basis,roll`. The roll layer must remain removable. Sword landmarks are projected as observations (`WeaponGrip` and blade tip), not as arm solvers: use the arm solution to explain the sword, not the sword to force the arm.
 
@@ -84,7 +84,7 @@ Do not wire a candidate to `startupClip`, `SwordReady`, `RestProbe`, or `visible
 
 ### Knowledge Capture
 
-- The accepted Meshy/FPS animation baseline remains `0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]`. Do not promote `OneHandReady`, attack clips, or retarget candidates by name-only edits.
+- The accepted Meshy/FPS animation baseline remains `0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]`. Do not promote `OneHandReady`, attack clips, or retarget candidates by name-only edits.
 - Saber placement must be tuned as a visible 3D attachment problem, not by repeated blind edits to `modelLocalOffset`, `gripLocalPosition`, or Euler values.
 - The real Meshy saber attachment has two distinct anchors: the synthetic socket (`WeaponGrip`) and the model-local grip landmark (`gripLocalPosition`). If the visible hand does not match the hilt/finger grip center, first expose a gizmo or landmark picker instead of guessing offsets.
 - Cache tokens are part of visual truth in this browser lab. After changing runtime JS/CSS/profile imports, bump the `pose-editor-*` token before asking for screenshot feedback.

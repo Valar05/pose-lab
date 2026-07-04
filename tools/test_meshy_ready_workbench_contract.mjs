@@ -9,7 +9,7 @@ const failures = [];
 function assert(condition, message) { if (!condition) failures.push(message); }
 
 assert(fs.existsSync(toolPath), 'ready workbench script should exist');
-assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }"), 'Meshy startup should stay on accepted T-pose calibration');
+assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]' }"), 'Meshy startup should stay on accepted T-pose calibration');
 assert(!profiles.includes("startupClip: { name: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]' }"), 'failed ready retarget must not be startup');
 assert(!profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'"), 'failed ready retarget must not be SwordReady alias');
 
@@ -22,7 +22,7 @@ const candidate = JSON.parse(fs.readFileSync(candidatePath, 'utf8'));
 assert(artifact.schema === 'pose-lab-meshy-ready-workbench-v1', 'artifact schema should identify the ready workbench');
 assert(artifact.status === 'candidate-only' && artifact.promotable === false, 'workbench output should not be promotable without visual evidence');
 assert(artifact.sourceClip === 'OneHandReady', 'artifact should use FPS OneHandReady as source reference');
-assert(artifact.targetRestClip === '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', 'artifact should start from accepted T-pose calibration');
+assert(artifact.targetRestClip === '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]', 'artifact should start from accepted T-pose calibration');
 assert(artifact.targetRestPose?.rightHand && artifact.targetRestPose?.leftHand, 'artifact should keep target rest coordinates separately from the accepted clip label');
 assert(artifact.acceptance?.requiresFreshVisualEvidence === true, 'artifact should require fresh visual evidence');
 assert(artifact.acceptance?.swordIgnored === true, 'artifact should explicitly ignore sword orientation in this phase');
