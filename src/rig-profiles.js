@@ -267,6 +267,7 @@ const BASE_RIG_PROFILES = {
       leftHandBone: 'LeftHand',
       socketBone: 'WeaponGrip',
       positionMode: 'right-hand',
+      parentMode: 'hand-fk',
       handLocalOffset: [0.095, 0.035, -0.01],
       modelLocalOffset: [-0.11512, 0.00773, -0.01127],
       gripOffset: [0, 0, 0],
