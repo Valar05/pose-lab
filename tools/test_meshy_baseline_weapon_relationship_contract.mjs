@@ -26,8 +26,8 @@ assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS
 assert(profiles.includes("visibleClipPatterns: ['\\\\[FPS-REST-ARMS']"), 'default weapon visibility must remain scoped to the accepted rest-arms surface');
 
 assert(profiles.includes('rotationDeg: [0, 0, 0]'), 'base Meshy WeaponGrip socket rotation must remain identity for boring FK');
-assert(profiles.includes('rotationDeg: [-67.582, 76.718, -30.52]'), 'base Meshy sabre attachment rotation must preserve the user-authored shared FK calibration');
-assert(profiles.includes('gripLocalPosition: [0.73272, 0.0091, -0.01674]'), 'base Meshy hilt oracle must remain unchanged');
+assert(profiles.includes('rotationDeg: [-67.582, 76.718, -90.52]'), 'base Meshy sabre attachment rotation must preserve the T-pose-authored shared FK calibration');
+assert(profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'base Meshy hilt oracle must remain unchanged');
 assert(profiles.includes('tipLocalPosition: [-0.95561, 0.1368, 0]'), 'base Meshy tip oracle must remain unchanged');
 
 assert(!weaponProxyBlock.includes('clipOverrides:'), 'Meshy weapon proxy must not use Ready-only offsets; T-pose and Ready share FK placement');

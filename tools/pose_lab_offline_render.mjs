@@ -119,8 +119,7 @@ function trackTargetsNode(clip, nodeName) {
 
 function wantsGeneratedReadyClip(requested) {
   const value = String(requested || '');
-  return /OneHandReady\s*->\s*meshyCharacter\s*\[FPS-SWORD-UPPER\]/i.test(value)
-    || /OneHandReady\s*->\s*meshyCharacter\s*\[FPS-VISUAL-IK R-120 L-90\]/i.test(value);
+  return /OneHandReady\s*->\s*meshyCharacter\s*\[FPS-SWORD-UPPER\]/i.test(value);
 }
 
 function wantsGeneratedFpsRestArmsClip(requested) {

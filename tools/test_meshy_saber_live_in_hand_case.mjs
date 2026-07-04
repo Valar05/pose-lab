@@ -13,7 +13,7 @@ const captureTool = fs.readFileSync(path.join(projectRoot, 'tools/capture_fireba
 
 assert(caseData.id === 'meshy-saber-live-in-hand', 'missing Meshy saber in-hand case');
 assert(caseData.route.kind === 'weapon-fk', 'Meshy saber in-hand case should use the Firebase weapon-fk route');
-assert(caseData.route.clip.includes('OneHandReady') && caseData.route.clip.includes('[FPS-VISUAL-IK R-120 L-90]'), 'Meshy saber in-hand case should cover the Visual-IK Ready FK clip');
+assert(caseData.route.clip.includes('OneHandReady') && caseData.route.clip.includes('[FPS-SWORD-UPPER]'), 'Meshy saber in-hand case should cover the restored FPS-SWORD-UPPER Ready FK clip');
 assert(caseData.checks.some((check) => String(check.command || '').includes('test_firebase_hosting_config.mjs')), 'case should run the Firebase hosting contract');
 assert(caseData.checks.some((check) => String(check.command || '').includes('test_firebase_visual_truth_contract.mjs')), 'case should run the Firebase visual truth contract');
 assert(caseData.evidenceArtifacts.includes('generated/firebase_visual_truth/latest/visual_truth.json'), 'case should require durable Firebase visual truth evidence');

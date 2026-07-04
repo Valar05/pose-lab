@@ -88,7 +88,7 @@ Diagnostic workspaces are evidence producers only. They may write generated repo
 
 ## Weapon FK Attachment Rule
 
-For Meshy one-hand saber review, restore and protect the accepted T-pose/rest baseline before judging Ready. The current production surface uses direct boring FK: `WeaponGrip` must be parented under `RightHand`, with the authored hilt oracle and attachment rotation preserved. The current Firebase review target is `OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]`; it is review evidence, not `startupClip`/`SwordReady` promotion.
+For Meshy one-hand saber review, restore and protect the accepted T-pose/rest baseline before judging Ready. The current production surface uses direct boring FK: `WeaponGrip` must be parented under `RightHand`, with the authored hilt oracle and attachment rotation preserved. The current Firebase review target is `OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]`; it is review evidence, not `startupClip`/`SwordReady` promotion.
 
 `FPS-VISUAL-IK-GOLDEN` was a failed Ready candidate, not canonical truth. The non-GOLDEN `FPS-VISUAL-IK-READY` block exists so Firebase can review IK parity without promoting defaults.
 
@@ -114,7 +114,7 @@ Do not use `weapon visual-follow probe` as acceptance evidence. Probe mode force
 
 ### Knowledge Capture
 
-- The accepted Meshy/FPS animation baseline is `0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]`. `OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]` is the restored legacy Ready route; current cloud review uses `OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]` because the legacy route failed visible hand/saber parity. Do not promote attack clips or new retarget candidates by name-only edits.
+- The accepted Meshy/FPS animation baseline is `0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]`. `OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]` is the restored Ready review route; the Visual-IK Ready candidate is quarantined out of normal Meshy review because it repeatedly hid route and visual-parity failures. Do not promote attack clips or new retarget candidates by name-only edits.
 - Saber placement must be tuned as a visible 3D attachment problem, not by repeated blind edits to `modelLocalOffset`, `gripLocalPosition`, or Euler values.
 - The real Meshy saber attachment has two distinct anchors: the synthetic socket (`WeaponGrip`) and the model-local grip landmark (`gripLocalPosition`). If the visible hand does not match the hilt/finger grip center, first expose a gizmo or landmark picker instead of guessing offsets.
 - Cache tokens are part of visual truth in this browser lab. After changing runtime JS/CSS/profile imports, bump the `pose-editor-*` token before asking for screenshot feedback.

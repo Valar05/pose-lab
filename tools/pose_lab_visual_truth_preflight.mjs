@@ -259,7 +259,7 @@ if (evidence) {
 
   if (ready) {
     if (ready.accepted !== true) failures.push('Ready capture is not accepted');
-    if (ready.clip !== 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]') failures.push(`Ready clip mismatch: ${ready.clip || 'missing'}`);
+    if (ready.clip !== 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]') failures.push(`Ready clip mismatch: ${ready.clip || 'missing'}`);
     if (!ready.url || ready.url === evidence.hostedUrl || !ready.url.includes('/pose-lab.html?')) failures.push('Ready capture URL is missing exact route query');
     requireCheck(ready, 'routeSelected', failures, 'Ready');
     requireCheck(ready, 'autoLoadedMeshyFromColdUrl', failures, 'Ready');

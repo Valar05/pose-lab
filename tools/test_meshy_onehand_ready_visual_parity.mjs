@@ -24,10 +24,9 @@ assert(fs.existsSync(path.join(projectRoot, result.sheet)), `missing visual pari
 assert(!profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Visual-IK Ready profile block must not be promoted');
 assert(!profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'"), 'Visual-IK Ready origin group must not be promoted');
 assert(artifact.acceptedAsFix !== true, 'Visual-IK Ready parity artifact must not be accepted as a fix');
-assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-READY'"), 'Visual-IK Ready review candidate should be wired as an explicit non-GOLDEN profile block');
-assert(profiles.includes("clipSuffix: '-> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'Visual-IK Ready review candidate should expose the exact Firebase-reviewed clip');
-assert(artifact.acceptance?.activeRuntimeUsesJointProjection === true, 'Visual-IK joint-projection candidate must be active for review');
-assert(artifact.visualClassification === 'ready_for_review', `Visual-IK Ready candidate should be ready for Firebase review, got ${artifact.visualClassification}`);
+assert(!profiles.includes("clipTag: 'FPS-VISUAL-IK-READY'"), 'Visual-IK Ready review candidate should remain quarantined out of the profile');
+assert(profiles.includes("clipSuffix: '-> meshyCharacter [FPS-SWORD-UPPER]'"), 'Firebase review should use the restored FPS-SWORD-UPPER clip');
+assert(artifact.acceptance?.activeRuntimeUsesJointProjection !== true, 'Visual-IK joint-projection candidate must not be active for review');
 
 if (failures.length) {
   throw new Error([

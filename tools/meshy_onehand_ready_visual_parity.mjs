@@ -476,24 +476,23 @@ function measureSabreBounds(THREE, sabreRoot) {
 
 function activeMeshyReadyProfileContract() {
   const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
-  const visualIkStart = profiles.indexOf("clipTag: 'FPS-VISUAL-IK-READY'");
-  const nextClipTag = visualIkStart >= 0 ? profiles.indexOf('clipTag:', visualIkStart + 1) : -1;
-  const blockEnd = nextClipTag > visualIkStart ? nextClipTag : profiles.indexOf('],', visualIkStart);
-  const activeBlock = visualIkStart >= 0 && blockEnd > visualIkStart ? profiles.slice(visualIkStart, blockEnd) : '';
+  const swordStart = profiles.indexOf("clipTag: 'FPS-SWORD-UPPER'");
+  const nextClipTag = swordStart >= 0 ? profiles.indexOf('clipTag:', swordStart + 1) : -1;
+  const blockEnd = nextClipTag > swordStart ? nextClipTag : profiles.indexOf('],', swordStart);
+  const activeBlock = swordStart >= 0 && blockEnd > swordStart ? profiles.slice(swordStart, blockEnd) : '';
   return {
     activeBlockFound: activeBlock.length > 0,
-    activeClip: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
-    worldJointProjection: activeBlock.includes("mode: 'world-joint-projection'") && activeBlock.includes('worldJointProjection: {'),
-    replacesTracks: activeBlock.includes("retargetMode: 'world-joint-projection'"),
-    restRelative: activeBlock.includes('restRelative: true'),
-    postRollDownDelta: profiles.includes('buildMeshyFpsVisualIkReadyClip') || activeBlock.includes("rollOffsetDeg: -120"),
-    rightArmCanary: activeBlock.includes("label: 'right'") && activeBlock.includes('maxTwistDeg: 180'),
-    leftArmBounded: activeBlock.includes("label: 'left'") && activeBlock.includes('rollOffsetDeg: -90'),
-    fullRightChain: activeBlock.includes("sourceUpper: 'Arm.R'") && activeBlock.includes("sourceLower: 'Forearm.R'") && activeBlock.includes("sourceHand: 'Hand.R'"),
-    fullLeftChain: activeBlock.includes("sourceUpper: 'Arm.L'") && activeBlock.includes("sourceLower: 'Forearm.L'") && activeBlock.includes("sourceHand: 'Hand.L'"),
-    weaponDoesNotOverwriteHand: !activeBlock.includes('weaponKeyConvert')
-      && !activeBlock.includes("targetWeapon: 'WeaponR'")
-      && !activeBlock.includes("targetWeapon: 'WeaponGrip'")
+    activeClip: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]',
+    worldJointProjection: false,
+    replacesTracks: activeBlock.includes("retargetMode: 'fps-upper-key-convert'"),
+    restRelative: activeBlock.includes("sourceRestClip: '0T-Pose'"),
+    postRollDownDelta: activeBlock.includes('meshyFpsRestSegmentCorrection(-120)'),
+    rightArmCanary: activeBlock.includes("{ from: 'Hand.R', to: 'RightHand'"),
+    leftArmBounded: activeBlock.includes("{ from: 'Hand.L', to: 'LeftHand'"),
+    fullRightChain: activeBlock.includes("{ from: 'Arm.R', to: 'RightArm'") && activeBlock.includes("{ from: 'Forearm.R', to: 'RightForeArm'") && activeBlock.includes("{ from: 'Hand.R', to: 'RightHand'"),
+    fullLeftChain: activeBlock.includes("{ from: 'Arm.L', to: 'LeftArm'") && activeBlock.includes("{ from: 'Forearm.L', to: 'LeftForeArm'") && activeBlock.includes("{ from: 'Hand.L', to: 'LeftHand'"),
+    weaponDoesNotOverwriteHand: activeBlock.includes('weaponKeyConvert')
+      && activeBlock.includes('applyToHand: false')
       && !profiles.includes('worldJointProjectionSocketOrientation'),
   };
 }

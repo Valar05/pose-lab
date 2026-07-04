@@ -48,7 +48,7 @@ const baseCapture = (id, checks = {}) => ({
   id,
   actor: 'meshyCharacter',
   clip: id === 'ready'
-    ? 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'
+    ? 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'
     : id === 'tpose'
       ? '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]'
       : '',

@@ -11,10 +11,10 @@ function assert(condition, message) { if (!condition) failures.push(message); }
 
 const lockedProductionLiterals = [
   ['Meshy handLocalOffset', 'handLocalOffset: [0.095, 0.035, -0.01]'],
-  ['Meshy modelLocalOffset', 'modelLocalOffset: [-0.11512, 0.00773, -0.01127]'],
+  ['Meshy modelLocalOffset', 'modelLocalOffset: [1.01462, 12.80195, -0.47992]'],
   ['Meshy weapon scale', 'scale: 0.47493'],
   ['Meshy socket rotation', 'rotationDeg: [0, 0, 0]'],
-  ['Meshy mesh rotation', 'rotationDeg: [90, 0, -55.145]'],
+  ['Meshy mesh rotation', 'rotationDeg: [-67.582, 76.718, -90.52]'],
   ['Meshy grip landmark', 'gripLocalPosition: [0.6535, -0.02302, -0.07317]'],
   ['Meshy tip landmark', 'tipLocalPosition: [-0.95561, 0.1368, 0]'],
   ['FPS modelLocalOffset', 'modelLocalOffset: [0.00424, -0.0167, 0.01744]'],

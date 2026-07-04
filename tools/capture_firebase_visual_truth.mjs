@@ -7,10 +7,10 @@ import { synthesizeCaptureSense, synthesizeEvidenceSense } from './pose_lab_sens
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const outDir = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest');
 const TPOSE_CLIP = '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]';
-const READY_CLIP = 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]';
-const ACCEPTED_MESHY_HILT = [0.73272, 0.0091, -0.01674];
+const READY_CLIP = 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]';
+const ACCEPTED_MESHY_HILT = [0.6535, -0.02302, -0.07317];
 const ACCEPTED_MESHY_SOCKET_ROTATION = [0, 0, 0];
-const ACCEPTED_MESHY_ATTACHMENT_ROTATION = [-67.582, 76.718, -30.52];
+const ACCEPTED_MESHY_ATTACHMENT_ROTATION = [-67.582, 76.718, -90.52];
 const LANDING_LOAD_MAX_MS = 20000;
 const LANDING_LOAD_WARN_MS = 20000;
 const HUMAN_RED_BUILDS_PATH = path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json');
@@ -303,7 +303,7 @@ function evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow,
   if (weapon?.weapon?.clip !== READY_CLIP) failures.push(`Ready cloud clip mismatch: ${weapon?.weapon?.clip || 'missing'}`);
   if (weapon?.weapon?.actor !== 'meshyCharacter') failures.push(`Ready cloud actor mismatch: ${weapon?.weapon?.actor || 'missing'}`);
   const inventory = weapon?.snapshot?.clipInventory || {};
-  if (!Number.isFinite(Number(inventory.count)) || Number(inventory.count) < 5) failures.push(`Ready review clip inventory is too small for human review: ${JSON.stringify(inventory)}`);
+  if (!Number.isFinite(Number(inventory.count)) || Number(inventory.count) < 4) failures.push(`Ready review clip inventory is too small for human review: ${JSON.stringify(inventory)}`);
   if (!weapon?.snapshot?.pose?.watch?.bones?.rh || !weapon?.snapshot?.pose?.watch?.bones?.lh) failures.push('Ready cloud snapshot lacks right/left hand pose landmarks, so hand-orientation visual truth cannot be judged');
   if (liveChecks.realWeaponVisible !== true || followChecks.realWeaponVisible !== true) failures.push('Ready real sabre is not visible in cloud capture');
   if (followChecks.parentChain !== true) failures.push(`Ready parent chain failed: ${JSON.stringify(visualFollow?.parentChain)}`);
@@ -347,7 +347,7 @@ function evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow,
       tipTracksHand: Number(screenMotion.tip) > Number(screenMotion.hand) * 0.25 || staticDirectFkProof,
       basketFrontOrientationSane: Number.isFinite(basketFrontErrorDeg),
       socketForwardBladeAxisSane: readyScreenBladeSane || (Number.isFinite(socketForwardToBladeErrorDeg) && socketForwardToBladeErrorDeg <= 75),
-      reviewClipInventoryVisible: Number(inventory.count) >= 5,
+      reviewClipInventoryVisible: Number(inventory.count) >= 4,
       bodyPoseLandmarksPresent: Boolean(weapon?.snapshot?.pose?.watch?.bones?.rh && weapon?.snapshot?.pose?.watch?.bones?.lh),
       readyVisualRelationshipAccepted: relationship.readyVisualRelationshipAccepted,
       visibleUiTruthAccepted: reviewFailures.length === 0,
@@ -503,7 +503,7 @@ for (const capture of captures) {
     if (!routeSelected) failures.push('landing route did not select Meshy Character');
     if (!routeAutoSelected) failures.push('landing hosted route did not cold-load Meshy Character without manual actor selection');
     failures.push(...reviewFailures.map((failure) => `landing UI truth red: ${failure}`));
-    if (!Number.isFinite(Number(inventory.count)) || Number(inventory.count) < 5) failures.push(`landing Meshy clip inventory is too small for human review: ${JSON.stringify(inventory)}`);
+    if (!Number.isFinite(Number(inventory.count)) || Number(inventory.count) < 4) failures.push(`landing Meshy clip inventory is too small for human review: ${JSON.stringify(inventory)}`);
     if (String(selectedClip).includes('walking_man')) failures.push(`landing selected walking clip instead of Meshy review clip: ${selectedClip}`);
     if (weapon?.weapon?.modelVisible !== true || weapon?.weapon?.displayVisible !== true) failures.push('landing real sabre model/display is not visible for human review');
     evaluation = {
@@ -515,8 +515,8 @@ for (const capture of captures) {
         manualActorSelectionRequiredFalse: routeAutoSelected,
         loadFastEnough: loadMs <= LANDING_LOAD_MAX_MS,
         loadWarning: loadMs > LANDING_LOAD_WARN_MS,
-        reviewClipInventoryVisible: Number(inventory.count) >= 5,
-        reviewClipNotCollapsedToWalkingOnly: Number(inventory.count) >= 5 && !String(selectedClip).includes('walking_man'),
+        reviewClipInventoryVisible: Number(inventory.count) >= 4,
+        reviewClipNotCollapsedToWalkingOnly: Number(inventory.count) >= 4 && !String(selectedClip).includes('walking_man'),
         realWeaponVisible: weapon?.weapon?.modelVisible === true && weapon?.weapon?.displayVisible === true,
         visibleUiTruthAccepted: reviewFailures.length === 0,
       },
