@@ -157,11 +157,11 @@ First-person view mode uses Arcane Manifold's copied `Player.tscn` camera data: 
 
 ## Local Blender Note
 
-Debian/Termux Blender exists at `/usr/bin/blender` version 4.3.2 and can inspect the `.blend`, but exporter paths currently crash inside embedded Python while importing numpy/ctypes. The successful GLB export used Blender 4.4.3 on THECAULDRON.
+For Meshy saber recovery, local terminal Blender is the first authoring/render path. Probe it with `node tools/meshy_saber_blender_workbench.mjs --probe --json`. If it is missing or fails, report `LOCAL_BLENDER_UNAVAILABLE` or `HEADLESS_BLENDER_FAILED`; do not silently reroute to THECAULDRON or require a Blender UI.
 
 ## Blender-First Meshy Saber Recovery
 
-Meshy saber placement and Ready visual recovery now have a Blender-first escape lane under `authoring/meshy_saber/`. Use Blender as the manual visual authoring surface and Pose Lab as an importer/runtime verifier only. Build the scene with `authoring/meshy_saber/blender_build_meshy_ready_authoring.py`, approve T-pose and Ready from Blender viewport screenshots, then export `authoring/meshy_saber/exports/meshy_ready_saber_contract.json` for Pose Lab intake. Generated exports are ignored until deliberately promoted. Do not use Pose Lab retargeting, WeaponR parity, cloud screenshots, or runtime metrics to author or overwrite this Blender-approved result. Run `node tools/pose_lab_recovery_gate.mjs --json` before runtime fixes, green claims, commits that imply recovery, or browser wake handoff.
+Meshy saber placement and Ready visual recovery now have a Blender-first escape lane under `authoring/meshy_saber/`. Use terminal-runnable local Blender as the visual authoring/render surface and Pose Lab as an importer/runtime verifier only. Run `node tools/meshy_saber_blender_workbench.mjs --json` to generate T-pose/Ready review artifacts and `authoring/meshy_saber/exports/meshy_ready_saber_contract.json` for Pose Lab intake. Generated exports are ignored until deliberately promoted. Do not use Pose Lab retargeting, WeaponR parity, cloud screenshots, or runtime metrics to author or overwrite this Blender-approved result. Run `node tools/pose_lab_recovery_gate.mjs --json` before runtime fixes, green claims, commits that imply recovery, or browser wake handoff.
 
 See [docs/MOTIVATED_MODE.md](/storage/emulated/0/Documents/GodotProjects/pose-lab/docs/MOTIVATED_MODE.md:1) for the saved contract and the before-stopping checklist.
 

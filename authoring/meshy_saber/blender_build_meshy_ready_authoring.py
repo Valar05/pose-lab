@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Build or export the Blender-first Meshy saber authoring scene.
+"""Build, render, or export the Blender-first Meshy saber authoring scene.
 
 Run from Blender:
 
-  blender --background --python authoring/meshy_saber/blender_build_meshy_ready_authoring.py -- --repo-root . --save-blend authoring/meshy_saber/meshy_ready_authoring.blend
+  blender --background --python authoring/meshy_saber/blender_build_meshy_ready_authoring.py -- --repo-root . --render-dir authoring/meshy_saber/exports/headless_review
 
 This script does not tune Pose Lab runtime offsets. It creates a clean DCC
-scene where a human can author the Meshy saber hold directly.
+scene where an agent can generate local Blender evidence and a human can review
+the authored Meshy saber hold before Pose Lab imports it.
 """
 
 from __future__ import annotations
@@ -30,6 +31,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--save-blend", default="", help="Optional .blend output path.")
     parser.add_argument("--export-json", default="", help="Optional transform contract JSON path.")
     parser.add_argument("--export-glb", default="", help="Optional GLB output path.")
+    parser.add_argument("--render-dir", default="", help="Optional directory for T-pose/Ready PNG renders and contact sheet.")
+    parser.add_argument("--tpose-frame", type=int, default=0, help="Frame to use for the T-pose/rest canary render.")
+    parser.add_argument("--ready-frame", type=int, default=24, help="Frame to use for the Ready review render.")
+    parser.add_argument("--resolution", type=int, default=960, help="Square render resolution in pixels.")
     argv = []
     if "--" in __import__("sys").argv:
       argv = __import__("sys").argv[__import__("sys").argv.index("--") + 1 :]
@@ -94,12 +99,85 @@ def parent_sabre_to_grip(sabre: bpy.types.Object, grip: bpy.types.Object) -> Non
     sabre["pose_lab_contract"] = "WeaponGrip -> sabre mesh"
 
 
-def write_contract(path: Path, meshy_armature: bpy.types.Object, grip: bpy.types.Object, sabre: bpy.types.Object) -> None:
+def look_at(obj: bpy.types.Object, target: Vector) -> None:
+    direction = target - obj.location
+    obj.rotation_euler = direction.to_track_quat("-Z", "Y").to_euler()
+
+
+def setup_review_scene(meshy_armature: bpy.types.Object, grip: bpy.types.Object, sabre: bpy.types.Object, resolution: int) -> None:
+    try:
+        bpy.context.scene.render.engine = "BLENDER_EEVEE_NEXT"
+    except TypeError:
+        bpy.context.scene.render.engine = "BLENDER_EEVEE"
+    bpy.context.scene.render.resolution_x = resolution
+    bpy.context.scene.render.resolution_y = resolution
+    bpy.context.scene.view_settings.view_transform = "Filmic"
+    bpy.context.scene.view_settings.look = "Medium High Contrast"
+    bpy.context.scene.view_settings.exposure = 0
+    bpy.context.scene.view_settings.gamma = 1
+
+    camera = bpy.data.objects.get("PoseLabReviewCamera")
+    if camera is None:
+        camera_data = bpy.data.cameras.new("PoseLabReviewCamera")
+        camera = bpy.data.objects.new("PoseLabReviewCamera", camera_data)
+        bpy.context.scene.collection.objects.link(camera)
+    camera.location = (2.2, -4.0, 1.65)
+    camera.data.lens = 42
+    look_at(camera, Vector((0.0, 0.0, 1.05)))
+    bpy.context.scene.camera = camera
+
+    light = bpy.data.objects.get("PoseLabReviewKeyLight")
+    if light is None:
+        light_data = bpy.data.lights.new("PoseLabReviewKeyLight", "AREA")
+        light = bpy.data.objects.new("PoseLabReviewKeyLight", light_data)
+        bpy.context.scene.collection.objects.link(light)
+    light.location = (2.5, -3.0, 4.0)
+    light.data.energy = 550
+    light.data.size = 4
+
+    fill = bpy.data.objects.get("PoseLabReviewFillLight")
+    if fill is None:
+        fill_data = bpy.data.lights.new("PoseLabReviewFillLight", "POINT")
+        fill = bpy.data.objects.new("PoseLabReviewFillLight", fill_data)
+        bpy.context.scene.collection.objects.link(fill)
+    fill.location = (-2.0, 2.5, 2.0)
+    fill.data.energy = 90
+
+    for obj in (meshy_armature, grip, sabre):
+        obj.hide_viewport = False
+        obj.hide_render = False
+
+
+def render_review_frame(path: Path, frame: int) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    bpy.context.scene.frame_set(frame)
+    bpy.context.scene.render.filepath = str(path)
+    bpy.ops.render.render(write_still=True)
+
+
+def write_contact_sheet(path: Path, tpose_png: Path, ready_png: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "\n".join([
+            "<!doctype html>",
+            "<meta charset=\"utf-8\">",
+            "<title>Pose Lab Meshy Saber Headless Blender Review</title>",
+            "<style>body{margin:0;background:#111;color:#eee;font:16px sans-serif}main{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:12px}figure{margin:0}img{width:100%;display:block;background:#222}figcaption{padding:8px 0}</style>",
+            "<main>",
+            f"<figure><img src=\"{tpose_png.name}\" alt=\"Meshy saber T-pose\"><figcaption>T-pose/rest canary</figcaption></figure>",
+            f"<figure><img src=\"{ready_png.name}\" alt=\"Meshy saber Ready\"><figcaption>Ready review</figcaption></figure>",
+            "</main>",
+        ]) + "\n",
+        encoding="utf-8",
+    )
+
+
+def write_contract(path: Path, meshy_armature: bpy.types.Object, grip: bpy.types.Object, sabre: bpy.types.Object, render_artifacts: dict[str, str] | None = None) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "schema": "pose-lab-blender-meshy-saber-contract-v1",
         "status": "requires-human-visual-approval",
-        "authority": "Blender viewport, not Pose Lab runtime metrics",
+        "authority": "local headless Blender review artifacts plus human approval, not Pose Lab runtime metrics",
         "sourceAssets": {
             "meshyAnimatedRig": MESHY_RIG,
             "fpsReference": FPS_REFERENCE,
@@ -122,9 +200,10 @@ def write_contract(path: Path, meshy_armature: bpy.types.Object, grip: bpy.types
             "rotationEulerXYZ": [round(v, 6) for v in sabre.rotation_euler],
             "scale": [round(v, 6) for v in sabre.scale],
         },
+        "reviewArtifacts": render_artifacts or {},
         "promotionRequired": [
-            "Human-approved T-pose screenshot",
-            "Human-approved Ready screenshot",
+            "Human-approved T-pose render",
+            "Human-approved Ready render",
             "Pose Lab import reproduces this hierarchy without retargeting or solving weapon placement",
         ],
     }
@@ -147,8 +226,25 @@ def main() -> None:
     parent_sabre_to_grip(sabre, grip)
 
     bpy.context.scene.frame_set(0)
+    render_artifacts = {}
+    if args.render_dir:
+        render_dir = repo / args.render_dir
+        tpose_png = render_dir / "meshy_saber_tpose.png"
+        ready_png = render_dir / "meshy_saber_ready.png"
+        contact_sheet = render_dir / "meshy_saber_contact_sheet.html"
+        setup_review_scene(meshy_armature, grip, sabre, args.resolution)
+        render_review_frame(tpose_png, args.tpose_frame)
+        render_review_frame(ready_png, args.ready_frame)
+        write_contact_sheet(contact_sheet, tpose_png, ready_png)
+        render_artifacts = {
+            "tposePng": str(tpose_png.relative_to(repo)),
+            "readyPng": str(ready_png.relative_to(repo)),
+            "contactSheet": str(contact_sheet.relative_to(repo)),
+            "tposeFrame": args.tpose_frame,
+            "readyFrame": args.ready_frame,
+        }
     if args.export_json:
-        write_contract(repo / args.export_json, meshy_armature, grip, sabre)
+        write_contract(repo / args.export_json, meshy_armature, grip, sabre, render_artifacts)
     if args.save_blend:
         (repo / args.save_blend).parent.mkdir(parents=True, exist_ok=True)
         bpy.ops.wm.save_as_mainfile(filepath=str(repo / args.save_blend))
@@ -159,4 +255,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

@@ -2,12 +2,13 @@
   "schema": "pose-lab-blender-authoring-lane-v1",
   "id": "meshy-ready-saber-authoring",
   "purpose": "Author Meshy Ready and T-pose saber hold in Blender, then export a small transform contract for Pose Lab to consume.",
-  "authority": "human-approved Blender viewport",
+  "authority": "local headless Blender review artifacts plus human approval",
   "status": "scaffolded-no-approved-export",
   "blender": {
-    "minimumVersion": "4.4.3",
-    "preferredHost": "THECAULDRON",
-    "reason": "The Android/Termux Blender path is known to inspect files but has crashed on exporter Python dependencies."
+    "minimumVersion": "4.3.2",
+    "preferredHost": "local-terminal",
+    "runner": "tools/meshy_saber_blender_workbench.mjs",
+    "reason": "Pose Lab recovery should use terminal-runnable local Blender first. If local Blender is unavailable or fails, report that blocker instead of silently falling back to a remote UI host."
   },
   "sourceAssets": {
     "meshyAnimatedRig": "assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb",
@@ -24,7 +25,8 @@
     "blend": "authoring/meshy_saber/meshy_ready_authoring.blend",
     "contractJson": "authoring/meshy_saber/exports/meshy_ready_saber_contract.json",
     "glb": "authoring/meshy_saber/exports/meshy_ready_saber.glb",
-    "screenshots": "authoring/meshy_saber/exports/*.png"
+    "screenshots": "authoring/meshy_saber/exports/headless_review/*.png",
+    "contactSheet": "authoring/meshy_saber/exports/headless_review/meshy_saber_contact_sheet.html"
   },
   "acceptance": [
     "T-pose remains the canary and must not be degraded.",
@@ -34,4 +36,3 @@
     "Pose Lab may not retarget, solve, or tune this exported weapon hold while importing it."
   ]
 }
-

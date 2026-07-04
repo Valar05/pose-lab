@@ -13,6 +13,12 @@ function writeJson(root, relativePath, data) {
   fs.writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
 }
 
+function writeFile(root, relativePath, data = 'artifact') {
+  const file = path.join(root, relativePath);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, data);
+}
+
 function runGate(mockDir) {
   const raw = execFileSync('node', ['tools/pose_lab_recovery_gate.mjs', '--json', '--mock-dir', mockDir], { cwd: projectRoot, encoding: 'utf8' });
   return JSON.parse(raw);
@@ -31,6 +37,12 @@ assert(report.authorityStage === 'blender-authoring', 'unapproved Blender lane s
 assert(report.permissions.runtimeFixAllowed === false, 'runtime fixes should be blocked before Blender approval');
 assert(report.permissions.wakeAllowed === false, 'wake should be blocked before Blender approval');
 assert(report.failures.some((entry) => entry.includes('no human-approved export')), 'gate should name missing human-approved export');
+assert(report.failures.some((entry) => entry.includes('missing local headless Blender')), 'gate should name missing local headless Blender review artifacts');
+assert(report.blender.localHeadlessArtifacts.complete === false, 'gate should expose incomplete local Blender artifacts');
+
+writeFile(tmp, 'authoring/meshy_saber/exports/headless_review/meshy_saber_tpose.png');
+writeFile(tmp, 'authoring/meshy_saber/exports/headless_review/meshy_saber_ready.png');
+writeFile(tmp, 'authoring/meshy_saber/exports/headless_review/meshy_saber_contact_sheet.html', '<!doctype html>\n');
 
 writeJson(tmp, 'authoring/meshy_saber/exports/meshy_ready_saber_contract.json', {
   schema: 'pose-lab-blender-meshy-saber-contract-v1',
@@ -47,6 +59,7 @@ writeJson(tmp, 'generated/firebase_visual_truth/latest/visual_truth.json', {
 });
 report = runGate(tmp);
 assert(report.authorityStage === 'cloud-presentation', 'approved Blender/import plus green Firebase should reach cloud-presentation');
+assert(report.blender.localHeadlessArtifacts.complete === true, 'complete local Blender artifacts should be visible in the report');
 assert(report.permissions.wakeAllowed === true, 'wake should be allowed only for approved fresh green cloud proof');
 assert(report.permissions.claimGreenAllowed === true, 'green claim should require the same gate as wake');
 
@@ -61,4 +74,3 @@ assert(report.failures.some((entry) => entry.includes('no visible improvement'))
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({ checked: ['pose-lab-recovery-gate', 'blender-authoring-block', 'red-build-veto', 'no-visible-change-stop'] }, null, 2));
-

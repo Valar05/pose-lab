@@ -1,6 +1,6 @@
 # Meshy Saber Blender Authoring Lane
 
-This folder is the escape hatch for Meshy saber work. Blender is the manual visual authoring surface; Pose Lab is only the importer/runtime verifier for exported gold.
+This folder is the escape hatch for Meshy saber work. Blender is the local terminal visual authoring/render surface; Pose Lab is only the importer/runtime verifier for exported gold.
 
 ## Source Assets
 
@@ -11,16 +11,27 @@ This folder is the escape hatch for Meshy saber work. Blender is the manual visu
 
 ## Workflow
 
-1. Open Blender 4.4.3 or newer on THECAULDRON.
-2. From the Pose Lab repo root, run:
+1. From the Pose Lab repo root, probe the local terminal Blender:
 
    ```sh
-   blender --background --python authoring/meshy_saber/blender_build_meshy_ready_authoring.py -- --repo-root . --save-blend authoring/meshy_saber/meshy_ready_authoring.blend
+   node tools/meshy_saber_blender_workbench.mjs --probe --json
    ```
 
-3. Open `authoring/meshy_saber/meshy_ready_authoring.blend`.
-4. In Pose Mode, manually author Meshy T-pose and Ready so the viewer believes the sabre is held by the right hand.
-5. Keep the hierarchy:
+2. Generate headless review artifacts:
+
+   ```sh
+   node tools/meshy_saber_blender_workbench.mjs --json
+   ```
+
+   This writes T-pose and Ready PNGs, an HTML contact sheet, and a transform contract under `authoring/meshy_saber/exports/`.
+
+3. To save an editable `.blend` candidate as well, run:
+
+   ```sh
+   node tools/meshy_saber_blender_workbench.mjs --save-blend authoring/meshy_saber/meshy_ready_authoring.blend --json
+   ```
+
+4. Keep the hierarchy:
 
    ```text
    RightHand
@@ -28,13 +39,14 @@ This folder is the escape hatch for Meshy saber work. Blender is the manual visu
          -> Meshy French Revolution Sabre
    ```
 
-6. Export the approved result:
+5. Direct Blender invocation is still allowed for debugging the same path:
 
    ```sh
-   blender --background authoring/meshy_saber/meshy_ready_authoring.blend --python authoring/meshy_saber/blender_build_meshy_ready_authoring.py -- --repo-root . --export-json authoring/meshy_saber/exports/meshy_ready_saber_contract.json --export-glb authoring/meshy_saber/exports/meshy_ready_saber.glb
+   blender --background --python authoring/meshy_saber/blender_build_meshy_ready_authoring.py -- --repo-root . --render-dir authoring/meshy_saber/exports/headless_review --export-json authoring/meshy_saber/exports/meshy_ready_saber_contract.json
    ```
+
+If local Blender is unavailable, report `LOCAL_BLENDER_UNAVAILABLE`. Do not fall back to THECAULDRON or a manual UI host unless that is explicitly requested.
 
 ## Promotion Rule
 
-Generated files under `authoring/meshy_saber/exports/` are not repo truth by themselves. A human-approved Blender viewport screenshot and the exported JSON contract must be reviewed before any Pose Lab runtime path consumes them.
-
+Generated files under `authoring/meshy_saber/exports/` are not repo truth by themselves. A human-approved headless Blender contact sheet and the exported JSON contract must be reviewed before any Pose Lab runtime path consumes them.

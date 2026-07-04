@@ -64,6 +64,14 @@ function artifactStatus(file) {
   };
 }
 
+function fileStatus(mockDir, relativePath) {
+  const file = sourcePath(mockDir, relativePath);
+  return {
+    path: path.relative(projectRoot, file),
+    exists: fs.existsSync(file),
+  };
+}
+
 function artifactChanged(current, previous) {
   if (!current.exists || !previous.exists) return null;
   return JSON.stringify(current.data) !== JSON.stringify(previous.data);
@@ -77,6 +85,9 @@ function evaluate(args) {
   const redBuild = artifactStatus(sourcePath(mockDir, 'generated/visual_red_build/pose_lab_latest.json'));
   const previousRed = artifactStatus(sourcePath(mockDir, 'generated/visual_red_build/pose_lab_previous_red.json'));
   const roles = artifactStatus(sourcePath(mockDir, 'contracts/meshy_saber_evidence_roles.json'));
+  const tposeRender = fileStatus(mockDir, 'authoring/meshy_saber/exports/headless_review/meshy_saber_tpose.png');
+  const readyRender = fileStatus(mockDir, 'authoring/meshy_saber/exports/headless_review/meshy_saber_ready.png');
+  const contactSheet = fileStatus(mockDir, 'authoring/meshy_saber/exports/headless_review/meshy_saber_contact_sheet.html');
 
   const cacheToken = currentCacheToken();
   const runtimeBuild = currentRuntimeBuild();
@@ -86,6 +97,7 @@ function evaluate(args) {
   const blenderApproved = blenderContract.data?.status === 'human-approved' || blenderContract.data?.approval?.humanApproved === true;
   const blenderScaffolded = manifest.data?.status === 'scaffolded-no-approved-export';
   const poseLabImportApproved = blenderContract.data?.poseLabImport?.verified === true;
+  const localBlenderArtifactsExist = tposeRender.exists && readyRender.exists && contactSheet.exists;
   const firebaseGreen = firebase.data?.ok === true
     && firebase.data?.truthLedger?.tposeStableIdle === true
     && firebase.data?.truthLedger?.readyBoringFk === true;
@@ -99,6 +111,7 @@ function evaluate(args) {
 
   if (!manifest.exists) failures.push('missing Blender authoring manifest');
   if (blenderScaffolded && !blenderApproved) failures.push('Blender authoring is scaffolded but no human-approved export exists');
+  if (!localBlenderArtifactsExist) failures.push('missing local headless Blender T-pose/Ready/contact-sheet review artifacts');
   if (!roles.exists) failures.push('missing Meshy saber evidence role map');
   if (firebase.exists && !firebaseFresh) warnings.push('Firebase artifact is stale for the current cache token/runtime build');
   if (redVeto) failures.push('current red-build evidence vetoes green claims');
@@ -125,6 +138,12 @@ function evaluate(args) {
       approved: blenderApproved,
       contractPath: blenderContract.path,
       contractExists: blenderContract.exists,
+      localHeadlessArtifacts: {
+        complete: localBlenderArtifactsExist,
+        tposeRender,
+        readyRender,
+        contactSheet,
+      },
     },
     poseLabImport: {
       approved: poseLabImportApproved,
@@ -162,4 +181,3 @@ if (args.json) {
   for (const failure of report.failures) console.log(`FAIL: ${failure}`);
   for (const warning of report.warnings) console.log(`WARN: ${warning}`);
 }
-

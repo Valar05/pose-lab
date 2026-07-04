@@ -257,7 +257,7 @@
       "path": "authoring/meshy_saber/",
       "source": "Repository-owned Blender-first authoring scaffold created to escape Pose Lab runtime/cloud tuning loops.",
       "type": "authoring_lane",
-      "notes": "Blender 4.4.3 or newer on THECAULDRON is the preferred authoring surface. The lane imports the animated Meshy rig, FPSPlayer reference, and Meshy sabre, creates RightHand -> WeaponGrip -> Meshy French Revolution Sabre, and exports a human-reviewed JSON/GLB contract only after Blender viewport approval. Pose Lab must consume this output directly instead of retargeting, solving WeaponR parity, or tuning offsets to author the visual hold."
+      "notes": "Local terminal Blender is the preferred authoring/render surface through tools/meshy_saber_blender_workbench.mjs. The lane imports the animated Meshy rig, FPSPlayer reference, and Meshy sabre, creates RightHand -> WeaponGrip -> Meshy French Revolution Sabre, and exports a human-reviewed JSON/GLB contract plus T-pose/Ready review artifacts only after Blender review approval. Pose Lab must consume this output directly instead of retargeting, solving WeaponR parity, or tuning offsets to author the visual hold."
     },
     {
       "id": "meshy_character_sheet_static_material_transfer",
