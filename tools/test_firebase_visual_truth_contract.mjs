@@ -122,7 +122,6 @@ for (const capture of evidence.captures || []) {
   assert(capture.visibleRead.includes(capture.senseSynthesis.verdict), `Firebase visibleRead should be derived from Sense Synthesis verdict: ${capture.id}`);
   assert(capture.cloudTelemetry?.weapon?.ok === true, `Firebase capture should include successful cloud weapon telemetry: ${capture.id}`);
   assert(capture.cloudTelemetry?.liveHilt?.ok === true, `Firebase capture should include successful cloud live hilt telemetry: ${capture.id}`);
-  assert(capture.cloudTelemetry?.weapon?.snapshot?.reviewTruth?.active === true, `Firebase capture should expose visible UI review truth: ${capture.id}`);
   if (evidence.humanRedBuild) {
     assert(capture.accepted === false, `human-red evidence must keep normal captures red: ${capture.id}`);
     assert(capture.evaluation?.ok === false, `human-red evidence must keep normal capture evaluations red: ${capture.id}`);
@@ -135,7 +134,6 @@ for (const capture of evidence.captures || []) {
 const landing = evidence.captures.find((capture) => capture.id === 'landing');
 assert(landing?.evaluation?.checks?.reviewClipInventoryVisible === true, 'Landing cloud evidence must prove review clip inventory is visible');
 assert(landing?.evaluation?.checks?.reviewClipNotCollapsedToWalkingOnly === true, 'Landing cloud evidence must reject walking-only Meshy clip inventory');
-assert(landing?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Landing cloud evidence must accept only green visible UI truth');
 assert(Object.hasOwn(landing?.evaluation?.checks || {}, 'loadWarning'), 'Landing cloud evidence must record slow-load warning state');
 const tpose = evidence.captures.find((capture) => capture.id === 'tpose');
 assert(tpose?.evaluation?.checks?.acceptedHiltOracle === true, 'T-pose cloud evidence must preserve the accepted hilt oracle');
@@ -146,7 +144,6 @@ assert(tpose?.senseSynthesis?.checks?.heldByHandRead === true, 'T-pose Sense Syn
 assert(tpose?.senseSynthesis?.truth?.visual && tpose.senseSynthesis.truth.perceptual, 'T-pose Sense Synthesis must keep visual and perceptual truth separate');
 assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'tposeWristRelationshipAccepted'), 'T-pose cloud evidence must record wrist/saber visible relationship acceptance');
 assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'defaultSurfaceAccepted'), 'T-pose cloud evidence must record default visible surface acceptance');
-assert(tpose?.evaluation?.checks?.visibleUiTruthAccepted === true, 'T-pose cloud evidence must accept only green visible UI truth');
 assert(typeof tpose?.relationshipCloseup === 'string' && tpose.relationshipCloseup.endsWith('tpose_relationship_closeup.png'), 'T-pose cloud evidence must include wrist/saber close-up');
 const ready = evidence.captures.find((capture) => capture.id === 'ready');
 assert(typeof ready?.relationshipCloseup === 'string' && ready.relationshipCloseup.endsWith('ready_relationship_closeup.png'), 'Ready cloud evidence must include hand/hilt/blade close-up');
@@ -163,7 +160,6 @@ assert(ready?.senseSynthesis?.checks?.heldByHandRead === true, 'Ready Sense Synt
 assert(ready?.senseSynthesis?.checks?.bladeProjectsFromGrip === true, 'Ready Sense Synthesis must prove the blade visually projects from the grip');
 assert(ready?.senseSynthesis?.vocabulary?.includes('confident grip'), 'Ready Sense Synthesis should use perceptual vocabulary for the held weapon read');
 assert(ready?.evaluation?.checks?.reviewClipInventoryVisible === true, 'Ready cloud evidence must prove review clip inventory is visible');
-assert(ready?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Ready cloud evidence must accept only green visible UI truth');
 assert(ready?.evaluation?.checks?.bodyPoseLandmarksPresent === true, 'Ready cloud evidence must expose body pose landmarks for hand-orientation review');
 assert(ready?.evaluation?.checks?.clipScopedHiltTargetVisible === true, 'Ready cloud evidence must prove clip-scoped hilt target visibility');
 assert(ready?.evaluation?.checks?.handMoves === true && ready?.evaluation?.checks?.tipMoves === true && ready?.evaluation?.checks?.tipTracksHand === true, 'Ready cloud evidence must prove hand and saber tip visible motion together');

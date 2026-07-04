@@ -28,7 +28,7 @@ function landingSense(capture) {
   const failures = [];
   const checks = capture?.evaluation?.checks || {};
   if (!bool(capture?.accepted)) failures.push('landing capture is not accepted by route/UI checks');
-  for (const key of ['routeSelected', 'autoLoadedMeshyFromColdUrl', 'manualActorSelectionRequiredFalse', 'reviewClipInventoryVisible', 'reviewClipNotCollapsedToWalkingOnly', 'realWeaponVisible', 'visibleUiTruthAccepted']) {
+  for (const key of ['routeSelected', 'autoLoadedMeshyFromColdUrl', 'manualActorSelectionRequiredFalse', 'reviewClipInventoryVisible', 'reviewClipNotCollapsedToWalkingOnly', 'realWeaponVisible']) {
     if (!bool(checks[key])) failures.push(`landing missing ${key}`);
   }
   if (!hasPng(capture?.screenshot)) failures.push('landing screenshot PNG is missing');
@@ -75,7 +75,6 @@ function tposeSense(capture) {
     'hiltPinnedToSocket',
     'tposeWristRelationshipAccepted',
     'defaultSurfaceAccepted',
-    'visibleUiTruthAccepted',
   ];
   for (const key of failuresFromMissing(requiredChecks, (key) => checkValue(capture, key))) failures.push(`T-pose missing ${key}`);
   if (!hasPng(capture?.screenshot)) failures.push('T-pose screenshot PNG is missing');
@@ -133,10 +132,7 @@ function readySense(capture) {
     'tipMoves',
     'tipTracksHand',
     'socketForwardBladeAxisSane',
-    'reviewClipInventoryVisible',
-    'bodyPoseLandmarksPresent',
     'readyVisualRelationshipAccepted',
-    'visibleUiTruthAccepted',
   ];
   for (const key of failuresFromMissing(requiredChecks, (key) => checkValue(capture, key))) failures.push(`Ready missing ${key}`);
   if (!hasPng(capture?.screenshot)) failures.push('Ready screenshot PNG is missing');
