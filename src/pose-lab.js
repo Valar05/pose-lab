@@ -3962,6 +3962,14 @@ class PoseActor {
     if (proxy.root.parent !== proxy.rightHand) proxy.rightHand.add(proxy.root);
     proxy.root.position.copy(proxy.rightHandFkRest.position);
     proxy.root.quaternion.copy(proxy.rightHandFkRest.quaternion);
+    const handWorldScale = new THREE.Vector3(1, 1, 1);
+    proxy.rightHand.updateMatrixWorld(true);
+    proxy.rightHand.getWorldScale(handWorldScale);
+    proxy.root.scale.set(
+      1 / Math.max(0.000001, Math.abs(handWorldScale.x)),
+      1 / Math.max(0.000001, Math.abs(handWorldScale.y)),
+      1 / Math.max(0.000001, Math.abs(handWorldScale.z))
+    );
     return true;
   }
 
