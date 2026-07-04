@@ -11,7 +11,7 @@ function assert(condition, message) { if (!condition) failures.push(message); }
 
 assert(result.ok === true, 'ready relation audit should complete');
 assert(audit.schema === 'pose-lab-meshy-fps-ready-relation-audit-v1', `unexpected schema ${audit.schema}`);
-assert(audit.targetRest === 'Meshy calibrated FPS-REST-ARMS-CAL-0', `ready audit should start from accepted calibrated rest, got ${audit.targetRest}`);
+assert(audit.targetRest === 'Meshy calibrated FPS-REST-ARMS-CAL--120', `ready audit should start from accepted calibrated rest, got ${audit.targetRest}`);
 assert(audit.metrics.sampleCount === 62, `ready audit should preserve both hands across 31 source keys, got ${audit.metrics.sampleCount}`);
 assert(audit.metrics.sideSampleCounts?.right === 31 && audit.metrics.sideSampleCounts?.left === 31, `ready audit should include 31 keys for both hands, got ${JSON.stringify(audit.metrics.sideSampleCounts)}`);
 assert(audit.samples.some((entry) => entry.side === 'right') && audit.samples.some((entry) => entry.side === 'left'), 'ready audit preview should include both hands');

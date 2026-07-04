@@ -279,7 +279,7 @@ async function main() {
     schema: 'pose-lab-meshy-fps-ready-relation-audit-v1',
     sourceClip: 'OneHandReady',
     sourceRest: 'FPSPlayer.glb 0T-Pose',
-    targetRest: 'Meshy calibrated FPS-REST-ARMS-CAL-0',
+    targetRest: 'Meshy calibrated FPS-REST-ARMS-CAL--120',
     method: 'source 0T-to-ready hand local delta scaled by arm length and applied to calibrated Meshy rest hand local',
     sourceScaleOverride,
     metrics: {

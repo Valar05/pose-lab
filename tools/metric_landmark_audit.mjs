@@ -807,7 +807,7 @@ async function main() {
     sourceKeyCount: times.length,
     sourceKeyTimes: times,
     coordinateBridge: {
-      targetBaseline: '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]',
+      targetBaseline: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]',
       policy: 'audit landmark measurement against runtime-style rendered marker scene graph; no production retarget edits',
       scale: round(scale, 6),
     },

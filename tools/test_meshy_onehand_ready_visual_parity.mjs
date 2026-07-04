@@ -15,7 +15,7 @@ function assert(condition, message) {
 
 assert(artifact.schema === 'pose-lab-meshy-onehand-ready-visual-parity-v1', `unexpected schema ${artifact.schema}`);
 assert(artifact.sourceClip === 'OneHandReady', `expected OneHandReady source, got ${artifact.sourceClip}`);
-assert(artifact.targetClip === 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R0 L-90]', `expected active Meshy ready target, got ${artifact.targetClip}`);
+assert(artifact.targetClip === 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]', `expected active Meshy ready target, got ${artifact.targetClip}`);
 assert(artifact.sourceKeyCount === 31 && artifact.leftSourceKeyCount === 31, `expected 31 authored source keys for both hands, got R=${artifact.sourceKeyCount} L=${artifact.leftSourceKeyCount}`);
 assert(artifact.targetKeyCount === 30 && artifact.leftTargetKeyCount === 30, `expected generated Meshy ready clip to delete the initial rest/T-pose key, got R=${artifact.targetKeyCount} L=${artifact.leftTargetKeyCount}`);
 assert(artifact.droppedInitialRestKey === true && artifact.trimmedInitialRestTime > 0, `expected the generated clip timeline to start at the first real ready key, got ${JSON.stringify({

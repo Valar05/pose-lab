@@ -956,8 +956,8 @@ async function main() {
     diagnosticOnly: true,
     coordinateBridge: {
       sourceRest: 'FPSPlayer.glb 0T-Pose',
-      targetRest: 'Meshy accepted FPS-REST-ARMS-CAL-0 calibration',
-      targetBaseline: '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]',
+      targetRest: 'Meshy accepted FPS-REST-ARMS-CAL--120 calibration',
+      targetBaseline: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]',
       projectionScale: round(projectionScale, 6),
       rule: 'project joint positions through calibrated T-pose frames; do not transfer quaternions or solve roll before FK',
     },

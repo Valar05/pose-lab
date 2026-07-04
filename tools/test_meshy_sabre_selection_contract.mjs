@@ -9,7 +9,7 @@ function assert(condition, message) { if (!condition) failures.push(message); }
 
 assert(js.includes('preferredCombatClip(actor, clip)'), 'Pose Lab should keep a combat clip resolver for saved/alias selections');
 assert(js.includes('/\\[FPS-SWORD-UPPER\\]/.test(String(name || \'\'))'), 'saved clip preference can still recognize stale FPS-SWORD-UPPER clips for manual recovery');
-assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]'"), 'Meshy SwordReady alias should remain on accepted T-pose baseline until Ready is promoted');
+assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]'"), 'Meshy SwordReady alias should remain on accepted T-pose baseline until Ready is promoted');
 assert(!profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Meshy SwordReady alias must not select the rejected ready retarget');
 for (const alias of ['SwordReadied', 'SwordAttack1', 'SwordAttack2', 'SwordAttack3', 'SwordAttack4', 'SwordAttack5', 'SwordAirForward']) {
   assert(!profiles.includes(`${alias}: [`), `Meshy should defer ${alias} alias until attack conversion resumes`);

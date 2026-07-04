@@ -251,7 +251,7 @@ async function main() {
     sourceClip: 'OneHandReady',
     sourceAsset: 'assets/models/FPSPlayer.glb',
     targetActor: 'Meshy Character',
-    targetRestClip: '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]',
+    targetRestClip: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]',
     targetAsset: 'assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb',
     method: 'upper-body authored overlay workbench; source reference only, not an accepted runtime clip',
     excluded: ['hips', 'root', 'legs', 'feet', 'toes', 'head', 'weapon orientation', 'locomotion'],

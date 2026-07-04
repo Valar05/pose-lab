@@ -30,8 +30,8 @@ assert(js.includes('rollOffsetDeg'), 'runtime should support explicit forearm ro
 assert(profiles.includes('function meshyFpsRestSegmentCorrection') && profiles.includes("sourceUpper: 'Arm.R'") && profiles.includes("targetUpper: 'RightArm'"), 'Meshy profile should enable FPS arm rest segment correction through the shared helper');
 assert(profiles.includes('handDownReferencePairs: [') && profiles.includes("sourceHand: 'Hand.R'") && profiles.includes('sourceLocalAxis: [0, 0, 1]') && profiles.includes('targetLocalAxis: [0, -1, 0]'), 'Meshy profile should map FPS Hand.R +Z to Meshy RightHand -Y instead of world-down roll');
 assert(profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(0)'), 'Meshy FPS rest calibration should keep right-hand roll neutral');
-assert(profiles.includes("clipSuffix: '-> meshyCharacter [FPS-REST-ARMS no right roll]'"), 'Meshy profile should keep only the accepted neutral RestProbe calibration clip');
-assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-REST-ARMS-CAL-0'"), 'Meshy profile should preserve the neutral RestProbe origin path');
+assert(profiles.includes("clipSuffix: '-> meshyCharacter [FPS-REST-ARMS roll -120]'"), 'Meshy profile should keep only the accepted CAL--120 RestProbe calibration clip');
+assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy profile should preserve the accepted CAL--120 RestProbe origin path');
 assert(!profiles.includes('...[-150') && !profiles.includes('FPS-REST-ARMS-CAL-120') && !profiles.includes('FPS-REST-ARMS-CAL-90') && !profiles.includes('FPS-REST-ARMS-CAL--90'), 'Meshy profile should remove rejected positive and sweep RestProbe hand-roll clips');
 
 if (failures.length) throw new Error(failures.join('\n'));

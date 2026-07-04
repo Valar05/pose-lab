@@ -674,7 +674,7 @@ async function main() {
     clip: args.clip,
     sourceKeyCount: times.length,
     coordinateBridge: {
-      targetBaseline: '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]',
+      targetBaseline: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]',
       fkPolicy: 'projected FK arm solution only; no IK, no roll correction, no production retarget mutation',
     },
     layers: Object.fromEntries(LAYERS.map((layer) => [layer, args.layers.has(layer)])),

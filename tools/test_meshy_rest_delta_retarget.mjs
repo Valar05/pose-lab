@@ -17,7 +17,7 @@ assert(profiles.includes("retargetMode: 'meshy-fps-visual-ik-ready'"), 'Meshy pr
 assert(profiles.includes("channels: { translate: false, rotate: true, scale: false }"), 'Meshy FPS sword clips should be rotate-only');
 assert(!profiles.includes("sampleFps: 30"), 'Meshy accepted FPS sword path must not use uniform sampled retarget frames');
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy profile should generate the gated Ready candidate clip');
-assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]'"), 'Meshy aliases should stay on the accepted T-pose baseline until Ready is promoted');
+assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]'"), 'Meshy aliases should stay on the accepted T-pose baseline until Ready is promoted');
 assert(!profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Meshy aliases must not promote rejected FPS OneHandReady retarget during recovery');
 assert(!profiles.includes("SwordAttack1: ['OneHandAttack1 -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Meshy should defer FPS OneHandAttack1 until ready pose is accepted');
 for (const rejected of ['Hips', 'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg', 'LeftFoot', 'RightFoot', 'LeftToeBase', 'RightToeBase', 'Head']) {

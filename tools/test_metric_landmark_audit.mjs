@@ -36,7 +36,7 @@ assert(data.productionBehaviorModified === false, 'audit must not modify product
 assert(data.noCorrectiveSolver === true, 'audit must not include corrective solver');
 assert(data.noAttachmentTuning === true, 'audit must not tune attachment offsets');
 assert(data.coordinateBridge?.policy?.includes('audit landmark measurement'), 'audit should document marker parity policy');
-assert(data.coordinateBridge?.targetBaseline === '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]', 'audit should use accepted calibration as context');
+assert(data.coordinateBridge?.targetBaseline === '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', 'audit should use accepted calibration as context');
 assert(data.sourceKeyCount === 31, `OneHandReady authored key count should be 31, got ${data.sourceKeyCount}`);
 assert(data.reports?.perFrame?.length === data.sourceKeyCount, 'per-frame report should include every authored key');
 assert(data.summary?.semanticLandmarkReviewRequired === true, 'audit should require visual semantic landmark review even after marker parity');
@@ -77,7 +77,7 @@ assert(trace.includes('Detailed First Frame Chains'), 'transform trace should in
 assert(trace.includes('FPS hilt') || trace.includes('FPS Hilt'), 'transform trace should mention FPS hilt');
 assert(trace.includes('MESHY') || trace.includes('Meshy'), 'transform trace should mention Meshy');
 
-assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]' }"), 'audit must not change Meshy accepted startup baseline');
+assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }"), 'audit must not change Meshy accepted startup baseline');
 assert(!profiles.includes('pose-lab-metric-landmark-audit-v1'), 'audit schema must not be wired into production profiles');
 assert(!profiles.includes('metric_landmark_audit'), 'audit must not edit production visibility or aliases');
 assert(!bladeWorkspace.includes('metric_landmark_audit'), 'audit must not alter blade vector diagnostic behavior');

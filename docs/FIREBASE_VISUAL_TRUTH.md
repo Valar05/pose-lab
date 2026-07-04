@@ -130,7 +130,7 @@ The landing usability threshold is a cold hosted-cloud review budget and frictio
 
 A cloud workflow success, UI truth page, or green JSON result is not progress after a human no-op report unless it introduces a new accepted visual artifact that shows the target relationship changed correctly. Before another paid/cloud loop after a red-build or no-op report, record the visual hypothesis, the artifact that will answer it, and the stop condition. If the run cannot answer a new visual question, do not spend it.
 
-For Meshy saber work, T-pose is the canary. The accepted `0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]` wrist/saber relationship must be restored and visually checked before Ready can be judged. A Ready change is invalid if T-pose drifts, and a source-string or literal test that changes without a cloud T-pose visual improvement is a no-op proof, not progress.
+For Meshy saber work, T-pose is the canary. The accepted `0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]` wrist/saber relationship must be restored and visually checked before Ready can be judged. A Ready change is invalid if T-pose drifts, and a source-string or literal test that changes without a cloud T-pose visual improvement is a no-op proof, not progress.
 
 False-pass checkpoint preserved for regression:
 

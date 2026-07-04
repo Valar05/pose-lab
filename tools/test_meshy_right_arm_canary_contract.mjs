@@ -30,7 +30,7 @@ assert(readyBlock.includes('restRelative: true'), 'active projection should pres
 assert(!readyBlock.includes('weaponKeyConvert'), 'golden Ready profile must not enable normal weapon-key conversion');
 assert(!readyBlock.includes('targetWeapon'), 'golden Ready profile must not target WeaponGrip with generated tracks');
 assert(restCalBlock.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(0)'), 'T-pose canary must not inherit Ready hand roll; its rest segment correction stays 0');
-assert(!restCalBlock.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(-120)'), 'T-pose canary must not reintroduce the removed right-hand roll correction');
+assert(!restCalBlock.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(-120)'), 'T-pose canary must not apply the Ready -120 roll correction');
 
 assert(readyRuntime.includes("{ label: 'right', sourceUpper: 'Arm.R', sourceLower: 'Forearm.R', sourceHand: 'Hand.R'"), 'active canary should measure the complete right source arm chain');
 assert(readyRuntime.includes("targetUpper: 'RightArm'"), 'active projection should target the Meshy right upper arm');

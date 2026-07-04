@@ -10,7 +10,7 @@ function assert(condition, message) { if (!condition) failures.push(message); }
 assert(js.includes("const LAB_BUILD = 'meshy-ready-golden-fk'"), 'runtime build should identify the Meshy golden Ready pivot');
 assert(js.includes("canonicalBoneName(sourceName).replace(/^mixamorig/, '')"), 'chain-up basis should still normalize Mixamo prefixes without breaking FPS names');
 assert(js.includes("const customOriginPrefix = spec.originPrefix ||"), 'auto retarget specs should be able to preserve mapped-arms origin identity');
-assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]' }"), 'Meshy startup should keep the accepted T-pose calibration');
+assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }"), 'Meshy startup should keep the accepted T-pose calibration');
 assert(!profiles.includes("startupClip: { name: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]' }"), 'Meshy startup must not use rejected FPS OneHandReady retarget during recovery');
 assert(profiles.includes("sourceKey: 'player'"), 'Meshy should source sword retargets from FPS Arms');
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy should generate the accepted golden Ready clip');

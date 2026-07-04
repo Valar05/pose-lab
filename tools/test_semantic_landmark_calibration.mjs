@@ -61,7 +61,7 @@ assert(poseLab.includes("this.activePanel === 'weapon'"), 'Weapon panel should k
 assert(poseLab.includes('proxy.root.visible = true'), 'tooling visibility override should unhide the actual weapon proxy root');
 assert(!poseLab.includes('semanticLandmarkCandidate.gripLocalPosition'), 'semantic candidate should not be assigned as production attachment values');
 assert(!tool.includes("fs.writeFileSync(path.join(projectRoot, 'src'"), 'semantic tool must not write production source files');
-assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]' }"), 'semantic calibration must not change accepted Meshy baseline');
+assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }"), 'semantic calibration must not change accepted Meshy baseline');
 assert(!profiles.includes('pose-lab-semantic-weapon-landmark-candidate-v1'), 'semantic candidate schema must not be wired into production profile');
 assert(!profiles.includes('semantic_landmark_calibration'), 'semantic calibration must not edit profile visibility or aliases');
 

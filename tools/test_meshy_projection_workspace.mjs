@@ -24,7 +24,7 @@ assert(fs.existsSync(summaryPath), `missing diagnostic summary ${summaryPath}`);
 assert(fs.statSync(pngPath).size > 1000, 'projection screenshot should not be empty');
 assert(data.schema === 'pose-lab-meshy-projection-workspace-v1', `unexpected schema ${data.schema}`);
 assert(data.productionBehaviorModified === false && data.diagnosticOnly === true, 'workspace must be diagnostic-only');
-assert(data.coordinateBridge?.targetBaseline === '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]', 'workspace should use accepted Meshy/FPS calibration as target bridge');
+assert(data.coordinateBridge?.targetBaseline === '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', 'workspace should use accepted Meshy/FPS calibration as target bridge');
 assert(data.coordinateBridge?.rule?.includes('do not transfer quaternions'), 'coordinate bridge should document position projection policy');
 assert(data.sourceKeyCount === 31, `OneHandReady authored key count should be 31, got ${data.sourceKeyCount}`);
 assert(data.reports.projectedJointReport.length === data.sourceKeyCount * 8, 'projected joint report should include eight scoped joints for every source key');
@@ -46,7 +46,7 @@ assert(data.diagnostics?.firstDivergenceLayer, 'output should name the first div
 assert((data.renderFrames || []).length >= 5, 'render frames should provide a visual review sheet');
 
 const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
-assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]' }"), 'projection workspace must not modify Meshy startup baseline');
+assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }"), 'projection workspace must not modify Meshy startup baseline');
 assert(!profiles.includes('PROJECTION-WORKSPACE'), 'projection workspace must not add production clip/profile labels');
 assert(!profiles.includes('projection_workspace') && !profiles.includes('diagnosticSummary'), 'projection workspace must not wire production aliases or visibility fields');
 

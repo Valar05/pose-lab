@@ -25,7 +25,7 @@ assert(fs.existsSync(summaryPath), `missing blade vector diagnostic summary ${su
 assert(fs.statSync(pngPath).size > 1000, 'blade vector screenshot should not be empty');
 assert(data.schema === 'pose-lab-meshy-blade-vector-workspace-v1', `unexpected schema ${data.schema}`);
 assert(data.productionBehaviorModified === false && data.diagnosticOnly === true, 'workspace must be diagnostic-only');
-assert(data.coordinateBridge?.targetBaseline === '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]', 'workspace should use accepted Meshy/FPS calibration as target bridge');
+assert(data.coordinateBridge?.targetBaseline === '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', 'workspace should use accepted Meshy/FPS calibration as target bridge');
 assert(data.coordinateBridge?.policy?.includes('no IK, no roll, no retarget mutation'), 'workspace should document arm/roll quarantine policy');
 assert(data.sourceKeyCount === 31, `OneHandReady authored key count should be 31, got ${data.sourceKeyCount}`);
 assert(data.reports?.perFrame?.length === data.sourceKeyCount, 'per-frame report should include every authored key');
@@ -47,7 +47,7 @@ assert(data.attachmentSnapshots?.fps?.proxy?.modelLocalOffset?.join(',') === '0.
 assert((data.renderFrames || []).length >= 5, 'render frames should provide a visual review sheet');
 assert(fs.readFileSync(summaryPath, 'utf8').includes('Dominant failure class'), 'diagnostic summary should report dominant class');
 
-assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS no right roll]' }"), 'blade workspace must not modify Meshy startup baseline');
+assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }"), 'blade workspace must not modify Meshy startup baseline');
 assert(!profiles.includes('BLADE-VECTOR-WORKSPACE'), 'blade workspace must not add production clip/profile labels');
 assert(!profiles.includes('blade_vector_workspace') && !profiles.includes('pose-lab-meshy-blade-vector-workspace-v1'), 'blade workspace must not wire production aliases or visibility fields');
 

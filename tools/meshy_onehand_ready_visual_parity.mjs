@@ -473,7 +473,7 @@ function activeMeshyReadyProfileContract() {
   const activeBlock = visualIkStart >= 0 && restCalStart > visualIkStart ? profiles.slice(visualIkStart, restCalStart) : '';
   return {
     activeBlockFound: activeBlock.length > 0,
-    activeClip: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R0 L-90]',
+    activeClip: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
     worldJointProjection: activeBlock.includes("mode: 'world-joint-projection'") && readyRuntime.includes('worldJointProjection: true'),
     replacesTracks: false,
     restRelative: activeBlock.includes('restRelative: true'),
@@ -760,7 +760,7 @@ async function main() {
     sourceActor: 'FPS Arms',
     targetActor: 'Meshy Character',
     sourceClip: 'OneHandReady',
-    targetClip: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R0 L-90]',
+    targetClip: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]',
     sourceKeyCount: sourceTimes.length,
     leftSourceKeyCount: leftSourceTimes.length,
     targetKeyCount: times.length,
