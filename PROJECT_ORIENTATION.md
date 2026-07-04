@@ -75,6 +75,10 @@ Use the visual QA harness or a fresh Android screenshot from the live browser wh
 4. Do not rely on the old standalone `screencap` path. It is not the source of truth for this workflow.
 5. If the page looks stale, bump the cache token or hard-refresh before changing animation logic.
 
+## Cloud Visual Truth Only
+
+Pose Lab visual acceptance must come from the hosted/cloud page or a fresh user-visible Android screenshot. Offline renderers, workspace diagnostic sheets, generated geometry workspaces, and local Playwright against localhost are not acceptance evidence and must not be used to claim a Meshy saber, pose, weapon, or screenshot fix. They may not replace cloud/live review, and agents should not run them as the next proof step for Meshy saber recovery.
+
 ## Chrome Wake Doctrine
 
 For phone-visible cloud review, a generic URL-open report is not enough. If the user asks to wake Chrome, explicitly target Chrome and verify the wake attempt.

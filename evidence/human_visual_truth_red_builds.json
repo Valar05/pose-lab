@@ -1,0 +1,174 @@
+{
+  "schema": "pose-lab-human-visual-truth-red-builds-v1",
+  "policy": "A commit listed here cannot be promoted by Firebase Visual Truth until a later commit produces fresh human-accepted visual evidence or the red entry is superseded by an explicit acceptance record.",
+  "redBuilds": [
+    {
+      "commit": "3fc1b14d525c71f60fc4c90069a597944e4f751f",
+      "reportedAt": "2026-07-03",
+      "authority": "human-live-firebase-review",
+      "url": "https://pose-lab-visual-truth--visual-truth-28638735919-yew7srj2.web.app",
+      "issues": [
+        "hosted web page loads insanely slowly for manual review",
+        "expected clips are not visible in the clip list",
+        "the visible Ready clip is deeply and obviously wrong"
+      ],
+      "notes": "This preserves the live browser review that disproved the green workflow result for run 28638735919."
+    },
+    {
+      "commit": "c30d87125de6d5e0eaabeb5961c32b2fe1c679d0",
+      "reportedAt": "2026-07-03",
+      "authority": "human-cloud-screenshot-review",
+      "url": "https://pose-lab-visual-truth--visual-truth-28640974375-g6thxcam.web.app/",
+      "issues": [
+        "Firebase cloud ready.png showed the Ready pose as visually red",
+        "right-hand and grip basis were visibly wrong",
+        "saber hung down-left instead of reading as a sane ready grip",
+        "selected clip UI was inconsistent with the Ready route",
+        "ready_visual_follow.png was too distant and marker-heavy to prove visual parity"
+      ],
+      "notes": "This preserves the false-green Firebase workflow result for run 28640974375. It cannot be promoted by telemetry-only evidence."
+    },
+    {
+      "commit": "66ef6e2432672c8d14d956029f6fcdc2a3f1f4f1",
+      "reportedAt": "2026-07-03",
+      "authority": "human-cloud-screenshot-review",
+      "url": "https://pose-lab-visual-truth--visual-truth-28642688436-esyxyew4.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&weaponDebug=1&cacheBust=firebase-visual-truth-landing-1783059951830",
+      "issues": [
+        "T-pose wrist/saber relationship is visibly mutated from the accepted default",
+        "Ready hand/hilt/blade relationship does not read as accepted visual IK/FK",
+        "cloud telemetry and marker checks passed while the visible relationship remained wrong",
+        "default visible surface is not an accepted good default"
+      ],
+      "notes": "This preserves the false-green Firebase workflow result for run 28642688436 and the two Android screenshots from 2026-07-03 01:40. It generalizes the failure: object, route, clip, and marker presence are not visual relationship truth."
+    },
+    {
+      "commit": "a92fa0bb6dc5b83644688db2d8b04d7c9b2f56b5",
+      "reportedAt": "2026-07-03",
+      "authority": "human-phone-visible-cloud-review",
+      "url": "https://pose-lab-visual-truth--visual-truth-pr-28649227859-lqwd19b7.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&clip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&qaClip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&weaponDebug=1&cacheBust=firebase-visual-truth-1783068340507",
+      "issues": [
+        "Android Chrome screenshot 20260703-094627 shows the Ready URL with REVIEW RED because the active visible clip is T-pose/rest",
+        "Android Chrome screenshot 20260703-094631 shows REVIEW ROUTE READY but the blade/hilt relationship still does not read as an accepted Ready hand-held saber pose",
+        "workflow green and distance metrics did not capture the human-visible route hydration and blade-axis failure",
+        "the exact woken cloud URL is contradicted by phone-visible screenshots"
+      ],
+      "notes": "This preserves the false-green Firebase workflow result for run 28649227859. Artifact green is insufficient when the phone-visible hosted URL hydrates to a contradictory or human-red state."
+    },
+    {
+      "commit": "22081ceb305efe1e472fff841f72be84ff303fa3",
+      "reportedAt": "2026-07-03",
+      "authority": "human-phone-visible-cloud-review",
+      "artifactCommit": "9e809fca6610cdacc5df7a18298c03824b447a75",
+      "url": "https://pose-lab-visual-truth--visual-truth-pr-1-rcoxld17.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&clip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&qaClip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&weaponDebug=1&cacheBust=firebase-visual-truth-1783099672802",
+      "screenshots": [
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-125148.png",
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-125153.png"
+      ],
+      "issues": [
+        "Android Chrome screenshot 20260703-125148 shows the Ready review URL rendering T-pose/rest with REVIEW RED instead of the requested Ready clip",
+        "manual Meshy Character selection was required, so the artifact did not prove cold URL actor hydration",
+        "Android Chrome screenshot 20260703-125153 shows the Ready route after manual interaction, but the sword FK relationship is still broken",
+        "the visible hand, hilt, guard, and blade basis relationship is not properly enforced",
+        "workflow JSON and marker/telemetry checks reported green while the phone-visible cloud page remained red"
+      ],
+      "notes": "This preserves the current false-green state. The local branch commit and the artifact merge commit must not be promoted until a later commit produces fresh accepted cloud visual evidence with explicit no-manual-actor-selection proof."
+    },
+    {
+      "commit": "e6cc6635631c1f1a983932d01e3233f25640e933",
+      "artifactCommit": "8cf6d879a92f59ef3f5532ee1b798f9261340e32",
+      "runId": "28678973256",
+      "reportedAt": "2026-07-03",
+      "authority": "human-red-build-review",
+      "status": "superseded",
+      "humanAccepted": true,
+      "supersededByCommit": "1d16cbf6d1086e9095e991d68bbc9a02775c0b2d",
+      "supersededByRunId": "28684889750",
+      "acceptedEvidencePath": "https://github.com/Valar05/pose-lab/actions/runs/28684889750",
+      "blocks": [
+        "promotion",
+        "browser-wake",
+        "green-report",
+        "fk-offset-pose-edits"
+      ],
+      "url": "https://pose-lab-visual-truth--visual-truth-pr-1-rcoxld17.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&clip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&qaClip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&weaponDebug=1&cacheBust=firebase-visual-truth-1783105632362",
+      "issues": [
+        "human review says FK is not enforced and no weapon pose is sane",
+        "Firebase artifact incorrectly reported ok=true and Sense Synthesis human-green",
+        "Ready telemetry showed basketFrontErrorDeg=125.81 and socketForwardToBladeErrorDeg=96.97 while the artifact still passed",
+        "Ready visual-follow had handMoves=false",
+        "Ready clipScopedHiltTargetVisible=false",
+        "gate accepted staticDirectFkProof and marker/relationship checks instead of a real weapon pose audit",
+        "agent ignored human-visible red-build evidence again and treated metrics/generated proof as authority"
+      ],
+      "closureRequired": {
+        "status": "superseded",
+        "supersededByCommit": "required",
+        "acceptedEvidencePath": "required",
+        "humanAccepted": true
+      },
+      "notes": "Superseded by Firebase run 28684889750, which preserves the same Ready failure as honest human-red cloud evidence instead of reporting ok=true/human-green. This does not mark Meshy saber fixed; it only closes the false-green authority revocation for this stale artifact."
+    },
+    {
+      "commit": "8900908ba196f797bd5b3be0e716b0fdb2e14781",
+      "runId": "28686174246",
+      "reportedAt": "2026-07-03",
+      "authority": "human-phone-visible-cloud-review",
+      "status": "open",
+      "url": "https://pose-lab-visual-truth--visual-truth-pr-28686174246-ls37yuw0.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&clip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&qaClip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&weaponDebug=1&cacheBust=firebase-visual-truth-1783118089130",
+      "screenshots": [
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-174204.png",
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-174209.png"
+      ],
+      "issues": [
+        "Android Chrome screenshot 20260703-174204 shows the requested Ready route with REVIEW ROUTE OK, but the phone-visible review surface is obstructed by large labels and the clip drawer so the hand/hilt/blade relationship cannot be accepted from the live page",
+        "Android Chrome screenshot 20260703-174209 shows the same Ready URL in REVIEW RED because the active visible clip is 0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]",
+        "The Firebase artifact for run 28686174246 reported ok=true and Sense Synthesis human-green, but the phone-visible cloud page contradicted it",
+        "Current acceptance still lets cloud screenshot crops pass while the actual woken mobile review surface can be visually unusable or route-divergent",
+        "Human review says FK and poses are not sane; the next pass must reconcile phone-visible cloud truth before any green/fixed claim"
+      ],
+      "blocks": [
+        "promotion",
+        "browser-wake-as-proof",
+        "green-report",
+        "fk-offset-pose-edits"
+      ],
+      "closureRequired": {
+        "status": "superseded",
+        "supersededByCommit": "required",
+        "acceptedEvidencePath": "required",
+        "humanAccepted": true
+      },
+      "notes": "This records the false-green split between Firebase artifact run 28686174246 and phone-visible Android Chrome screenshots at 2026-07-03 17:42. Do not treat the generated artifact as acceptance until the exact woken mobile review URL remains on the requested clip and exposes an unobstructed hand/hilt/blade relationship."
+    },
+    {
+      "commit": "1fc7ebdfac99d4f1adcf3814a29ca89fb405faa6",
+      "runId": "28688603643",
+      "reportedAt": "2026-07-03",
+      "authority": "human-phone-visible-cloud-review",
+      "status": "open",
+      "url": "https://pose-lab-visual-truth--visual-truth-pr-28688603643-iwsau3md.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&clip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&qaClip=OneHandReady+-%3E+meshyCharacter+%5BFPS-VISUAL-IK+R-120+L-90%5D&weaponDebug=1&cacheBust=firebase-visual-truth-1783123387020",
+      "screenshots": [
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-190526.png"
+      ],
+      "issues": [
+        "Android Chrome screenshot 20260703-190526 shows the exact cloud Ready review URL with REVIEW ROUTE OK, but the sword bone/orientation is not the authored Meshy saber orientation",
+        "Firebase artifact run 28688603643 reported ok=true and Sense Synthesis human-green while the phone-visible sword-bone relationship remained human-red",
+        "The gate accepted hilt distance and blade projection while failing to enforce the user-authored weaponAttachment.rotationDeg [-67.582, 76.718, -90.52]",
+        "The branch had drifted to rotationDeg [-67.582, 76.718, -0.52] and a nudged modelLocalOffset, so generated evidence blessed a non-authored weapon pose",
+        "Future acceptance must prove the visible sword bone/mesh orientation matches the authored transform, not just that the hilt marker is near the hand"
+      ],
+      "blocks": [
+        "promotion",
+        "browser-wake-as-proof",
+        "green-report"
+      ],
+      "closureRequired": {
+        "status": "superseded",
+        "supersededByCommit": "required",
+        "acceptedEvidencePath": "required",
+        "humanAccepted": true
+      },
+      "notes": "This records the false-green created by treating marker distance as visual acceptance after changing away from the human-authored orientation."
+    }
+  ]
+}

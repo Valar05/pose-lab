@@ -794,6 +794,15 @@ function clipHasQuaternionTrackForBone(clip, boneName) {
   });
 }
 
+function clipHasPositionTrackForBone(clip, boneName) {
+  const wanted = canonicalBoneName(boneName);
+  if (!wanted) return false;
+  return (clip?.tracks || []).some((track) => {
+    const normalized = normalizeTrackName(track.name || '');
+    return normalized.endsWith('.position') && canonicalBoneName(trackTargetName(normalized)) === wanted;
+  });
+}
+
 function isRigRootTarget(name) {
   return name === 'Root' || name === 'Armature' || name === 'Armature.001';
 }
@@ -1478,6 +1487,7 @@ function buildFpsUpperKeyConvertClips(sharedClips, sourceRoot, targetRoot, optio
   targetRestMap = restSegmentCorrection.map || targetRestMap;
   sourceRoot.updateMatrixWorld(true);
   targetRoot.updateMatrixWorld(true);
+  const projectionScale = Number(weaponConfig.projectionScale ?? armProjectionScale(sourceRoot, targetRoot)) || 1;
   const built = [];
   let failures = 0;
   for (const clip of sharedClips || []) {
@@ -1660,6 +1670,7 @@ function buildFpsUpperKeyConvertClips(sharedClips, sourceRoot, targetRoot, optio
         const sourceAction = sourceMixer.clipAction(clip);
         sourceAction.play();
         const targetTrackValues = new Float32Array(sourceWeaponTrack.times.length * 4);
+        const targetPositionTrackValues = new Float32Array(sourceWeaponTrack.times.length * 3);
         const targetHandTrackValues = new Float32Array(sourceWeaponTrack.times.length * 4);
         let solvedWeaponFrames = 0;
         for (let sampleIndex = 0; sampleIndex < sourceWeaponTrack.times.length; sampleIndex += 1) {
@@ -1678,6 +1689,12 @@ function buildFpsUpperKeyConvertClips(sharedClips, sourceRoot, targetRoot, optio
           targetClone.updateMatrixWorld(true);
           let targetWeaponWorld = null;
           if (weaponConfig.frameSolve !== false && sourceFrame && targetFrame) {
+            const targetWeaponWorldPosition = worldPointBetweenFrames(worldPositionOf(sourceWeapon), sourceFrame, targetFrame, projectionScale);
+            const targetWeaponParent = targetWeapon.parent || targetClone;
+            const targetWeaponLocalPosition = targetWeaponParent.worldToLocal(targetWeaponWorldPosition.clone());
+            targetPositionTrackValues[sampleIndex * 3] = targetWeaponLocalPosition.x;
+            targetPositionTrackValues[sampleIndex * 3 + 1] = targetWeaponLocalPosition.y;
+            targetPositionTrackValues[sampleIndex * 3 + 2] = targetWeaponLocalPosition.z;
             const sourceTipWorld = weaponTipWorldFromSocket(sourceWeapon, weaponConfig.sourceTipLocal || [0.00854, 0.57786, 0.00995]);
             const sourceBladeWorld = sourceTipWorld.sub(worldPositionOf(sourceWeapon));
             const sourceUpWorld = worldDirectionOf(sourceWeapon, weaponConfig.sourceUpAxis || [0, 1, 0]);
@@ -1724,6 +1741,11 @@ function buildFpsUpperKeyConvertClips(sharedClips, sourceRoot, targetRoot, optio
         const weaponTrack = new THREE.QuaternionKeyframeTrack(targetWeaponName + '.quaternion', sourceWeaponTrack.times.slice(), targetTrackValues);
         flips += stabilizeQuaternionTrack(weaponTrack);
         tracks.push(weaponTrack);
+        if (weaponConfig.applyPosition !== false && solvedWeaponFrames > 0) {
+          const positionTrack = new THREE.VectorKeyframeTrack(targetWeaponName + '.position', sourceWeaponTrack.times.slice(), targetPositionTrackValues);
+          tracks = tracks.filter((track) => !(normalizeTrackName(track.name || '').endsWith('.position') && canonicalBoneName(trackTargetName(track.name)) === canonicalBoneName(targetWeaponName)));
+          tracks.push(positionTrack);
+        }
         if (solvedWeaponFrames > 0) weaponConfig.solvedWeaponFrames = solvedWeaponFrames;
       }
     }
@@ -1844,6 +1866,21 @@ function mapWorldDirectionBetweenFrames(direction, sourceFrame, targetFrame) {
   if (!direction || direction.lengthSq() < 0.000001 || !sourceFrame || !targetFrame) return direction?.clone?.() || new THREE.Vector3(0, 0, 1);
   const sourceLocal = direction.clone().normalize().applyQuaternion(worldQuaternionOf(sourceFrame).invert()).normalize();
   return sourceLocal.applyQuaternion(worldQuaternionOf(targetFrame)).normalize();
+}
+
+function localPointInFrame(frame, pointWorld) {
+  if (!frame || !pointWorld) return new THREE.Vector3();
+  return pointWorld.clone().sub(worldPositionOf(frame)).applyQuaternion(worldQuaternionOf(frame).invert());
+}
+
+function worldPointFromFrameLocal(frame, local) {
+  if (!frame || !local) return new THREE.Vector3();
+  return local.clone().applyQuaternion(worldQuaternionOf(frame)).add(worldPositionOf(frame));
+}
+
+function worldPointBetweenFrames(pointWorld, sourceFrame, targetFrame, scale = 1) {
+  const local = localPointInFrame(sourceFrame, pointWorld).multiplyScalar(Number(scale) || 1);
+  return worldPointFromFrameLocal(targetFrame, local);
 }
 
 function quaternionFromBladeFrame(bladeDirection, upSeed = new THREE.Vector3(0, 1, 0)) {
@@ -2005,6 +2042,27 @@ function clampTargetToArmReach(shoulder, targetWorld, chainLength, reachScale = 
 
 function armChainLength(upper, lower, hand) {
   return worldPositionOf(lower).distanceTo(worldPositionOf(upper)) + worldPositionOf(hand).distanceTo(worldPositionOf(lower));
+}
+
+function armProjectionScale(sourceRoot, targetRoot) {
+  const chains = [
+    ['Arm.R', 'Forearm.R', 'Hand.R', 'RightArm', 'RightForeArm', 'RightHand'],
+    ['Arm.L', 'Forearm.L', 'Hand.L', 'LeftArm', 'LeftForeArm', 'LeftHand'],
+  ];
+  const ratios = [];
+  for (const [sourceUpperName, sourceLowerName, sourceHandName, targetUpperName, targetLowerName, targetHandName] of chains) {
+    const sourceUpper = findBoneCanonical(sourceRoot, sourceUpperName);
+    const sourceLower = findBoneCanonical(sourceRoot, sourceLowerName);
+    const sourceHand = findBoneCanonical(sourceRoot, sourceHandName);
+    const targetUpper = findBoneCanonical(targetRoot, targetUpperName);
+    const targetLower = findBoneCanonical(targetRoot, targetLowerName);
+    const targetHand = findBoneCanonical(targetRoot, targetHandName);
+    if (!sourceUpper || !sourceLower || !sourceHand || !targetUpper || !targetLower || !targetHand) continue;
+    const sourceLength = armChainLength(sourceUpper, sourceLower, sourceHand);
+    const targetLength = armChainLength(targetUpper, targetLower, targetHand);
+    if (sourceLength > 0.0001 && targetLength > 0.0001) ratios.push(targetLength / sourceLength);
+  }
+  return ratios.length ? ratios.reduce((sum, value) => sum + value, 0) / ratios.length : 1;
 }
 
 
@@ -3880,26 +3938,33 @@ class PoseActor {
   updateWeaponSocketTransform() {
     const proxy = this.weaponProxy;
     if (!proxy?.root) return;
-    const animatedSocketRotation = clipHasQuaternionTrackForBone(this.activeAction?._clip, proxy.root.name);
+    const activeClip = this.activeAction?._clip;
+    const animatedSocketPosition = clipHasPositionTrackForBone(activeClip, proxy.root.name);
+    const animatedSocketRotation = clipHasQuaternionTrackForBone(activeClip, proxy.root.name);
+    if (animatedSocketPosition && animatedSocketRotation) return;
     if (proxy.sourceSocket) {
-      proxy.root.position.set(0, 0, 0);
-      if (Array.isArray(proxy.config.modelLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
-      if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
+      if (!animatedSocketPosition) {
+        proxy.root.position.set(0, 0, 0);
+        if (Array.isArray(proxy.config.modelLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
+        if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
+      }
       return;
     }
     if (!proxy.leftHand || !proxy.rightHand) return;
     this.model.updateMatrixWorld(true);
-    const rightWorld = Array.isArray(proxy.config.handLocalOffset)
-      ? proxy.rightHand.localToWorld(new THREE.Vector3().fromArray(proxy.config.handLocalOffset))
-      : worldPositionOf(proxy.rightHand);
-    const leftWorld = worldPositionOf(proxy.leftHand);
-    const socketWorld = (proxy.config.positionMode || 'two-hand-center') === 'right-hand'
-      ? rightWorld.clone()
-      : rightWorld.clone().add(leftWorld).multiplyScalar(0.5);
-    const local = this.model.worldToLocal(socketWorld);
-    if (Array.isArray(proxy.config.modelLocalOffset)) local.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
-    if (Array.isArray(proxy.config.gripOffset)) local.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
-    proxy.root.position.copy(local);
+    if (!animatedSocketPosition) {
+      const rightWorld = Array.isArray(proxy.config.handLocalOffset)
+        ? proxy.rightHand.localToWorld(new THREE.Vector3().fromArray(proxy.config.handLocalOffset))
+        : worldPositionOf(proxy.rightHand);
+      const leftWorld = worldPositionOf(proxy.leftHand);
+      const socketWorld = (proxy.config.positionMode || 'two-hand-center') === 'right-hand'
+        ? rightWorld.clone()
+        : rightWorld.clone().add(leftWorld).multiplyScalar(0.5);
+      const local = this.model.worldToLocal(socketWorld);
+      if (Array.isArray(proxy.config.modelLocalOffset)) local.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
+      if (Array.isArray(proxy.config.gripOffset)) local.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
+      proxy.root.position.copy(local);
+    }
     if (!animatedSocketRotation) {
       const modelWorldQuat = worldQuaternionOf(this.model).invert();
       proxy.root.quaternion.copy(modelWorldQuat.multiply(worldQuaternionOf(proxy.rightHand))).normalize();

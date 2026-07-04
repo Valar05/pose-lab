@@ -14,7 +14,8 @@ assert(js.includes('quaternionFromBladeFrame(mappedBlade, mappedUp)') && js.incl
 assert(js.includes('sourceWeaponRelativeToWrist') && js.includes("new THREE.QuaternionKeyframeTrack(targetWeaponName + '.quaternion'"), 'converter should key WeaponGrip from Weapon.R relative to Hand.R');
 assert(js.includes('sourceWeaponTrack.times.slice()'), 'WeaponGrip should preserve authored Weapon.R key times');
 assert(!profiles.includes("retargetMode: 'position-guided-arm',\n        clipTag: 'FPS-SWORD-UPPER'"), 'accepted Meshy FPS-SWORD-UPPER path must not use sampled position-guided IK');
-assert(js.includes('clipHasQuaternionTrackForBone(this.activeAction?._clip, proxy.root.name)'), 'weapon socket updater should detect animated WeaponGrip quaternion tracks');
+assert(js.includes('const activeClip = this.activeAction?._clip;') && js.includes('clipHasQuaternionTrackForBone(activeClip, proxy.root.name)'), 'weapon socket updater should detect animated WeaponGrip quaternion tracks');
+assert(js.includes('clipHasPositionTrackForBone(activeClip, proxy.root.name)') && js.includes("new THREE.VectorKeyframeTrack(targetWeaponName + '.position'"), 'weapon socket updater should preserve generated WeaponGrip position tracks');
 assert(js.includes('if (!animatedSocketRotation)') && js.includes('proxy.root.quaternion.copy(modelWorldQuat.multiply(worldQuaternionOf(proxy.rightHand))).normalize()'), 'two-hand socket update should preserve animated socket rotation when present');
 
 assert(profiles.includes("retargetMode: 'fps-upper-key-convert'"), 'Meshy FPS-SWORD-UPPER config should use source-key conversion');

@@ -7,6 +7,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, '..');
 
+const MIN_READABLE_BLADE_SCREEN_PX = 48;
+const MAX_APPLIED_HILT_TO_HAND_SCREEN_PX = 72;
+const MAX_APPLIED_HILT_TO_WEAPON_GRIP_WORLD = 0.08;
+
 function parseArgs(argv) {
   const args = {
     artifact: path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest', 'visual_truth.json'),
@@ -67,6 +71,26 @@ function captureFailures(capture = {}) {
   ];
 }
 
+function getPath(source, pathName) {
+  return pathName.split('.').reduce((value, key) => (value == null ? undefined : value[key]), source);
+}
+
+function firstBoolean(source, pathNames) {
+  for (const pathName of pathNames) {
+    const value = getPath(source, pathName);
+    if (typeof value === 'boolean') return { path: pathName, value };
+  }
+  return null;
+}
+
+function firstFiniteNumber(source, pathNames) {
+  for (const pathName of pathNames) {
+    const value = Number(getPath(source, pathName));
+    if (Number.isFinite(value)) return { path: pathName, value };
+  }
+  return null;
+}
+
 function captureActorEvidence(capture = {}) {
   const weapon = captureWeapon(capture);
   return [
@@ -121,6 +145,106 @@ function isSwordHidden(capture = {}) {
     || weapon.visible === false
     || weapon.modelVisible === false
     || weapon.displayVisible === false;
+}
+
+function visibleWeaponRelationshipFailures(capture = {}) {
+  const checks = captureChecks(capture);
+  const weapon = captureWeapon(capture);
+  const source = { capture, checks, weapon };
+  const failures = [];
+
+  const meshVisible = firstBoolean(source, [
+    'checks.realSabreMeshVisible',
+    'checks.realSaberMeshVisible',
+    'checks.realWeaponVisible',
+    'checks.weaponVisible',
+    'checks.modelVisible',
+    'weapon.realSabreMeshVisible',
+    'weapon.realSaberMeshVisible',
+    'weapon.modelVisible',
+    'weapon.visible',
+  ]);
+  if (!meshVisible) failures.push('missing visible-weapon proof: real sabre mesh visible boolean is required');
+  else if (meshVisible.value !== true) failures.push(`real sabre mesh is not visible: ${meshVisible.path}=false`);
+
+  const bladeReadable = firstBoolean(source, [
+    'checks.bladeLengthOnScreenReadable',
+    'checks.bladeScreenLengthReadable',
+    'checks.realBladeReadable',
+    'checks.visibleBladeReadable',
+    'weapon.screen.bladeLengthReadable',
+  ]);
+  const bladePx = firstFiniteNumber(source, [
+    'checks.bladeLengthScreenPx',
+    'checks.bladeScreenLengthPx',
+    'checks.visibleBladeScreenPx',
+    'weapon.bladeLengthScreenPx',
+    'weapon.bladeScreenLengthPx',
+    'weapon.screen.bladeLengthPx',
+    'weapon.screenBladeLengthPx',
+  ]);
+  if (bladeReadable?.value === false) failures.push(`blade is not readable on screen: ${bladeReadable.path}=false`);
+  if (bladePx && bladePx.value < MIN_READABLE_BLADE_SCREEN_PX) {
+    failures.push(`blade length on screen below readable threshold: ${bladePx.path}=${bladePx.value} < ${MIN_READABLE_BLADE_SCREEN_PX}`);
+  }
+  if (!bladeReadable && !bladePx) {
+    failures.push('missing visible-weapon proof: blade length on screen must be measured or explicitly marked readable');
+  }
+
+  const collapsedIntoTorso = firstBoolean(source, [
+    'checks.hiltCollapsedIntoTorso',
+    'checks.hiltCollapsedIntoBody',
+    'checks.hiltAtBodyCenter',
+    'checks.appliedHiltAtBodyCenter',
+    'weapon.screen.hiltCollapsedIntoTorso',
+  ]);
+  if (collapsedIntoTorso?.value === true) failures.push(`hilt collapsed into torso/body center: ${collapsedIntoTorso.path}=true`);
+  const awayFromTorso = firstBoolean(source, [
+    'checks.hiltNotCollapsedIntoTorso',
+    'checks.hiltAwayFromTorso',
+    'checks.hiltAwayFromBodyCenter',
+    'checks.appliedHiltAwayFromBodyCenter',
+    'weapon.screen.hiltAwayFromBodyCenter',
+  ]);
+  if (awayFromTorso?.value === false) failures.push(`hilt is not clear of torso/body center: ${awayFromTorso.path}=false`);
+  if (!awayFromTorso && !collapsedIntoTorso) {
+    failures.push('missing visible-weapon proof: hilt must be shown clear of torso/body center');
+  }
+
+  const hiltNearHand = firstBoolean(source, [
+    'checks.appliedHiltNearRightHand',
+    'checks.visibleHiltNearRightHand',
+    'checks.appliedHiltNearWeaponGrip',
+    'checks.visibleHiltNearWeaponGrip',
+    'weapon.screen.appliedHiltNearRightHand',
+    'weapon.screen.visibleHiltNearWeaponGrip',
+  ]);
+  if (hiltNearHand?.value === false) failures.push(`applied hilt is not near right hand/WeaponGrip: ${hiltNearHand.path}=false`);
+  const hiltToHandPx = firstFiniteNumber(source, [
+    'checks.appliedHiltToRightHandScreenPx',
+    'checks.visibleHiltToRightHandScreenPx',
+    'checks.appliedHiltToWeaponGripScreenPx',
+    'checks.visibleHiltToWeaponGripScreenPx',
+    'weapon.screen.appliedHiltToRightHandPx',
+    'weapon.screen.visibleHiltToWeaponGripPx',
+  ]);
+  if (hiltToHandPx && hiltToHandPx.value > MAX_APPLIED_HILT_TO_HAND_SCREEN_PX) {
+    failures.push(`applied hilt too far from right hand/WeaponGrip on screen: ${hiltToHandPx.path}=${hiltToHandPx.value} > ${MAX_APPLIED_HILT_TO_HAND_SCREEN_PX}`);
+  }
+  const hiltToGripWorld = firstFiniteNumber(source, [
+    'checks.visibleHiltToWeaponGripDistance',
+    'checks.appliedHiltToWeaponGripDistance',
+    'weapon.visibleHiltToWeaponGripDistance',
+    'weapon.appliedHiltToWeaponGripDistance',
+  ]);
+  if (hiltToGripWorld && hiltToGripWorld.value > MAX_APPLIED_HILT_TO_WEAPON_GRIP_WORLD) {
+    failures.push(`applied hilt too far from WeaponGrip: ${hiltToGripWorld.path}=${hiltToGripWorld.value} > ${MAX_APPLIED_HILT_TO_WEAPON_GRIP_WORLD}`);
+  }
+  if (!hiltNearHand && !hiltToHandPx && !hiltToGripWorld) {
+    failures.push('missing visible-weapon proof: applied hilt must be measured near right hand/WeaponGrip');
+  }
+
+  return failures;
 }
 
 function isPoseDegraded(capture = {}) {
@@ -181,6 +305,7 @@ export function evaluateMeshySaberQuarantine(artifact, options = {}) {
     if (isHumanRed(capture, artifact)) failures.push(`${label}: human-red visible review truth`);
     if (isPoseDegraded(capture)) failures.push(`${label}: pose degraded or visual relationship rejected`);
     if (isSwordHidden(capture)) failures.push(`${label}: real sword hidden or not visible`);
+    for (const failure of visibleWeaponRelationshipFailures(capture)) failures.push(`${label}: ${failure}`);
   }
 
   return {
@@ -207,16 +332,23 @@ function knownRedArtifact() {
     captures: [
       {
         id: 'ready',
+        captureKind: 'android-screenshot',
+        screenshot: '/storage/emulated/0/Pictures/Screenshots/Screenshot_20260703-224404.png',
         accepted: false,
-        visibleRead: 'human-red: Ready does not yet read as a confident hand-held saber',
+        visibleRead: 'human-red: route recovered, but the real blade is not readable and the hilt/marker is collapsed around the torso/hand area instead of reading as a held saber',
+        expectedVisibleRelationship: 'real sabre mesh visible, blade readable on screen, applied hilt near right hand/WeaponGrip, hilt clear of torso/body center',
         evaluation: {
           ok: false,
-          failures: ['Ready hand/hilt/blade relationship failed telemetry proxy'],
+          failures: ['Ready route recovery is insufficient; visible weapon relationship remains red'],
           checks: {
             routeSelected: true,
             actorSelected: true,
             clipSelected: true,
             realWeaponVisible: true,
+            realSabreMeshVisible: true,
+            bladeLengthScreenPx: 18,
+            hiltCollapsedIntoTorso: true,
+            appliedHiltNearRightHand: false,
             readyHandOrientationSane: true,
             readyVisualRelationshipAccepted: false,
           },
