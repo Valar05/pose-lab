@@ -81,30 +81,40 @@ const tipMarker = new THREE.Mesh(
 );
 tipMarker.name = 'Sabre semantic tip marker';
 
+const fallbackGrip = new THREE.Object3D();
+fallbackGrip.name = 'FallbackVisibleWeaponGrip';
+fallbackGrip.position.set(0, 0, 1.05);
+root.add(fallbackGrip);
+
+const fallbackSabreRoot = new THREE.Object3D();
+fallbackSabreRoot.name = 'FallbackVisibleSabreRoot';
+fallbackGrip.add(fallbackSabreRoot);
+
 const proxySaber = new THREE.Group();
 proxySaber.name = 'Bright editable saber proxy';
-const proxyBladeLength = 1.15;
+const proxyBladeLength = 1.65;
 const proxyBlade = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.018, 0.012, proxyBladeLength, 18),
+  new THREE.CylinderGeometry(0.035, 0.02, proxyBladeLength, 20),
   new THREE.MeshBasicMaterial({ color: 0x67e8ff })
 );
 proxyBlade.name = 'bright blade';
 proxyBlade.rotation.z = Math.PI / 2;
 proxyBlade.position.x = -proxyBladeLength * 0.5;
 const proxyHilt = new THREE.Mesh(
-  new THREE.CylinderGeometry(0.04, 0.04, 0.28, 18),
+  new THREE.CylinderGeometry(0.07, 0.07, 0.38, 20),
   new THREE.MeshBasicMaterial({ color: 0xffcf5a })
 );
 proxyHilt.name = 'bright hilt';
 proxyHilt.rotation.z = Math.PI / 2;
 proxyHilt.position.x = 0.06;
 const proxyGuard = new THREE.Mesh(
-  new THREE.BoxGeometry(0.045, 0.34, 0.045),
+  new THREE.BoxGeometry(0.075, 0.55, 0.075),
   new THREE.MeshBasicMaterial({ color: 0xff67d8 })
 );
 proxyGuard.name = 'bright guard';
 proxyGuard.position.set(0, 0, 0);
 proxySaber.add(proxyBlade, proxyHilt, proxyGuard);
+fallbackSabreRoot.add(proxySaber, gripMarker, hiltMarker, tipMarker);
 
 let meshyRoot = null;
 let charMesh = null;
@@ -219,23 +229,29 @@ function attachFkHierarchy() {
 }
 
 function applyStateToScene() {
-  if (!weaponGrip || !sabreRoot || !sabreMesh) return;
-  weaponGrip.position.fromArray(state.grip.position);
-  weaponGrip.rotation.set(...degToRadArray(state.grip.rotationDeg), 'XYZ');
+  const gripNode = weaponGrip || fallbackGrip;
+  const sabreNode = sabreRoot || fallbackSabreRoot;
+  gripNode.position.fromArray(state.grip.position);
+  gripNode.rotation.set(...degToRadArray(state.grip.rotationDeg), 'XYZ');
 
-  sabreRoot.position.fromArray(state.sabre.position);
-  sabreRoot.rotation.set(...degToRadArray(state.sabre.rotationDeg), 'XYZ');
-  sabreRoot.scale.setScalar(Number(state.sabre.scale) || 1);
+  if (!weaponGrip) gripNode.position.add(new THREE.Vector3(0, 0, 1.05));
+
+  sabreNode.position.fromArray(state.sabre.position);
+  sabreNode.rotation.set(...degToRadArray(state.sabre.rotationDeg), 'XYZ');
+  sabreNode.scale.setScalar(Number(state.sabre.scale) || 1);
 
   const gripLocal = vectorFromArray(state.sabre.gripLocalPosition);
-  sabreMesh.position.set(0, 0, 0);
-  if (state.sabre.pinHiltToWeaponGrip) sabreMesh.position.copy(gripLocal).multiplyScalar(-1);
-  sabreMesh.visible = state.sabre.showRealMesh !== false;
+  if (sabreMesh) {
+    sabreMesh.position.set(0, 0, 0);
+    if (state.sabre.pinHiltToWeaponGrip) sabreMesh.position.copy(gripLocal).multiplyScalar(-1);
+    sabreMesh.visible = state.sabre.showRealMesh !== false;
+  }
   proxySaber.visible = state.sabre.showProxySaber !== false;
 
   gripMarker.position.set(0, 0, 0);
-  hiltMarker.position.copy(gripLocal).add(sabreMesh.position);
-  tipMarker.position.copy(vectorFromArray(state.sabre.tipLocalPosition)).add(sabreMesh.position);
+  const meshOffset = sabreMesh?.position || new THREE.Vector3();
+  hiltMarker.position.copy(gripLocal).add(meshOffset);
+  tipMarker.position.copy(vectorFromArray(state.sabre.tipLocalPosition)).add(meshOffset);
   proxySaber.position.copy(hiltMarker.position);
 
   syncInputs();
@@ -347,13 +363,13 @@ function applyJson() {
 function setView(kind) {
   if (kind === 'hand') {
     const target = new THREE.Vector3();
-    rightHand?.getWorldPosition(target);
+    (rightHand || proxySaber).getWorldPosition(target);
     controls.target.copy(target);
     camera.position.copy(target).add(new THREE.Vector3(0.48, -0.82, 0.25));
     camera.fov = 38;
   } else if (kind === 'blade') {
     const target = new THREE.Vector3();
-    sabreRoot?.getWorldPosition(target);
+    proxySaber.getWorldPosition(target);
     controls.target.copy(target);
     camera.position.copy(target).add(new THREE.Vector3(0.95, -1.45, 0.42));
     camera.fov = 32;
@@ -471,6 +487,7 @@ for (const button of document.querySelectorAll('[data-nudge]')) {
 
 window.addEventListener('resize', resize);
 resize();
+applyStateToScene();
 animate();
 boot().catch((error) => {
   console.error(error);

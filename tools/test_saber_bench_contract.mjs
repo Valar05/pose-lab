@@ -25,6 +25,8 @@ assert(js.includes('hideEverythingBut'), 'bench must hide imported junk helper o
 assert(js.includes('pinHiltToWeaponGrip'), 'bench must expose hilt pinning as an explicit rule');
 assert(js.includes('Bright editable saber proxy') && js.includes('proxyBlade'), 'bench must include a visible saber-shaped proxy to position even if the GLB is unreadable');
 assert(js.includes('showRealMesh') && js.includes('showProxySaber'), 'bench must let the user compare the real sabre mesh and visible proxy');
+assert(js.includes('FallbackVisibleWeaponGrip') && js.includes('fallbackSabreRoot.add(proxySaber'), 'bench must show a saber before Meshy rig/hand attachment succeeds');
+assert(js.includes('applyStateToScene();\nanimate();'), 'bench must apply the fallback saber transform before async asset loading');
 assert(js.includes('pose-lab-meshy-saber-bench-contract-v1'), 'bench must export a stable contract schema');
 assert(css.includes('@media (max-width: 760px)'), 'bench should stay usable on phone screens');
 
