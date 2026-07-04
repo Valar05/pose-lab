@@ -15,7 +15,7 @@ for (const literal of [
   "startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }",
   "handLocalOffset: [0.095, 0.035, -0.01]",
   "modelLocalOffset: [-0.11512, 0.00773, -0.01127]",
-  "rotationDeg: [85, -140, -60]",
+  "rotationDeg: [90, 0, -55.145]",
   "gripLocalPosition: [0.6535, -0.02302, -0.07317]",
   "tipLocalPosition: [-0.95561, 0.1368, 0]",
 ]) {
