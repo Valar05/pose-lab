@@ -2,6 +2,8 @@
 
 Pose Lab is no longer the authoring surface for Meshy saber placement. It may verify imported results, but the human-visible weapon hold is authored in Blender first.
 
+This workflow is the first layer of `docs/POSE_LAB_VISUAL_AUTHORITY_LADDER.md`.
+
 ## Authority
 
 The accepted source of truth is a human-approved Blender viewport showing:
@@ -32,7 +34,12 @@ blender --background authoring/meshy_saber/meshy_ready_authoring.blend --python 
 
 The export is still candidate material until a human approves the Blender screenshots. Generated exports under `authoring/meshy_saber/exports/` should not be committed casually.
 
+Before any Pose Lab runtime fix or browser wake, run:
+
+```sh
+node tools/pose_lab_recovery_gate.mjs --json
+```
+
 ## Pose Lab Import Rule
 
 When Pose Lab consumes this lane, it must import the Blender-authored hierarchy and transforms directly. It must not retarget, solve, run `WeaponR` parity, or tune offsets to make the Blender export appear correct.
-

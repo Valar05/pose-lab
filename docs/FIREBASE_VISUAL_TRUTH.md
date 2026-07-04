@@ -2,6 +2,8 @@
 
 Use this lane when local Android/browser capture, debug bridge capture, or localhost automation cannot be trusted.
 
+For Meshy saber recovery, this lane is the final browser presentation gate. It is not an authoring surface. Blender viewport approval and Pose Lab import verification must already exist before Firebase evidence can close the visual loop.
+
 ## Current Infrastructure
 
 - GCP/Firebase project: `home-center-dclar`
@@ -47,7 +49,7 @@ The evidence target is:
 generated/firebase_visual_truth/latest/visual_truth.json
 ```
 
-Screenshots and hosted debug telemetry are workflow artifacts, not local Android evidence. The artifact is the engineering gate for Meshy saber acceptance: `ok` may be true only when T-pose stable idle and Ready boring FK both pass in the hosted Firebase browser.
+Screenshots and hosted debug telemetry are workflow artifacts, not local Android evidence. The artifact is the hosted presentation gate for Meshy saber acceptance: `ok` may be true only when T-pose stable idle and Ready boring FK both pass in the hosted Firebase browser after the Blender/Pose Lab import authority layers are satisfied.
 
 Known working checkpoint:
 
@@ -60,4 +62,4 @@ Known working checkpoint:
 
 ## Rule
 
-Do not use Firebase/cloud screenshots to tune offsets blindly. Use them to establish hosted visual truth. If the hosted screenshot or telemetry is red, preserve the red evidence and fix the layer identified by the Firebase artifact. Offline render is diagnostic-only and cannot override Firebase truth.
+Do not use Firebase/cloud screenshots to tune offsets blindly. Use them to establish hosted presentation truth. If the hosted screenshot or telemetry is red, preserve the red evidence and fix the layer identified by the Firebase artifact. Offline render is diagnostic-only and cannot override Firebase truth; Firebase also cannot override a missing or unapproved Blender authoring contract.

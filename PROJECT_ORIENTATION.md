@@ -6,6 +6,8 @@ This is a standalone browser Pose Lab seeded from the newer `gravity-fist-threej
 
 Before any more Meshy saber/FK work, read `docs/POSE_LAB_AGENT_FAILURE_CONTRACT.md`. The current Meshy saber state is not accepted as fixed. The controlling instruction is: Meshy must be FPS weapon FK plus authored offsets, nothing else. Do not tune offsets or document success until FK architecture parity is proven.
 
+Before changing Meshy saber, pose retargeting, or visual proof code, also read `docs/POSE_LAB_VISUAL_AUTHORITY_LADDER.md`. The current ladder is: Blender authoring truth, Pose Lab import truth, diagnostics/guardrails, cloud presentation truth, then user screenshot veto.
+
 ## Entry Points
 
 - `pose-lab.html`: browser lab UI.
@@ -106,10 +108,10 @@ Use `node tools/pose_lab_offline_render.mjs` when Meshy pose/weapon behavior mus
 
 Run `node tools/test_pose_lab_offline_render_contract.mjs` after changing pose or weapon runtime code. `--assert-repro` is the red-build mode: it passes only when the offline renderer reproduces Meshy weapon behavior where the hilt collapses onto the wrist, drifts away from its captured hand-local target, or the real mesh hilt diverges from the authored grip. `--assert-fixed` intentionally fails unless the requested clip is actually resolved offline, the authored grip stays pinned to `WeaponGrip`, the measured visible mesh hilt matches that authored grip, the hilt remains visibly displaced from the raw wrist/hand origin by the authored `modelLocalOffset`, and `WeaponGrip` local position/quaternion remain stable under `RightHand`. Meshy weapon acceptance is pure FK: `RightHand -> WeaponGrip -> displayRoot -> sabre mesh`. FPS `Weapon.R` is reference-only and must not be required for green acceptance. The configured hand-local palm target is diagnostic only; do not treat fallback GLB-clip output, palm marker coincidence, or hilt-to-socket pinning alone as proof that a browser-generated ready clip is fixed.
 
-For bug routing, start with `node tools/pose_lab_route.mjs --kind weapon-fk --json` and follow `docs/POSE_LAB_EVIDENCE_PROTOCOL.md`. For Meshy saber FK, refresh `generated/visual_red_build/pose_lab_latest.json` with `node tools/refresh_pose_lab_offline_visual_evidence.mjs`; offline renderer evidence is the tier-one acceptance truth. Source-string tests are support-only for visual bugs; they do not close a red build.
+For bug routing, start with `node tools/pose_lab_route.mjs --kind weapon-fk --json` and follow `docs/POSE_LAB_EVIDENCE_PROTOCOL.md`. For Meshy saber FK, offline renderer evidence is diagnostic-only after the Blender-first pivot. Source-string tests are support-only for visual bugs; they do not close a red build.
 For recurring problems, prefer `node tools/pose_lab_case.mjs verify --case <case-id>` because it records the route, contracts, artifacts, and verdict together.
 
-If local browser capture, Android capture, or debug bridge capture is unreliable, use the Firebase hosted visual-truth lane in `docs/FIREBASE_VISUAL_TRUTH.md`. That lane deploys Pose Lab to Firebase Hosting and captures screenshots from GitHub-hosted Playwright instead of this device.
+If local browser capture, Android capture, or debug bridge capture is unreliable, use the Firebase hosted visual-truth lane in `docs/FIREBASE_VISUAL_TRUTH.md`. That lane deploys Pose Lab to Firebase Hosting and captures screenshots from GitHub-hosted Playwright instead of this device. For Meshy saber work, Firebase is final cloud presentation proof after Blender authoring and Pose Lab import truth; it is not an authoring surface.
 
 ## Validation
 
@@ -159,7 +161,7 @@ Debian/Termux Blender exists at `/usr/bin/blender` version 4.3.2 and can inspect
 
 ## Blender-First Meshy Saber Recovery
 
-Meshy saber placement and Ready visual recovery now have a Blender-first escape lane under `authoring/meshy_saber/`. Use Blender as the manual visual authoring surface and Pose Lab as an importer/runtime verifier only. Build the scene with `authoring/meshy_saber/blender_build_meshy_ready_authoring.py`, approve T-pose and Ready from Blender viewport screenshots, then export `authoring/meshy_saber/exports/meshy_ready_saber_contract.json` for Pose Lab intake. Generated exports are ignored until deliberately promoted. Do not use Pose Lab retargeting, WeaponR parity, cloud screenshots, or runtime metrics to author or overwrite this Blender-approved result.
+Meshy saber placement and Ready visual recovery now have a Blender-first escape lane under `authoring/meshy_saber/`. Use Blender as the manual visual authoring surface and Pose Lab as an importer/runtime verifier only. Build the scene with `authoring/meshy_saber/blender_build_meshy_ready_authoring.py`, approve T-pose and Ready from Blender viewport screenshots, then export `authoring/meshy_saber/exports/meshy_ready_saber_contract.json` for Pose Lab intake. Generated exports are ignored until deliberately promoted. Do not use Pose Lab retargeting, WeaponR parity, cloud screenshots, or runtime metrics to author or overwrite this Blender-approved result. Run `node tools/pose_lab_recovery_gate.mjs --json` before runtime fixes, green claims, commits that imply recovery, or browser wake handoff.
 
 See [docs/MOTIVATED_MODE.md](/storage/emulated/0/Documents/GodotProjects/pose-lab/docs/MOTIVATED_MODE.md:1) for the saved contract and the before-stopping checklist.
 
@@ -187,4 +189,4 @@ This is enforced by `node tools/test_manual_weapon_placement_lock.mjs`. The curr
 
 For Meshy FPS sword retargeting, the manual saber calibration is now bedrock: normal generated Meshy clips must not animate `WeaponR` or `WeaponGrip`; `WeaponGrip` remains the authored pure-FK socket directly under `RightHand`, and the real sabre mesh is positioned under it by locked attachment offsets. FPS `Weapon.R` may be used only as an authoring/reference source. Any future runtime `WeaponR` path must be explicitly marked experimental and must not gate green acceptance.
 
-The screenshot-visible proof gate is now `offline-pose-render` evidence. If offline FK evidence is green but the newest user screenshot shows the real saber out of the hand, the correct diagnosis is an offline/runtime truth mismatch. Do not close the weapon case or tune offsets again until `node tools/refresh_pose_lab_offline_visual_evidence.mjs` and `node tools/test_pose_lab_visual_red_build_contract.mjs` prove the same visible layer.
+Offline pose-render evidence is diagnostic-only for Meshy saber work. If offline FK evidence is green but the newest user screenshot shows the real saber out of the hand, the correct diagnosis is an offline/runtime truth mismatch. Do not close the weapon case or tune offsets again until the visual authority ladder and `node tools/pose_lab_recovery_gate.mjs --json` agree that authoring/import/presentation truth are not being collapsed.

@@ -47,9 +47,11 @@ function routeFor(args) {
   const routes = {
     'weapon-fk': {
       kind: 'weapon-fk',
-      authoritativeEvidence: 'firebase-hosted-cloud-browser',
-      summary: 'Use the Firebase preview workflow as the acceptance proof for Meshy T-pose stability and Ready boring FK. Offline render is diagnostic-only.',
+      authoritativeEvidence: 'blender-authoring -> pose-lab-import -> firebase-hosted-cloud-browser',
+      summary: 'Use Blender viewport approval as authoring truth, Pose Lab import as reproduction truth, and Firebase preview workflow as final hosted presentation proof. Offline render is diagnostic-only.',
       commands: [
+        command('node tools/pose_lab_recovery_gate.mjs --json'),
+        command('node tools/test_blender_authoring_contract.mjs'),
         command('node --check tools/capture_firebase_visual_truth.mjs'),
         command('node tools/test_firebase_hosting_config.mjs'),
         command('node tools/test_firebase_visual_truth_contract.mjs'),
@@ -57,12 +59,15 @@ function routeFor(args) {
         command('gh run download <run-id> --repo Valar05/pose-lab --name firebase-visual-truth --dir <artifact-dir>'),
       ],
       requiredArtifacts: [
+        'authoring/meshy_saber/exports/meshy_ready_saber_contract.json',
         'generated/firebase_visual_truth/latest/visual_truth.json',
         'generated/firebase_visual_truth/latest/tpose.png',
         'generated/firebase_visual_truth/latest/ready.png',
         'generated/firebase_visual_truth/latest/ready_visual_follow.png',
       ],
       acceptance: [
+        'Blender export contract is human-approved',
+        'Pose Lab import of the Blender contract is verified',
         'authority === "firebase-hosted-cloud-browser"',
         'ok === true',
         'truthLedger.tposeStableIdle === true',

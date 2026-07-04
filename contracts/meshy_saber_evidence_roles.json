@@ -1,0 +1,46 @@
+{
+  "schema": "pose-lab-evidence-role-map-v1",
+  "scope": "Meshy saber and Ready visual recovery",
+  "authorityLadder": "docs/POSE_LAB_VISUAL_AUTHORITY_LADDER.md",
+  "roles": {
+    "acceptance": [
+      {
+        "id": "blender_authoring_approval",
+        "path": "authoring/meshy_saber/exports/meshy_ready_saber_contract.json",
+        "requires": "human-approved Blender T-pose and Ready viewport screenshots",
+        "cannotBeReplacedBy": ["source strings", "offline render", "Firebase capture", "debug bridge"]
+      },
+      {
+        "id": "firebase_cloud_presentation",
+        "path": "generated/firebase_visual_truth/latest/visual_truth.json",
+        "requires": "approved Blender/Pose Lab import truth already exists; hosted T-pose and Ready are visibly correct"
+      }
+    ],
+    "diagnostic": [
+      "tools/test_weapon_fk_driver_invariant.mjs",
+      "tools/test_weapon_visual_transform_application.mjs",
+      "tools/test_meshy_full_body_weapon_attachment.mjs",
+      "tools/test_pose_lab_offline_render_contract.mjs",
+      "tools/test_firebase_visual_truth_contract.mjs",
+      "tools/test_pose_lab_visual_red_build_contract.mjs"
+    ],
+    "guardrail": [
+      "tools/test_manual_weapon_placement_lock.mjs",
+      "tools/test_blender_authoring_contract.mjs",
+      "tools/test_pose_lab_route_contract.mjs",
+      "tools/test_pose_lab_agent_failure_contract.mjs",
+      "tools/test_pose_lab_recovery_gate.mjs",
+      "tools/test_pose_lab_visual_authority_ladder.mjs"
+    ],
+    "quarantine": [
+      "docs/POSE_LAB_MESHY_SABER_FAILED_CHECKPOINTS.md"
+    ]
+  },
+  "rules": [
+    "A diagnostic result cannot claim Meshy saber green.",
+    "A guardrail can block known bad workflows but does not prove the pose looks correct.",
+    "Firebase is presentation proof after authoring/import truth, not the authoring loop.",
+    "A current user screenshot can veto every role."
+  ]
+}
+

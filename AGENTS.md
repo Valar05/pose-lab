@@ -4,11 +4,13 @@ Read `PROJECT_ORIENTATION.md` before edits.
 
 Before any Meshy saber/FK work, read `docs/POSE_LAB_AGENT_FAILURE_CONTRACT.md`. The current Meshy saber state is not accepted as fixed; future work must start from "Meshy must be FPS weapon FK plus authored offsets, nothing else."
 
+Also read `docs/POSE_LAB_VISUAL_AUTHORITY_LADDER.md`. Do not collapse Blender authoring truth, Pose Lab import truth, diagnostics, cloud presentation proof, and user screenshot veto into one green/red metric.
+
 For Orc import or merge work, then read `docs/ORC_IMPORT_AND_MERGE_WORKFLOW.md` and `src/AGENTS.md` instead of searching the whole lab blindly.
 
 Keep this lab source-focused: inspect assets, record provenance, and keep runtime assumptions in `src/rig-profiles.js`. When importing new source assets, preserve originals under `assets/source/`, place runtime-ready GLB/FBX files under `assets/models/`, and update `assets/asset_manifest.json`.
 
-For Meshy saber recovery, prefer the Blender-first authoring lane in `authoring/meshy_saber/` over further Pose Lab runtime tuning. Blender viewport approval is the authoring truth; Pose Lab imports and verifies the exported contract afterward.
+For Meshy saber recovery, prefer the Blender-first authoring lane in `authoring/meshy_saber/` over further Pose Lab runtime tuning. Blender viewport approval is the authoring truth; Pose Lab imports and verifies the exported contract afterward. Run `node tools/pose_lab_recovery_gate.mjs --json` before claiming green, waking Chrome, or making another runtime/offset fix after a red build.
 
 Validate with:
 
