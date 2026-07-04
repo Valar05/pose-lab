@@ -3856,7 +3856,10 @@ class PoseActor {
     if (Array.isArray(config.gripOffset) && !leftHand && !sourceSocket) root.position.fromArray(config.gripOffset);
     if (Array.isArray(config.rotationDeg)) root.rotation.set(...config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
     root.visible = false;
+    const rightHandFk = !sourceSocket && rightHand && (root.userData.positionMode || 'right-hand') === 'right-hand';
+    root.userData.rightHandFkWeaponBone = Boolean(rightHandFk);
     if (sourceSocket) sourceSocket.add(root);
+    else if (rightHandFk) rightHand.add(root);
     else if (leftHand) this.model.add(root);
     else rightHand.add(root);
     this.boneByName.set(root.name, root);
@@ -3886,6 +3889,17 @@ class PoseActor {
       proxy.root.position.set(0, 0, 0);
       if (Array.isArray(proxy.config.modelLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
       if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
+      return;
+    }
+    if ((proxy.config.positionMode || 'two-hand-center') === 'right-hand' && proxy.rightHand) {
+      if (proxy.root.parent !== proxy.rightHand) proxy.rightHand.add(proxy.root);
+      proxy.root.userData.rightHandFkWeaponBone = true;
+      proxy.root.position.set(0, 0, 0);
+      if (Array.isArray(proxy.config.handLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.handLocalOffset));
+      if (Array.isArray(proxy.config.modelLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
+      if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
+      if (Array.isArray(proxy.config.rotationDeg)) proxy.root.rotation.set(...proxy.config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
+      else proxy.root.quaternion.identity();
       return;
     }
     if (!proxy.leftHand || !proxy.rightHand) return;
