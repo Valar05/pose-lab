@@ -11,19 +11,19 @@ const ASSETS = {
 const BASELINE = Object.freeze({
   schema: 'pose-lab-meshy-saber-bench-contract-v1',
   source: 'minimal-saber-bench',
-  hierarchy: 'RightHand -> WeaponGrip -> SabreRoot -> sabre mesh',
+  hierarchy: 'Standalone visible saber mesh',
   grip: {
-    position: [-0.02012, 0.04273, -0.02127],
+    position: [0, 0, 0],
     rotationDeg: [0, 0, 0],
   },
   sabre: {
     position: [0, 0, 0],
-    rotationDeg: [90, 0, -55.145],
-    scale: 0.47493,
-    gripLocalPosition: [0.6535, -0.02302, -0.07317],
-    tipLocalPosition: [-0.95561, 0.1368, 0],
+    rotationDeg: [0, 0, 0],
+    scale: 1,
+    gripLocalPosition: [0, 0, 0],
+    tipLocalPosition: [-1.65, 0, 0],
     pinHiltToWeaponGrip: true,
-    showRealMesh: true,
+    showRealMesh: false,
     showProxySaber: true,
   },
 });
@@ -38,8 +38,8 @@ const clock = new THREE.Clock();
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x101213);
 
-const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 80);
-camera.position.set(2.4, -4.2, 1.55);
+const camera = new THREE.PerspectiveCamera(42, 1, 0.01, 80);
+camera.position.set(0.35, -3.0, 0.45);
 
 const renderer = new THREE.WebGLRenderer({ canvas: ui.benchCanvas, antialias: true, alpha: false });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -49,7 +49,7 @@ renderer.toneMappingExposure = 1.05;
 
 const controls = new OrbitControls(camera, ui.benchCanvas);
 controls.enableDamping = true;
-controls.target.set(0, 0, 1.0);
+controls.target.set(-0.55, 0, 0);
 
 const root = new THREE.Group();
 root.name = 'SaberBenchRoot';
@@ -83,7 +83,7 @@ tipMarker.name = 'Sabre semantic tip marker';
 
 const fallbackGrip = new THREE.Object3D();
 fallbackGrip.name = 'FallbackVisibleWeaponGrip';
-fallbackGrip.position.set(0, 0, 1.05);
+fallbackGrip.position.set(0, 0, 0);
 root.add(fallbackGrip);
 
 const fallbackSabreRoot = new THREE.Object3D();
@@ -234,8 +234,6 @@ function applyStateToScene() {
   gripNode.position.fromArray(state.grip.position);
   gripNode.rotation.set(...degToRadArray(state.grip.rotationDeg), 'XYZ');
 
-  if (!weaponGrip) gripNode.position.add(new THREE.Vector3(0, 0, 1.05));
-
   sabreNode.position.fromArray(state.sabre.position);
   sabreNode.rotation.set(...degToRadArray(state.sabre.rotationDeg), 'XYZ');
   sabreNode.scale.setScalar(Number(state.sabre.scale) || 1);
@@ -252,7 +250,7 @@ function applyStateToScene() {
   const meshOffset = sabreMesh?.position || new THREE.Vector3();
   hiltMarker.position.copy(gripLocal).add(meshOffset);
   tipMarker.position.copy(vectorFromArray(state.sabre.tipLocalPosition)).add(meshOffset);
-  proxySaber.position.copy(hiltMarker.position);
+  proxySaber.position.set(0, 0, 0);
 
   syncInputs();
   writeJson();
@@ -374,9 +372,9 @@ function setView(kind) {
     camera.position.copy(target).add(new THREE.Vector3(0.95, -1.45, 0.42));
     camera.fov = 32;
   } else {
-    controls.target.set(0, 0, 1.0);
-    camera.position.set(2.4, -4.2, 1.55);
-    camera.fov = 45;
+    controls.target.set(-0.55, 0, 0);
+    camera.position.set(0.35, -3.0, 0.45);
+    camera.fov = 42;
   }
   camera.updateProjectionMatrix();
   controls.update();
@@ -404,7 +402,7 @@ async function copyJson() {
   setStatus('contract copied');
 }
 
-async function boot() {
+async function loadMeshyReference() {
   setStatus('loading Meshy');
   const [meshy, pbr, sabre] = await Promise.all([
     loadGltf(ASSETS.meshyAnimated),
@@ -488,8 +486,7 @@ for (const button of document.querySelectorAll('[data-nudge]')) {
 window.addEventListener('resize', resize);
 resize();
 applyStateToScene();
+setView('full');
+setStatus('ready: visible saber editor');
 animate();
-boot().catch((error) => {
-  console.error(error);
-  setStatus('failed: ' + error.message);
-});
+window.saberBench = { state, contractJson, scene, proxySaber };

@@ -18,7 +18,7 @@ assert(html.includes('id="showProxySaber"') && html.includes('bright editable sa
 assert(js.includes("import * as THREE from 'three'"), 'bench should use Three.js directly');
 assert(js.includes("GLTFLoader"), 'bench should load real GLB assets');
 assert(!js.includes("src/pose-lab.js") && !html.includes("src/pose-lab.js"), 'bench must not import Pose Lab runtime');
-assert(js.includes('RightHand -> WeaponGrip -> SabreRoot -> sabre mesh'), 'bench must declare the simple FK hierarchy');
+assert(js.includes('Standalone visible saber mesh'), 'bench must default to a standalone visible saber, not a rig-dependent path');
 assert(js.includes("findNamed(meshyRoot, 'RightHand', 'Bone')"), 'bench must attach to the real RightHand bone');
 assert(js.includes("findNamed(sabre.scene, 'Mesh_0')"), 'bench must isolate the real sabre mesh');
 assert(js.includes('hideEverythingBut'), 'bench must hide imported junk helper objects');
@@ -26,7 +26,10 @@ assert(js.includes('pinHiltToWeaponGrip'), 'bench must expose hilt pinning as an
 assert(js.includes('Bright editable saber proxy') && js.includes('proxyBlade'), 'bench must include a visible saber-shaped proxy to position even if the GLB is unreadable');
 assert(js.includes('showRealMesh') && js.includes('showProxySaber'), 'bench must let the user compare the real sabre mesh and visible proxy');
 assert(js.includes('FallbackVisibleWeaponGrip') && js.includes('fallbackSabreRoot.add(proxySaber'), 'bench must show a saber before Meshy rig/hand attachment succeeds');
-assert(js.includes('applyStateToScene();\nanimate();'), 'bench must apply the fallback saber transform before async asset loading');
+assert(js.includes('applyStateToScene();\nsetView(\'full\');\nsetStatus(\'ready: visible saber editor\');\nanimate();'), 'bench must apply the visible saber transform before any async asset loading');
+assert(js.includes('setStatus(\'ready: visible saber editor\')'), 'bench must report the visible saber editor as ready before any Meshy load');
+assert(!js.includes('boot().catch'), 'bench must not auto-load Meshy or real sabre assets on startup');
+assert(js.includes('function loadMeshyReference()'), 'Meshy loading should remain available only as an explicit reference path');
 assert(js.includes('pose-lab-meshy-saber-bench-contract-v1'), 'bench must export a stable contract schema');
 assert(css.includes('@media (max-width: 760px)'), 'bench should stay usable on phone screens');
 
