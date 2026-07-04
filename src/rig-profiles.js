@@ -269,7 +269,7 @@ const BASE_RIG_PROFILES = {
       positionMode: 'right-hand',
       parentMode: 'hand-fk',
       handLocalOffset: [0.095, 0.035, -0.01],
-      modelLocalOffset: [1.01462, 12.80195, -0.47992],
+      modelLocalOffset: [1.15887, 14.47175, -0.54361],
       gripOffset: [0, 0, 0],
       tipOffset: [0, 0, 0.85],
       visibleClipPatterns: ['\\[FPS-REST-ARMS'],

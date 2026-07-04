@@ -18,7 +18,7 @@ assert(profiles.includes('scale: 0.47493') && profiles.includes('rotationDeg: [-
 assert(profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]') && profiles.includes('tipLocalPosition: [-0.95561, 0.1368, 0]'), 'Meshy weapon attachment should preserve the restored semantic landmark hilt candidate and track the real blade tip');
 assert(profiles.includes('gripLocalPosition: [0.67888, -0.07803, -0.06249]'), 'FPS weapon attachment should preserve the semantic landmark hilt candidate');
 assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]'), 'Meshy weapon socket should move from wrist bone origin toward visual hand mesh and palm center');
-assert(profiles.includes('modelLocalOffset: [1.01462, 12.80195, -0.47992]'), 'Meshy weapon socket should use the user-authored shared FK model-space placement');
+assert(profiles.includes('modelLocalOffset: [1.15887, 14.47175, -0.54361]'), 'Meshy weapon socket should use the user-authored shared FK model-space placement');
 assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy weapon socket should rotate from the hand origin without shifting the socket');
 assert(profiles.includes("parentMode: 'hand-fk'"), 'Meshy profile should use direct boring FK so WeaponGrip is parented under RightHand');
 assert(!profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy profile must not promote the failed FPS-VISUAL-IK-GOLDEN Ready path');
