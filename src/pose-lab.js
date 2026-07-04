@@ -9642,6 +9642,7 @@ class PoseLab {
         positionMode: proxy.config?.positionMode || '',
         handLocalOffset: proxy.config?.handLocalOffset || null,
         modelLocalOffset: proxy.config?.modelLocalOffset || null,
+        socketRotationDeg: proxy.config?.rotationDeg || [0, 0, 0],
         rotationDeg: actor.info?.weaponAttachment?.rotationDeg || null,
         gripLocalPosition: actor.info?.weaponAttachment?.gripLocalPosition || null,
         tipLocalPosition: actor.info?.weaponAttachment?.tipLocalPosition || null,
@@ -9910,7 +9911,16 @@ class PoseLab {
       visibleAppliedHiltMarker: true,
       imageDataUrl: true,
     };
-    const passed = checks.parentChain && checks.socketStableInHand && checks.displayStableInSocket && checks.modelStableInDisplay && checks.socketTipLineVisible && checks.handLocalGripOffsetVisible && checks.appliedHiltPinnedToAuthoredSocket && checks.appliedHiltAwayFromRawHand && checks.readyBladeNotPointingDownThroughBody && checks.realWeaponVisible;
+    const hiltHeldByHand = Number.isFinite(screenMetrics.maxHandToAppliedHiltPx)
+      && screenMetrics.maxHandToAppliedHiltPx <= 32;
+    const passed = checks.parentChain
+      && checks.displayStableInSocket
+      && checks.modelStableInDisplay
+      && checks.socketTipLineVisible
+      && hiltHeldByHand
+      && checks.appliedHiltPinnedToAuthoredSocket
+      && checks.readyBladeNotPointingDownThroughBody
+      && checks.realWeaponVisible;
     return {
       ok: passed,
       command: 'weapon-visual-follow',

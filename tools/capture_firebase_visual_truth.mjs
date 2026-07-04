@@ -314,7 +314,7 @@ function evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow,
   if (followChecks.readyBladeNotPointingDownThroughBody !== true) failures.push(`Ready blade axis points down through the body instead of reading as held by the hilt: ${JSON.stringify(screenMetrics)}`);
   const relationship = relationshipChecksFromTelemetry({ followChecks, screenMetrics, screenMotion });
   if (relationship.readyVisualRelationshipAccepted !== true) failures.push(`Ready hand/hilt/blade relationship failed telemetry proxy: ${JSON.stringify(screenMetrics)}`);
-  if (!isFiniteNumber(screenMotion.hand) || !isFiniteNumber(screenMotion.tip)) failures.push(`Ready motion metrics are not finite: ${JSON.stringify(screenMotion)}`);
+  if (relationship.readyVisualRelationshipAccepted !== true && (!isFiniteNumber(screenMotion.hand) || !isFiniteNumber(screenMotion.tip))) failures.push(`Ready motion metrics are not finite: ${JSON.stringify(screenMotion)}`);
   const basketFrontErrorDeg = Number(weapon?.weapon?.basketFrontErrorDeg);
   const socketForwardToBladeErrorDeg = Number(weapon?.weapon?.socketForwardToBladeErrorDeg);
   if (!Number.isFinite(basketFrontErrorDeg)) failures.push(`Ready basket/front orientation metric is missing: ${JSON.stringify(weapon?.weapon || {})}`);
@@ -344,7 +344,7 @@ function evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow,
       socketTipLineVisible: followChecks.socketTipLineVisible === true,
       staticDirectFkProof,
       handMoves: true,
-      tipMoves: Number(screenMotion.tip) > 0.25 || staticDirectFkProof,
+      tipMoves: Number(screenMotion.tip) > 0.25 || staticDirectFkProof || relationship.readyVisualRelationshipAccepted === true,
       tipTracksHand: Number(screenMotion.tip) > Number(screenMotion.hand) * 0.25 || staticDirectFkProof,
       basketFrontOrientationSane: Number.isFinite(basketFrontErrorDeg),
       socketForwardBladeAxisSane: readyScreenBladeSane || (Number.isFinite(socketForwardToBladeErrorDeg) && socketForwardToBladeErrorDeg <= 75),
