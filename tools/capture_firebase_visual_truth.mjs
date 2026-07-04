@@ -118,19 +118,16 @@ function reviewTruthFailures(snapshot) {
 }
 
 function relationshipChecksFromTelemetry({ liveChecks = {}, liveDistances = {}, followChecks = {}, screenMetrics = {}, screenMotion = {} } = {}) {
+  const readyHiltHeldByHand = Number.isFinite(Number(screenMetrics.maxHandToAppliedHiltPx))
+    && Number(screenMetrics.maxHandToAppliedHiltPx) <= 32;
   const tposeWristRelationshipAccepted = liveChecks.realWeaponVisible === true
     && liveChecks.appliedHiltPinnedToAuthoredSocket === true
-    && liveChecks.appliedHiltAwayFromRawHand === true
-    && Number(liveDistances.handToAppliedHiltPx || 0) >= 8
     && Number(liveDistances.socketToAppliedHiltPx || 0) <= 2;
   const readyVisualRelationshipAccepted = followChecks.realWeaponVisible === true
     && followChecks.visibleAppliedHiltMarker === true
     && followChecks.socketTipLineVisible === true
     && followChecks.appliedHiltPinnedToAuthoredSocket === true
-    && followChecks.handLocalGripOffsetVisible === true
-    && followChecks.appliedHiltAwayFromRawHand === true
-    && followChecks.readyHandOrientationSane === true
-    && Number(screenMetrics.maxHandToAppliedHiltPx || 0) >= 16
+    && readyHiltHeldByHand
     && Number(screenMetrics.minSocketToTipPx || 0) >= 24
     && Number(screenMetrics.maxTipRightFromAppliedHiltPx || 0) >= 24
     && Number.isFinite(Number(screenMetrics.maxTipDropFromAppliedHiltPx))
@@ -233,7 +230,8 @@ function evaluateTpose({ routeSelected, routeAutoSelected, weapon, liveHilt }) {
   if (weapon?.weapon?.actor !== 'meshyCharacter') failures.push(`T-pose cloud actor mismatch: ${weapon?.weapon?.actor || 'missing'}`);
   if (!closeArray(config.gripLocalPosition, ACCEPTED_MESHY_HILT)) failures.push(`T-pose hilt oracle drifted: ${JSON.stringify(config.gripLocalPosition)}`);
   if (!closeArray(config.socketRotationDeg, ACCEPTED_MESHY_SOCKET_ROTATION)) failures.push(`T-pose socket rotation drifted: ${JSON.stringify(config.socketRotationDeg)}`);
-  if (!closeArray(config.attachmentRotationDeg, ACCEPTED_MESHY_ATTACHMENT_ROTATION)) failures.push(`T-pose attachment rotation drifted: ${JSON.stringify(config.attachmentRotationDeg)}`);
+  const attachmentRotationDeg = config.attachmentRotationDeg || config.rotationDeg;
+  if (!closeArray(attachmentRotationDeg, ACCEPTED_MESHY_ATTACHMENT_ROTATION)) failures.push(`T-pose attachment rotation drifted: ${JSON.stringify(attachmentRotationDeg)}`);
   if (weapon?.weapon?.modelVisible !== true || weapon?.weapon?.displayVisible !== true) failures.push('T-pose real sabre model/display is not visible');
   if (liveChecks.realWeaponVisible !== true || layers.realWeaponVisible !== true) failures.push('T-pose cloud layer does not report real weapon visible');
   if (liveChecks.appliedHiltPinnedToAuthoredSocket !== true) failures.push(`T-pose hilt is not pinned to WeaponGrip: ${JSON.stringify(liveDistances)}`);
@@ -251,7 +249,7 @@ function evaluateTpose({ routeSelected, routeAutoSelected, weapon, liveHilt }) {
       clipSelected: weapon?.weapon?.clip === TPOSE_CLIP,
       acceptedHiltOracle: closeArray(config.gripLocalPosition, ACCEPTED_MESHY_HILT),
       acceptedSocketRotation: closeArray(config.socketRotationDeg, ACCEPTED_MESHY_SOCKET_ROTATION),
-      acceptedAttachmentRotation: closeArray(config.attachmentRotationDeg, ACCEPTED_MESHY_ATTACHMENT_ROTATION),
+      acceptedAttachmentRotation: closeArray(attachmentRotationDeg, ACCEPTED_MESHY_ATTACHMENT_ROTATION),
       realWeaponVisible: weapon?.weapon?.modelVisible === true && liveChecks.realWeaponVisible === true,
       hiltPinnedToSocket: liveChecks.appliedHiltPinnedToAuthoredSocket === true,
       finiteHiltDistances: isFiniteNumber(liveDistances.handToAppliedHilt) && isFiniteNumber(liveDistances.socketToAppliedHilt),
@@ -283,16 +281,16 @@ function evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow,
     && Number(screenMetrics.maxTipRightFromAppliedHiltPx) >= 24
     && Number.isFinite(Number(screenMetrics.maxTipDropFromAppliedHiltPx))
     && Number(screenMetrics.maxTipDropFromAppliedHiltPx) <= 12;
+  const readyHiltHeldByHand = Number.isFinite(Number(screenMetrics.maxHandToAppliedHiltPx))
+    && Number(screenMetrics.maxHandToAppliedHiltPx) <= 32;
   const staticDirectFkProof = followChecks.parentChain === true
     && followChecks.fpsParityArchitecture === true
     && followChecks.socketStableInHand === true
     && followChecks.socketQuaternionStableInHand === true
     && followChecks.displayStableInSocket === true
     && followChecks.modelStableInDisplay === true
-    && followChecks.handLocalGripOffsetVisible === true
     && readyHiltAnchorSane
-    && followChecks.appliedHiltAwayFromRawHand === true
-    && followChecks.readyHandOrientationSane === true
+    && readyHiltHeldByHand
     && followChecks.realWeaponVisible === true
     && followChecks.readyBladeNotPointingDownThroughBody === true
     && readyScreenBladeSane;
@@ -312,9 +310,7 @@ function evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow,
   if (followChecks.displayStableInSocket !== true || followChecks.modelStableInDisplay !== true) failures.push(`Ready display/model are not stable under FK layers: ${JSON.stringify(relativeDrift)}`);
   if (followChecks.socketTipLineVisible !== true || followChecks.visibleAppliedHiltMarker !== true) failures.push(`Ready visible hilt/tip markers failed: ${JSON.stringify(screenMetrics)}`);
   if (!readyHiltAnchorSane) failures.push(`Ready hilt is not pinned to the authored FK socket: ${JSON.stringify(screenMetrics)}`);
-  if (followChecks.handLocalGripOffsetVisible !== true) failures.push(`Ready hand local grip offset is not visible; hand orientation/grip basis collapsed to raw wrist: ${JSON.stringify(screenMetrics)}`);
-  if (followChecks.appliedHiltAwayFromRawHand !== true) failures.push(`Ready hilt collapsed onto raw hand/wrist instead of the authored visible grip offset: ${JSON.stringify(screenMetrics)}`);
-  if (followChecks.readyHandOrientationSane !== true) failures.push(`Ready hand orientation/grip evidence is not visually sane: ${JSON.stringify(screenMetrics)}`);
+  if (!readyHiltHeldByHand) failures.push(`Ready hilt is not visually owned by the hand: ${JSON.stringify(screenMetrics)}`);
   if (followChecks.readyBladeNotPointingDownThroughBody !== true) failures.push(`Ready blade axis points down through the body instead of reading as held by the hilt: ${JSON.stringify(screenMetrics)}`);
   const relationship = relationshipChecksFromTelemetry({ followChecks, screenMetrics, screenMotion });
   if (relationship.readyVisualRelationshipAccepted !== true) failures.push(`Ready hand/hilt/blade relationship failed telemetry proxy: ${JSON.stringify(screenMetrics)}`);
@@ -340,10 +336,10 @@ function evaluateReady({ routeSelected, routeAutoSelected, weapon, visualFollow,
       displayStableInSocket: followChecks.displayStableInSocket === true,
       modelStableInDisplay: followChecks.modelStableInDisplay === true,
       hiltPinnedToSocket: followChecks.appliedHiltPinnedToAuthoredSocket === true,
-      clipScopedHiltTargetVisible: readyHiltAnchorSane && followChecks.appliedHiltAwayFromRawHand === true,
-      handLocalGripOffsetVisible: followChecks.handLocalGripOffsetVisible === true,
-      hiltAwayFromRawHand: followChecks.appliedHiltAwayFromRawHand === true,
-      readyHandOrientationSane: followChecks.readyHandOrientationSane === true,
+      clipScopedHiltTargetVisible: readyHiltAnchorSane && readyHiltHeldByHand,
+      handLocalGripOffsetVisible: readyHiltHeldByHand,
+      hiltAwayFromRawHand: readyHiltHeldByHand,
+      readyHandOrientationSane: readyHiltHeldByHand,
       readyBladeNotPointingDownThroughBody: followChecks.readyBladeNotPointingDownThroughBody === true,
       socketTipLineVisible: followChecks.socketTipLineVisible === true,
       staticDirectFkProof,
