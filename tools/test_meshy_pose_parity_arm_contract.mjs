@@ -19,7 +19,7 @@ assert(js.includes('applyLegacyWeaponSocketTransform') && js.includes('if (!clip
 
 assert(profiles.includes("retargetMode: 'meshy-fps-visual-ik-ready'"), 'Meshy Ready config should use the golden visual IK helper');
 assert(profiles.includes("mode: 'world-joint-projection'") && profiles.includes('restRelative: true'), 'Meshy Ready should use rest-relative world-joint projection');
-assert(profiles.includes('rightRollOffsetDeg: -120') && profiles.includes('leftRollOffsetDeg: -90'), 'Meshy Ready should keep the accepted roll split');
+assert(profiles.includes('rightRollOffsetDeg: 0') && profiles.includes('leftRollOffsetDeg: -90'), 'Meshy Ready should keep right roll neutral and preserve left roll');
 assert(!profiles.includes("sourceWeapon: 'Weapon.R'") && !profiles.includes("targetWeapon: 'WeaponGrip'"), 'active Meshy Ready should not generate WeaponGrip tracks from FPS Weapon.R');
 assert(js.includes('if (guidedTracks.length && !ikPreservesSourceTracks)'), 'replacement IK should be guarded away from the active source-key correction mode');
 assert(profiles.includes("positionMode: 'right-hand'"), 'Meshy one-hand saber socket should be positioned on the right hand, not the two-hand midpoint');

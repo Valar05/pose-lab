@@ -18,7 +18,7 @@ assert(js.includes("const mappedTag = spec.clipTag || (spec.retargetMode === 'we
 assert(profiles.includes("startupClip: { name: '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]' }"), 'Meshy startup should use the accepted FPS/Meshy T-pose calibration');
 assert(profiles.includes("sourceKey: 'player'"), 'Meshy generated clips should source from FPS Arms');
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy generated Ready clip should be tagged FPS-VISUAL-IK-GOLDEN');
-assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(-120)'), 'Meshy should expose the accepted FPS rest-arms CAL--120 clip');
+assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(0)'), 'Meshy should expose the FPS rest-arms calibration with neutral right-hand roll');
 assert(profiles.includes("RestProbe: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe should default to the exact accepted CAL--120 clip path');
 assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]'"), 'Meshy SwordReady should expose only the accepted T-pose baseline until Ready is promoted');
 assert(!profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Meshy SwordReady must not point at the rejected ready retarget path during recovery');
@@ -33,7 +33,7 @@ for (const deferred of ['OneHandReadied -> meshyCharacter', 'OneHandAttack1 -> m
   assert(!profiles.includes(deferred), `Meshy should defer generated attack/readied clip: ${deferred}`);
 }
 assert(profiles.includes("mode: 'world-joint-projection'"), 'Meshy Ready should use world-joint projection');
-assert(profiles.includes('rightRollOffsetDeg: -120') && profiles.includes('leftRollOffsetDeg: -90'), 'Meshy Ready should preserve the accepted roll split');
+assert(profiles.includes('rightRollOffsetDeg: 0') && profiles.includes('leftRollOffsetDeg: -90'), 'Meshy Ready should keep right roll neutral and preserve left roll');
 assert(profiles.includes("sourceRestClip: '0T-Pose'") && profiles.includes("targetRestProvider: 'skin-bind'"), 'Meshy should retarget from explicit source and target rest providers');
 assert(profiles.includes("{ from: 'Arm.R', to: 'RightArm', strength: 0.85 }"), 'Meshy should map source right upper arm to Meshy right upper arm');
 assert(profiles.includes("{ from: 'Forearm.R', to: 'RightForeArm', strength: 1.0 }"), 'Meshy should map source right forearm to Meshy right forearm');
