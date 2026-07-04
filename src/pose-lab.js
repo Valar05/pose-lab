@@ -11171,6 +11171,10 @@ class PoseLab {
     const displayWorldScale = proxy.displayRoot?.getWorldScale(new THREE.Vector3()) || null;
     const modelWorldScale = proxy.model?.getWorldScale(new THREE.Vector3()) || null;
     const socketLocalQuaternion = proxy.root.quaternion.clone().normalize();
+    const handWorldQuaternion = hand ? worldQuaternionOf(hand) : null;
+    const socketWorldQuaternion = worldQuaternionOf(proxy.root);
+    const displayRootLocalQuaternion = proxy.displayRoot?.quaternion?.clone?.().normalize?.() || null;
+    const displayRootWorldQuaternion = proxy.displayRoot ? worldQuaternionOf(proxy.displayRoot) : null;
     const sabreMeshLocalQuaternion = proxy.model?.quaternion?.clone?.().normalize?.() || null;
     const sabreMeshWorldQuaternion = proxy.model ? worldQuaternionOf(proxy.model) : null;
     const weaponHandle = actor.boneHandles?.get(proxy.root.name) || null;
@@ -11235,7 +11239,11 @@ class PoseLab {
         scale: (proxy.activeAttachmentConfig || proxy.attachmentConfig || actor.info?.weaponAttachment)?.scale ?? null,
       },
       quaternions: {
+        rightHandWorld: handWorldQuaternion ? roundQuat(handWorldQuaternion) : null,
         weaponGripSocketLocal: roundQuat(socketLocalQuaternion),
+        weaponGripWorld: roundQuat(socketWorldQuaternion),
+        displayRootLocalInWeaponGrip: displayRootLocalQuaternion ? roundQuat(displayRootLocalQuaternion) : null,
+        displayRootWorld: displayRootWorldQuaternion ? roundQuat(displayRootWorldQuaternion) : null,
         sabreMeshLocalInDisplayRoot: sabreMeshLocalQuaternion ? roundQuat(sabreMeshLocalQuaternion) : null,
         sabreMeshWorld: sabreMeshWorldQuaternion ? roundQuat(sabreMeshWorldQuaternion) : null,
       },

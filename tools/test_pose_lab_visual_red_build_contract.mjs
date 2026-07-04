@@ -69,6 +69,7 @@ assert(humanRedBuilds.includes('REVIEW ROUTE READY') && humanRedBuilds.includes(
 assert(humanRedBuilds.includes('e6cc6635631c1f1a983932d01e3233f25640e933') && humanRedBuilds.includes('28678973256'), 'human red-build ledger must preserve the latest false-green strike');
 assert(preflightScript.includes('AUTHORITY_REVOKED_FALSE_GREEN') && preflightScript.includes('allowedNextAction'), 'preflight must revoke authority and provide the only allowed next action for false-green vetoes');
 assert(appSource.includes('reviewTruthState') && appSource.includes('REVIEW RED'), 'Pose Lab runtime must expose visible review truth in the UI');
+assert(appSource.includes('rightHandWorld') && appSource.includes('weaponGripWorld') && appSource.includes('sabreMeshLocalInDisplayRoot') && appSource.includes('sabreMeshWorld'), 'Pose Lab weapon diagnostics must expose hand/world and mesh-local quaternion layers for sword-bone visual audits');
 assert(appSource.includes('Meshy review UI fell back to walking-only clip inventory'), 'Pose Lab runtime must mark walking-only Meshy review inventory red');
 assert(appSource.includes('enforceReviewRequestedClip'), 'Pose Lab review route must force the requested clip if runtime state drifts');
 assert(appSource.includes('hideReviewObstructionSprites'), 'Pose Lab review route must hide obstructing actor label sprites');
