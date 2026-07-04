@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync } from 'node:child_process';
 import { chromium } from '@playwright/test';
 import { synthesizeCaptureSense, synthesizeEvidenceSense } from './pose_lab_sense_synthesis.mjs';
 
@@ -174,6 +175,17 @@ function identifierMatches(identifier = '', candidate = '') {
   return left === right || left.startsWith(right) || right.startsWith(left);
 }
 
+function commitIsAncestorOfHead(commit = '') {
+  const value = String(commit || '').trim();
+  if (!/^[0-9a-f]{7,40}$/i.test(value)) return false;
+  try {
+    execFileSync('git', ['merge-base', '--is-ancestor', value, 'HEAD'], { cwd: projectRoot, stdio: 'ignore' });
+    return true;
+  } catch (_error) {
+    return false;
+  }
+}
+
 function humanRedBuildForCommit(commit) {
   const candidates = [
     commit,
@@ -194,7 +206,10 @@ function humanRedBuildForCommit(commit) {
         entry?.firebaseRunId,
         entry?.workflowRunId,
       ].map((value) => String(value || '')).filter(Boolean);
-      return candidates.some((candidate) => identifiers.some((identifier) => identifierMatches(identifier, candidate)));
+      return candidates.some((candidate) => identifiers.some((identifier) => identifierMatches(identifier, candidate)))
+        || commitIsAncestorOfHead(entry?.commit)
+        || commitIsAncestorOfHead(entry?.headCommit)
+        || commitIsAncestorOfHead(entry?.artifactCommit);
     }) || null;
   } catch (error) {
     return {

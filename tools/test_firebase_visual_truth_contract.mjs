@@ -21,6 +21,25 @@ function currentCommit() {
   return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: projectRoot, encoding: 'utf8' }).trim();
 }
 
+const preflightResult = spawnSync('node', ['tools/pose_lab_visual_truth_preflight.mjs', '--json'], {
+  cwd: projectRoot,
+  encoding: 'utf8',
+  stdio: ['ignore', 'pipe', 'pipe'],
+});
+let preflight = null;
+try {
+  preflight = JSON.parse(String(preflightResult.stdout || '{}'));
+} catch (_error) {
+  preflight = null;
+}
+if (preflight?.status === 'AUTHORITY_REVOKED_FALSE_GREEN') {
+  assert(preflight.ok === false, 'authority-revoked preflight must be red');
+  assert(Array.isArray(preflight.failures) && preflight.failures.some((failure) => failure.includes('AUTHORITY_REVOKED_FALSE_GREEN')), 'authority-revoked preflight must name false-green veto');
+  if (failures.length) throw new Error(failures.join('\n'));
+  console.log(JSON.stringify({ checked: ['firebase-visual-truth-contract', 'false-green-quarantined'], evidencePath: path.relative(projectRoot, evidencePath), preflight: preflight.status }, null, 2));
+  process.exit(0);
+}
+
 if (!fs.existsSync(evidencePath)) {
   console.log(JSON.stringify({
     checked: ['firebase-visual-truth-contract'],
@@ -55,25 +74,6 @@ if (evidence.commit !== currentCommit() && evidence.headCommit !== currentCommit
     reason: `stale Firebase hosted visual truth evidence: commit ${evidence.commit || 'missing'} head ${evidence.headCommit || 'missing'} does not match current ${currentCommit()}`,
     evidencePath: path.relative(projectRoot, evidencePath),
   }, null, 2));
-  process.exit(0);
-}
-
-const preflightResult = spawnSync('node', ['tools/pose_lab_visual_truth_preflight.mjs', '--json'], {
-  cwd: projectRoot,
-  encoding: 'utf8',
-  stdio: ['ignore', 'pipe', 'pipe'],
-});
-let preflight = null;
-try {
-  preflight = JSON.parse(String(preflightResult.stdout || '{}'));
-} catch (_error) {
-  preflight = null;
-}
-if (preflight?.status === 'AUTHORITY_REVOKED_FALSE_GREEN') {
-  assert(preflight.ok === false, 'authority-revoked preflight must be red');
-  assert(Array.isArray(preflight.failures) && preflight.failures.some((failure) => failure.includes('AUTHORITY_REVOKED_FALSE_GREEN')), 'authority-revoked preflight must name false-green veto');
-  if (failures.length) throw new Error(failures.join('\n'));
-  console.log(JSON.stringify({ checked: ['firebase-visual-truth-contract', 'false-green-quarantined'], evidencePath: path.relative(projectRoot, evidencePath), preflight: preflight.status }, null, 2));
   process.exit(0);
 }
 

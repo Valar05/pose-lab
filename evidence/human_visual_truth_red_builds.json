@@ -169,6 +169,39 @@
         "humanAccepted": true
       },
       "notes": "This records the false-green created by treating marker distance as visual acceptance after changing away from the human-authored orientation."
+    },
+    {
+      "commit": "1afd306633f2486674d37026f622660f24fc30c3",
+      "runId": "28695372699",
+      "reportedAt": "2026-07-04",
+      "authority": "human-phone-visible-cloud-review",
+      "status": "open",
+      "url": "https://pose-lab-visual-truth--visual-truth-pr-28695372699-199l5spj.web.app/pose-lab.html?mode=standard&actor=meshyCharacter&qaActor=meshyCharacter&clip=OneHandReady%20-%3E%20meshyCharacter%20%5BFPS-SWORD-UPPER%5D&qaClip=OneHandReady%20-%3E%20meshyCharacter%20%5BFPS-SWORD-UPPER%5D&weaponDebug=1&cacheBust=cloud-green-28695372699-direct-wake",
+      "screenshots": [
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260704-000703.png",
+        "/storage/emulated/0/Pictures/Screenshots/Screenshot_20260704-000709.png"
+      ],
+      "issues": [
+        "Android Chrome screenshot 20260704-000703 shows the exact cloud Ready review URL on Meshy Character with a visibly broken Ready pose: the saber is buried across the torso/forearm region and does not read as an accepted hand-owned grip",
+        "Android Chrome screenshot 20260704-000709 shows T-pose on the same cloud deployment with the saber/hilt/blade relationship no longer matching the previously accepted T-pose reference",
+        "The cloud run 28695372699 reported ok=true and Sense Synthesis human-green, but the phone-visible screenshots are human-red",
+        "This is not a revert to the accepted baseline; the live route is still selecting the IK-generated OneHandReady -> meshyCharacter [FPS-SWORD-UPPER] path",
+        "The gate accepted telemetry/marker relationships while the perceived pose reads as broken IK"
+      ],
+      "blocks": [
+        "promotion",
+        "browser-wake-as-proof",
+        "green-report",
+        "fk-offset-pose-edits",
+        "ready-acceptance"
+      ],
+      "closureRequired": {
+        "status": "superseded",
+        "supersededByCommit": "required",
+        "acceptedEvidencePath": "required",
+        "humanAccepted": true
+      },
+      "notes": "This records the current false-green: the cloud artifact claimed green, but fresh phone-visible cloud screenshots from 2026-07-04 00:07 show Ready and T-pose red. Do not use run 28695372699 as acceptance."
     }
   ]
 }
