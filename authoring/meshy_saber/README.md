@@ -11,7 +11,7 @@ This folder is the escape hatch for Meshy saber work. Blender is the local termi
 
 ## Workflow
 
-1. From the Pose Lab repo root, probe the local terminal Blender:
+1. From the Pose Lab repo root, probe terminal Blender. The workbench checks direct host Blender first, then mirrors the TFTM pattern by trying `proot-distro login debian -- blender`:
 
    ```sh
    node tools/meshy_saber_blender_workbench.mjs --probe --json
@@ -45,7 +45,7 @@ This folder is the escape hatch for Meshy saber work. Blender is the local termi
    blender --background --python authoring/meshy_saber/blender_build_meshy_ready_authoring.py -- --repo-root . --render-dir authoring/meshy_saber/exports/headless_review --export-json authoring/meshy_saber/exports/meshy_ready_saber_contract.json
    ```
 
-If local Blender is unavailable, report `LOCAL_BLENDER_UNAVAILABLE`. Do not fall back to THECAULDRON or a manual UI host unless that is explicitly requested.
+If local/proot Blender is unavailable, report `LOCAL_BLENDER_UNAVAILABLE`. Do not fall back to THECAULDRON or a manual UI host unless that is explicitly requested.
 
 ## Promotion Rule
 

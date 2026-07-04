@@ -17,10 +17,13 @@ assert(dryRun.ok === true, 'dry run should not require Blender execution');
 assert(dryRun.status === 'DRY_RUN', 'dry run should report DRY_RUN');
 assert(Array.isArray(dryRun.command), 'dry run should report the command array');
 assert(dryRun.command.includes('--background'), 'workbench should run Blender in background mode');
-assert(dryRun.command.includes('authoring/meshy_saber/blender_build_meshy_ready_authoring.py'), 'workbench should call the Meshy saber Blender script');
-assert(dryRun.command.includes('--render-dir'), 'workbench should request render artifacts');
-assert(dryRun.command.includes('authoring/meshy_saber/exports/headless_review'), 'workbench should use the headless review output directory');
-assert(dryRun.command.includes('--export-json'), 'workbench should export the transform contract');
+assert(dryRun.command.includes('--python-expr'), 'workbench should use python-expr so Debian proot Blender sees its Python packages');
+const dryRunCommand = dryRun.command.join('\n');
+assert(dryRunCommand.includes('authoring/meshy_saber/blender_build_meshy_ready_authoring.py'), 'workbench should call the Meshy saber Blender script');
+assert(dryRunCommand.includes('--repo-root') && dryRunCommand.includes(projectRoot), 'workbench should pass an absolute repo root into Blender/proot');
+assert(dryRunCommand.includes('--render-dir'), 'workbench should request render artifacts');
+assert(dryRunCommand.includes('authoring/meshy_saber/exports/headless_review'), 'workbench should use the headless review output directory');
+assert(dryRunCommand.includes('--export-json'), 'workbench should export the transform contract');
 
 const unavailable = spawnSync('node', [
   'tools/meshy_saber_blender_workbench.mjs',
@@ -33,6 +36,13 @@ const unavailableReport = JSON.parse(unavailable.stdout);
 assert(unavailable.status === 0, 'probe mode should report missing Blender without failing the planning/probe command');
 assert(unavailableReport.status === 'LOCAL_BLENDER_UNAVAILABLE', 'missing Blender should be explicit');
 assert(String(unavailableReport.message || '').includes('do not fall back to Cauldron'), 'missing Blender report should forbid silent Cauldron fallback');
+
+const source = execFileSync('node', [
+  '-e',
+  'process.stdout.write(require("node:fs").readFileSync("tools/meshy_saber_blender_workbench.mjs", "utf8"))',
+], { cwd: projectRoot, encoding: 'utf8' });
+assert(source.includes('proot-distro'), 'workbench should include TFTM-style proot-distro fallback');
+assert(source.includes('login') && source.includes('debian') && source.includes('blender'), 'workbench should target Debian proot Blender by default');
 
 if (failures.length) throw new Error(failures.join('\n'));
 console.log(JSON.stringify({ checked: ['meshy-saber-blender-workbench', 'dry-run-command', 'local-blender-unavailable'] }, null, 2));

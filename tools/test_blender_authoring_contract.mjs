@@ -21,7 +21,7 @@ const workbench = read('tools/meshy_saber_blender_workbench.mjs');
 assert(manifest.schema === 'pose-lab-blender-authoring-lane-v1', 'Blender authoring manifest schema drifted');
 assert(manifest.authority === 'local headless Blender review artifacts plus human approval', 'Blender manifest must make local headless review plus approval authoritative');
 assert(manifest.status === 'scaffolded-no-approved-export', 'Blender lane must not pretend an approved export exists yet');
-assert(manifest.blender?.preferredHost === 'local-terminal', 'Blender lane should prefer the local terminal runner');
+assert(manifest.blender?.preferredHost === 'local-terminal-or-debian-proot', 'Blender lane should prefer local terminal or Debian proot Blender');
 assert(manifest.blender?.runner === 'tools/meshy_saber_blender_workbench.mjs', 'Blender lane should name the terminal workbench runner');
 assert(manifest.sourceAssets?.meshyAnimatedRig?.endsWith('Animation_Walking_withSkin.glb'), 'manifest should point at the animated Meshy rig');
 assert(manifest.sourceAssets?.fpsReference === 'assets/models/FPSPlayer.glb', 'manifest should point at FPSPlayer reference');
@@ -38,12 +38,14 @@ assert(script.includes('meshy_saber_tpose.png') && script.includes('meshy_saber_
 assert(script.includes('meshy_saber_contact_sheet.html'), 'Blender script must write a contact sheet artifact');
 
 assert(workbench.includes('LOCAL_BLENDER_UNAVAILABLE'), 'workbench must report missing local Blender explicitly');
+assert(workbench.includes('proot-distro'), 'workbench must mirror the TFTM Debian proot Blender path');
 assert(workbench.includes('HEADLESS_BLENDER_ARTIFACTS_WRITTEN'), 'workbench must report successful headless artifact generation');
 assert(workbench.includes('authoring/meshy_saber/exports/headless_review'), 'workbench must default to the ignored headless review output directory');
 
 assert(readme.includes('Blender is the local terminal visual authoring/render surface'), 'README must state local terminal Blender authority');
 assert(workflow.includes('Pose Lab is no longer the authoring surface for Meshy saber placement'), 'workflow doc must demote Pose Lab authoring');
 assert(workflow.includes('Use terminal-runnable local Blender first'), 'workflow doc must forbid remote-first Blender assumptions');
+assert(workflow.includes('proot-distro login debian -- blender'), 'workflow doc must document the TFTM-style Debian proot Blender fallback');
 assert(workflow.includes('It must not retarget, solve, run `WeaponR` parity, or tune offsets'), 'workflow doc must forbid old solver/tuning loop on import');
 assert(orientation.includes('Blender-First Meshy Saber Recovery'), 'orientation must advertise the Blender-first recovery lane');
 assert(orientation.includes('tools/meshy_saber_blender_workbench.mjs --probe --json'), 'orientation must document the local Blender probe');

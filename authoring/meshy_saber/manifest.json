@@ -6,9 +6,9 @@
   "status": "scaffolded-no-approved-export",
   "blender": {
     "minimumVersion": "4.3.2",
-    "preferredHost": "local-terminal",
+    "preferredHost": "local-terminal-or-debian-proot",
     "runner": "tools/meshy_saber_blender_workbench.mjs",
-    "reason": "Pose Lab recovery should use terminal-runnable local Blender first. If local Blender is unavailable or fails, report that blocker instead of silently falling back to a remote UI host."
+    "reason": "Pose Lab recovery should use terminal-runnable local Blender first, including Blender inside proot-distro Debian as used by tanks-for-the-memories. If local/proot Blender is unavailable or fails, report that blocker instead of silently falling back to a remote UI host."
   },
   "sourceAssets": {
     "meshyAnimatedRig": "assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb",

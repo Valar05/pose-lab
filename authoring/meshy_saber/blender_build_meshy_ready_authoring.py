@@ -17,6 +17,7 @@ import json
 from pathlib import Path
 
 import bpy
+import numpy  # noqa: F401 - preload for Blender's GLTF importer inside Debian proot.
 from mathutils import Vector
 
 
@@ -74,6 +75,12 @@ def find_object(objects: list[bpy.types.Object], contains: str) -> bpy.types.Obj
     return None
 
 
+def hide_from_review(objects: list[bpy.types.Object]) -> None:
+    for obj in objects:
+        obj.hide_viewport = True
+        obj.hide_render = True
+
+
 def ensure_weapon_grip(meshy_armature: bpy.types.Object) -> bpy.types.Object:
     grip = bpy.data.objects.get("WeaponGrip")
     if grip is None:
@@ -106,9 +113,15 @@ def look_at(obj: bpy.types.Object, target: Vector) -> None:
 
 def setup_review_scene(meshy_armature: bpy.types.Object, grip: bpy.types.Object, sabre: bpy.types.Object, resolution: int) -> None:
     try:
-        bpy.context.scene.render.engine = "BLENDER_EEVEE_NEXT"
-    except TypeError:
-        bpy.context.scene.render.engine = "BLENDER_EEVEE"
+        bpy.context.scene.render.engine = "CYCLES"
+        bpy.context.scene.cycles.device = "CPU"
+        bpy.context.scene.cycles.samples = 32
+        bpy.context.scene.cycles.use_denoising = False
+    except (AttributeError, TypeError):
+        try:
+            bpy.context.scene.render.engine = "BLENDER_EEVEE_NEXT"
+        except TypeError:
+            bpy.context.scene.render.engine = "BLENDER_EEVEE"
     bpy.context.scene.render.resolution_x = resolution
     bpy.context.scene.render.resolution_y = resolution
     bpy.context.scene.view_settings.view_transform = "Filmic"
@@ -215,8 +228,9 @@ def main() -> None:
     repo = Path(args.repo_root).resolve()
     clear_scene()
     meshy_objects = import_glb(repo / MESHY_RIG, "Meshy Character Source")
-    import_glb(repo / FPS_REFERENCE, "FPS Arms Reference")
+    fps_objects = import_glb(repo / FPS_REFERENCE, "FPS Arms Reference")
     sabre_objects = import_glb(repo / MESHY_SABRE, "Meshy Sabre Source")
+    hide_from_review(fps_objects)
 
     meshy_armature = find_armature(meshy_objects)
     if meshy_armature is None:

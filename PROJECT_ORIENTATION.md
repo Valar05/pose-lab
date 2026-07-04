@@ -157,7 +157,7 @@ First-person view mode uses Arcane Manifold's copied `Player.tscn` camera data: 
 
 ## Local Blender Note
 
-For Meshy saber recovery, local terminal Blender is the first authoring/render path. Probe it with `node tools/meshy_saber_blender_workbench.mjs --probe --json`. If it is missing or fails, report `LOCAL_BLENDER_UNAVAILABLE` or `HEADLESS_BLENDER_FAILED`; do not silently reroute to THECAULDRON or require a Blender UI.
+For Meshy saber recovery, local terminal Blender is the first authoring/render path. The workbench checks direct host Blender first, then TFTM-style Debian proot Blender via `proot-distro login debian -- blender`. Probe it with `node tools/meshy_saber_blender_workbench.mjs --probe --json`. If it is missing or fails, report `LOCAL_BLENDER_UNAVAILABLE` or `HEADLESS_BLENDER_FAILED`; do not silently reroute to THECAULDRON or require a Blender UI.
 
 ## Blender-First Meshy Saber Recovery
 

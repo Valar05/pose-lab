@@ -16,7 +16,7 @@ Metrics, browser telemetry, cloud screenshots, and offline renderers are support
 
 ## Build Headless Review Artifacts
 
-Use terminal-runnable local Blender first. Do not require a UI and do not route to THECAULDRON unless explicitly requested.
+Use terminal-runnable local Blender first. The workbench checks direct host Blender first, then the same Debian proot pattern used by TFTM: `proot-distro login debian -- blender`. Do not require a UI and do not route to THECAULDRON unless explicitly requested.
 
 ```sh
 node tools/meshy_saber_blender_workbench.mjs --probe --json
@@ -30,7 +30,7 @@ The workbench writes:
 - `authoring/meshy_saber/exports/headless_review/meshy_saber_contact_sheet.html`
 - `authoring/meshy_saber/exports/meshy_ready_saber_contract.json`
 
-If local Blender is missing or cannot render, stop with `LOCAL_BLENDER_UNAVAILABLE` or `HEADLESS_BLENDER_FAILED`. Do not tune `src/rig-profiles.js` to compensate for a missing authoring artifact.
+If local/proot Blender is missing or cannot render, stop with `LOCAL_BLENDER_UNAVAILABLE` or `HEADLESS_BLENDER_FAILED`. Do not tune `src/rig-profiles.js` to compensate for a missing authoring artifact.
 
 ## Export Contract
 
