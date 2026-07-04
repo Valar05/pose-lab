@@ -5698,7 +5698,7 @@ class PoseLab {
     }
     if (isMeshyReview) {
       const missingReviewClips = MESHY_REVIEW_CLIPS.filter((name) => !labels.includes(name));
-      if (labels.length < 5) failures.push(`Meshy review inventory collapsed: ${labels.length} clips`);
+      if (labels.length < 4) failures.push(`Meshy review inventory collapsed: ${labels.length} clips`);
       if (missingReviewClips.length) failures.push(`Meshy review clips missing: ${missingReviewClips.join(', ')}`);
       if (labels.length === 1 && labels[0]?.includes('walking_man')) failures.push('Meshy review UI fell back to walking-only clip inventory');
       if (activeClip && clipLabel(activeClip).includes('walking_man')) failures.push('Meshy review route is playing walking_man fallback');

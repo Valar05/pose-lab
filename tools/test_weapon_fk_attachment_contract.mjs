@@ -23,7 +23,7 @@ const fixed = render([
   '--samples', '3',
 ]);
 
-assert(profilesSource.includes('rotationDeg: [0, 0, 0]') && profilesSource.includes('rotationDeg: [-67.582, 76.718, -90.52]'), 'Meshy sabre rotation must preserve the accepted T-pose FK calibration on the mesh layer with identity WeaponGrip rotation');
+assert(profilesSource.includes('rotationDeg: [0, 0, 0]') && profilesSource.includes('rotationDeg: [-67.582, 76.718, -30.52]'), 'Meshy sabre rotation must preserve the accepted T-pose FK calibration on the mesh layer with identity WeaponGrip rotation');
 assert(profilesSource.includes('modelLocalOffset: [1.01462, 12.80195, -0.47992]'), 'Meshy weapon proxy offset must match the accepted T-pose display baseline');
 assert(profilesSource.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]'), 'Meshy sabre hilt oracle must match the accepted T-pose baseline');
 assert(profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must use direct hand-fk for boring FK verification');

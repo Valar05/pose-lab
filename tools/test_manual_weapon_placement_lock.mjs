@@ -14,7 +14,7 @@ const lockedProductionLiterals = [
   ['Meshy modelLocalOffset', 'modelLocalOffset: [1.01462, 12.80195, -0.47992]'],
   ['Meshy weapon scale', 'scale: 0.47493'],
   ['Meshy socket rotation', 'rotationDeg: [0, 0, 0]'],
-  ['Meshy mesh rotation', 'rotationDeg: [-67.582, 76.718, -90.52]'],
+  ['Meshy mesh rotation', 'rotationDeg: [-67.582, 76.718, -30.52]'],
   ['Meshy grip landmark', 'gripLocalPosition: [0.6535, -0.02302, -0.07317]'],
   ['Meshy tip landmark', 'tipLocalPosition: [-0.95561, 0.1368, 0]'],
   ['FPS modelLocalOffset', 'modelLocalOffset: [0.00424, -0.0167, 0.01744]'],

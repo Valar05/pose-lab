@@ -204,7 +204,7 @@ function quaternionFromDeg(THREE, rotationDeg = [0, 0, 0]) {
 export function deriveAttachmentBladeLocal(THREE, attachment = {}) {
   const grip = Array.isArray(attachment.gripLocalPosition) ? attachment.gripLocalPosition : [0.6535, -0.02302, -0.07317];
   const tip = Array.isArray(attachment.tipLocalPosition) ? attachment.tipLocalPosition : [-0.95561, 0.1368, 0];
-  const rotationDeg = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg : [-67.582, 76.718, -90.52];
+  const rotationDeg = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg : [-67.582, 76.718, -30.52];
   const blade = new THREE.Vector3(
     Number(tip[0] || 0) - Number(grip[0] || 0),
     Number(tip[1] || 0) - Number(grip[1] || 0),
@@ -216,7 +216,7 @@ export function deriveAttachmentBladeLocal(THREE, attachment = {}) {
 }
 
 function deriveAttachmentAxisLocal(THREE, attachment = {}, axis = [0, 1, 0]) {
-  const rotationDeg = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg : [-67.582, 76.718, -90.52];
+  const rotationDeg = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg : [-67.582, 76.718, -30.52];
   const q = quaternionFromDeg(THREE, rotationDeg);
   const v = new THREE.Vector3(Number(axis?.[0] || 0), Number(axis?.[1] ?? 1), Number(axis?.[2] || 0));
   if (v.lengthSq() < 1e-8) v.set(0, 1, 0);
