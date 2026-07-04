@@ -76,6 +76,7 @@ jobs:
           node -e "const fs=require('fs'); const p=process.env.RUNNER_TEMP + '/firebase-deploy.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); const site=process.env.FIREBASE_HOSTING_SITE; const url=j.result?.[site]?.url; if(!url) throw new Error('missing Firebase preview URL in '+p); fs.appendFileSync(process.env.GITHUB_ENV, 'HOSTED_URL='+url+'\\n'); console.log(url);"
 
       - name: Capture hosted Pose Lab truth
+        timeout-minutes: 5
         env:
           GITHUB_SHA: '${{ github.sha }}'
           GITHUB_HEAD_SHA: '${{ github.event.pull_request.head.sha || github.sha }}'

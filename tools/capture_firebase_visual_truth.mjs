@@ -13,6 +13,8 @@ const ACCEPTED_MESHY_SOCKET_ROTATION = [0, 0, 0];
 const ACCEPTED_MESHY_ATTACHMENT_ROTATION = [90, 0, -55.145];
 const LANDING_LOAD_MAX_MS = 20000;
 const LANDING_LOAD_WARN_MS = 20000;
+const ROUTE_LOAD_TIMEOUT_MS = 45000;
+const ROUTE_ATTEMPTS = 1;
 const HUMAN_RED_BUILDS_PATH = path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json');
 const MOBILE_REVIEW_VIEWPORT = { width: 430, height: 932 };
 
@@ -401,7 +403,7 @@ async function waitForHostedMeshyPage(pageInstance, clipName = '') {
     if (!apiReady || !/selected Meshy Character/.test(text)) return false;
     if (!expectedClip) return true;
     return text.includes(expectedClip);
-  }, clipName, { timeout: 120000 });
+  }, clipName, { timeout: ROUTE_LOAD_TIMEOUT_MS });
   const text = await pageInstance.locator('#loadState').textContent({ timeout: 5000 }).catch(() => '');
   if (/module failed|boot error|boot rejection/i.test(text || '')) throw new Error(text);
   if (!/selected Meshy Character/.test(text || '')) throw new Error(`hosted route did not select Meshy Character: ${text || 'missing load state'}`);
@@ -410,20 +412,34 @@ async function waitForHostedMeshyPage(pageInstance, clipName = '') {
 
 async function gotoHostedMeshyPage(pageInstance, url, clipName = '') {
   let lastError = '';
-  for (let attempt = 0; attempt < 3; attempt += 1) {
+  for (let attempt = 0; attempt < ROUTE_ATTEMPTS; attempt += 1) {
     const nextUrl = attempt === 0
       ? url
       : `${url}${url.includes('?') ? '&' : '?'}routeRetry=${attempt}`;
     try {
+      console.log(JSON.stringify({
+        event: 'firebase-visual-truth-route-attempt',
+        attempt: attempt + 1,
+        maxAttempts: ROUTE_ATTEMPTS,
+        clip: clipName,
+        url: nextUrl,
+      }));
       await pageInstance.goto('about:blank', { waitUntil: 'domcontentloaded', timeout: 30000 }).catch(() => {});
-      await pageInstance.goto(nextUrl, { waitUntil: 'domcontentloaded', timeout: 90000 });
+      await pageInstance.goto(nextUrl, { waitUntil: 'domcontentloaded', timeout: ROUTE_LOAD_TIMEOUT_MS });
       await waitForHostedMeshyPage(pageInstance, clipName);
       return { ok: true, attempts: attempt + 1, error: '' };
     } catch (caught) {
       lastError = caught?.message || String(caught);
+      console.log(JSON.stringify({
+        event: 'firebase-visual-truth-route-failed',
+        attempt: attempt + 1,
+        maxAttempts: ROUTE_ATTEMPTS,
+        clip: clipName,
+        error: compactError(lastError),
+      }));
     }
   }
-  return { ok: false, attempts: 3, error: lastError };
+  return { ok: false, attempts: ROUTE_ATTEMPTS, error: lastError };
 }
 
 const initialUrl = landingUrl(hostedUrl);
@@ -453,6 +469,9 @@ for (const capture of captures) {
       error = caught?.message || String(caught);
     }
     clipSwitch = { ok: !error, command: 'cold-load-route', url: captureUrl };
+  } else {
+    error = `initial landing route failed before ${capture.id}: ${initialLoadError}`;
+    clipSwitch = { ok: false, command: 'cold-load-route', url: captureUrl, blockedByLandingFailure: true };
   }
   const loadMs = capture.id === 'landing' ? initialLoadMs : Date.now() - startedAt;
   await page.waitForTimeout(1000);

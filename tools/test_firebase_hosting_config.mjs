@@ -45,7 +45,7 @@ assert(captureScript.includes("url.searchParams.set('qaActor', 'meshyCharacter')
 assert(captureScript.includes('selected Meshy Character'), 'Firebase capture should wait for the hosted page to actually select Meshy Character');
 assert(captureScript.includes('autoLoadedMeshyFromColdUrl') && captureScript.includes('manualActorSelectionRequiredFalse'), 'Firebase capture should record cold URL Meshy auto-load and no manual actor selection proof');
 assert(captureScript.includes('headCommit: currentHeadCommit()'), 'Firebase capture should record PR headCommit separately from the workflow merge commit');
-assert(captureScript.includes('{ timeout: 120000 }'), 'Firebase capture should pass the wait timeout as Playwright options');
+assert(captureScript.includes('ROUTE_LOAD_TIMEOUT_MS') && captureScript.includes('{ timeout: ROUTE_LOAD_TIMEOUT_MS }'), 'Firebase capture should pass the named route wait timeout as Playwright options');
 assert(captureScript.includes('if (!evidence.ok) process.exitCode = 1'), 'Firebase capture should fail the workflow while preserving evidence');
 assert(captureScript.includes("id: 'landing'"), 'Firebase capture should include a human-review landing page capture');
 assert(captureScript.includes('humanRedBuildForCommit'), 'Firebase capture should honor the human red-build veto ledger');
