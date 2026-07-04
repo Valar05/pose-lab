@@ -289,15 +289,15 @@ export function applyWeaponAttachmentRuntimeRules(THREE, {
   const attachmentScale = Number(config.scale ?? 1);
   const displayRoot = proxy.displayRoot || weaponRoot.parent || proxy.root;
   const socketScaleCompensation = new THREE.Vector3(1, 1, 1);
-  if ((proxy?.config?.parentMode === 'hand-fk' || proxy?.config?.parentMode === 'synthetic-source-socket') && proxy.root && actorModel) {
-    actorModel.updateMatrixWorld(true);
+  const rootParent = proxy.root?.parent || null;
+  const rootUnderRigBone = Boolean(rootParent && rootParent !== actorModel);
+  if ((proxy?.config?.parentMode === 'hand-fk' || proxy?.config?.parentMode === 'synthetic-source-socket' || rootUnderRigBone) && proxy.root) {
     proxy.root.updateMatrixWorld(true);
-    const modelWorldScale = actorModel.getWorldScale(new THREE.Vector3());
     const socketWorldScale = proxy.root.getWorldScale(new THREE.Vector3());
     socketScaleCompensation.set(
-      modelWorldScale.x / Math.max(0.000001, Math.abs(socketWorldScale.x)),
-      modelWorldScale.y / Math.max(0.000001, Math.abs(socketWorldScale.y)),
-      modelWorldScale.z / Math.max(0.000001, Math.abs(socketWorldScale.z))
+      1 / Math.max(0.000001, Math.abs(socketWorldScale.x)),
+      1 / Math.max(0.000001, Math.abs(socketWorldScale.y)),
+      1 / Math.max(0.000001, Math.abs(socketWorldScale.z))
     );
   }
   if (displayRoot) {
