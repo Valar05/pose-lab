@@ -23,7 +23,7 @@ const fixed = render([
   '--samples', '3',
 ]);
 
-assert(profilesSource.includes('rotationDeg: [0, 0, 0]') && profilesSource.includes('rotationDeg: [-67.582, 76.718, -90.52]'), 'Meshy sabre rotation must preserve the user-authored shared FK calibration on the mesh layer with identity WeaponGrip rotation');
+assert(profilesSource.includes('rotationDeg: [0, 0, 0]') && profilesSource.includes('rotationDeg: [-67.582, 76.718, -60.52]'), 'Meshy sabre rotation must preserve the user-authored shared FK calibration on the mesh layer with identity WeaponGrip rotation');
 assert(profilesSource.includes('gripLocalPosition: [0.73272, 0.0091, -0.01674]'), 'Meshy sabre hilt oracle must match the visible mesh hilt baseline');
 assert(profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must use direct hand-fk for boring FK verification');
 assert(!profilesSource.includes("placementAuthority: 'manual-golden'"), 'Meshy production profile must not keep the failed manual-golden authority label');

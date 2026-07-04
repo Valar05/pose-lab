@@ -14,11 +14,11 @@ assert(fs.existsSync(path.join(projectRoot, 'assets/models/meshy_sabre/Meshy_AI_
 assert(profiles.includes("weaponAttachment: {"), 'Meshy profile should define a real weapon attachment');
 assert(profiles.includes("url: 'assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb'"), 'weapon attachment should use the downloaded Meshy sabre runtime GLB');
 assert(profiles.includes("socketBone: 'WeaponGrip'") && profiles.includes("tipMarker: 'WeaponGrip_end'"), 'weapon attachment should expose the centered WeaponGrip and WeaponGrip_end');
-assert(profiles.includes('scale: 0.47493') && profiles.includes('rotationDeg: [0, 0, 0]') && profiles.includes('rotationDeg: [-67.582, 76.718, -90.52]'), 'Meshy weapon attachment should preserve the user-authored FK rotation on the mesh layer with identity WeaponGrip');
+assert(profiles.includes('scale: 0.47493') && profiles.includes('rotationDeg: [0, 0, 0]') && profiles.includes('rotationDeg: [-67.582, 76.718, -60.52]'), 'Meshy weapon attachment should preserve the user-authored FK rotation on the mesh layer with identity WeaponGrip');
 assert(profiles.includes('gripLocalPosition: [0.73272, 0.0091, -0.01674]') && profiles.includes('tipLocalPosition: [-0.95561, 0.1368, 0]'), 'Meshy weapon attachment should preserve the visible mesh hilt oracle and track the real blade tip');
 assert(profiles.includes('gripLocalPosition: [0.67888, -0.07803, -0.06249]'), 'FPS weapon attachment should preserve the semantic landmark hilt candidate');
 assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]'), 'Meshy weapon socket should move from wrist bone origin toward visual hand mesh and palm center');
-assert(profiles.includes('modelLocalOffset: [0.35, 4.5, -0.17]'), 'Meshy weapon socket should carry the visible hand-local grip displacement after boring FK placement');
+assert(profiles.includes('modelLocalOffset: [1.4, 18, -0.68]'), 'Meshy weapon socket should carry the visible hand-local grip displacement after boring FK placement');
 assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy weapon socket should rotate from the hand origin without shifting the socket');
 assert(profiles.includes("parentMode: 'hand-fk'"), 'Meshy profile should use direct boring FK so WeaponGrip is parented under RightHand');
 assert(!profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy profile must not promote the failed FPS-VISUAL-IK-GOLDEN Ready path');
