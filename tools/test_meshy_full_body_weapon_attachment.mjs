@@ -32,7 +32,7 @@ assert(js.includes('weaponDebugForceVisible()') && js.includes('weaponDebugForce
 for (const metric of ['hiltToHandDistance', 'bladeLength', 'basketFrontErrorDeg', 'socketForwardToBladeErrorDeg']) {
   assert(js.includes(metric), `live weapon diagnostics should expose ${metric}`);
 }
-assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'") && profiles.includes("rightRollOffsetDeg: 0") && profiles.includes("leftRollOffsetDeg: -90") && profiles.includes("leftHandBone: 'LeftHand'"), 'Meshy Ready should use the FPS-VISUAL-IK-GOLDEN neutral-right roll split and keep a Meshy socket');
+assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'") && profiles.includes("rightRollOffsetDeg: -120") && profiles.includes("leftRollOffsetDeg: -90") && profiles.includes("leftHandBone: 'LeftHand'"), 'Meshy Ready should use the accepted FPS-VISUAL-IK-GOLDEN roll split and keep a Meshy socket');
 assert(!profiles.includes("targetWeapon: 'WeaponGrip'") && !profiles.includes("sourceWeapon: 'Weapon.R'"), 'normal Meshy Ready should not generate WeaponGrip tracks from FPS Weapon.R');
 assert(!profiles.includes("{ from: 'mixamorigHips', to: 'Hips'"), 'rejected full-body hips mapping must not remain');
 assert(manifest.includes('meshy_french_revolution_sabre_runtime_glb') && manifest.includes('WeaponGrip'), 'asset manifest should document the Meshy sabre runtime socket');

@@ -30,9 +30,9 @@ assert(!fn.includes('.optimize()'), 'accepted converter utility must not collaps
 assert(profiles.includes("retargetMode: 'meshy-fps-visual-ik-ready'"), 'active Meshy Ready profile should use the golden visual IK helper');
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'active Meshy Ready profile should keep the golden clip tag');
 assert(profiles.includes("clipSuffix: '-> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'active Meshy Ready profile should keep the accepted clip label');
-assert(profiles.includes('rightRollOffsetDeg: 0') && profiles.includes('leftRollOffsetDeg: -90'), 'active Meshy Ready profile should keep right roll neutral and preserve left roll');
+assert(profiles.includes('rightRollOffsetDeg: -120') && profiles.includes('leftRollOffsetDeg: -90'), 'active Meshy Ready profile should preserve the accepted roll split');
 assert(profiles.includes("sourceRestClip: '0T-Pose'") && profiles.includes("targetRestProvider: 'skin-bind'"), 'Meshy Ready should translate from FPS 0T-Pose rest into Meshy skin-bind rest');
-assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(0)'), 'Meshy should keep the FPS arm rest-pose calibration right-hand roll neutral');
+assert(profiles.includes("clipTag: 'FPS-REST-ARMS-CAL'") && profiles.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(-120)'), 'Meshy should generate the accepted FPS arm rest-pose CAL--120 clip');
 assert(profiles.includes("RestProbe: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe should select the exact accepted CAL--120 T-pose clip');
 assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-REST-ARMS-CAL--120'"), 'Meshy RestProbe generated label should preserve the accepted CAL--120 origin path');
 assert(!profiles.includes('...[-150') && !profiles.includes('FPS-REST-ARMS-CAL-120') && !profiles.includes('FPS-REST-ARMS-CAL-90') && !profiles.includes('FPS-REST-ARMS-CAL--90'), 'Meshy should not generate rejected positive or sweep FPS arm rest-pose hand-roll clips');

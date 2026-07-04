@@ -28,7 +28,7 @@ assert(profiles.includes("retargetMode: 'meshy-fps-visual-ik-ready'"), 'Meshy Re
 assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy Ready candidate generator should keep the reviewable clip tag');
 assert(profiles.includes("clipSuffix: '-> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'Meshy Ready candidate generator should keep the reviewable visual IK label');
 assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'"), 'Meshy Ready candidate generator should keep the generated-group identity');
-assert(profiles.includes('rightRollOffsetDeg: 0'), 'Meshy Ready should remove the bad right hand roll offset');
+assert(profiles.includes('rightRollOffsetDeg: -120'), 'Meshy Ready should preserve right hand roll -120');
 assert(profiles.includes('leftRollOffsetDeg: -90'), 'Meshy Ready should preserve left hand roll -90');
 assert(!profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy Ready should not keep the rejected FPS-SWORD-UPPER generator');
 assert(!profiles.includes("targetWeapon: 'WeaponGrip'"), 'Meshy Ready should not generate normal WeaponGrip tracks from FPS Weapon.R');
@@ -44,7 +44,7 @@ assert(readyRuntime.includes("mode: 'world-joint-projection source-authored-time
 assert(readyRuntime.includes('worldJointProjection: true'), 'Ready helper should identify world-joint projection output');
 assert(readyRuntime.includes('droppedInitialRestKey'), 'Ready helper should preserve source-authored timing metadata');
 assert(readyRuntime.includes('weaponTrackEnabled: Boolean(weaponTrack)'), 'Ready helper should expose whether experimental weapon tracks were emitted');
-assert(readyRuntime.includes('rightRollOffsetDeg: 0'), 'Ready helper should keep right roll neutral');
+assert(readyRuntime.includes('rightRollOffsetDeg: -120'), 'Ready helper should lock right roll -120');
 assert(readyRuntime.includes('rightHandBladeReference'), 'Ready helper should document FPS Weapon.R as reference-only hand-basis evidence');
 assert(readyRuntime.includes('leftRollOffsetDeg: -90'), 'Ready helper should lock left roll -90');
 assert(readyRuntime.includes('weaponConfig.enabled === true && weaponConfig.experimentalWeaponSwing === true'), 'Ready helper should keep weapon tracks inert unless explicitly experimental');
