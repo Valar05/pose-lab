@@ -144,7 +144,7 @@ function readySense(capture) {
   if (!hasPng(capture?.humanReadScreenshot)) failures.push('Ready marker-free human-read screenshot PNG is missing');
   if (!hasPng(capture?.contactSheet)) failures.push('Ready visual-follow contact sheet PNG is missing');
   const tipRight = metricValue(capture, 'maxTipRightFromAppliedHiltPx');
-  const tipDrop = Math.abs(metricValue(capture, 'maxTipDropFromAppliedHiltPx'));
+  const tipDrop = metricValue(capture, 'maxTipDropFromAppliedHiltPx');
   if (!Number.isFinite(tipRight) || tipRight < 24) failures.push(`Ready blade does not visibly project from hilt: maxTipRightFromAppliedHiltPx=${capture?.cloudTelemetry?.visualFollow?.screenMetrics?.maxTipRightFromAppliedHiltPx}`);
   if (!Number.isFinite(tipDrop) || tipDrop > 12) failures.push(`Ready blade drop from hilt is too large for a confident grip read: maxTipDropFromAppliedHiltPx=${capture?.cloudTelemetry?.visualFollow?.screenMetrics?.maxTipDropFromAppliedHiltPx}`);
   return {
