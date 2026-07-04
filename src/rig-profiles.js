@@ -271,7 +271,7 @@ const BASE_RIG_PROFILES = {
       modelLocalOffset: [-0.11512, 0.00773, -0.01127],
       gripOffset: [0, 0, 0],
       tipOffset: [0, 0, 0.85],
-      visibleClipPatterns: ['\\[FPS-REST-ARMS', '\\[FPS-VISUAL-IK'],
+      visibleClipPatterns: ['\\[FPS-REST-ARMS'],
       length: 0.85,
       bladeRadius: 0.022,
       bladeOpacity: 0.95,

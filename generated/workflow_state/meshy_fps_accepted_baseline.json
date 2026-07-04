@@ -19,13 +19,12 @@
       "0T-Pose"
     ],
     "weaponVisibleClipPatterns": [
-      "\\[FPS-REST-ARMS",
-      "\\[FPS-VISUAL-IK"
+      "\\[FPS-REST-ARMS"
     ]
   },
   "acceptedEvidence": {
     "kind": "user-verified-baseline",
-    "note": "Recovered stable Meshy/FPS T-pose calibration. OneHandReady remains candidate-only until promoted through the gate, but the current Ready review clip must show the saber so human visual review can judge FK ownership."
+    "note": "Recovered stable Meshy/FPS T-pose calibration. Later OneHandReady, IK/FK, and saber transform attempts are candidate-only until promoted through the gate."
   },
   "promotionRules": {
     "defaultLane": "candidate",
