@@ -127,6 +127,8 @@ The same contract now includes an Initiative Audit: check, document, and test th
 
 The accepted Meshy/FPS result is currently only the `[FPS-REST-ARMS roll -120]` `0T-Pose` calibration. The previous `[FPS-SWORD-UPPER]` `OneHandReady` path and later FK/IK candidates are not accepted ready poses and must not be promoted to startup, aliases, or default clip visibility without a fresh visual/metric artifact. Use `node tools/meshy_ready_pose_workbench.mjs` to produce a candidate-only FPS reference artifact before attempting a new `OneHandReady` overlay. The next ready attempt should be an upper-body authored overlay from FPS reference frames, not another stacked resolver; sword orientation is ignored until the arm pose is visually sane. Meshy native walk/run clips remain direct clips, the real Meshy gun-sword/sabre stays attached at `WeaponGrip`, and Meshy FPV should anchor at the head with a forward offset rather than following the hands.
 
+T-pose is the Meshy saber canary. Restore and visually verify the accepted `0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]` hand/saber relationship before judging Ready. If a Ready patch changes tests, literals, telemetry, or artifact labels while the cloud T-pose visual drifts or stays wrong, treat the patch as red and revert it before further Ready work.
+
 ## Meshy Promotion Gate
 
 Meshy/FPS experiments now default to the candidate lane. Before editing startup clips, aliases, visible clip patterns, or claiming a candidate is accepted, run:

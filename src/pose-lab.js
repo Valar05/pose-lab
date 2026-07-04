@@ -3853,20 +3853,10 @@ class PoseActor {
     hilt.name = root.name + '-fallback-hilt';
     hilt.userData.weaponFallback = true;
     root.add(hilt);
-    const displayRoot = new THREE.Group();
-    displayRoot.name = root.name + '-display-root';
-    displayRoot.userData.weaponDisplayRoot = true;
-    displayRoot.visible = true;
-    root.add(displayRoot);
-    for (const child of root.children.filter((entry) => entry.userData?.weaponFallback)) {
-      root.remove(child);
-      displayRoot.add(child);
-    }
     if (Array.isArray(config.gripOffset) && !leftHand && !sourceSocket) root.position.fromArray(config.gripOffset);
     if (Array.isArray(config.rotationDeg)) root.rotation.set(...config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
     root.visible = false;
     if (sourceSocket) sourceSocket.add(root);
-    else if (rightHand && config.parentMode === 'hand-fk') rightHand.add(root);
     else if (leftHand || (config.positionMode || 'two-hand-center') === 'right-hand') this.model.add(root);
     else rightHand.add(root);
     this.boneByName.set(root.name, root);
@@ -3883,7 +3873,7 @@ class PoseActor {
     arc.frustumCulled = false;
     arc.visible = false;
     this.model.add(arc);
-    this.weaponProxy = { root, displayRoot, arc, config, handBone: rightHand?.name || '', leftHandBone: leftHand?.name || '', sourceSocketBone: sourceSocket?.name || '', rightHand, leftHand, sourceSocket, arcKey: '' };
+    this.weaponProxy = { root, arc, config, handBone: rightHand?.name || '', leftHandBone: leftHand?.name || '', sourceSocketBone: sourceSocket?.name || '', rightHand, leftHand, sourceSocket, arcKey: '' };
     this.updateWeaponSocketTransform();
     return this.weaponProxy;
   }
@@ -3968,27 +3958,6 @@ class PoseActor {
   }
 
   applyRightHandWeaponFk(proxy = this.weaponProxy) {
-    if (this.isRightHandFkWeaponProxy(proxy) && proxy.config.parentMode === 'hand-fk') {
-      if (proxy.root.parent !== proxy.rightHand) proxy.rightHand.add(proxy.root);
-      proxy.root.position.set(0, 0, 0);
-      if (Array.isArray(proxy.config.handLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.handLocalOffset));
-      if (Array.isArray(proxy.config.modelLocalOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset));
-      if (Array.isArray(proxy.config.gripOffset)) proxy.root.position.add(new THREE.Vector3().fromArray(proxy.config.gripOffset));
-      if (Array.isArray(proxy.config.rotationDeg)) {
-        proxy.root.rotation.set(...proxy.config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
-      } else {
-        proxy.root.quaternion.identity();
-      }
-      const handWorldScale = new THREE.Vector3(1, 1, 1);
-      proxy.rightHand.updateMatrixWorld(true);
-      proxy.rightHand.getWorldScale(handWorldScale);
-      proxy.root.scale.set(
-        1 / Math.max(0.000001, Math.abs(handWorldScale.x)),
-        1 / Math.max(0.000001, Math.abs(handWorldScale.y)),
-        1 / Math.max(0.000001, Math.abs(handWorldScale.z))
-      );
-      return true;
-    }
     if (!this.calibrateRightHandWeaponFk(proxy)) return false;
     if (proxy.root.parent !== proxy.rightHand) proxy.rightHand.add(proxy.root);
     proxy.root.position.copy(proxy.rightHandFkRest.position);
@@ -4021,8 +3990,7 @@ class PoseActor {
   attachWeaponAttachment(weaponRoot, config = {}) {
     if (!weaponRoot || !this.weaponProxy?.root) return null;
     const socket = this.weaponProxy.root;
-    const displayRoot = this.weaponProxy.displayRoot || socket;
-    for (const child of displayRoot.children.filter((entry) => entry.userData?.weaponFallback)) displayRoot.remove(child);
+    for (const child of socket.children.filter((entry) => entry.userData?.weaponFallback)) socket.remove(child);
     weaponRoot.name = config.name || socket.name + '-model';
     weaponRoot.traverse((node) => {
       if (!node?.isMesh) return;
@@ -4030,7 +3998,7 @@ class PoseActor {
       node.castShadow = false;
       node.receiveShadow = false;
     });
-    displayRoot.add(weaponRoot);
+    socket.add(weaponRoot);
     const tip = new THREE.Group();
     tip.name = config.tipMarker || 'WeaponGrip_end';
     if (Array.isArray(config.tipLocalPosition)) {
@@ -4062,12 +4030,6 @@ class PoseActor {
     const weaponRoot = proxy?.model;
     const tip = proxy?.tipMarker;
     if (!weaponRoot || !config) return null;
-    if (proxy.displayRoot) {
-      proxy.displayRoot.position.set(0, 0, 0);
-      proxy.displayRoot.quaternion.identity();
-      proxy.displayRoot.scale.set(1, 1, 1);
-      proxy.displayRoot.visible = true;
-    }
     weaponRoot.scale.setScalar(Number(config.scale ?? 1));
     if (Array.isArray(config.rotationDeg)) weaponRoot.rotation.set(...config.rotationDeg.map((value) => THREE.MathUtils.degToRad(value || 0)));
     if (Array.isArray(config.position)) weaponRoot.position.fromArray(config.position);

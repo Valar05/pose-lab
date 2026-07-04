@@ -12,11 +12,6 @@ const restCalStart = profiles.indexOf("clipTag: 'FPS-REST-ARMS-CAL'", readyStart
 const readyBlock = readyStart >= 0 && restCalStart > readyStart
   ? profiles.slice(readyStart, restCalStart)
   : '';
-const restCalEnd = profiles.indexOf('directRotationPairs: MESHY_FPS_REST_DIRECT_PAIRS', restCalStart);
-const restCalBlock = restCalStart >= 0
-  ? profiles.slice(restCalStart, restCalEnd > restCalStart ? restCalEnd + 80 : profiles.length)
-  : '';
-
 assert(readyBlock, 'missing Meshy FPS-VISUAL-IK-GOLDEN profile block');
 assert(readyBlock.includes("retargetMode: 'meshy-fps-visual-ik-ready'"), 'right-arm canary should use the explicit golden Ready helper');
 assert(readyBlock.includes("clipNames: [\n          'OneHandReady',\n        ]"), 'right-arm canary applies to the OneHandReady review clip');
@@ -30,8 +25,6 @@ assert(readyBlock.includes("mode: 'world-joint-projection'"), 'active correction
 assert(readyBlock.includes('restRelative: true'), 'active projection should preserve source keys as rest-relative joint deltas');
 assert(!readyBlock.includes('weaponKeyConvert'), 'golden Ready profile must not enable normal weapon-key conversion');
 assert(!readyBlock.includes('targetWeapon'), 'golden Ready profile must not target WeaponGrip with generated tracks');
-assert(restCalBlock.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(0)'), 'T-pose canary must not inherit Ready hand roll; its rest segment correction stays 0');
-assert(!restCalBlock.includes('restSegmentCorrection: meshyFpsRestSegmentCorrection(-120)'), 'T-pose canary must not apply the Ready -120 roll correction');
 
 assert(readyRuntime.includes("{ label: 'right', sourceUpper: 'Arm.R', sourceLower: 'Forearm.R', sourceHand: 'Hand.R'"), 'active canary should measure the complete right source arm chain');
 assert(readyRuntime.includes("targetUpper: 'RightArm'"), 'active projection should target the Meshy right upper arm');
