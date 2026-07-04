@@ -105,6 +105,14 @@ export function createPoseLabDebugBridgeServer({ host = '127.0.0.1', port = 0 } 
     return entry;
   }
 
+  function removeQueuedCommand(commandId) {
+    state.globalQueue = state.globalQueue.filter((entry) => entry.id !== commandId);
+    for (const queue of state.queues.values()) {
+      const index = queue.findIndex((entry) => entry.id === commandId);
+      if (index >= 0) queue.splice(index, 1);
+    }
+  }
+
   function deliverGlobalQueue(clientId) {
     if (!state.globalQueue.length) return;
     const queue = queueForClient(clientId);
@@ -126,6 +134,7 @@ export function createPoseLabDebugBridgeServer({ host = '127.0.0.1', port = 0 } 
       ]);
     } finally {
       clearTimeout(timeoutHandle);
+      removeQueuedCommand(commandId);
       state.commandResults.delete(commandId);
       state.commands.delete(commandId);
     }
@@ -148,6 +157,7 @@ export function createPoseLabDebugBridgeServer({ host = '127.0.0.1', port = 0 } 
         jsonResponse(res, 200, {
           ok: true,
           clients: state.clients.size,
+          clientDetails: [...state.clients.entries()].map(([clientId, client]) => ({ clientId, ...client })),
           queued: [...state.queues.values()].reduce((sum, queue) => sum + queue.length, 0) + state.globalQueue.length,
           defaultClientId: state.defaultClientId,
         });
@@ -157,7 +167,7 @@ export function createPoseLabDebugBridgeServer({ host = '127.0.0.1', port = 0 } 
       if (req.method === 'POST' && url.pathname === '/register') {
         const body = await readJsonBody(req);
         const clientId = randomUUID();
-        state.clients.set(clientId, { ...body, connectedAt: Date.now() });
+        state.clients.set(clientId, { ...body, clientId, connectedAt: Date.now(), lastSeenAt: Date.now() });
         state.defaultClientId = clientId;
         deliverGlobalQueue(clientId);
         jsonResponse(res, 200, { ok: true, clientId, queued: queueForClient(clientId).length });
@@ -202,13 +212,20 @@ export function createPoseLabDebugBridgeServer({ host = '127.0.0.1', port = 0 } 
         }
         const entry = enqueueCommand(command, clientId);
         const result = await waitForResult(entry.id, Number(body.timeoutMs || 60000));
-        jsonResponse(res, 200, result);
+        const target = state.clients.get(clientId) || null;
+        const wrappedResult = result && typeof result === 'object' && !Array.isArray(result)
+          ? { ...result, debugBridgeTarget: { clientId, client: target } }
+          : { ok: true, result, debugBridgeTarget: { clientId, client: target } };
+        jsonResponse(res, 200, wrappedResult);
         return;
       }
 
       if (req.method === 'POST' && url.pathname === '/result') {
         const body = await readJsonBody(req);
         const commandId = String(body.commandId || '').trim();
+        const clientId = String(body.clientId || '').trim();
+        const client = clientId ? state.clients.get(clientId) : null;
+        if (client) client.lastSeenAt = Date.now();
         const entry = state.commands.get(commandId);
         if (!entry) {
           jsonResponse(res, 404, { ok: false, error: 'unknown command id: ' + commandId });
@@ -223,6 +240,7 @@ export function createPoseLabDebugBridgeServer({ host = '127.0.0.1', port = 0 } 
         jsonResponse(res, 200, {
           ok: true,
           clients: [...state.clients.keys()],
+          clientDetails: [...state.clients.entries()].map(([clientId, client]) => ({ clientId, ...client })),
           activeClientId: state.defaultClientId,
           queued: [...state.queues.entries()].map(([clientId, queue]) => ({ clientId, queued: queue.length })),
           globalQueued: state.globalQueue.length,

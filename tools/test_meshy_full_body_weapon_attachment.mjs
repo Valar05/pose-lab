@@ -3,6 +3,7 @@ import path from 'node:path';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const js = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
+const weaponRules = fs.readFileSync(path.join(projectRoot, 'src', 'weapon-runtime-rules.mjs'), 'utf8');
 const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
 const manifest = fs.readFileSync(path.join(projectRoot, 'assets', 'asset_manifest.json'), 'utf8');
 const failures = [];
@@ -13,27 +14,30 @@ assert(fs.existsSync(path.join(projectRoot, 'assets/models/meshy_sabre/Meshy_AI_
 assert(profiles.includes("weaponAttachment: {"), 'Meshy profile should define a real weapon attachment');
 assert(profiles.includes("url: 'assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb'"), 'weapon attachment should use the downloaded Meshy sabre runtime GLB');
 assert(profiles.includes("socketBone: 'WeaponGrip'") && profiles.includes("tipMarker: 'WeaponGrip_end'"), 'weapon attachment should expose the centered WeaponGrip and WeaponGrip_end');
-assert(profiles.includes('scale: 0.47493') && profiles.includes('rotationDeg: [90, 0, -55.145]'), 'Meshy weapon attachment should use the saved 3D gizmo rotation');
-assert(profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]') && profiles.includes('tipLocalPosition: [-0.95561, 0.1368, 0]'), 'Meshy weapon attachment should preserve the semantic landmark hilt candidate and track the real blade tip');
+assert(profiles.includes('scale: 0.47493') && profiles.includes('rotationDeg: [0, 0, 0]') && profiles.includes('rotationDeg: [-67.582, 76.718, -30.52]'), 'Meshy weapon attachment should preserve the accepted T-pose FK rotation on the mesh layer with identity WeaponGrip');
+assert(profiles.includes('gripLocalPosition: [0.6535, -0.02302, -0.07317]') && profiles.includes('tipLocalPosition: [-0.95561, 0.1368, 0]'), 'Meshy weapon attachment should preserve the accepted T-pose hilt oracle and track the real blade tip');
 assert(profiles.includes('gripLocalPosition: [0.67888, -0.07803, -0.06249]'), 'FPS weapon attachment should preserve the semantic landmark hilt candidate');
 assert(profiles.includes('handLocalOffset: [0.095, 0.035, -0.01]'), 'Meshy weapon socket should move from wrist bone origin toward visual hand mesh and palm center');
-assert(profiles.includes('modelLocalOffset: [-0.11512, 0.00773, -0.01127]'), 'Meshy weapon socket should use the saved 3D gizmo model-space placement');
+assert(profiles.includes('modelLocalOffset: [1.01462, 12.80195, -0.47992]'), 'Meshy weapon socket should carry the accepted T-pose hand-local grip displacement after boring FK placement');
 assert(profiles.includes('gripOffset: [0, 0, 0]'), 'Meshy weapon socket should rotate from the hand origin without shifting the socket');
+assert(profiles.includes("parentMode: 'hand-fk'"), 'Meshy profile should use direct boring FK so WeaponGrip is parented under RightHand');
+assert(!profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy profile must not promote the failed FPS-VISUAL-IK-GOLDEN Ready path');
 assert(js.includes('const root = new THREE.Bone();') && js.includes('root.userData.syntheticWeaponBone = true') && js.includes('root.userData.twoHandCenteredWeaponBone = Boolean(leftHand && !sourceSocket') && js.includes('root.userData.positionMode = config.positionMode') && js.includes('root.userData.sourceSocketBone = sourceSocket?.name ||'), 'weapon socket should support synthetic sockets, selectable one-hand/two-hand positioning, and authored source-socket inheritance');
-assert(js.includes('proxy.rightHand.localToWorld(new THREE.Vector3().fromArray(proxy.config.handLocalOffset))'), 'weapon socket should support hand-local offsets for visual palm-center grip');
-assert(js.includes('proxy.config.modelLocalOffset') && js.includes('local.add(new THREE.Vector3().fromArray(proxy.config.modelLocalOffset))'), 'weapon socket should support model-space offsets for screenshot-directed placement');
+assert(weaponRules.includes("if (config.parentMode === 'hand-fk')") && weaponRules.includes('proxy.root.position.add(vectorFromArray(THREE, config.modelLocalOffset))'), 'weapon socket should support direct hand-local boring FK for visual palm-center grip');
 assert(profiles.includes("positionMode: 'right-hand'"), 'Meshy one-hand saber should place WeaponGrip on the right hand instead of the two-hand midpoint');
 assert(js.includes('attachWeaponAttachment(weaponRoot, config = {})'), 'runtime should attach a real weapon model to the socket');
-assert(js.includes('visibleClipPatterns') && js.includes("patterns.some((pattern) => new RegExp(pattern).test(clip?.name || ''))"), 'weapon should be visible for configured sword clip patterns');
+assert(profiles.includes('visibleClipPatterns') && js.includes('weaponDebugForceVisible()'), 'weapon should be visible for configured sword clip patterns and explicit debug proof routes');
 assert(js.includes('LAB_CACHE_TOKEN') && js.includes('cacheToken: LAB_CACHE_TOKEN'), 'live weapon diagnostics should report the loaded cache token so stale tabs are obvious');
 assert(js.includes('weaponDebugForceVisible()') && js.includes('weaponDebugForceVisible: weaponDebugForceVisible()'), 'live weapon diagnostics should report the explicit force-visible debug override');
 for (const metric of ['hiltToHandDistance', 'bladeLength', 'basketFrontErrorDeg', 'socketForwardToBladeErrorDeg']) {
   assert(js.includes(metric), `live weapon diagnostics should expose ${metric}`);
 }
 assert(profiles.includes("clipTag: 'FPS-SWORD-UPPER'") && profiles.includes("sourceHand: 'Hand.R'") && profiles.includes("leftHandBone: 'LeftHand'"), 'FPS-SWORD-UPPER should convert authored Hand.R/Weapon.R upper-body contribution and keep a Meshy socket');
+assert(!profiles.includes("clipTag: 'FPS-VISUAL-IK-READY'"), 'Ready-specific Visual-IK path must not be promoted; boring FK owns weapon follow');
+assert(!profiles.includes("targetWeapon: 'WeaponGrip'") || profiles.includes('applyToHand: false'), 'FPS Weapon.R may be referenced only as source conversion data, never as a Meshy WeaponGrip driver');
 assert(!profiles.includes("{ from: 'mixamorigHips', to: 'Hips'"), 'rejected full-body hips mapping must not remain');
 assert(manifest.includes('meshy_french_revolution_sabre_runtime_glb') && manifest.includes('WeaponGrip'), 'asset manifest should document the Meshy sabre runtime socket');
 assert(manifest.includes('meshy_character_sheet_fps_sword_upper_clip_binding'), 'asset manifest should document the FPS sword upper-body Meshy clip binding');
 
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['meshy-upper-body-fps-sword', 'real-sabre-weapongrip-attachment', 'manifested-sabre-provenance'] }, null, 2));
+console.log(JSON.stringify({ checked: ['meshy-upper-body-fps-sword', 'restored-real-sabre-weapongrip-attachment', 'direct-hand-fk-required'] }, null, 2));

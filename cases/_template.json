@@ -1,0 +1,38 @@
+{
+  "schema": "pose-lab-case-v1",
+  "id": "kebab-case-id",
+  "title": "Human Case Title",
+  "family": "visual_truth_and_capture",
+  "priority": "p0",
+  "route": {
+    "kind": "live-visual",
+    "actor": "meshyCharacter",
+    "clip": "Exact Clip Label",
+    "mode": "standard",
+    "query": {
+      "cacheBust": "case-token"
+    }
+  },
+  "expectedVisibleBehavior": [
+    "State the visible behavior that would make the case green."
+  ],
+  "contracts": [
+    "docs/POSE_LAB_EVIDENCE_PROTOCOL.md"
+  ],
+  "evidenceArtifacts": [
+    "generated/cases/kebab-case-id/latest/case_verdict.json"
+  ],
+  "checks": [
+    {
+      "id": "route",
+      "kind": "route",
+      "required": true
+    }
+  ],
+  "acceptance": [
+    "State the concrete acceptance condition."
+  ],
+  "forbiddenProof": [
+    "Name a proof type that cannot close this case."
+  ]
+}

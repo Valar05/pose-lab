@@ -1,0 +1,63 @@
+{
+  "schema": "pose-lab-case-v1",
+  "id": "meshy-saber-live-in-hand",
+  "title": "Meshy Saber Cloud In Hand",
+  "family": "visual_truth_and_capture",
+  "priority": "p0",
+  "route": {
+    "kind": "weapon-fk",
+    "actor": "meshyCharacter",
+    "clip": "OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]",
+    "mode": "standard",
+    "query": {
+      "weaponDebug": "1",
+      "cacheBust": "case-meshy-saber-live-in-hand"
+    }
+  },
+  "expectedVisibleBehavior": [
+    "The Firebase-hosted T-pose screenshot preserves the accepted stable saber baseline.",
+    "The Firebase-hosted FPS-SWORD-UPPER Ready capture proves the real saber mesh follows boring FK with the hand.",
+    "A local/offline/debug marker near the wrist does not count as proof unless the hosted Firebase artifact also passes."
+  ],
+  "contracts": [
+    "contracts/golden/meshy_weapon_fk.json",
+    "docs/POSE_LAB_EVIDENCE_PROTOCOL.md"
+  ],
+  "evidenceArtifacts": [
+    "generated/firebase_visual_truth/latest/visual_truth.json",
+    "generated/firebase_visual_truth/latest/tpose.png",
+    "generated/firebase_visual_truth/latest/ready.png",
+    "generated/firebase_visual_truth/latest/ready_visual_follow.png"
+  ],
+  "checks": [
+    {
+      "id": "route",
+      "kind": "route",
+      "required": true
+    },
+    {
+      "id": "firebase-hosting-contract",
+      "kind": "command",
+      "command": "node tools/test_firebase_hosting_config.mjs",
+      "default": true
+    },
+    {
+      "id": "firebase-visual-truth-contract",
+      "kind": "command",
+      "command": "node tools/test_firebase_visual_truth_contract.mjs",
+      "default": true
+    }
+  ],
+  "acceptance": [
+    "The Firebase visual truth artifact reports ok=true.",
+    "The evidence uses the current cache token, hosted preview URL, and exact Meshy T-pose plus Ready clips.",
+    "The hosted evidence proves stable T-pose saber placement and Ready boring FK in the same commit."
+  ],
+  "forbiddenProof": [
+    "offline render as Meshy saber acceptance evidence",
+    "local/debug-bridge browser capture as Meshy saber acceptance evidence",
+    "debug marker or fallback hilt used as a substitute for the real saber mesh",
+    "stale visual evidence cache token",
+    "deprecated standalone screencap as acceptance evidence"
+  ]
+}

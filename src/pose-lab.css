@@ -16,6 +16,11 @@
 #actorTabs button.unloaded { color: #9fb3bb; border-color: rgba(255,255,255,0.12); }
 #actorTabs button.loading { color: #d7f6ff; }
 #actorTabs button.failed { color: #ffb2a3; border-color: rgba(255,120,90,0.5); }
+#reviewTruth { position: absolute; left: 50%; top: calc(max(136px, env(safe-area-inset-top) + 136px)); z-index: 9; transform: translateX(-50%); display: none; width: min(84vw, 560px); padding: 7px 9px; border: 1px solid rgba(255,111,87,0.72); color: #ffe1da; background: rgba(57,10,8,0.9); box-shadow: 0 8px 28px rgba(0,0,0,0.38); font: 10px/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; pointer-events: none; }
+#reviewTruth.review-red { display: block; }
+#reviewTruth.review-ok { display: block; border-color: rgba(120,211,148,0.55); color: #dfffe9; background: rgba(8,42,24,0.72); }
+#clipHint.review-red { color: #ffb2a3; }
+#clipButtons button.review-red { grid-column: 1 / -1; color: #ffe1da; background: rgba(57,10,8,0.72); border-color: rgba(255,111,87,0.58); }
 #panelTabs { position: absolute; left: 50%; bottom: max(10px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 7; display: grid; grid-template-columns: repeat(8, minmax(44px, 1fr)); gap: 5px; width: min(98vw, 680px); padding: 6px; background: rgba(4,8,11,0.78); border: 1px solid rgba(255,255,255,0.16); box-shadow: 0 8px 24px rgba(0,0,0,0.35); }
 .lab-panel { position: absolute; left: 10px; right: 10px; bottom: calc(max(10px, env(safe-area-inset-bottom)) + 58px); z-index: 6; display: none; padding: 9px; background: rgba(4,8,11,0.86); border: 1px solid rgba(255,255,255,0.18); box-shadow: 0 8px 24px rgba(0,0,0,0.38); }
 .player-transport { position: absolute; left: 10px; right: 10px; top: calc(max(94px, env(safe-area-inset-top) + 94px)); z-index: 7; display: grid; gap: 6px; padding: 7px 8px; background: rgba(4,8,11,0.88); border: 1px solid rgba(214,166,66,0.26); box-shadow: 0 6px 20px rgba(0,0,0,0.32); pointer-events: auto; }
@@ -145,6 +150,7 @@ body.is-fpv:not(.panel-open-info) #labReadout { display: none; }
   #viewTabs { right: 8px; top: calc(max(38px, env(safe-area-inset-top) + 38px)); bottom: auto; }
   #viewTabs button { min-width: 44px; min-height: 30px; font-size: 11px; }
   #labStatus { top: calc(max(72px, env(safe-area-inset-top) + 72px)); width: min(46vw, 430px); min-height: 20px; padding: 3px 6px; font-size: 9px; opacity: 0.72; }
+  #reviewTruth { top: calc(max(104px, env(safe-area-inset-top) + 104px)); width: min(64vw, 620px); font-size: 9px; }
   body.is-fpv:not(.has-open-panel) #labStatus { opacity: 0.36; }
   #panelTabs { left: 8px; bottom: max(6px, env(safe-area-inset-bottom)); transform: none; width: min(64vw, 540px); grid-template-columns: repeat(8, minmax(42px, 1fr)); gap: 3px; padding: 4px; }
   #panelTabs button { min-height: 30px; font-size: 11px; padding: 3px 5px; }
@@ -238,6 +244,14 @@ body.phone-controls.critique-mode #labStatus {
   padding: 3px 7px;
   font-size: 9px;
   opacity: 0.7;
+}
+body.phone-controls.critique-mode #reviewTruth {
+  left: 8px;
+  right: 8px;
+  top: calc(max(74px, env(safe-area-inset-top) + 74px));
+  transform: none;
+  width: auto;
+  font-size: 9px;
 }
 body.phone-controls.critique-mode:not(.has-open-panel) #labStatus { opacity: 0.42; }
 body.phone-controls.critique-mode #panelTabs {

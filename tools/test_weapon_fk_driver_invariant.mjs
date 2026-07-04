@@ -1,0 +1,56 @@
+import fs from 'node:fs';
+import path from 'node:path';
+
+const projectRoot = path.resolve(import.meta.dirname, '..');
+const failures = [];
+
+function assert(condition, message) {
+  if (!condition) failures.push(message);
+}
+
+const poseLabSource = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
+const profilesSource = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
+const resolverSource = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab-profile-resolver.mjs'), 'utf8');
+const meshyProfileStart = profilesSource.indexOf('  meshyCharacter: {');
+const meshyProfileEnd = profilesSource.indexOf('  meshyStatic:', meshyProfileStart);
+const meshyProfileBlock = meshyProfileStart >= 0 && meshyProfileEnd > meshyProfileStart
+  ? profilesSource.slice(meshyProfileStart, meshyProfileEnd)
+  : '';
+
+assert(!poseLabSource.includes('clipKey: context.clipKey'), 'weapon placement signature must not include active clip key');
+assert(!poseLabSource.includes('restPose: context.restPose'), 'weapon placement signature must not include current rest pose');
+assert(poseLabSource.includes('if (!force) return;'), 'runtime weapon sync must not rewrite boneRest every frame');
+
+const restBlockStart = profilesSource.indexOf("clipTag: 'FPS-REST-ARMS-CAL'");
+const restBlockEnd = profilesSource.indexOf('directRotationPairs: MESHY_FPS_REST_DIRECT_PAIRS', restBlockStart);
+const restBlock = restBlockStart >= 0 && restBlockEnd > restBlockStart ? profilesSource.slice(restBlockStart, restBlockEnd) : '';
+assert(restBlock && !restBlock.includes('weaponKeyConvert'), 'T-pose rest bridge must not generate Meshy weapon tracks for the accepted baseline');
+
+const swordClipTag = profilesSource.indexOf("clipTag: 'FPS-SWORD-UPPER'");
+const swordBlockStart = swordClipTag >= 0 ? profilesSource.lastIndexOf('      {', swordClipTag) : -1;
+const swordBlockEnd = profilesSource.indexOf("clipTag: 'FPS-REST-ARMS-CAL'", swordClipTag);
+const swordBlock = swordBlockStart >= 0 && swordBlockEnd > swordBlockStart ? profilesSource.slice(swordBlockStart, swordBlockEnd) : '';
+assert(swordBlock.includes("originPrefix: 'mapped-arms:player->meshyCharacter'"), 'FPS-SWORD-UPPER should use the restored mapped-arms origin group');
+assert(swordBlock.includes("retargetMode: 'fps-upper-key-convert'"), 'FPS-SWORD-UPPER should use the restored upper-body converter instead of the quarantined Ready solver');
+assert(swordBlock.includes("from: 'Hand.R'") && swordBlock.includes("to: 'RightHand'"), 'FPS-SWORD-UPPER should keep authored upper-body hand mapping');
+assert(swordBlock.includes('weaponKeyConvert') && swordBlock.includes('applyToHand: false'), 'FPS-SWORD-UPPER may reference FPS Weapon.R only for source conversion, never to drive Meshy WeaponGrip');
+const attachmentBlock = meshyProfileBlock.slice(meshyProfileBlock.indexOf('weaponAttachment: {'), meshyProfileBlock.indexOf('extraClipUrls: ['));
+const weaponProxyBlock = meshyProfileBlock.slice(meshyProfileBlock.indexOf('weaponProxy: {'), meshyProfileBlock.indexOf('weaponAttachment: {'));
+assert(!weaponProxyBlock.includes('clipOverrides:'), 'Meshy shared FK weapon proxy must not use Ready-only WeaponGrip offsets');
+assert(!attachmentBlock.includes('clipOverrides:'), 'Meshy shared FK weapon attachment must not use Ready-only sabre mesh overrides');
+assert(poseLabSource.includes('clipScopedWeaponProxyConfig') && poseLabSource.includes('clipScopedWeaponAttachmentConfig') && poseLabSource.includes('applyWeaponAttachmentRuntimeRules(THREE, { actorModel: this.model, proxy, config: effectiveConfig })'), 'runtime should apply scoped proxy config to WeaponGrip and keep attachment config separate');
+
+assert(profilesSource.includes("parentMode: 'hand-fk'"), 'Meshy production profile must use direct hand-fk so hosted Firebase can prove boring FK');
+assert(!profilesSource.includes("syntheticSourceSocketBone: ''"), 'Meshy production profile must not force an empty synthetic socket');
+assert(!profilesSource.includes("placementAuthority: 'manual-golden'"), 'Meshy production profile must not keep the failed manual-golden authority label');
+assert(!profilesSource.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'failed Visual-IK Ready generator must not remain promoted');
+assert(!profilesSource.includes("clipTag: 'FPS-VISUAL-IK-READY'"), 'Ready-specific Visual-IK generator must not remain promoted');
+assert(!poseLabSource.includes('meshy-ready-runtime'), 'browser runtime must not import the quarantined Ready solver');
+assert(resolverSource.includes("parentMode: typeof proxy.parentMode === 'string' ? proxy.parentMode : ''"), 'profile resolver should preserve legacy/no-parentMode Meshy profiles');
+
+if (failures.length) throw new Error(failures.join('\n'));
+console.log(JSON.stringify({
+  checked: 'restored-weapon-driver-invariant',
+  restoredSwordBridge: true,
+  directHandFkRequired: true,
+}, null, 2));

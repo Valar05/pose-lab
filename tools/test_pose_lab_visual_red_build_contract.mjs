@@ -1,73 +1,163 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execFileSync, spawnSync } from 'node:child_process';
 
 const projectRoot = path.resolve(import.meta.dirname, '..');
-const evidencePath = path.join(projectRoot, 'generated', 'visual_red_build', 'pose_lab_latest.json');
-const htmlPath = path.join(projectRoot, 'pose-lab.html');
+const evidencePath = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest', 'visual_truth.json');
 const failures = [];
 
 function assert(condition, message) {
   if (!condition) failures.push(message);
 }
 
-function readCacheToken() {
-  const html = fs.readFileSync(htmlPath, 'utf8');
-  const match = html.match(/pose-lab\.js\?v=([^'"\s]+)/);
-  return match?.[1] || null;
+function currentCacheToken() {
+  const html = fs.readFileSync(path.join(projectRoot, 'pose-lab.html'), 'utf8');
+  return html.match(/pose-lab\.js\?v=([^'"\s]+)/)?.[1] || '';
 }
 
-function readRuntimeBuild() {
-  const runtime = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
-  const match = runtime.match(/const\s+LAB_BUILD\s*=\s*['"]([^'"]+)['"]/);
-  return match?.[1] || null;
+function currentCommit() {
+  return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: projectRoot, encoding: 'utf8' }).trim();
 }
 
-const expectedCacheToken = readCacheToken();
-const expectedRuntimeBuild = readRuntimeBuild();
-assert(expectedCacheToken, 'pose-lab.html should expose a pose-lab.js cache token');
-assert(expectedRuntimeBuild, 'src/pose-lab.js should expose LAB_BUILD');
-assert(fs.existsSync(evidencePath), `missing visual evidence artifact: ${path.relative(projectRoot, evidencePath)}`);
+const protocol = fs.readFileSync(path.join(projectRoot, 'docs', 'POSE_LAB_EVIDENCE_PROTOCOL.md'), 'utf8');
+const firebaseDoc = fs.readFileSync(path.join(projectRoot, 'docs', 'FIREBASE_VISUAL_TRUTH.md'), 'utf8');
+const humanRedBuilds = fs.readFileSync(path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json'), 'utf8');
+const captureScript = fs.readFileSync(path.join(projectRoot, 'tools', 'capture_firebase_visual_truth.mjs'), 'utf8');
+const preflightScript = fs.readFileSync(path.join(projectRoot, 'tools', 'pose_lab_visual_truth_preflight.mjs'), 'utf8');
+const senseScript = fs.readFileSync(path.join(projectRoot, 'tools', 'pose_lab_sense_synthesis.mjs'), 'utf8');
+const appSource = fs.readFileSync(path.join(projectRoot, 'src', 'pose-lab.js'), 'utf8');
 
-if (fs.existsSync(evidencePath)) {
-  const raw = fs.readFileSync(evidencePath, 'utf8');
-  let evidence;
-  try {
-    evidence = JSON.parse(raw);
-  } catch (error) {
-    throw new Error(`invalid visual evidence JSON at ${path.relative(projectRoot, evidencePath)}: ${error.message}`);
-  }
+assert(protocol.includes('Firebase hosted visual truth is tier-one'), 'evidence protocol must make Firebase hosted visual truth tier-one');
+assert(protocol.includes('wake the exact Ready capture URL'), 'evidence protocol must require waking the exact Ready capture URL before handoff');
+assert(!protocol.includes('wake the exact `hostedUrl`'), 'evidence protocol must not tell agents to wake the base hostedUrl');
+assert(protocol.includes('offline render') && protocol.includes('diagnostic-only'), 'evidence protocol must demote offline render to diagnostic-only');
+assert(firebaseDoc.includes('T-pose stable idle') && firebaseDoc.includes('Ready boring FK'), 'Firebase doc must name both required Meshy saber truths');
+assert(firebaseDoc.includes('wake the exact Ready capture URL'), 'Firebase doc must require waking the exact Ready capture URL used by the artifact');
+assert(!firebaseDoc.includes('wake the exact `hostedUrl`'), 'Firebase doc must not tell agents to wake the base hostedUrl');
+assert(captureScript.includes('evaluateTpose') && captureScript.includes('evaluateReady'), 'Firebase capture must evaluate both T-pose and Ready');
+assert(captureScript.includes("authority: 'firebase-hosted-cloud-browser'"), 'Firebase capture must declare cloud authority');
+assert(captureScript.includes("offlineRender: 'diagnostic-only'"), 'Firebase capture must reject offline render as acceptance');
+assert(!captureScript.includes("captureKind: 'offline-pose-render'"), 'Firebase capture must not emit offline-pose-render evidence');
+assert(captureScript.includes('Ready hilt collapsed onto raw hand/wrist'), 'Firebase capture must fail the red screenshot class where the hilt collapses onto the wrist');
+assert(captureScript.includes('Ready hand orientation/grip evidence is not visually sane'), 'Firebase capture must fail Ready hand-orientation visual regressions');
+assert(captureScript.includes('Ready blade axis points down through the body'), 'Firebase capture must fail Ready blade-axis visual regressions');
+assert(captureScript.includes('Ready blade axis points down through the body') && captureScript.includes('maxTipRightFromAppliedHiltPx'), 'Firebase capture must fail bad static Ready blade projection from the held hilt');
+assert(captureScript.includes('Ready basket/front orientation metric is missing') && captureScript.includes('Ready socket-forward to blade axis is not visually sane'), 'Firebase capture must keep basket/front diagnostic telemetry and fail blade-axis regressions');
+assert(!captureScript.includes('staticDirectFkProof === true ||'), 'Firebase capture must not let static direct FK bypass visible motion proof');
+assert(captureScript.includes('weapon rotation-probe'), 'Firebase capture must preserve cloud rotation-probe evidence when Ready blade-axis proof is red');
+assert(captureScript.includes('function relationshipChecksFromTelemetry'), 'Firebase capture must evaluate explicit relationship verdicts');
+assert(captureScript.includes('synthesizeCaptureSense') && captureScript.includes('synthesizeEvidenceSense'), 'Firebase capture must write Sense Synthesis verdicts');
+assert(captureScript.includes('reviewTruthFailures') && captureScript.includes('visibleUiTruthAccepted'), 'Firebase capture must fail when the hosted visible UI truth is red');
+assert(captureScript.includes('MOBILE_REVIEW_VIEWPORT') && captureScript.includes('isMobile: true'), 'Firebase capture must reproduce the mobile review surface');
+assert(captureScript.includes('gotoHostedMeshyPage(page, captureUrl, capture.clip)') && captureScript.includes('routeRetry='), 'Firebase capture must cold-load the exact review URL with retry instead of only switching clips through debug state');
+assert(captureScript.includes('relationshipCloseupClip(page)') && !captureScript.includes('x: 360, y: 230'), 'Firebase capture must not crop relationship proof with desktop-only coordinates');
+assert(captureScript.includes('loadWarning: loadMs > LANDING_LOAD_WARN_MS'), 'Firebase capture must preserve slow hosted review load as diagnostic warning only');
+assert(!captureScript.includes('landing hosted review load exceeded'), 'Firebase capture must not fail visual truth solely because hosted review is slow');
+assert(captureScript.includes('tposeWristRelationshipAccepted: relationship.tposeWristRelationshipAccepted'), 'Firebase capture must not hard-code T-pose relationship failure');
+assert(captureScript.includes('readyVisualRelationshipAccepted: relationship.readyVisualRelationshipAccepted'), 'Firebase capture must not hard-code Ready relationship failure');
+assert(captureScript.includes('relationshipCloseup'), 'Firebase capture must preserve relationship close-up screenshots');
+assert(captureScript.includes('humanReadPoseUrl') && captureScript.includes('humanReadScreenshot'), 'Firebase capture must preserve marker-free human-read screenshots');
+assert(senseScript.includes('marker-free human-read screenshot PNG is missing'), 'Sense Synthesis must fail when marker-free human-read screenshots are missing');
+assert(appSource.includes('proxy.activeAttachmentConfig = effectiveConfig'), 'Pose Lab must persist active clip-scoped weapon attachment config');
+assert(appSource.includes('proxy.activeAttachmentConfig || proxy.attachmentConfig || actor.info?.weaponAttachment'), 'Pose Lab weapon diagnostics must read the active clip-scoped attachment config');
+assert(protocol.includes('visible relationship') && firebaseDoc.includes('visible relationship'), 'Pose Lab docs must name visible relationship truth');
+assert(protocol.includes('Sense Synthesis') && firebaseDoc.includes('Sense Synthesis'), 'Pose Lab docs must require Sense Synthesis for visual acceptance');
+assert(protocol.includes('phone-visible hosted URL is part of cloud truth'), 'evidence protocol must treat Android Chrome hosted review as cloud truth');
+assert(firebaseDoc.includes('Phone-wake false-green checkpoint') && firebaseDoc.includes('28649227859'), 'Firebase doc must preserve the phone-wake false-green checkpoint');
+assert(humanRedBuilds.includes('a92fa0bb6dc5b83644688db2d8b04d7c9b2f56b5'), 'human red-build ledger must preserve the phone-visible red review for commit a92fa0b');
+assert(humanRedBuilds.includes('REVIEW ROUTE READY') && humanRedBuilds.includes('T-pose/rest'), 'human red-build ledger must name route-ready and rest-hydration failures');
+assert(humanRedBuilds.includes('e6cc6635631c1f1a983932d01e3233f25640e933') && humanRedBuilds.includes('28678973256'), 'human red-build ledger must preserve the latest false-green strike');
+assert(preflightScript.includes('AUTHORITY_REVOKED_FALSE_GREEN') && preflightScript.includes('allowedNextAction'), 'preflight must revoke authority and provide the only allowed next action for false-green vetoes');
+assert(appSource.includes('reviewTruthState') && appSource.includes('REVIEW RED'), 'Pose Lab runtime must expose visible review truth in the UI');
+assert(appSource.includes('rightHandWorld') && appSource.includes('weaponGripWorld') && appSource.includes('sabreMeshLocalInDisplayRoot') && appSource.includes('sabreMeshWorld'), 'Pose Lab weapon diagnostics must expose hand/world and mesh-local quaternion layers for sword-bone visual audits');
+assert(appSource.includes('Meshy review UI fell back to walking-only clip inventory'), 'Pose Lab runtime must mark walking-only Meshy review inventory red');
+assert(appSource.includes('enforceReviewRequestedClip'), 'Pose Lab review route must force the requested clip if runtime state drifts');
+assert(appSource.includes('hideReviewObstructionSprites'), 'Pose Lab review route must hide obstructing actor label sprites');
+assert(appSource.includes("const fallbackPanel = this.isReviewRoute() ? 'none'"), 'Pose Lab review route must not open a phone-obstructing sheet by default');
+assert(appSource.includes('stop.disabled = Boolean(reviewRequestedClip)'), 'Pose Lab review route must disable Stop so the requested clip cannot be cleared');
+assert(appSource.includes('Review route locked to '), 'Pose Lab review route must visibly lock non-requested clip controls');
+assert(appSource.includes('reviewLockParam') && appSource.includes("reviewLockParam === '0'") && appSource.includes('this.visualQa?.reviewLock === false'), 'Pose Lab review route must allow explicit unlocked calibration review with reviewLock=0');
 
-  assert(evidence.schema === 'pose-lab-visual-evidence-v1', 'visual evidence should use schema pose-lab-visual-evidence-v1');
-  assert(evidence.cacheToken === expectedCacheToken, `visual evidence cacheToken should match served token ${expectedCacheToken}`);
-  assert(evidence.runtimeBuild === expectedRuntimeBuild, `visual evidence runtimeBuild should match LAB_BUILD ${expectedRuntimeBuild}`);
-  assert(typeof evidence.visualRead === 'string' && evidence.visualRead.length >= 20, 'visual evidence should include a concrete visualRead');
-
-  if (evidence.liveVisualQa?.status === 'blocked' || evidence.captureKind === 'visual-qa-blocked') {
-      assert(false, 'missing fresh visual evidence: capture Meshy Character accepted T-pose calibration on the current cache token before promoting any OneHandReady candidate');
-  } else {
-    assert(['android-screenshot', 'visual-qa-capture'].includes(evidence.captureKind), 'visual evidence should record a supported capture kind');
-    assert(typeof evidence.capturePath === 'string' && fs.existsSync(evidence.capturePath), 'visual evidence should point at an existing capture image');
-    assert(typeof evidence.reportPath === 'string' && fs.existsSync(evidence.reportPath), 'visual evidence should point at an existing visual QA report');
-    const report = JSON.parse(fs.readFileSync(evidence.reportPath, 'utf8'));
-    assert(report.ok === true, 'visual QA report referenced by evidence should be green');
-    assert(report.loadedBuild === expectedRuntimeBuild, `visual QA loadedBuild should match LAB_BUILD ${expectedRuntimeBuild}`);
-    assert(report.buildInfo?.cacheTokens?.includes(expectedCacheToken), `visual QA report should include cache token ${expectedCacheToken}`);
-    assert(report.beacons?.some((beacon) => beacon.stage === 'rendered'), 'visual QA report should include a rendered beacon');
-    assert(report.captures?.length >= 1, 'visual QA report should include captured frames');
-
-    const visual = evidence.visualAssertions || {};
-    for (const key of ['moduleLoaded', 'actorRendered', 'clipActive', 'basicControlsVisible', 'uiRendered']) {
-      assert(visual[key] === true, `visual assertion must be true: ${key}`);
-    }
-    for (const key of ['meshyFpsSwordActorUpright', 'meshyFpsSwordNotCollapsed', 'landscapeCritiqueUsable', 'rightHandDisplacedFromIdle', 'upperBodySwordMotionReadable', 'lowerBodyNotAuthoredBySwordClip', 'realMeshySabreRequested', 'weaponRSocketImplemented']) {
-      assert(visual[key] === true, `visual assertion must be true: ${key}`);
-    }
-    assert(evidence.actorKey === 'meshyCharacter', 'visual evidence should cover Meshy Character');
-    assert(String(evidence.clipName || '').includes('0T-Pose'), 'visual evidence should cover accepted FPS/Meshy T-pose calibration');
-    assert(String(evidence.clipName || '').includes('[FPS-REST-ARMS'), 'visual evidence should cover the accepted [FPS-REST-ARMS] calibration clip');
-    assert(evidence.motionEvidencePending === false, 'usable-app evidence should include live visual capture, not defer motion evidence');
-  }
+if (!fs.existsSync(evidencePath)) {
+  console.log(JSON.stringify({
+    checked: ['pose-lab-cloud-visual-red-build-contract'],
+    status: 'pending',
+    reason: 'missing Firebase hosted visual truth evidence; run firebase-visual-truth workflow after committing',
+    evidencePath: path.relative(projectRoot, evidencePath),
+  }, null, 2));
+  process.exit(0);
 }
+
+const evidence = JSON.parse(fs.readFileSync(evidencePath, 'utf8'));
+assert(evidence.schema === 'pose-lab-firebase-visual-truth-v1', 'visual red-build evidence must use Firebase visual truth schema');
+assert(evidence.authority === 'firebase-hosted-cloud-browser', 'visual red-build evidence authority must be Firebase hosted cloud browser');
+if (evidence.cacheToken !== currentCacheToken()) {
+  if (failures.length) throw new Error(failures.join('\n'));
+  console.log(JSON.stringify({
+    checked: ['pose-lab-cloud-visual-red-build-contract'],
+    status: 'pending',
+    reason: `stale Firebase hosted visual truth evidence: ${evidence.cacheToken || 'missing'} does not match served token ${currentCacheToken()}`,
+    evidencePath: path.relative(projectRoot, evidencePath),
+  }, null, 2));
+  process.exit(0);
+}
+if (evidence.commit !== currentCommit() && evidence.headCommit !== currentCommit()) {
+  if (failures.length) throw new Error(failures.join('\n'));
+  console.log(JSON.stringify({
+    checked: ['pose-lab-cloud-visual-red-build-contract'],
+    status: 'pending',
+    reason: `stale Firebase hosted visual truth evidence: commit ${evidence.commit || 'missing'} head ${evidence.headCommit || 'missing'} does not match current ${currentCommit()}`,
+    evidencePath: path.relative(projectRoot, evidencePath),
+  }, null, 2));
+  process.exit(0);
+}
+assert(evidence.senseSynthesis?.schema === 'pose-lab-sense-synthesis-v1', 'visual red-build evidence must include Sense Synthesis verdict');
+if (evidence.humanRedBuild) {
+  assert(evidence.ok === false, 'human visual contradiction must keep Firebase visual truth red');
+  assert(evidence.truthLedger?.human === false, 'human visual contradiction must mark human truth red');
+} else {
+  assert(evidence.ok === true, 'Firebase visual truth must be green before closing a visual red build');
+  assert(evidence.truthLedger?.tposeStableIdle === true, 'Firebase visual truth must prove stable T-pose/idle saber placement');
+  assert(evidence.truthLedger?.readyBoringFk === true, 'Firebase visual truth must prove Ready boring FK');
+  assert(evidence.truthLedger?.senseSynthesis === true, 'Firebase visual truth must prove Sense Synthesis green');
+}
+const tpose = evidence.captures?.find((capture) => capture.id === 'tpose');
+const ready = evidence.captures?.find((capture) => capture.id === 'ready');
+assert(tpose?.evaluation?.checks?.acceptedHiltOracle === true, 'T-pose cloud capture must preserve accepted hilt oracle');
+assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'tposeWristRelationshipAccepted'), 'T-pose cloud capture must record wrist/saber visible relationship acceptance');
+assert(Object.hasOwn(tpose?.evaluation?.checks || {}, 'defaultSurfaceAccepted'), 'T-pose cloud capture must record default-surface visible acceptance');
+assert(Object.hasOwn(ready?.evaluation?.checks || {}, 'readyVisualRelationshipAccepted'), 'Ready cloud capture must record hand/hilt/blade visible relationship acceptance');
+assert(tpose?.senseSynthesis?.checks?.heldByHandRead === true, 'T-pose Sense Synthesis must say the weapon reads as hand-owned');
+assert(ready?.senseSynthesis?.checks?.heldByHandRead === true, 'Ready Sense Synthesis must say the weapon reads as hand-owned');
+assert(Object.hasOwn(ready?.cloudTelemetry?.visualFollow?.screenMetrics || {}, 'maxTipDropFromAppliedHiltPx'), 'Ready cloud capture must record blade tip drop from hilt');
+assert(evidence.captures?.find((capture) => capture.id === 'landing')?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Landing cloud capture must prove visible UI truth accepted');
+assert(tpose?.evaluation?.checks?.visibleUiTruthAccepted === true, 'T-pose cloud capture must prove visible UI truth accepted');
+assert(ready?.evaluation?.checks?.visibleUiTruthAccepted === true, 'Ready cloud capture must prove visible UI truth accepted');
+if (!evidence.humanRedBuild) {
+  assert(tpose?.accepted === true && tpose?.evaluation?.checks?.tposeWristRelationshipAccepted === true, 'T-pose cloud capture must prove accepted wrist/saber relationship');
+  assert(tpose?.evaluation?.checks?.defaultSurfaceAccepted === true, 'default cloud surface must prove accepted visible state');
+  assert(ready?.accepted === true && ready?.evaluation?.checks?.tipTracksHand === true, 'Ready cloud capture must prove saber tip tracks hand');
+  assert(ready?.accepted === true && ready?.evaluation?.checks?.hiltAwayFromRawHand === true, 'Ready cloud capture must prove hilt is visibly away from the raw hand/wrist');
+  assert(ready?.accepted === true && ready?.evaluation?.checks?.readyHandOrientationSane === true, 'Ready cloud capture must prove hand orientation/grip basis is visually sane');
+  assert(ready?.evaluation?.checks?.readyBladeNotPointingDownThroughBody === true, 'Ready cloud capture must prove blade axis does not point down through the body');
+  assert(ready?.evaluation?.checks?.readyVisualRelationshipAccepted === true, 'Ready cloud capture must prove accepted hand/hilt/blade visual relationship');
+}
+const preflightResult = spawnSync('node', ['tools/pose_lab_visual_truth_preflight.mjs', '--json'], {
+  cwd: projectRoot,
+  encoding: 'utf8',
+  stdio: ['ignore', 'pipe', 'pipe'],
+});
+const preflight = JSON.parse(preflightResult.stdout || '{}');
+if (preflight.status === 'AUTHORITY_REVOKED_FALSE_GREEN') {
+  assert(preflight.ok === false, 'authority-revoked preflight must be red');
+  assert(preflight.failures.some((failure) => failure.includes('AUTHORITY_REVOKED_FALSE_GREEN')), 'preflight must preserve false-green failure text');
+} else if (!evidence.humanRedBuild) {
+  assert(preflight.ok === true, 'non-vetoed Firebase evidence must pass visual truth preflight before red-build contract can pass');
+}
+assert(typeof tpose?.screenshot === 'string' && tpose.screenshot.endsWith('.png'), 'T-pose cloud capture must include screenshot');
+assert(typeof tpose?.relationshipCloseup === 'string' && tpose.relationshipCloseup.endsWith('.png'), 'T-pose cloud capture must include relationship close-up screenshot');
+assert(typeof ready?.relationshipCloseup === 'string' && ready.relationshipCloseup.endsWith('.png'), 'Ready cloud capture must include relationship close-up screenshot');
+assert(typeof ready?.contactSheet === 'string' && ready.contactSheet.endsWith('.png'), 'Ready cloud capture must include visual-follow contact sheet');
 
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['pose-lab-visual-evidence'], evidencePath: path.relative(projectRoot, evidencePath), cacheToken: expectedCacheToken }, null, 2));
+console.log(JSON.stringify({ checked: ['pose-lab-cloud-visual-red-build-contract'], evidencePath: path.relative(projectRoot, evidencePath), cacheToken: currentCacheToken() }, null, 2));

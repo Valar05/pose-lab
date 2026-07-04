@@ -46,16 +46,21 @@ for (const file of [
 
 assert(html.includes('const bootstrapImports = ['), 'entry page should preflight the runtime import graph');
 assert(html.includes("./vendor/three/build/three.module.js"), 'entry page should preflight the Three.js build module');
-assert(html.includes("./src/pose-lab.js?v=pose-editor-115"), 'entry page should dynamically import the cache-busted runtime');
+const runtimeToken = js.match(/const LAB_CACHE_TOKEN = '(pose-editor-[0-9]+)'/)?.[1] || '';
+assert(runtimeToken, 'runtime should declare LAB_CACHE_TOKEN');
+assert(html.includes(`./src/pose-lab.js?v=${runtimeToken}`), 'entry page should dynamically import the cache-busted runtime');
 
 const tokenMatches = [...html.matchAll(/v=(pose-editor-[0-9]+)/g)].map((match) => match[1]);
 assert(tokenMatches.length >= 6, 'entry page should cache-bust every local bootstrap import');
-assert(new Set(tokenMatches).size === 1 && tokenMatches[0] === 'pose-editor-115', `entry import cache tokens should match pose-editor-115, got ${tokenMatches.join(', ')}`);
+assert(new Set(tokenMatches).size === 1 && tokenMatches[0] === runtimeToken, `entry import cache tokens should match ${runtimeToken}, got ${tokenMatches.join(', ')}`);
 for (const stale of ['visual-qa-read-frames', 'visual-qa-step-rail', 'pose-editor-14', 'pose-editor-1"']) {
   assert(!html.includes(stale), `entry page should not reference stale token ${stale}`);
   assert(!js.includes(stale), `runtime should not reference stale token ${stale}`);
 }
-assert(js.includes("./rig-profiles.js?v=pose-editor-115"), 'runtime static imports should share the entry cache token');
+const runtimeImportTokenPattern = new RegExp("from '\\./(?:[^']+)\\?v=(pose-editor-[0-9]+)'", 'g');
+const runtimeImportTokens = [...js.matchAll(runtimeImportTokenPattern)].map((match) => match[1]);
+assert(runtimeImportTokens.length >= 6, 'runtime should cache-bust local static imports');
+assert(new Set(runtimeImportTokens).size === 1 && runtimeImportTokens[0] === runtimeToken, `runtime static imports should share ${runtimeToken}, got ${runtimeImportTokens.join(', ')}`);
 assert(html.includes("fetch('/__visual_qa_smoke?stage=module-failed&spec='"), 'entry page should publish module-failed beacons with spec context');
 assert(js.includes('this.updateFirstPersonCamera();'), 'startup should refresh the camera before first render');
 assert(js.includes('this.renderer.render(this.scene, this.camera);'), 'startup should render once before saving state');

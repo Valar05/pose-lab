@@ -16,6 +16,7 @@ Own the outcome, not the task.
 - Use `apply_patch` for manual repo edits, including shared-storage project files.
 - The old `workspace-write-operator` editing workaround is deprecated for this project; do not route normal source/doc/test edits through it.
 - Before handing back Pose Lab work, verify the durable Termux server on port `8798` returns `http://127.0.0.1:8798/pose-lab/pose-lab.html` and tail `generated/server_logs/pose-lab-server-8798.log`; start tmux session `pose-lab-server-8798` with the logged restart loop if it is down.
+- Cache and tmp cleanup must use `node tools/clean_pose_lab_cache.mjs --target <name> --apply`. Do not ask for approval to manually `rm` temp/cache paths; add an allowlisted script target instead.
 
 ## Working Rule
 

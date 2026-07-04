@@ -12,7 +12,7 @@ try {
   const registerResponse = await fetch(new URL('/register', bridgeUrl), {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ label: 'Pose Lab Debug Test', build: 'clean-sf2', labMode: 'critique', url: 'http://127.0.0.1:8797/pose-lab.html?debugBridge=1' }),
+    body: JSON.stringify({ label: 'Pose Lab Debug Test', build: 'clean-sf2', cacheToken: 'pose-editor-test', labMode: 'critique', url: 'http://127.0.0.1:8797/pose-lab.html?debugBridge=1' }),
   });
   assert(registerResponse.ok, 'bridge should accept browser registration');
   const { clientId } = await registerResponse.json();
@@ -38,6 +38,9 @@ try {
   const commandResult = await commandPromise;
   assert(commandResult.ok === true, 'bridge command should resolve with the delivered result');
   assert(commandResult.snapshot?.selectedActor === 'orc', 'bridge command should return the browser result body');
+  assert(commandResult.debugBridgeTarget?.clientId === clientId, 'bridge command should report the targeted client id');
+  assert(commandResult.debugBridgeTarget?.client?.url?.includes('debugBridge=1'), 'bridge command should report the targeted browser URL');
+  assert(commandResult.debugBridgeTarget?.client?.cacheToken === 'pose-editor-test', 'bridge command should report the targeted cache token');
 } finally {
   await bridge.close();
 }

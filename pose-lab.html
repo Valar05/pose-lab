@@ -8,7 +8,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>Pose Critique</title>
-  <link rel="stylesheet" href="src/pose-lab.css?v=pose-editor-128">
+  <link rel="stylesheet" href="src/pose-lab.css?v=pose-editor-207">
   <script type="importmap">
     {
       "imports": {
@@ -105,6 +105,7 @@
       <button id="tab-ruined-air" type="button" data-actor="ruinedAir">Ruined Air</button>
       <button id="tab-arcane" type="button" data-actor="arcane">Arcane Rig</button>
     </section>
+    <section id="reviewTruth" aria-live="polite"></section>
     <section id="viewTabs" aria-label="View mode">
       <button type="button" data-view-mode="orbit">Orbit</button>
       <button type="button" data-view-mode="firstPerson">FPV</button>
@@ -248,15 +249,19 @@
       <div class="button-row three-buttons">
         <button id="weaponGizmoToggle" type="button">Enable</button>
         <button id="weaponGizmoTranslate" type="button">Move</button>
-        <button id="weaponGizmoRotate" type="button">Rotate</button>
+        <button id="weaponGizmoRotate" type="button">Mesh Rotate</button>
         <button id="weaponGizmoScale" type="button">Scale</button>
         <button id="weaponGizmoSave" type="button">Save</button>
+        <button id="weaponGizmoUseSaved" type="button">Use Saved</button>
+        <button id="weaponGizmoClearSaved" type="button">Clear Saved</button>
       </div>
       <div class="panel-title">Semantic Landmarks</div>
       <div class="button-row three-buttons">
         <button id="semanticLandmarkToggle" type="button">Enable</button>
         <button id="semanticLandmarkPickHilt" type="button">Pick Hilt</button>
         <button id="semanticLandmarkPickTip" type="button">Pick Tip</button>
+        <button id="semanticLandmarkApplyHilt" type="button">Apply Hilt</button>
+        <button id="semanticLandmarkApplyTip" type="button">Apply Tip</button>
         <button id="semanticLandmarkClear" type="button">Clear</button>
         <button id="semanticLandmarkExport" type="button">Export Candidate</button>
       </div>
@@ -327,12 +332,12 @@
         './vendor/three/examples/jsm/loaders/FBXLoader.js',
         './vendor/three/examples/jsm/controls/OrbitControls.js',
         './vendor/three/examples/jsm/utils/SkeletonUtils.js',
-        './src/godot-rest-poses.js?v=pose-editor-128',
-        './src/rig-profiles.js?v=pose-editor-129',
-        './src/startup-policy.mjs?v=pose-editor-128',
-        './src/clip-search.js?v=pose-editor-128',
-        './src/lab-mode.mjs?v=pose-editor-128',
-        './src/pose-lab.js?v=pose-editor-129',
+        './src/godot-rest-poses.js?v=pose-editor-207',
+        './src/rig-profiles.js?v=pose-editor-207',
+        './src/startup-policy.mjs?v=pose-editor-207',
+        './src/clip-search.js?v=pose-editor-207',
+        './src/lab-mode.mjs?v=pose-editor-207',
+        './src/pose-lab.js?v=pose-editor-207',
       ];
       show('Booting module...');
       window.addEventListener('error', (event) => {

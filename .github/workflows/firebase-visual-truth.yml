@@ -1,0 +1,91 @@
+name: Firebase Visual Truth
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  firebase-visual-truth:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+    env:
+      FIREBASE_PROJECT_ID: home-center-dclar
+      FIREBASE_HOSTING_SITE: pose-lab-visual-truth
+      PLAYWRIGHT_BROWSERS_PATH: ~/.cache/ms-playwright
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify Git LFS assets
+        run: |
+          git lfs pull --include="assets/models/meshy_character_sheet/**,assets/models/meshy_sabre/**" --exclude=""
+          test "$(wc -c < assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Running_withSkin.glb)" -gt 1000000
+          test "$(wc -c < assets/models/meshy_character_sheet/animated/Meshy_AI_Meshy_Character_Sheet_biped_Animation_Walking_withSkin.glb)" -gt 1000000
+          test "$(wc -c < assets/models/meshy_character_sheet/static/Meshy_AI_Meshy_Character_Sheet_0628173422_texture.glb)" -gt 1000000
+          test "$(wc -c < assets/models/meshy_sabre/Meshy_AI_A_French_revolution_c_0628223518_texture.glb)" -gt 1000000
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Restore Playwright browser cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Build staged Pose Lab release
+        run: node tools/build_firebase_pose_lab_release.mjs
+
+      - name: Clear stale Firebase visual artifacts
+        run: |
+          rm -rf generated/firebase_visual_truth/latest
+          mkdir -p generated/firebase_visual_truth/latest
+
+      - name: Validate Firebase config
+        run: |
+          node --check tools/build_firebase_pose_lab_release.mjs
+          node tools/test_firebase_hosting_config.mjs
+
+      - name: Install Firebase CLI and Playwright
+        run: |
+          npm ci
+          npx playwright install chromium
+
+      - name: Deploy Firebase preview channel
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_HOME_CENTER_DCLAR }}'
+          PREVIEW_CHANNEL_ID: visual-truth-pr-${{ github.event.pull_request.number || github.run_id }}
+        run: |
+          set -o pipefail
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json"
+          npx firebase-tools hosting:channel:list --project "$FIREBASE_PROJECT_ID" --site "$FIREBASE_HOSTING_SITE" --json > "$RUNNER_TEMP/firebase-channels.json" || true
+          node -e "const fs=require('fs'); const p=process.env.RUNNER_TEMP + '/firebase-channels.json'; let j={}; try{j=JSON.parse(fs.readFileSync(p,'utf8'))}catch{} const channels=(j.result?.channels||j.channels||[]).map(c=>String(c.name||c.id||c.channelId||'').split('/').pop()).filter(Boolean); const stale=channels.filter(id=>/^visual-truth-\\d+$/.test(id)).slice(0,20); fs.writeFileSync(process.env.RUNNER_TEMP + '/firebase-stale-channels.txt', stale.join('\n')); console.log('stale preview channels to delete=' + stale.length);"
+          while IFS= read -r channel_id; do
+            if [ -n "$channel_id" ]; then
+              npx firebase-tools hosting:channel:delete "$channel_id" --project "$FIREBASE_PROJECT_ID" --site "$FIREBASE_HOSTING_SITE" --force || true
+            fi
+          done < "$RUNNER_TEMP/firebase-stale-channels.txt"
+          npx firebase-tools hosting:channel:deploy "$PREVIEW_CHANNEL_ID" --project "$FIREBASE_PROJECT_ID" --expires 30d --json 2>&1 | tee "$RUNNER_TEMP/firebase-deploy.json"
+          node -e "const fs=require('fs'); const p=process.env.RUNNER_TEMP + '/firebase-deploy.json'; const j=JSON.parse(fs.readFileSync(p,'utf8')); const site=process.env.FIREBASE_HOSTING_SITE; const url=j.result?.[site]?.url; if(!url) throw new Error('missing Firebase preview URL in '+p); fs.appendFileSync(process.env.GITHUB_ENV, 'HOSTED_URL='+url+'\\n'); console.log(url);"
+
+      - name: Capture hosted Pose Lab truth
+        env:
+          GITHUB_SHA: '${{ github.sha }}'
+          GITHUB_HEAD_SHA: '${{ github.event.pull_request.head.sha || github.sha }}'
+        run: node tools/capture_firebase_visual_truth.mjs --hosted-url "$HOSTED_URL"
+
+      - name: Validate captured Firebase visual truth
+        run: node tools/test_firebase_visual_truth_contract.mjs
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: firebase-visual-truth
+          path: generated/firebase_visual_truth/latest/

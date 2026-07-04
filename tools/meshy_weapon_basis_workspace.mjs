@@ -384,6 +384,11 @@ function eulerQuat(THREE, deg) {
   return new THREE.Quaternion().setFromEuler(new THREE.Euler(...deg.map((value) => THREE.MathUtils.degToRad(value || 0)), 'XYZ')).normalize();
 }
 
+function quatEulerDeg(THREE, quat) {
+  const euler = new THREE.Euler().setFromQuaternion(quat.clone().normalize(), 'XYZ');
+  return [euler.x, euler.y, euler.z].map((value) => round(THREE.MathUtils.radToDeg(value), 3));
+}
+
 function angleDeg(THREE, a, b) {
   if (!a || !b || a.lengthSq() < 1e-8 || b.lengthSq() < 1e-8) return 0;
   return THREE.MathUtils.radToDeg(a.clone().normalize().angleTo(b.clone().normalize()));
@@ -436,6 +441,7 @@ function correctedEvaluations(THREE, socket, config, desired) {
   const delta = new THREE.Quaternion().setFromUnitVectors(currentLocalBlade, desiredBladeLocal).normalize();
   const solvedLocalQ = delta.clone().multiply(currentLocalQ).normalize();
   const rotationOnly = attachmentEval(THREE, socket, config, desired, solvedLocalQ);
+  rotationOnly.solvedRotationDeg = quatEulerDeg(THREE, solvedLocalQ);
   const current = attachmentEval(THREE, socket, config, desired, currentLocalQ);
   const desiredLength = desired.grip.distanceTo(desired.tip);
   const currentLocalDelta = new THREE.Vector3().fromArray(attachment.tipLocalPosition).sub(new THREE.Vector3().fromArray(attachment.gripLocalPosition));
@@ -445,6 +451,7 @@ function correctedEvaluations(THREE, socket, config, desired) {
   const positionOnlySocket = { position: desired.grip.clone(), quaternion: socket.quaternion.clone() };
   const positionOnly = attachmentEval(THREE, positionOnlySocket, config, desired, currentLocalQ);
   const positionAndRotation = attachmentEval(THREE, positionOnlySocket, config, desired, solvedLocalQ);
+  positionAndRotation.solvedRotationDeg = rotationOnly.solvedRotationDeg;
   return { current, rotationOnly, scaleOnly, tipOnly, positionOnly, positionAndRotation };
 }
 
@@ -473,6 +480,21 @@ function summariseRows(rows, keyPrefix = '') {
 
 function vectorRecord(v) {
   return point(v);
+}
+
+function summarizeRotationSolutions(rows) {
+  const values = rows.map((row) => row.rotationOnlySolvedRotationDeg).filter((value) => Array.isArray(value) && value.length === 3);
+  if (!values.length) return null;
+  const average = [0, 1, 2].map((index) => round(avg(values.map((value) => value[index])), 3));
+  const maxSpread = [0, 1, 2].map((index) => round(max(values.map((value) => Math.abs(value[index] - average[index]))), 3));
+  const maxComponentSpreadDeg = round(max(maxSpread), 3);
+  return {
+    candidateRotationDeg: values[0],
+    averageRotationDeg: average,
+    maxSpread,
+    maxComponentSpreadDeg,
+    stableAcrossKeys: maxComponentSpreadDeg <= 0.01,
+  };
 }
 
 function evalFields(prefix, evaluation) {
@@ -617,6 +639,7 @@ async function main() {
       socketRelativeTipError: round(evals.current.socketRelativeTipError),
       hiltError: round(evals.current.hiltError),
       attachmentOrientationErrorDeg: round(evals.current.attachmentOrientationErrorDeg, 3),
+      rotationOnlySolvedRotationDeg: evals.rotationOnly.solvedRotationDeg,
       ...evalFields('rotationOnly', evals.rotationOnly),
       ...evalFields('scaleOnly', evals.scaleOnly),
       ...evalFields('tipOnly', evals.tipOnly),
@@ -650,6 +673,7 @@ async function main() {
   const scaleOnly = summariseRows(rows, 'scaleOnly');
   const positionOnly = summariseRows(rows, 'positionOnly');
   const positionAndRotation = summariseRows(rows, 'positionAndRotation');
+  const rotationSolution = summarizeRotationSolutions(rows);
   const dominantCause = current.avgGripPositionError > 0.25
     ? 'something-unexpected: target-grip-mismatch-plus-attachment-basis'
     : (current.avgBladeAxisErrorDeg > 30 && rotationOnly.avgBladeTipError < current.avgBladeTipError * 0.5
@@ -679,6 +703,7 @@ async function main() {
     },
     layers: Object.fromEntries(LAYERS.map((layer) => [layer, args.layers.has(layer)])),
     attachmentConfig: config,
+    rotationSolution,
     metrics: { current, rotationOnly, tipOnly, scaleOnly, positionOnly, positionAndRotation },
     reports: { perKey: rows },
     diagnostics,

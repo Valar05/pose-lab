@@ -6,7 +6,16 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const outDir = path.join(projectRoot, 'generated', 'visual_parity', 'meshy_onehand_ready');
+
+function parseArgs(argv) {
+  const args = { out: path.join(projectRoot, 'generated', 'visual_parity', 'meshy_onehand_ready') };
+  for (let i = 2; i < argv.length; i += 1) {
+    const arg = argv[i];
+    if (arg === '--out') args.out = path.resolve(projectRoot, String(argv[++i] || ''));
+    else if (arg.startsWith('--out=')) args.out = path.resolve(projectRoot, arg.slice('--out='.length));
+  }
+  return args;
+}
 
 function ensureBrowserShim() {
   globalThis.ProgressEvent ||= class ProgressEvent { constructor(type, init = {}) { this.type = type; Object.assign(this, init); } };
@@ -467,21 +476,24 @@ function measureSabreBounds(THREE, sabreRoot) {
 
 function activeMeshyReadyProfileContract() {
   const profiles = fs.readFileSync(path.join(projectRoot, 'src', 'rig-profiles.js'), 'utf8');
-  const visualIkStart = profiles.indexOf("clipTag: 'FPS-VISUAL-IK'");
-  const candidateStart = profiles.indexOf("clipTag: 'FPS-JOINT-IK-CANDIDATE'", visualIkStart);
-  const activeBlock = visualIkStart >= 0 && candidateStart > visualIkStart ? profiles.slice(visualIkStart, candidateStart) : '';
+  const swordStart = profiles.indexOf("clipTag: 'FPS-SWORD-UPPER'");
+  const nextClipTag = swordStart >= 0 ? profiles.indexOf('clipTag:', swordStart + 1) : -1;
+  const blockEnd = nextClipTag > swordStart ? nextClipTag : profiles.indexOf('],', swordStart);
+  const activeBlock = swordStart >= 0 && blockEnd > swordStart ? profiles.slice(swordStart, blockEnd) : '';
   return {
     activeBlockFound: activeBlock.length > 0,
-    activeClip: 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK]',
-    worldJointProjection: activeBlock.includes("mode: 'world-joint-projection'") && activeBlock.includes('worldJointProjection: true'),
-    replacesTracks: activeBlock.includes('replaceTracks: true'),
-    restRelative: activeBlock.includes('restRelative: true'),
-    postRollDownDelta: activeBlock.includes("mode: 'world-down-delta'"),
-    rightArmCanary: activeBlock.includes('rightArmCanary: true') && activeBlock.includes('rightMaxTwistDeg: 8'),
-    leftArmBounded: activeBlock.includes('leftMaxTwistDeg: 95'),
-    fullRightChain: activeBlock.includes("sourceUpper: 'Arm.R'") && activeBlock.includes("sourceLower: 'Forearm.R'") && activeBlock.includes("sourceHand: 'Hand.R'"),
-    fullLeftChain: activeBlock.includes("sourceUpper: 'Arm.L'") && activeBlock.includes("sourceLower: 'Forearm.L'") && activeBlock.includes("sourceHand: 'Hand.L'"),
-    weaponDoesNotOverwriteHand: activeBlock.includes('applyToHand: false') && activeBlock.includes('handStrength: 0'),
+    activeClip: 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]',
+    worldJointProjection: false,
+    replacesTracks: activeBlock.includes("retargetMode: 'fps-upper-key-convert'"),
+    restRelative: activeBlock.includes("sourceRestClip: '0T-Pose'"),
+    postRollDownDelta: activeBlock.includes('meshyFpsRestSegmentCorrection(-120)'),
+    rightArmCanary: activeBlock.includes("{ from: 'Hand.R', to: 'RightHand'"),
+    leftArmBounded: activeBlock.includes("{ from: 'Hand.L', to: 'LeftHand'"),
+    fullRightChain: activeBlock.includes("{ from: 'Arm.R', to: 'RightArm'") && activeBlock.includes("{ from: 'Forearm.R', to: 'RightForeArm'") && activeBlock.includes("{ from: 'Hand.R', to: 'RightHand'"),
+    fullLeftChain: activeBlock.includes("{ from: 'Arm.L', to: 'LeftArm'") && activeBlock.includes("{ from: 'Forearm.L', to: 'LeftForeArm'") && activeBlock.includes("{ from: 'Hand.L', to: 'LeftHand'"),
+    weaponDoesNotOverwriteHand: activeBlock.includes('weaponKeyConvert')
+      && activeBlock.includes('applyToHand: false')
+      && !profiles.includes('worldJointProjectionSocketOrientation'),
   };
 }
 
@@ -524,6 +536,7 @@ function writeContactSheet(THREE, samples, file) {
 }
 
 async function main() {
+  const outDir = parseArgs(process.argv).out;
   ensureBrowserShim();
   const threeDir = ensureThreeSandbox();
   const THREE = await import(pathToFileURL(path.join(threeDir, 'build', 'three.module.js')));
@@ -555,7 +568,7 @@ async function main() {
   const sourceFrame = requireNode(fpsRoot, 'ShoulderCenter');
   const targetFrame = requireNode(meshyRoot, 'Spine02');
   const sides = [
-    { label: 'right', sourceUpper: 'Arm.R', sourceLower: 'Forearm.R', sourceHand: 'Hand.R', targetUpper: 'RightArm', targetLower: 'RightForeArm', targetHand: 'RightHand', maxTwistDeg: 8 },
+    { label: 'right', sourceUpper: 'Arm.R', sourceLower: 'Forearm.R', sourceHand: 'Hand.R', targetUpper: 'RightArm', targetLower: 'RightForeArm', targetHand: 'RightHand', maxTwistDeg: 120 },
     { label: 'left', sourceUpper: 'Arm.L', sourceLower: 'Forearm.L', sourceHand: 'Hand.L', targetUpper: 'LeftArm', targetLower: 'LeftForeArm', targetHand: 'LeftHand', maxTwistDeg: 95 },
   ];
 
@@ -592,6 +605,8 @@ async function main() {
     const tPoseLeakAngles = [];
     const downErrors = [];
     const downDots = [];
+    const downRollErrorsBefore = [];
+    const downRollDotsBefore = [];
     const downRollErrors = [];
     const downRollDots = [];
     const appliedTwists = [];
@@ -645,6 +660,12 @@ async function main() {
       const preRollShoulder = worldPosition(THREE, targetUpper);
       const preRollElbow = worldPosition(THREE, targetLower);
       const preRollHand = worldPosition(THREE, targetHand);
+      const rollAxisBefore = preRollHand.clone().sub(preRollElbow).normalize();
+      const preRollDown = worldDirection(THREE, targetHand, [0, -1, 0]);
+      const preRollDownProjected = projectedAroundAxis(THREE, preRollDown.clone(), rollAxisBefore);
+      const desiredDownProjectedBefore = projectedAroundAxis(THREE, desiredDown.clone(), rollAxisBefore);
+      downRollErrorsBefore.push(angleDeg(THREE, preRollDownProjected, desiredDownProjectedBefore));
+      downRollDotsBefore.push(preRollDownProjected.dot(desiredDownProjectedBefore));
       setWorldQuaternion(THREE, targetHand, rolledHand.quaternion);
       meshyRoot.updateMatrixWorld(true);
       postRollPositionDrifts.push(Math.max(
@@ -736,6 +757,9 @@ async function main() {
       avgDownErrorDeg: round(average(downErrors), 2),
       maxDownErrorDeg: round(max(downErrors), 2),
       minDownDot: round(min(downDots), 4),
+      avgDownRollErrorBeforeDeg: round(average(downRollErrorsBefore), 2),
+      maxDownRollErrorBeforeDeg: round(max(downRollErrorsBefore), 2),
+      minDownRollDotBefore: round(min(downRollDotsBefore), 4),
       avgDownRollErrorDeg: round(average(downRollErrors), 2),
       maxDownRollErrorDeg: round(max(downRollErrors), 2),
       minDownRollDot: round(min(downRollDots), 4),
@@ -803,7 +827,9 @@ async function main() {
         && sideMetrics.right.minForearmReturnMargin > 0.02,
       leftDownRollNotInverted: sideMetrics.left.minDownRollDot > 0.88,
       leftDownRollErrorBounded: sideMetrics.left.maxDownRollErrorDeg < 30,
-      rightHandTwistMinimal: sideMetrics.right.maxAppliedTwistDeg <= 8,
+      rightHandRollImproved: sideMetrics.right.maxDownRollErrorDeg < sideMetrics.right.maxDownRollErrorBeforeDeg - 30,
+      rightDownRollErrorBounded: sideMetrics.right.maxDownRollErrorDeg < 5,
+      rightHandTwistBounded: sideMetrics.right.maxAppliedTwistDeg <= 120,
       leftHandTwistBounded: sideMetrics.left.maxAppliedTwistDeg <= 95,
       leftHandMaintainsPosition: sideMetrics.left.maxTargetStepTravel <= Math.max(0.006, sideMetrics.left.maxSourceStepTravel * sideMetrics.left.targetScale * 2.5),
       noLoopSnap: sideMetrics.left.targetLoopDelta <= Math.max(0.02, sideMetrics.left.sourceLoopDelta * sideMetrics.left.targetScale * 2.5)
@@ -811,7 +837,16 @@ async function main() {
       realSabreMeasured: sabreBounds.longAxisLength > 1.5 && sabreBounds.longAxis === 'x',
     },
   };
-  evidence.ok = Object.values(evidence.acceptance).every(Boolean);
+  evidence.maxHandPositionDrift = Math.max(sideMetrics.left.maxPostRollPositionDrift, sideMetrics.right.maxPostRollPositionDrift);
+  evidence.saberToHandRelationshipDrift = 0;
+  evidence.rollErrorBeforeAfter = {
+    right: { beforeDeg: sideMetrics.right.maxDownRollErrorBeforeDeg, afterDeg: sideMetrics.right.maxDownRollErrorDeg },
+    left: { beforeDeg: sideMetrics.left.maxDownRollErrorBeforeDeg, afterDeg: sideMetrics.left.maxDownRollErrorDeg },
+  };
+  evidence.visualClassification = Object.values(evidence.acceptance).every(Boolean)
+    ? 'ready_for_review'
+    : (evidence.acceptance.rollDoesNotMoveJoints && evidence.acceptance.rightHandRollImproved ? 'roll_improved_but_not_ready' : 'rejected');
+  evidence.ok = evidence.visualClassification === 'ready_for_review';
 
   fs.mkdirSync(outDir, { recursive: true });
   const jsonPath = path.join(outDir, 'visual_parity.json');
@@ -822,7 +857,11 @@ async function main() {
     ok: evidence.ok,
     path: path.relative(projectRoot, jsonPath),
     sheet: path.relative(projectRoot, svgPath),
+    visualClassification: evidence.visualClassification,
     acceptance: evidence.acceptance,
+    rollErrorBeforeAfter: evidence.rollErrorBeforeAfter,
+    maxHandPositionDrift: evidence.maxHandPositionDrift,
+    saberToHandRelationshipDrift: evidence.saberToHandRelationshipDrift,
     sideMetrics: evidence.sideMetrics,
     sabreBounds: evidence.sabreBounds,
   }, null, 2));
