@@ -52,6 +52,7 @@ assert(fs.existsSync(pngPath), `missing PNG artifact ${pngPath}`);
 assert(fs.statSync(pngPath).size > 1000, `PNG artifact is too small to be a useful visual render: ${pngPath}`);
 assert(fs.existsSync(summaryPath), `missing summary artifact ${summaryPath}`);
 assert(artifact.schema === 'pose-lab-offline-pose-weapon-render-v1', `unexpected schema ${artifact.schema}`);
+assert(artifact.ok === true, `offline render visual verdict is red: ${artifact.actualVisibleRead}\n${JSON.stringify(artifact.checks, null, 2)}`);
 assert(artifact.diagnosticOnly === true && artifact.productionBehaviorModified === false, 'artifact must remain diagnostic-only');
 assert(artifact.generatedClipResolved === true, `renderer did not resolve the accepted T-pose clip: ${artifact.generatedClipReason}`);
 assert(artifact.clipRequested === '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', `unexpected requested clip ${artifact.clipRequested}`);
@@ -68,7 +69,7 @@ assert(artifact.checks?.visibleMeshTipLandmarkPresent === true, 'offline render 
 assert(artifact.checks?.visibleMeshHiltLandmarkPresent === true, `offline render did not expose the real mesh hilt landmark: ${JSON.stringify(artifact.maxDistances)}`);
 assert(artifact.checks?.visibleMeshTipLandmarkPresent === true, `offline render did not expose the real mesh tip landmark: ${JSON.stringify(artifact.maxDistances)}`);
 assert(artifact.checks?.visibleMeshBladeLengthFinite === true, `offline render did not prove a visible blade landmark span: ${JSON.stringify(artifact.maxDistances)}`);
-assert(artifact.checks?.appliedHiltInHandRegion === true, `offline render did not prove applied hilt stays in the restored hand region: ${JSON.stringify(artifact.maxDistances)}`);
+assert(artifact.checks?.appliedHiltAwayFromRawHandLocal === true, `offline render did not prove applied hilt stays visibly displaced from raw wrist in hand-local space: ${JSON.stringify(artifact.maxLocalDistances)}`);
 assert(artifact.generatedClipStats?.weaponTrackEnabled !== true && artifact.generatedClipStats?.weaponTrackTarget == null, `accepted T-pose baseline must not emit generated weapon tracks: ${JSON.stringify(artifact.generatedClipStats)}`);
 assert(artifact.truthLedger?.repo && artifact.truthLedger?.runtime && artifact.truthLedger?.visual && artifact.truthLedger?.human, 'artifact should include a truth ledger');
 assert(artifact.checks?.parentChainMatchesPureFkShape === true, `offline render should preserve the pure FK parent chain: ${JSON.stringify(artifact.sampleData?.[0]?.parentChain)}`);

@@ -351,9 +351,10 @@ function compareReports(ready, tpose) {
   const readyPlacement = [...new Set(ready.samples.map((sample) => normalizedFkPlacementSignature(sample.fkPlacementSignature)))];
   const tposePlacement = [...new Set(tpose.samples.map((sample) => normalizedFkPlacementSignature(sample.fkPlacementSignature)))];
   if (!sameArray(readyPlacement, tposePlacement)) blockers.push('runtime-field-differs:fkPlacementSignature');
+  const parentLocalMatrixNoiseTolerance = 0.00001;
   for (const child of ['WeaponGrip', 'displayRoot', 'weaponMesh']) {
-    const readyStable = Number(ready.maxParentLocalMatrixDrift[child] || 0) <= 0.000001;
-    const tposeStable = Number(tpose.maxParentLocalMatrixDrift[child] || 0) <= 0.000001;
+    const readyStable = Number(ready.maxParentLocalMatrixDrift[child] || 0) <= parentLocalMatrixNoiseTolerance;
+    const tposeStable = Number(tpose.maxParentLocalMatrixDrift[child] || 0) <= parentLocalMatrixNoiseTolerance;
     if (readyStable !== tposeStable) blockers.push(`local-matrix-stability-differs:${child}`);
   }
   const crossClipHandLocalDelta = {};

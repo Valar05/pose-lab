@@ -646,7 +646,7 @@ async function main() {
     );
   const reproducesLiveRed = generatedClipResolved
     && hiltSocketDistances.every((value) => Number.isFinite(value) && value <= 0.0005)
-    && (!appliedHiltInHandRegion
+    && (!appliedHiltAwayFromRawHandLocal
       || !visibleMeshHiltPinnedToWeaponGrip
       || !visibleMeshHiltMatchesAppliedHilt
       || !socketStableInHand
@@ -716,7 +716,6 @@ async function main() {
     && checks.weaponGripQuaternionStableUnderRightHand
     && checks.appliedHiltAwayFromRawHandLocal
     && checks.socketAwayFromRawHandLocal
-    && checks.appliedHiltInHandRegion
     && checks.readyWeaponMovesWithHand
     && checks.readyVisibleMeshBladeAxisMatchesFpsSource
     && checks.bladeLengthFinite

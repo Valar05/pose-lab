@@ -290,7 +290,7 @@ export function applyWeaponAttachmentRuntimeRules(THREE, {
   const displayRoot = proxy.displayRoot || weaponRoot.parent || proxy.root;
   const boringHandFk = proxy?.config?.parentMode === 'hand-fk';
   const socketScaleCompensation = new THREE.Vector3(1, 1, 1);
-  if (!boringHandFk && proxy?.config?.parentMode === 'synthetic-source-socket' && proxy.root && actorModel) {
+  if ((boringHandFk || proxy?.config?.parentMode === 'synthetic-source-socket') && proxy.root && actorModel) {
     actorModel.updateMatrixWorld(true);
     proxy.root.updateMatrixWorld(true);
     const modelWorldScale = actorModel.getWorldScale(new THREE.Vector3());
