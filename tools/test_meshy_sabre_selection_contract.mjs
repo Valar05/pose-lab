@@ -9,13 +9,13 @@ function assert(condition, message) { if (!condition) failures.push(message); }
 
 assert(js.includes('preferredCombatClip(actor, clip)'), 'Pose Lab should keep a combat clip resolver for saved/alias selections');
 assert(js.includes('/\\[FPS-SWORD-UPPER\\]/.test(String(name || \'\'))'), 'saved clip preference can still recognize stale FPS-SWORD-UPPER clips for manual recovery');
-assert(profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'Meshy SwordReady alias should select the accepted golden Ready clip');
+assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]'"), 'Meshy SwordReady alias should remain on accepted T-pose baseline until Ready is promoted');
 assert(!profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]'"), 'Meshy SwordReady alias must not select the rejected ready retarget');
 for (const alias of ['SwordReadied', 'SwordAttack1', 'SwordAttack2', 'SwordAttack3', 'SwordAttack4', 'SwordAttack5', 'SwordAirForward']) {
   assert(!profiles.includes(`${alias}: [`), `Meshy should defer ${alias} alias until attack conversion resumes`);
 }
 assert(profiles.includes("sourceKey: 'player'"), 'Meshy generated sword clips should source from FPS Arms');
-assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy should generate the accepted golden Ready clip');
+assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy should generate the gated Ready candidate clip');
 for (const rejected of ["clipTag: 'IB-MC'", "clipTag: 'RA-FULL'", "clipTag: 'GRIP'", "clipTag: 'CORE'", "sourceKey: 'orc'", "sourceKey: 'ruinedAir'", 'Armature|Swing1 -> meshyCharacter']) {
   assert(!profiles.includes(rejected), `Meshy should not select rejected generated path: ${rejected}`);
 }

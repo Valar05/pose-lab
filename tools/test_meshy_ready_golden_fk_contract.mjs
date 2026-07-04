@@ -22,12 +22,12 @@ for (const literal of [
   assert(profiles.includes(literal), `protected T-pose/manual weapon literal changed: ${literal}`);
 }
 
-assert(profiles.includes("SwordReady: ['OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'SwordReady should expose the accepted golden Ready clip first');
-assert(profiles.includes("visibleClipPatterns: ['\\\\[FPS-REST-ARMS', '\\\\[FPS-VISUAL-IK R-120 L-90\\\\]']"), 'weapon visibility should include only T-pose rest and accepted golden Ready patterns');
+assert(profiles.includes("SwordReady: ['0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]', '0T-Pose -> meshyCharacter:FPS-REST-ARMS-CAL--120', '0T-Pose']"), 'SwordReady should stay on accepted T-pose aliases until Ready has fresh promotion evidence');
+assert(profiles.includes("visibleClipPatterns: ['\\\\[FPS-REST-ARMS']"), 'weapon visibility should stay on accepted T-pose rest patterns until Ready has fresh promotion evidence');
 assert(profiles.includes("retargetMode: 'meshy-fps-visual-ik-ready'"), 'Meshy Ready should use the explicit golden Ready helper mode');
-assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy Ready should keep the golden clip tag');
-assert(profiles.includes("clipSuffix: '-> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'Meshy Ready should keep the accepted visual IK label');
-assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'"), 'Meshy Ready should keep the accepted generated-group identity');
+assert(profiles.includes("clipTag: 'FPS-VISUAL-IK-GOLDEN'"), 'Meshy Ready candidate generator should keep the reviewable clip tag');
+assert(profiles.includes("clipSuffix: '-> meshyCharacter [FPS-VISUAL-IK R-120 L-90]'"), 'Meshy Ready candidate generator should keep the reviewable visual IK label');
+assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'"), 'Meshy Ready candidate generator should keep the generated-group identity');
 assert(profiles.includes('rightRollOffsetDeg: -120'), 'Meshy Ready should preserve right hand roll -120');
 assert(profiles.includes('leftRollOffsetDeg: -90'), 'Meshy Ready should preserve left hand roll -90');
 assert(!profiles.includes("clipTag: 'FPS-SWORD-UPPER'"), 'Meshy Ready should not keep the rejected FPS-SWORD-UPPER generator');
@@ -55,7 +55,7 @@ if (failures.length) {
 console.log(JSON.stringify({
   checked: [
     'tpose-canary-literals',
-    'golden-ready-roll-split',
+    'candidate-ready-roll-split',
     'no-normal-weapon-tracks',
     'ready-helper-dispatch',
   ],

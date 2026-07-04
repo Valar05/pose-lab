@@ -18,8 +18,8 @@ assert(js.includes("params.get('weaponDebug') === '1'") && js.includes("params.g
 assert(js.includes('weaponDebugForceVisible() || clip?.userData?.weaponPathIk'), 'debug override should force the weapon visible before clip-pattern gating');
 assert(js.includes('weaponDebugForceVisible: weaponDebugForceVisible()'), 'live weapon payload should report whether the override is active');
 assert(js.includes('cacheToken: LAB_CACHE_TOKEN'), 'live weapon payload should report the loaded cache token');
-assert(meshy.includes("visibleClipPatterns: ['\\\\[FPS-REST-ARMS', '\\\\[FPS-VISUAL-IK R-120 L-90\\\\]']"), 'protected Meshy default visibility should include only accepted T-pose and golden Ready');
+assert(meshy.includes("visibleClipPatterns: ['\\\\[FPS-REST-ARMS']"), 'protected Meshy default visibility should include only accepted T-pose until Ready has fresh promotion evidence');
 assert(!meshy.includes("visibleClipPatterns: ['OneHand']"), 'Meshy default visibility must not be widened to the rejected OneHand candidate');
 
 if (failures.length) throw new Error(failures.join('\n'));
-console.log(JSON.stringify({ checked: ['saber-debug-force-visible', 'cache-token-live-diagnostics', 'protected-golden-ready-visibility'] }, null, 2));
+console.log(JSON.stringify({ checked: ['saber-debug-force-visible', 'cache-token-live-diagnostics', 'protected-tpose-only-visibility'] }, null, 2));
