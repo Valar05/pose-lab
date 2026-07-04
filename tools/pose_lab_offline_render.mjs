@@ -118,7 +118,9 @@ function trackTargetsNode(clip, nodeName) {
 }
 
 function wantsGeneratedReadyClip(requested) {
-  return /OneHandReady\s*->\s*meshyCharacter\s*\[FPS-SWORD-UPPER\]/i.test(String(requested || ''));
+  const value = String(requested || '');
+  return /OneHandReady\s*->\s*meshyCharacter\s*\[FPS-SWORD-UPPER\]/i.test(value)
+    || /OneHandReady\s*->\s*meshyCharacter\s*\[FPS-VISUAL-IK R-120 L-90\]/i.test(value);
 }
 
 function wantsGeneratedFpsRestArmsClip(requested) {
@@ -431,7 +433,10 @@ async function main() {
   fitModelToHeight(THREE, actor.scene, config.actor.targetHeight);
   const proxy = createWeaponProxy(THREE, actor.scene, weapon.scene, config);
   const generated = wantsGeneratedReadyClip(args.clip)
-    ? buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, fps.scene, actor.scene, fps.animations || [], { clipName: args.clip })
+    ? buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, fps.scene, actor.scene, fps.animations || [], {
+        clipName: args.clip,
+        weaponAttachment: config.attachment,
+      })
     : wantsGeneratedFpsRestArmsClip(args.clip)
       ? buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, fps.scene, actor.scene, fps.animations || [], {
           clipName: args.clip,
@@ -738,6 +743,11 @@ async function main() {
       weaponOrientationMode: generated.clip?.userData?.keyConvert?.weaponOrientationMode || null,
       weaponTargetBladeLocal: generated.clip?.userData?.keyConvert?.weaponTargetBladeLocal || null,
       weaponTargetUpLocal: generated.clip?.userData?.keyConvert?.weaponTargetUpLocal || null,
+      rightHandWeaponBasis: generated.clip?.userData?.keyConvert?.rightHandWeaponBasis === true,
+      rightHandWeaponBasisSamples: generated.clip?.userData?.keyConvert?.rightHandWeaponBasisSamples ?? null,
+      rightHandWeaponBasisSource: generated.clip?.userData?.keyConvert?.rightHandWeaponBasisSource || null,
+      rightHandWeaponBasisTargetBladeLocal: generated.clip?.userData?.keyConvert?.rightHandWeaponBasisTargetBladeLocal || null,
+      rightHandWeaponBasisTargetUpLocal: generated.clip?.userData?.keyConvert?.rightHandWeaponBasisTargetUpLocal || null,
       rightRollOffsetDeg: generated.clip?.userData?.keyConvert?.rightRollOffsetDeg ?? null,
       leftRollOffsetDeg: generated.clip?.userData?.keyConvert?.leftRollOffsetDeg ?? null,
       rightRestTargetLocalAxis: generated.clip?.userData?.keyConvert?.rightRestTargetLocalAxis || null,

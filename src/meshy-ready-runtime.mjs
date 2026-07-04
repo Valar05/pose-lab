@@ -193,9 +193,9 @@ function quaternionFromBladeFrame(THREE, bladeDirection, upSeed = new THREE.Vect
 }
 
 export function deriveAttachmentBladeLocal(THREE, attachment = {}) {
-  const grip = Array.isArray(attachment.gripLocalPosition) ? attachment.gripLocalPosition : [0.73272, 0.0091, -0.01674];
+  const grip = Array.isArray(attachment.gripLocalPosition) ? attachment.gripLocalPosition : [0.6535, -0.02302, -0.07317];
   const tip = Array.isArray(attachment.tipLocalPosition) ? attachment.tipLocalPosition : [-0.95561, 0.1368, 0];
-  const rotationDeg = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg : [112.476, -48.326, 154.661];
+  const rotationDeg = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg : [-67.582, 76.718, -90.52];
   const blade = new THREE.Vector3(
     Number(tip[0] || 0) - Number(grip[0] || 0),
     Number(tip[1] || 0) - Number(grip[1] || 0),
@@ -209,6 +209,19 @@ export function deriveAttachmentBladeLocal(THREE, attachment = {}) {
     'XYZ'
   ));
   return blade.normalize().applyQuaternion(q).normalize();
+}
+
+function deriveAttachmentAxisLocal(THREE, attachment = {}, axis = [0, 1, 0]) {
+  const rotationDeg = Array.isArray(attachment.rotationDeg) ? attachment.rotationDeg : [-67.582, 76.718, -90.52];
+  const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(
+    THREE.MathUtils.degToRad(Number(rotationDeg[0] || 0)),
+    THREE.MathUtils.degToRad(Number(rotationDeg[1] || 0)),
+    THREE.MathUtils.degToRad(Number(rotationDeg[2] || 0)),
+    'XYZ'
+  ));
+  const v = new THREE.Vector3(Number(axis?.[0] || 0), Number(axis?.[1] ?? 1), Number(axis?.[2] || 0));
+  if (v.lengthSq() < 1e-8) v.set(0, 1, 0);
+  return v.normalize().applyQuaternion(q).normalize();
 }
 
 function mapDirectionBetweenVisualFrames(direction, sourceFrame, targetFrame) {
@@ -393,6 +406,30 @@ function buildWeaponTrack(THREE, sourceRoot, targetRoot, sourceClip, outputTimes
   return track;
 }
 
+function solveHandQuaternionFromFpsWeaponReference(THREE, sourceRoot, targetRoot, config = {}) {
+  const sourceWeapon = findNamedObject(sourceRoot, config.sourceWeapon || 'Weapon.R');
+  const sourceFrame = findNamedBone(sourceRoot, config.sourceFrame || 'ShoulderCenter');
+  const targetFrame = findNamedBone(targetRoot, config.targetFrame || 'Spine02');
+  if (!sourceWeapon || !sourceFrame || !targetFrame) return null;
+  const sourceTipWorld = sourceWeapon.localToWorld(new THREE.Vector3(
+    Number(config.sourceTipLocal?.[0] || 0),
+    Number(config.sourceTipLocal?.[1] || 0),
+    Number(config.sourceTipLocal?.[2] ?? 1)
+  ));
+  const sourceBladeWorld = sourceTipWorld.sub(worldPosition(THREE, sourceWeapon));
+  if (sourceBladeWorld.lengthSq() < 1e-8) return null;
+  const sourceUpWorld = worldDirection(THREE, sourceWeapon, config.sourceUpAxis || [0, 1, 0]);
+  const targetBladeWorld = mapDirectionBetweenFrames(THREE, sourceBladeWorld, sourceFrame, targetFrame);
+  const targetUpWorld = mapDirectionBetweenFrames(THREE, sourceUpWorld, sourceFrame, targetFrame);
+  return quaternionFromBladeFrame(
+    THREE,
+    targetBladeWorld,
+    targetUpWorld,
+    config.targetBladeLocal || [0, 0, 1],
+    config.targetUpLocal || [0, 1, 0]
+  );
+}
+
 export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, sourceRoot, targetRoot, sourceClips, options = {}) {
   const sourceClip = sourceClips.find((clip) => clip.name === (options.sourceClipName || 'OneHandReady'));
   const restClip = sourceClips.find((clip) => clip.name === (options.sourceRestClip || '0T-Pose'));
@@ -460,6 +497,20 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
       targetRestDownWorld: worldDirection(THREE, targetHand, chain.targetDownAxis || [0, -1, 0]),
     };
   }).filter(Boolean);
+  const weaponBasisConfig = {
+    ...(options.weaponBasis || {}),
+    sourceWeapon: options.weaponBasis?.sourceWeapon || options.weaponKeyConvert?.sourceWeapon || 'Weapon.R',
+    sourceFrame: options.weaponBasis?.sourceFrame || options.weaponKeyConvert?.sourceFrame || 'ShoulderCenter',
+    targetFrame: options.weaponBasis?.targetFrame || options.weaponKeyConvert?.targetFrame || 'Spine02',
+    sourceTipLocal: options.weaponBasis?.sourceTipLocal || options.weaponKeyConvert?.sourceTipLocal || [0.00854, 0.57786, 0.00995],
+    sourceUpAxis: options.weaponBasis?.sourceUpAxis || options.weaponKeyConvert?.sourceUpAxis || [0, 1, 0],
+    targetBladeLocal: options.weaponBasis?.targetBladeLocal || options.weaponKeyConvert?.targetBladeLocal || deriveAttachmentBladeLocal(THREE, options.weaponAttachment).toArray().map((value) => Number(value.toFixed(5))),
+    targetUpLocal: options.weaponBasis?.targetUpLocal || options.weaponKeyConvert?.targetUpLocal || deriveAttachmentAxisLocal(THREE, options.weaponAttachment, [0, 1, 0]).toArray().map((value) => Number(value.toFixed(5))),
+    strength: options.weaponBasis?.strength ?? 1,
+  };
+  const rightHandWeaponBasisEnabled = options.rightHandWeaponBasis === true
+    || (options.rightHandWeaponBasis !== false && (options.sourceClipName || 'OneHandReady') === 'OneHandReady');
+  let rightHandWeaponBasisSamples = 0;
   const specs = [];
   for (const setup of setups) {
     for (const bone of [setup.targetUpper, setup.targetLower, setup.targetHand]) {
@@ -482,7 +533,16 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
       solveArmToWorldJoints(THREE, targetClone, setup.targetUpper, setup.targetLower, setup.targetHand, solved);
       const desiredDown = targetDownFromSourceRestDelta(THREE, setup.sourceRestDownWorld, worldDirection(THREE, setup.sourceHand, setup.sourceDownAxis || [0, -1, 0]), setup.targetRestDownWorld, sourceRestFrame, sourcePoseFrame, targetRestFrame, targetPoseFrame);
       const handQ = rolledWorldQuaternionToDownReference(THREE, setup.targetLower, setup.targetHand, worldQuaternion(THREE, setup.targetLower).multiply(setup.targetRestLowerToHand).normalize(), setup.targetDownAxis || [0, -1, 0], desiredDown, setup.maxTwistDeg ?? 180, setup.rollOffsetDeg ?? 0);
-      setWorldQuaternion(THREE, setup.targetHand, handQ);
+      let finalHandQ = handQ;
+      if (rightHandWeaponBasisEnabled && canon(setup.targetHand.name) === canon(weaponBasisConfig.targetHand || 'RightHand')) {
+        const weaponBasisQ = solveHandQuaternionFromFpsWeaponReference(THREE, sourceClone, targetClone, weaponBasisConfig);
+        if (weaponBasisQ) {
+          const strength = clamp(Number(weaponBasisConfig.strength ?? 1), 0, 1);
+          finalHandQ = strength >= 1 ? weaponBasisQ : handQ.clone().slerp(weaponBasisQ, strength).normalize();
+          rightHandWeaponBasisSamples += 1;
+        }
+      }
+      setWorldQuaternion(THREE, setup.targetHand, finalHandQ);
       targetClone.updateMatrixWorld(true);
     }
     for (const spec of specs) {
@@ -528,6 +588,11 @@ export function buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, source
       weaponOrientationMode: weaponTrack?.userData?.orientationMode || null,
       weaponTargetBladeLocal: weaponTrack?.userData?.weaponTargetBladeLocal || null,
       weaponTargetUpLocal: weaponTrack?.userData?.weaponTargetUpLocal || null,
+      rightHandWeaponBasis: rightHandWeaponBasisEnabled,
+      rightHandWeaponBasisSamples,
+      rightHandWeaponBasisSource: weaponBasisConfig.sourceWeapon || 'Weapon.R',
+      rightHandWeaponBasisTargetBladeLocal: weaponBasisConfig.targetBladeLocal,
+      rightHandWeaponBasisTargetUpLocal: weaponBasisConfig.targetUpLocal,
       rightRollOffsetDeg: -120,
       leftRollOffsetDeg: -90,
       rightRestTargetLocalAxis: [0, -1, 0],
