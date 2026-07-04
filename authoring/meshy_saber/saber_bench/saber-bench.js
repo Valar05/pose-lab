@@ -124,9 +124,17 @@ let sabreRoot = null;
 let sabreMesh = null;
 let selectedLayer = 'grip';
 let lastTruthReadoutAt = 0;
+let loadPhase = 'booting';
+let loadErrorMessage = '';
 
 function setStatus(message) {
   ui.status.textContent = message;
+}
+
+function setLoadPhase(phase, message = '') {
+  loadPhase = phase;
+  loadErrorMessage = message;
+  updateTruthReadout();
 }
 
 function degToRadArray(values) {
@@ -147,6 +155,17 @@ function vectorFromArray(values) {
 
 function formatVector(vector) {
   return [vector.x, vector.y, vector.z].map((value) => round(value, 4));
+}
+
+function materialSummary(object) {
+  if (!object?.isMesh) return 'none';
+  const materials = Array.isArray(object.material) ? object.material : [object.material];
+  return materials.map((material) => ({
+    name: material?.name || 'unnamed',
+    transparent: Boolean(material?.transparent),
+    opacity: round(material?.opacity ?? 1, 3),
+    visible: material?.visible !== false,
+  }));
 }
 
 function findNamed(rootObject, name, type = '') {
@@ -240,6 +259,23 @@ function isCameraFramed(object) {
   return center.z > -1 && center.z < 1 && Math.abs(center.x) <= 1.05 && Math.abs(center.y) <= 1.05;
 }
 
+function frameObject(object) {
+  const box = worldBoundsFor(object);
+  if (!box) return false;
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z, 0.05);
+  const distance = Math.max(0.55, maxDim / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2)) * 1.75);
+  controls.target.copy(center);
+  camera.position.copy(center).add(new THREE.Vector3(0.35 * distance, -distance, 0.22 * distance));
+  camera.near = 0.001;
+  camera.far = Math.max(80, distance * 10);
+  camera.updateProjectionMatrix();
+  controls.update();
+  updateTruthReadout();
+  return true;
+}
+
 function frameLoadedScene() {
   const box = worldBoundsFor(charMesh, sabreMesh);
   if (!box) {
@@ -262,11 +298,28 @@ function updateTruthReadout() {
   if (!ui.truthReadout) return;
   const sabreBox = worldBoundsFor(sabreMesh);
   const sabreSize = sabreBox?.getSize(new THREE.Vector3()) || new THREE.Vector3();
+  const sabreCenter = sabreBox?.getCenter(new THREE.Vector3()) || new THREE.Vector3();
+  const emptyRealMesh = Boolean(sabreMesh && (!sabreBox || Math.max(sabreSize.x, sabreSize.y, sabreSize.z) <= 0.0001));
+  const framed = isCameraFramed(sabreMesh);
+  const verdict = (() => {
+    if (loadPhase === 'failed') return 'REAL_MESH_LOAD_FAILED';
+    if (!sabreMesh) return 'REAL_MESH_NOT_LOADED';
+    if (emptyRealMesh) return 'REAL_MESH_EMPTY';
+    if (!framed) return 'REAL_MESH_OFF_CAMERA';
+    if (!sabreMesh.visible) return 'REAL_MESH_HIDDEN';
+    return 'REAL_MESH_LOADED_FRAMED';
+  })();
   ui.truthReadout.textContent = [
+    `phase: ${loadPhase}`,
+    `verdict: ${verdict}`,
+    `error: ${loadErrorMessage || 'none'}`,
     `real mesh loaded: ${sabreMesh ? 'yes' : 'no'}`,
     `mesh name: ${sabreMesh?.name || 'none'}`,
+    `mesh visible: ${sabreMesh?.visible === false ? 'no' : sabreMesh ? 'yes' : 'n/a'}`,
     `world bounds size: ${JSON.stringify(formatVector(sabreSize))}`,
-    `camera framed: ${isCameraFramed(sabreMesh) ? 'yes' : 'no'}`,
+    `world bounds center: ${JSON.stringify(formatVector(sabreCenter))}`,
+    `camera framed: ${framed ? 'yes' : 'no'}`,
+    `material: ${JSON.stringify(materialSummary(sabreMesh))}`,
     `proxy visible: ${proxySaber.visible ? 'yes' : 'no'}`,
   ].join('\n');
 }
@@ -464,6 +517,7 @@ async function copyJson() {
 }
 
 async function loadMeshyReference() {
+  setLoadPhase('loading');
   setStatus('loading real Meshy character and sabre mesh');
   const [meshy, pbr, sabre] = await Promise.all([
     loadGltf(ASSETS.meshyAnimated),
@@ -490,6 +544,7 @@ async function loadMeshyReference() {
   applyStateToScene();
 
   frameLoadedScene();
+  setLoadPhase('loaded');
   setStatus('ready: real Meshy character and real sabre mesh loaded');
   window.saberBench = { state, contractJson, scene, rightHand, weaponGrip, sabreRoot, sabreMesh, proxySaber, truthReadout: updateTruthReadout };
   updateTruthReadout();
@@ -529,6 +584,15 @@ ui.showProxySaber.addEventListener('change', readInputs);
 ui.viewFull.addEventListener('click', () => setView('full'));
 ui.viewHand.addEventListener('click', () => setView('hand'));
 ui.viewBlade.addEventListener('click', () => setView('blade'));
+ui.frameRealSabre.addEventListener('click', () => {
+  if (!frameObject(sabreMesh)) setStatus('real sabre cannot be framed: no non-empty bounds');
+  else setStatus('framed real sabre mesh');
+});
+ui.showProxyNow.addEventListener('click', () => {
+  state.sabre.showProxySaber = true;
+  applyStateToScene();
+  setStatus('diagnostic proxy shown; this is not real-sabre success');
+});
 ui.selectGrip.addEventListener('click', () => { selectedLayer = 'grip'; syncInputs(); });
 ui.selectSabre.addEventListener('click', () => { selectedLayer = 'sabre'; syncInputs(); });
 ui.resetBaseline.addEventListener('click', () => {
@@ -555,6 +619,7 @@ applyStateToScene();
 animate();
 window.saberBench = { state, contractJson, scene, proxySaber, truthReadout: updateTruthReadout };
 loadMeshyReference().catch((error) => {
+  setLoadPhase('failed', error?.message || String(error));
   setStatus('real mesh load failed: ' + error.message);
   updateTruthReadout();
 });

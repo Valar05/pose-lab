@@ -16,6 +16,8 @@ assert(html.includes('Meshy Saber Bench'), 'bench should have its own entrypoint
 assert(html.includes('id="benchCanvas"') && html.includes('id="jsonBox"'), 'bench should expose canvas and JSON contract box');
 assert(html.includes('id="showProxySaber"') && html.includes('bright diagnostic proxy'), 'bench should expose proxy only as an explicit diagnostic toggle');
 assert(html.includes('id="truthReadout"'), 'bench should expose active real-mesh truth readout');
+assert(html.includes('id="frameRealSabre"') && html.includes('Frame Real Sabre'), 'bench should include a direct real-sabre framing button');
+assert(html.includes('id="showProxyNow"') && html.includes('Show Proxy'), 'bench should include an explicitly diagnostic proxy reveal');
 assert(js.includes("import * as THREE from 'three'"), 'bench should use Three.js directly');
 assert(js.includes("GLTFLoader"), 'bench should load real GLB assets');
 assert(!js.includes("src/pose-lab.js") && !html.includes("src/pose-lab.js"), 'bench must not import Pose Lab runtime');
@@ -33,6 +35,11 @@ assert(js.includes('loadMeshyReference().catch'), 'bench must auto-load Meshy an
 assert(js.includes('setStatus(\'ready: real Meshy character and real sabre mesh loaded\')'), 'ready status must mean real character and real sabre mesh are loaded');
 assert(js.includes('frameLoadedScene()'), 'bench must frame the loaded real character and sabre mesh');
 assert(js.includes('worldBoundsFor') && js.includes('camera framed'), 'truth readout should report real mesh bounds and camera framing');
+assert(js.includes('REAL_MESH_NOT_LOADED') && js.includes('REAL_MESH_LOAD_FAILED'), 'truth readout should distinguish not-loaded from load-failed');
+assert(js.includes('REAL_MESH_EMPTY') && js.includes('REAL_MESH_OFF_CAMERA') && js.includes('REAL_MESH_HIDDEN'), 'truth readout should diagnose invisible loaded mesh states');
+assert(js.includes('materialSummary') && js.includes('world bounds center'), 'truth readout should report material opacity and mesh center');
+assert(js.includes('frameObject(sabreMesh)'), 'bench should frame the real sabre mesh directly on demand');
+assert(js.includes('diagnostic proxy shown; this is not real-sabre success'), 'proxy reveal must be explicitly non-acceptance');
 assert(js.includes('pose-lab-meshy-saber-bench-contract-v1'), 'bench must export a stable contract schema');
 assert(css.includes('@media (max-width: 760px)'), 'bench should stay usable on phone screens');
 assert(css.includes('#truthReadout'), 'truth readout should be styled for phone review');
