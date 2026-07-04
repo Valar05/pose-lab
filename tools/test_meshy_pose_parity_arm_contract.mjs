@@ -15,7 +15,7 @@ assert(js.includes('sourceWeaponRelativeToWrist') && js.includes("new THREE.Quat
 assert(js.includes('sourceWeaponTrack.times.slice()'), 'diagnostic WeaponGrip conversion should preserve authored Weapon.R key times');
 assert(!profiles.includes("retargetMode: 'position-guided-arm',\n        clipTag: 'FPS-SWORD-UPPER'"), 'accepted Meshy FPS-SWORD-UPPER path must not use sampled position-guided IK');
 assert(js.includes('clipHasQuaternionTrackForBone(this.activeAction?._clip, proxy.root.name)'), 'weapon socket updater should detect animated WeaponGrip quaternion tracks');
-assert(js.includes('if (!animatedSocketRotation)') && js.includes('proxy.root.quaternion.copy(modelWorldQuat.multiply(worldQuaternionOf(proxy.rightHand))).normalize()'), 'two-hand socket update should preserve animated socket rotation when present');
+assert(js.includes('applyLegacyWeaponSocketTransform') && js.includes('if (!clipHasQuaternionTrackForBone(this.activeAction?._clip, proxy.root.name)) proxy.root.quaternion.copy(local.quaternion);'), 'legacy socket update should preserve animated socket rotation when present');
 
 assert(profiles.includes("retargetMode: 'meshy-fps-visual-ik-ready'"), 'Meshy Ready config should use the golden visual IK helper');
 assert(profiles.includes("mode: 'world-joint-projection'") && profiles.includes('restRelative: true'), 'Meshy Ready should use rest-relative world-joint projection');

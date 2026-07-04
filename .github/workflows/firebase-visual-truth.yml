@@ -66,7 +66,7 @@ jobs:
           printf '%s' "$FIREBASE_SERVICE_ACCOUNT_JSON" > "$RUNNER_TEMP/firebase-service-account.json"
           export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/firebase-service-account.json"
           npx firebase-tools hosting:channel:list --project "$FIREBASE_PROJECT_ID" --site "$FIREBASE_HOSTING_SITE" --json > "$RUNNER_TEMP/firebase-channels.json" || true
-          node -e "const fs=require('fs'); const p=process.env.RUNNER_TEMP + '/firebase-channels.json'; let j={}; try{j=JSON.parse(fs.readFileSync(p,'utf8'))}catch{} const channels=(j.result?.channels||j.channels||[]).map(c=>String(c.name||c.id||c.channelId||'').split('/').pop()).filter(Boolean); const stale=channels.filter(id=>/^visual-truth-\\d+$/.test(id)).slice(0,20); fs.writeFileSync(process.env.RUNNER_TEMP + '/firebase-stale-channels.txt', stale.join('\n')); console.log('stale preview channels to delete=' + stale.length);"
+          node -e "const fs=require('fs'); const p=process.env.RUNNER_TEMP + '/firebase-channels.json'; let j={}; try{j=JSON.parse(fs.readFileSync(p,'utf8'))}catch{} const channels=(j.result?.channels||j.channels||[]).map(c=>String(c.name||c.id||c.channelId||'').split('/').pop()).filter(Boolean); const stale=channels.filter(id=>/^visual-truth-(?:pr-)?\\d+$/.test(id)).slice(0,50); fs.writeFileSync(process.env.RUNNER_TEMP + '/firebase-stale-channels.txt', stale.join('\n')); console.log('stale preview channels to delete=' + stale.length);"
           while IFS= read -r channel_id; do
             if [ -n "$channel_id" ]; then
               npx firebase-tools hosting:channel:delete "$channel_id" --project "$FIREBASE_PROJECT_ID" --site "$FIREBASE_HOSTING_SITE" --force || true

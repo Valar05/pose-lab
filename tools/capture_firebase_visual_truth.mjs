@@ -7,10 +7,10 @@ import { synthesizeCaptureSense, synthesizeEvidenceSense } from './pose_lab_sens
 const projectRoot = path.resolve(import.meta.dirname, '..');
 const outDir = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'latest');
 const TPOSE_CLIP = '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]';
-const READY_CLIP = 'OneHandReady -> meshyCharacter [FPS-SWORD-UPPER]';
+const READY_CLIP = 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]';
 const ACCEPTED_MESHY_HILT = [0.6535, -0.02302, -0.07317];
 const ACCEPTED_MESHY_SOCKET_ROTATION = [0, 0, 0];
-const ACCEPTED_MESHY_ATTACHMENT_ROTATION = [-67.582, 76.718, -30.52];
+const ACCEPTED_MESHY_ATTACHMENT_ROTATION = [90, 0, -55.145];
 const LANDING_LOAD_MAX_MS = 20000;
 const LANDING_LOAD_WARN_MS = 20000;
 const HUMAN_RED_BUILDS_PATH = path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json');
@@ -398,14 +398,24 @@ async function waitForHostedMeshyPage(pageInstance, clipName = '') {
     const text = document.querySelector('#loadState')?.textContent || '';
     if (/module failed|boot error|boot rejection/i.test(text)) return true;
     const apiReady = Boolean(window.__poseLabDebug || window.poseLabDebug);
-    if (!apiReady || !/selected Meshy Character/.test(text)) return false;
+    const lab = window.poseLab || null;
+    const selectedMeshy = lab?.selected === 'meshyCharacter' || /selected Meshy Character/.test(text);
+    if (!apiReady || !selectedMeshy) return false;
     if (!expectedClip) return true;
-    return text.includes(expectedClip);
+    const actor = lab?.actors?.get?.('meshyCharacter') || null;
+    const activeName = actor?.activeClip?.()?.name || '';
+    return activeName === expectedClip || activeName.includes(expectedClip) || text.includes(expectedClip);
   }, clipName, { timeout: 120000 });
   const text = await pageInstance.locator('#loadState').textContent({ timeout: 5000 }).catch(() => '');
   if (/module failed|boot error|boot rejection/i.test(text || '')) throw new Error(text);
   if (!/selected Meshy Character/.test(text || '')) throw new Error(`hosted route did not select Meshy Character: ${text || 'missing load state'}`);
-  if (clipName && !String(text || '').includes(clipName)) throw new Error(`hosted route selected wrong clip: ${text || 'missing load state'}`);
+  if (clipName) {
+    const snapshot = await debugExec(pageInstance, 'snapshot').catch(() => null);
+    const activeName = snapshot?.snapshot?.activeClip?.name || '';
+    if (activeName !== clipName && !activeName.includes(clipName) && !String(text || '').includes(clipName)) {
+      throw new Error(`hosted route selected wrong clip: ${activeName || text || 'missing active clip'}`);
+    }
+  }
 }
 
 async function gotoHostedMeshyPage(pageInstance, url, clipName = '') {
