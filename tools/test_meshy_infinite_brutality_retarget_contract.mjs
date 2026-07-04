@@ -21,7 +21,7 @@ for (const deferred of ['OneHandReadied -> meshyCharacter', 'OneHandAttack1 -> m
 assert(profiles.includes("channels: { translate: false, rotate: true, scale: false }"), 'Meshy sword clips should be rotate-only');
 assert(profiles.includes("positionPolicy: 'none'"), 'Meshy sword clips should not bake position channels');
 assert(profiles.includes("retargetMode: 'fps-upper-key-convert'"), 'Meshy should use FPS source key conversion');
-assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter'") && !profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'"), 'Meshy FPS sword clips should use the restored mapped-arms origin group and not the failed Visual-IK group');
+assert(profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-SWORD-UPPER'") && !profiles.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-VISUAL-IK-GOLDEN'"), 'Meshy FPS sword clips should use an exact restored mapped-arms origin group and not the failed Visual-IK group');
 assert(profiles.includes("{ from: 'Arm.R', to: 'RightArm', strength: 0.85 }"), 'right upper arm should be converted from authored FPS Arm.R keys');
 assert(profiles.includes("{ from: 'Forearm.R', to: 'RightForeArm', strength: 1.0 }"), 'right forearm should be converted from authored FPS Forearm.R keys');
 assert(profiles.includes("{ from: 'Hand.R', to: 'RightHand', strength: 1.0 }"), 'right hand should be converted from authored FPS Hand.R keys');

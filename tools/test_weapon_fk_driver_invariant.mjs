@@ -24,7 +24,7 @@ assert(restBlock && !restBlock.includes('weaponKeyConvert'), 'T-pose rest bridge
 const swordBlockStart = profilesSource.indexOf("clipTag: 'FPS-SWORD-UPPER'");
 const swordBlockEnd = profilesSource.indexOf('ikOrientationGuide:', swordBlockStart);
 const swordBlock = swordBlockStart >= 0 && swordBlockEnd > swordBlockStart ? profilesSource.slice(swordBlockStart, swordBlockEnd) : '';
-assert(swordBlock.includes("originPrefix: 'mapped-arms:player->meshyCharacter'"), 'FPS-SWORD-UPPER should use the restored mapped-arms origin group');
+assert(swordBlock.includes("originPrefix: 'mapped-arms:player->meshyCharacter:FPS-SWORD-UPPER'"), 'FPS-SWORD-UPPER should use the restored exact mapped-arms origin group');
 assert(swordBlock.includes("sourceWeapon: 'Weapon.R'") && swordBlock.includes("targetWeapon: 'WeaponGrip'"), 'FPS-SWORD-UPPER should keep the restored source Weapon.R -> WeaponGrip bridge');
 assert(swordBlock.includes('frameSolve: true') && swordBlock.includes('applyToHand: false'), 'restored weapon bridge should solve the weapon frame without rewriting the hand track');
 

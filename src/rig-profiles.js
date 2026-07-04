@@ -1,4 +1,4 @@
-import { RIG_PROFILES as GRAVITY_FIST_SOURCE_PROFILES } from './rig-profiles.gravity-fist.js?v=pose-editor-190';
+import { RIG_PROFILES as GRAVITY_FIST_SOURCE_PROFILES } from './rig-profiles.gravity-fist.js?v=pose-editor-191';
 
 const MESHY_FPS_REST_CHAINS = [
   { sourceUpper: 'Arm.R', sourceLower: 'Forearm.R', sourceHand: 'Hand.R', targetUpper: 'RightArm', targetLower: 'RightForeArm', targetHand: 'RightHand' },
@@ -320,7 +320,7 @@ const BASE_RIG_PROFILES = {
         restSegmentCorrection: meshyFpsRestSegmentCorrection(-120),
         preserveLoopSeam: true,
         clipSuffix: '-> meshyCharacter [FPS-SWORD-UPPER]',
-        originPrefix: 'mapped-arms:player->meshyCharacter',
+        originPrefix: 'mapped-arms:player->meshyCharacter:FPS-SWORD-UPPER',
         weaponKeyConvert: {
           sourceHand: 'Hand.R',
           sourceWeapon: 'Weapon.R',
