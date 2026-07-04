@@ -433,10 +433,11 @@ async function main() {
   fitModelToHeight(THREE, actor.scene, config.actor.targetHeight);
   const proxy = createWeaponProxy(THREE, actor.scene, weapon.scene, config);
   const generated = wantsGeneratedReadyClip(args.clip)
-    ? buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, fps.scene, actor.scene, fps.animations || [], {
-        clipName: args.clip,
-        weaponAttachment: config.attachment,
-      })
+      ? buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, fps.scene, actor.scene, fps.animations || [], {
+          clipName: args.clip,
+          weaponProxy: config.proxy,
+          weaponAttachment: config.attachment,
+        })
     : wantsGeneratedFpsRestArmsClip(args.clip)
       ? buildMeshyFpsVisualIkReadyClip(THREE, cloneSkinnedObject, fps.scene, actor.scene, fps.animations || [], {
           clipName: args.clip,
@@ -444,6 +445,7 @@ async function main() {
           sourceRestClip: '0T-Pose',
           timeSourceBone: 'Hand.R',
           dropInitialRestKey: false,
+          weaponProxy: config.proxy,
           weaponAttachment: config.attachment,
         })
       : { clip: null, generatedClipResolved: false, reason: 'not-generated-pose-lab-request' };

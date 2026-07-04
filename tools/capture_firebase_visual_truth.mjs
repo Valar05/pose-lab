@@ -9,7 +9,8 @@ const outDir = path.join(projectRoot, 'generated', 'firebase_visual_truth', 'lat
 const TPOSE_CLIP = '0T-Pose -> meshyCharacter [FPS-REST-ARMS roll -120]';
 const READY_CLIP = 'OneHandReady -> meshyCharacter [FPS-VISUAL-IK R-120 L-90]';
 const ACCEPTED_MESHY_HILT = [0.6535, -0.02302, -0.07317];
-const ACCEPTED_MESHY_ROTATION = [-67.582, 76.718, -90.52];
+const ACCEPTED_MESHY_SOCKET_ROTATION = [-163.017, 3.942, -12.978];
+const ACCEPTED_MESHY_ATTACHMENT_ROTATION = [5.666, 87.396, 0];
 const LANDING_LOAD_MAX_MS = 20000;
 const LANDING_LOAD_WARN_MS = 20000;
 const HUMAN_RED_BUILDS_PATH = path.join(projectRoot, 'evidence', 'human_visual_truth_red_builds.json');
@@ -229,7 +230,8 @@ function evaluateTpose({ routeSelected, routeAutoSelected, weapon, liveHilt }) {
   if (weapon?.weapon?.clip !== TPOSE_CLIP) failures.push(`T-pose cloud clip mismatch: ${weapon?.weapon?.clip || 'missing'}`);
   if (weapon?.weapon?.actor !== 'meshyCharacter') failures.push(`T-pose cloud actor mismatch: ${weapon?.weapon?.actor || 'missing'}`);
   if (!closeArray(config.gripLocalPosition, ACCEPTED_MESHY_HILT)) failures.push(`T-pose hilt oracle drifted: ${JSON.stringify(config.gripLocalPosition)}`);
-  if (!closeArray(config.attachmentRotationDeg, ACCEPTED_MESHY_ROTATION)) failures.push(`T-pose attachment rotation drifted: ${JSON.stringify(config.attachmentRotationDeg)}`);
+  if (!closeArray(config.socketRotationDeg, ACCEPTED_MESHY_SOCKET_ROTATION)) failures.push(`T-pose socket rotation drifted: ${JSON.stringify(config.socketRotationDeg)}`);
+  if (!closeArray(config.attachmentRotationDeg, ACCEPTED_MESHY_ATTACHMENT_ROTATION)) failures.push(`T-pose attachment rotation drifted: ${JSON.stringify(config.attachmentRotationDeg)}`);
   if (weapon?.weapon?.modelVisible !== true || weapon?.weapon?.displayVisible !== true) failures.push('T-pose real sabre model/display is not visible');
   if (liveChecks.realWeaponVisible !== true || layers.realWeaponVisible !== true) failures.push('T-pose cloud layer does not report real weapon visible');
   if (liveChecks.appliedHiltPinnedToAuthoredSocket !== true) failures.push(`T-pose hilt is not pinned to WeaponGrip: ${JSON.stringify(liveDistances)}`);
@@ -246,7 +248,8 @@ function evaluateTpose({ routeSelected, routeAutoSelected, weapon, liveHilt }) {
       actorSelected: weapon?.weapon?.actor === 'meshyCharacter',
       clipSelected: weapon?.weapon?.clip === TPOSE_CLIP,
       acceptedHiltOracle: closeArray(config.gripLocalPosition, ACCEPTED_MESHY_HILT),
-      acceptedAttachmentRotation: closeArray(config.attachmentRotationDeg, ACCEPTED_MESHY_ROTATION),
+      acceptedSocketRotation: closeArray(config.socketRotationDeg, ACCEPTED_MESHY_SOCKET_ROTATION),
+      acceptedAttachmentRotation: closeArray(config.attachmentRotationDeg, ACCEPTED_MESHY_ATTACHMENT_ROTATION),
       realWeaponVisible: weapon?.weapon?.modelVisible === true && liveChecks.realWeaponVisible === true,
       hiltPinnedToSocket: liveChecks.appliedHiltPinnedToAuthoredSocket === true,
       finiteHiltDistances: isFiniteNumber(liveDistances.handToAppliedHilt) && isFiniteNumber(liveDistances.socketToAppliedHilt),
