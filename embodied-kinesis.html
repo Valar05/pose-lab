@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <title>Embodied Kinesis Lab</title>
+  <link rel="stylesheet" href="src/embodied-kinesis.css?v=kinesis-1">
+</head>
+<body>
+  <main class="ek-shell">
+    <header class="ek-head">
+      <strong>Embodied Kinesis Lab</strong>
+      <span class="ek-pill">one viewer</span>
+      <span class="ek-pill">local-first</span>
+      <span id="ekState" class="ek-state" data-state="red">INTERNAL ONLY</span>
+    </header>
+    <section class="ek-main">
+      <iframe id="ekViewer" class="ek-viewer" title="Embodied Kinesis 3D editing surface" src="pose-lab.html?mode=critique&actor=player&view=firstPerson&kinesis=1"></iframe>
+      <aside class="ek-dock" aria-label="Reference and comparison surface">
+        <details class="ek-card" open>
+          <summary>Reference Performance</summary>
+          <div class="ek-stack">
+            <input id="ekReferenceFile" type="file" accept="video/*">
+            <video id="ekReferenceVideo" class="ek-reference-video" controls playsinline muted></video>
+            <div class="ek-grid">
+              <label>Action<input id="ekActionName" value="first-person-strike" autocomplete="off"></label>
+              <label>Intent<input id="ekActionIntent" value="commit, contact, recover to guard" autocomplete="off"></label>
+              <label>Model<input id="ekModelName" value="FPSPlayer" autocomplete="off"></label>
+              <label>Rig version<input id="ekRigVersion" value="FPSPlayer.glb@main" autocomplete="off"></label>
+            </div>
+            <div class="ek-row"><span id="ekSourceIdentity" class="ek-pill bad">no reference loaded</span><span id="ekViewerIdentity" class="ek-pill">waiting for Pose Lab</span></div>
+          </div>
+        </details>
+
+        <details class="ek-card" open>
+          <summary>Decisive Keys</summary>
+          <div class="ek-phase-grid" id="ekPhaseButtons"></div>
+          <div class="ek-grid" style="margin-top:.5rem">
+            <label>Confidence<input id="ekConfidence" type="number" min="0" max="1" step="0.05" value="0.9"></label>
+            <label>Occlusion<select id="ekOcclusion"><option value="visible">visible</option><option value="occluded">occluded</option></select></label>
+            <label>Editable mapping<input id="ekActionable" value="authoritative rig key" autocomplete="off"></label>
+            <label>Contact anchor<input id="ekContactAnchor" value="reference target plane" autocomplete="off"></label>
+          </div>
+          <div class="ek-row" style="margin-top:.5rem">
+            <button id="ekNewPoseKey" type="button">New 3D Key</button>
+            <button id="ekCapturePhase" type="button">Capture Pair</button>
+          </div>
+          <pre id="ekPhaseLog" class="ek-log">Mark a reference time and matching target time for each decisive phase.</pre>
+        </details>
+
+        <details class="ek-card" open>
+          <summary>Comparison / Key Sheet</summary>
+          <canvas id="ekSheet" class="ek-sheet" width="720" height="220" aria-label="Reference and target key comparison sheet"></canvas>
+          <div class="ek-row" style="margin-top:.5rem"><button id="ekBuildSheet" type="button">Build Key Sheet</button><button id="ekExportReceipt" type="button">Export Receipt</button></div>
+        </details>
+
+        <details class="ek-card" open>
+          <summary>Taster Gauntlet</summary>
+          <div class="ek-row"><button id="ekRunRegnet" type="button">REGNET Local Preflight</button></div>
+          <pre id="ekRegnet" class="ek-log">REGNET has not run.</pre>
+          <div class="ek-review-list" id="ekPenelope"></div>
+          <div class="ek-grid" style="margin-top:.5rem">
+            <label>Venice verdict<select id="ekVeniceVerdict"><option value="REVISE_REQUIRED">REVISE_REQUIRED</option><option value="PRESENTABLE_TO_DREW">PRESENTABLE_TO_DREW</option></select></label>
+            <label>Venice evidence<input id="ekVeniceEvidence" placeholder="sheet/frame/timestamp"></label>
+          </div>
+          <div class="ek-grid" style="margin-top:.5rem">
+            <label>Correction evidence<input id="ekCorrectionEvidence" placeholder="e.g. contact @ 0.34s"></label>
+            <label>Correction made<input id="ekCorrectionChange" placeholder="smallest ranked change"></label>
+          </div>
+          <div class="ek-row" style="margin-top:.5rem"><button id="ekRecordVenice" type="button">Record Venice</button><button id="ekRecordCorrection" type="button">Record Correction</button><button id="ekFirewall" class="ek-primary" type="button">Run Drew-Eye Firewall</button></div>
+          <pre id="ekFirewallLog" class="ek-log">Candidate cannot be presented until the full gauntlet and correction loop pass.</pre>
+        </details>
+      </aside>
+    </section>
+  </main>
+  <script type="module" src="src/embodied-kinesis-ui.js?v=kinesis-1"></script>
+</body>
+</html>
