@@ -1,0 +1,36 @@
+{
+  "sampleId": "FPS-910947",
+  "clipName": null,
+  "clipNameStatus": "pending Drew visual identification",
+  "actor": "FPS Arms",
+  "view": "FPV",
+  "source": {
+    "phonePath": "/storage/emulated/0/Movies/screen-20260921-070519-1789992317613.mp4",
+    "chatFilename": "910947.mp4",
+    "sha256": "89c191a9553c8cb2d74b830de2599685ca2f0a11d6534ff76832ba15d2cb28cc",
+    "byteCount": 3624254,
+    "width": 1080,
+    "height": 2404,
+    "durationSeconds": 1.901644,
+    "frameCount": 174,
+    "usableVisualWindowSeconds": [0.0, 0.84]
+  },
+  "contactSheets": [
+    {
+      "file": "contact-sheet-clean.png",
+      "layout": "4x4",
+      "sourceWindowSeconds": [0.0, 0.84],
+      "sha256": "4feba60aa600f6452cb69d21306cfe8b632be51501b0921e62c0546627784257"
+    },
+    {
+      "file": "contact-sheet-motion-detail.png",
+      "layout": "6x3",
+      "sourceWindowSeconds": [0.1, 0.78],
+      "sha256": "75878663e107963ae520a57c27ef53ff387350503a6159bc25adc4f5b70d44d1"
+    }
+  ],
+  "corrections": [
+    "April's previously named spray animation slot is the jab.",
+    "Keep the sword visible during FPS Arms review."
+  ]
+}
