@@ -41,6 +41,7 @@ For each sample:
 | Sample | Clip name | Evidence | Status |
 | --- | --- | --- | --- |
 | [FPS-910947](FPS-910947/README.md) | pending Drew identification | two contact sheets + exact source hash | documented |
+| [FPS-911484](FPS-911484/README.md) | pending Drew identification | three contact sheets + exact source hash | documented |
 
 ## Embedded clip inventory
 
