@@ -23,6 +23,29 @@ The sword remains visible during review by choice so sword-bearing source motion
 - 1,040 triangles
 - first-person camera: source `Camera` bone
 
+
+## Source-of-truth hierarchy
+
+The original Pose Lab is canonical for FPSPlayer structure, rig behavior, retarget rules, camera setup, weapon/socket logic, and existing measured audits. This archive is supplementary visual evidence only.
+
+Canonical sources, in order:
+
+1. `PROJECT_ORIENTATION.md` in `Valar05/pose-lab`
+2. `src/rig-profiles.js` → `player` / `FPS Arms` profile
+3. existing Pose Lab generated FPS audit outputs and the tools that produced them
+4. these screen recordings and contact sheets, used only to annotate visual reads, identify clips, and preserve examples that are easier to understand by eye
+
+Do not re-derive a fact from a recording when Pose Lab already records it directly. Do not let a supplementary contact-sheet interpretation override Pose Lab's own rig/source documentation.
+
+Current durable canonical refs used for this archive:
+
+- branch: `recovery/from-usable-meshy-fk-7e6ee94`
+- `PROJECT_ORIENTATION.md` blob `53b12ca4e43a6312cd9cd1c1d3ee8edd51c7d127`
+- `src/rig-profiles.js` blob `87fcd5419e8e0afc380e2be63ac5b2549ac794d9`
+- `docs/ANIMATION_WORKFLOW_TOOLING.md` blob `e00097a8042c7bdbc0873dcc42c960ffde793d98`
+
+Pose Lab already documents, among other things, the 55-clip GLB validation, bind/model-pose retarget basis, `ShoulderCenter`-based FPS weapon mapping, `WeaponR` / camera bone behavior, the single-leg source plus mirrored support-leg overlay, and the distinction between first-person source motion and full-body retargeting.
+
 ## Review method
 
 For each sample:
