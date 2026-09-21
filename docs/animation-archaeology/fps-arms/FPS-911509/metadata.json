@@ -1,0 +1,44 @@
+{
+  "sampleId": "FPS-911509",
+  "clipName": null,
+  "clipNameStatus": "pending Drew visual identification",
+  "actor": "FPS Arms",
+  "view": "FPV",
+  "source": {
+    "phonePath": "/storage/emulated/0/Movies/screen-20260921-120958-1790010593369.mp4",
+    "chatFilename": "911509.mp4",
+    "sha256": "24383e4ee64277d277b237af934e570fa2c922e1d39f544f40ee5b43ed560616",
+    "byteCount": 8398601,
+    "width": 2404,
+    "height": 1080,
+    "durationSeconds": 4.982767,
+    "frameCount": 357,
+    "estimatedLoopPeriodSeconds": 1.05,
+    "observedLoopStartsSeconds": [0.0, 1.05, 2.10, 3.15]
+  },
+  "contactSheets": [
+    {
+      "file": "contact-sheet-cycle.png",
+      "layout": "4x4",
+      "sourceWindowSeconds": [0.0, 1.05],
+      "sha256": "5a5fd6c3c12c466fe1090dca0379aa985765cfde03f6aa27c51147a3820ba05f"
+    },
+    {
+      "file": "contact-sheet-impact-path.png",
+      "layout": "6x3",
+      "sourceWindowSeconds": [0.1, 0.96],
+      "sha256": "9540150aa1c25a0fb2f21ee706e46abbb84361aa93cd341969da050a602d0deb"
+    },
+    {
+      "file": "contact-sheet-loop-consistency.png",
+      "layout": "4x1",
+      "sampleTimesSeconds": [0.0, 1.05, 2.10, 3.15],
+      "sha256": "aad7d884dff50502c1efba85cf1a74229d48a79dc329d8ea9cd78ed2b4498c84"
+    }
+  ],
+  "interpretations": [
+    "shield-bash read",
+    "backhand-compatible read"
+  ],
+  "transferablePrinciple": "Attack identity depends strongly on the leading surface orientation and contact presentation; the same gross trajectory can support shield bash, forearm smash, backhand, or pommel-style semantics."
+}

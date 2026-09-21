@@ -44,6 +44,7 @@ For each sample:
 | [FPS-911484](FPS-911484/README.md) | `FistAttackAir` | three contact sheets + exact source hash | documented + identified |
 | [FPS-911491](FPS-911491/README.md) | `FistAttackCrouch` | three contact sheets + exact source hash | documented + identified |
 | [FPS-911507](FPS-911507/README.md) | pending Drew identification | three contact sheets + exact source hash | documented |
+| [FPS-911509](FPS-911509/README.md) | pending Drew identification | three contact sheets + exact source hash | documented; shield-bash/backhand dual-use note |
 
 ## Embedded clip inventory
 
