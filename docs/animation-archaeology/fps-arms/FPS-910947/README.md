@@ -1,6 +1,6 @@
 # FPS-910947
 
-Clip name: **pending Drew identification**
+Clip name: **FistAttack2** (confirmed by Drew)
 
 Actor: `FPS Arms`  
 View: `FPV`  
@@ -93,3 +93,7 @@ This is a hypothesis for April, not a finished prescription. Drew's later visual
 - Which frames does Drew consider the meaningful contact / extreme / recovery beats?
 - Should April inherit this amount of overshoot, or a reduced version?
 - Does this become part of a reusable `jab / linear strike` motion family after comparison with more source clips?
+
+## Drew identification
+
+Drew identified this recorded source motion as `FistAttack2`.

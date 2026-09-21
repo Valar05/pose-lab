@@ -1,7 +1,7 @@
 {
   "sampleId": "FPS-910947",
-  "clipName": null,
-  "clipNameStatus": "pending Drew visual identification",
+  "clipName": "FistAttack2",
+  "clipNameStatus": "confirmed by Drew 2026-09-21",
   "actor": "FPS Arms",
   "view": "FPV",
   "source": {
@@ -13,19 +13,28 @@
     "height": 2404,
     "durationSeconds": 1.901644,
     "frameCount": 174,
-    "usableVisualWindowSeconds": [0.0, 0.84]
+    "usableVisualWindowSeconds": [
+      0.0,
+      0.84
+    ]
   },
   "contactSheets": [
     {
       "file": "contact-sheet-clean.png",
       "layout": "4x4",
-      "sourceWindowSeconds": [0.0, 0.84],
+      "sourceWindowSeconds": [
+        0.0,
+        0.84
+      ],
       "sha256": "4feba60aa600f6452cb69d21306cfe8b632be51501b0921e62c0546627784257"
     },
     {
       "file": "contact-sheet-motion-detail.png",
       "layout": "6x3",
-      "sourceWindowSeconds": [0.1, 0.78],
+      "sourceWindowSeconds": [
+        0.1,
+        0.78
+      ],
       "sha256": "75878663e107963ae520a57c27ef53ff387350503a6159bc25adc4f5b70d44d1"
     }
   ],

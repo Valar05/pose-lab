@@ -40,10 +40,13 @@ For each sample:
 
 | Sample | Clip name | Evidence | Status |
 | --- | --- | --- | --- |
-| [FPS-910947](FPS-910947/README.md) | pending Drew identification | two contact sheets + exact source hash | documented |
-| [FPS-911484](FPS-911484/README.md) | pending Drew identification | three contact sheets + exact source hash | documented |
+| [FPS-910947](FPS-910947/README.md) | `FistAttack2` | two contact sheets + exact source hash | documented + identified |
+| [FPS-911484](FPS-911484/README.md) | `FistAttackAir` | three contact sheets + exact source hash | documented + identified |
+| [FPS-911491](FPS-911491/README.md) | pending Drew identification | three contact sheets + exact source hash | documented |
 
 ## Embedded clip inventory
+
+**Recognition note:** `FistAttackAir` is the only FPSPlayer clip in this source set that has the leg.
 
 Unchecked means not yet documented in this archive. A checked item should have a linked sample/contact sheet before being treated as reviewed.
 
@@ -51,11 +54,11 @@ Unchecked means not yet documented in this archive. A checked item should have a
 - [ ] `Climbing`
 - [ ] `ClimbingSide`
 - [ ] `FistAttack1`
-- [ ] `FistAttack2`
+- [x] `FistAttack2`
 - [ ] `FistAttack3`
 - [ ] `FistAttack4`
 - [ ] `FistAttack5`
-- [ ] `FistAttackAir`
+- [x] `FistAttackAir`
 - [ ] `FistAttackAirForward`
 - [ ] `FistAttackCrouch`
 - [ ] `FistAttackSprint`

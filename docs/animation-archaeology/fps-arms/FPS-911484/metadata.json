@@ -1,7 +1,7 @@
 {
   "sampleId": "FPS-911484",
-  "clipName": null,
-  "clipNameStatus": "pending Drew visual identification",
+  "clipName": "FistAttackAir",
+  "clipNameStatus": "confirmed by Drew 2026-09-21",
   "actor": "FPS Arms",
   "view": "FPV",
   "source": {
@@ -14,25 +14,43 @@
     "durationSeconds": 6.961633,
     "frameCount": 491,
     "estimatedLoopPeriodSeconds": 0.83,
-    "observedLoopStartsSeconds": [0.82, 1.65, 2.49, 3.33, 4.15]
+    "observedLoopStartsSeconds": [
+      0.82,
+      1.65,
+      2.49,
+      3.33,
+      4.15
+    ]
   },
   "contactSheets": [
     {
       "file": "contact-sheet-cycle.png",
       "layout": "4x4",
-      "sourceWindowSeconds": [0.0, 0.82],
+      "sourceWindowSeconds": [
+        0.0,
+        0.82
+      ],
       "sha256": "4134addae5b01a1a0a571f00a9501c87c312525f2ed096170c4f9eeb6eb41297"
     },
     {
       "file": "contact-sheet-motion-detail.png",
       "layout": "6x3",
-      "sourceWindowSeconds": [0.05, 0.78],
+      "sourceWindowSeconds": [
+        0.05,
+        0.78
+      ],
       "sha256": "6d07d5ef415faf6e77d29dc17e1ea86f42866437da1cff1f176ec99fca3cb32f"
     },
     {
       "file": "contact-sheet-loop-consistency.png",
       "layout": "5x1",
-      "sampleTimesSeconds": [0.82, 1.65, 2.49, 3.33, 4.15],
+      "sampleTimesSeconds": [
+        0.82,
+        1.65,
+        2.49,
+        3.33,
+        4.15
+      ],
       "sha256": "63380adb7f75a17f672be840daf2d327870ccd4c839b7c79a5db7e6ca336f814"
     }
   ],
@@ -41,5 +59,6 @@
     "long forward projection",
     "low / retracted recovery",
     "high guard"
-  ]
+  ],
+  "distinctiveSourceFact": "FistAttackAir is the only FPSPlayer clip in this source set that has the leg."
 }

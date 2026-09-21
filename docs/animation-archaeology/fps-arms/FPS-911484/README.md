@@ -1,6 +1,6 @@
 # FPS-911484
 
-Clip name: **pending Drew identification**
+Clip name: **FistAttackAir** (confirmed by Drew)
 
 Actor: `FPS Arms`  
 View: `FPV`  
@@ -82,3 +82,9 @@ These are hypotheses, not target-character prescriptions:
 - Whether Drew reads the key extreme as a thrust, pointing extension, or another sword-action category.
 - Which frame should be treated as the meaningful contact / attack extreme.
 - Whether the lower recovery path is intentional attack follow-through or simply the shortest route back to the authored ready pose.
+
+## Drew identification
+
+Drew identified this recorded source motion as `FistAttackAir`.
+
+**Unique source discriminator:** `FistAttackAir` is the only FPSPlayer clip in this source set that has the leg.
