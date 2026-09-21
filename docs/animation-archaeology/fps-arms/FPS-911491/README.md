@@ -1,6 +1,6 @@
 # FPS-911491
 
-Clip name: **pending Drew identification**
+Clip name: **FistAttackCrouch** (confirmed by Drew)
 
 Actor: `FPS Arms`  
 View: `FPV`  
@@ -64,3 +64,7 @@ The clean recording contains repeated execution of one motion at roughly a one-s
 - Exact FPSPlayer embedded clip name.
 - Which phase Drew considers the attack/contact extreme.
 - Whether any blue rig overlay visible in the recording represents a useful source-motion feature or only Pose Lab visualization and camera overlap.
+
+## Drew identification
+
+Drew identified this recorded source motion as `FistAttackCrouch`.

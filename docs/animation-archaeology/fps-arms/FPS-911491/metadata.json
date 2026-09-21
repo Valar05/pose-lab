@@ -1,7 +1,7 @@
 {
   "sampleId": "FPS-911491",
-  "clipName": null,
-  "clipNameStatus": "pending Drew visual identification",
+  "clipName": "FistAttackCrouch",
+  "clipNameStatus": "confirmed by Drew 2026-09-21",
   "actor": "FPS Arms",
   "view": "FPV",
   "source": {
@@ -14,25 +14,41 @@
     "durationSeconds": 4.985389,
     "frameCount": 353,
     "estimatedLoopPeriodSeconds": 1.04,
-    "observedLoopStartsSeconds": [0.0, 1.06, 2.08, 3.14]
+    "observedLoopStartsSeconds": [
+      0.0,
+      1.06,
+      2.08,
+      3.14
+    ]
   },
   "contactSheets": [
     {
       "file": "contact-sheet-cycle.png",
       "layout": "4x4",
-      "sourceWindowSeconds": [0.0, 1.06],
+      "sourceWindowSeconds": [
+        0.0,
+        1.06
+      ],
       "sha256": "29658ae775c9b8b113838f07973150fb127f565fa730bfc5061fdfe3b27f7211"
     },
     {
       "file": "contact-sheet-motion-detail.png",
       "layout": "6x3",
-      "sourceWindowSeconds": [0.08, 0.98],
+      "sourceWindowSeconds": [
+        0.08,
+        0.98
+      ],
       "sha256": "3ac25897821396444e5b40bf980a4f057cda98669609234de17be4b705c06e61"
     },
     {
       "file": "contact-sheet-loop-consistency.png",
       "layout": "4x1",
-      "sampleTimesSeconds": [0.0, 1.06, 2.08, 3.14],
+      "sampleTimesSeconds": [
+        0.0,
+        1.06,
+        2.08,
+        3.14
+      ],
       "sha256": "a2da6b7e50c95dec8496fafc8a57a5c1dc209672b7cee1d72391dc09bbfa3bf6"
     }
   ]

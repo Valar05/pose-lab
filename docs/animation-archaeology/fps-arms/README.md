@@ -42,7 +42,8 @@ For each sample:
 | --- | --- | --- | --- |
 | [FPS-910947](FPS-910947/README.md) | `FistAttack2` | two contact sheets + exact source hash | documented + identified |
 | [FPS-911484](FPS-911484/README.md) | `FistAttackAir` | three contact sheets + exact source hash | documented + identified |
-| [FPS-911491](FPS-911491/README.md) | pending Drew identification | three contact sheets + exact source hash | documented |
+| [FPS-911491](FPS-911491/README.md) | `FistAttackCrouch` | three contact sheets + exact source hash | documented + identified |
+| [FPS-911507](FPS-911507/README.md) | pending Drew identification | three contact sheets + exact source hash | documented |
 
 ## Embedded clip inventory
 
@@ -60,7 +61,7 @@ Unchecked means not yet documented in this archive. A checked item should have a
 - [ ] `FistAttack5`
 - [x] `FistAttackAir`
 - [ ] `FistAttackAirForward`
-- [ ] `FistAttackCrouch`
+- [x] `FistAttackCrouch`
 - [ ] `FistAttackSprint`
 - [ ] `FistBlock`
 - [ ] `FistBlockHitLeft`

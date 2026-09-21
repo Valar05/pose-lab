@@ -1,0 +1,56 @@
+{
+  "sampleId": "FPS-911507",
+  "clipName": null,
+  "clipNameStatus": "pending Drew visual identification",
+  "actor": "FPS Arms",
+  "view": "FPV",
+  "source": {
+    "phonePath": "/storage/emulated/0/Movies/screen-20260921-115928-1790009962979.mp4",
+    "chatFilename": "911507.mp4",
+    "sha256": "f96450fd65e7ef71b2ce0364c8ae263f08f608eb794883b972f68876fb5caf00",
+    "byteCount": 4036211,
+    "width": 1080,
+    "height": 2404,
+    "durationSeconds": 5.743633,
+    "frameCount": 344,
+    "estimatedLoopPeriodSeconds": 1.13,
+    "observedLoopStartsSeconds": [
+      1.18,
+      2.31,
+      3.44,
+      4.57
+    ],
+    "excludedSetup": "phone orientation transition before stable landscape viewport"
+  },
+  "contactSheets": [
+    {
+      "file": "contact-sheet-cycle.png",
+      "layout": "4x4",
+      "sourceWindowSeconds": [
+        1.18,
+        2.31
+      ],
+      "sha256": "e478d3b3650dcc50ddb28e634dcb00fbad16242a7cf6465ab9bf4cf2937e951b"
+    },
+    {
+      "file": "contact-sheet-motion-detail.png",
+      "layout": "6x3",
+      "sourceWindowSeconds": [
+        1.24,
+        2.25
+      ],
+      "sha256": "eaa75ad30e762c70f7ad16312f17e8ca5fcff21961a2650fec17aff29f380abb"
+    },
+    {
+      "file": "contact-sheet-loop-consistency.png",
+      "layout": "4x1",
+      "sampleTimesSeconds": [
+        1.18,
+        2.31,
+        3.44,
+        4.57
+      ],
+      "sha256": "9771e4fcd99b29cc3d1ca4f0a7c84f4ca21651786b8bb458b05bc446537d3842"
+    }
+  ]
+}
