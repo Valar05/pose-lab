@@ -1,0 +1,42 @@
+{
+  "sampleId": "FPS-911511",
+  "clipName": null,
+  "clipNameStatus": "pending Drew visual identification",
+  "actor": "FPS Arms",
+  "view": "FPV",
+  "source": {
+    "phonePath": "/storage/emulated/0/Movies/screen-20260921-121112-1790010658482.mp4",
+    "chatFilename": "911511.mp4",
+    "sha256": "6ee009e91eb424a5ecc075df572822a9446fe8993ede853ee6eba91aa9b0123e",
+    "byteCount": 8428608,
+    "width": 1080,
+    "height": 2404,
+    "durationSeconds": 14.156733,
+    "frameCount": 906,
+    "estimatedLoopPeriodSeconds": 1.28,
+    "observedLoopStartsSeconds": [1.02, 2.30, 3.58, 4.86, 6.14]
+  },
+  "contactSheets": [
+    {
+      "file": "contact-sheet-cycle.png",
+      "layout": "4x4",
+      "sourceWindowSeconds": [1.02, 2.30],
+      "sha256": "2613aad197adf831c2ea3aeb73a0ae17445b96a18ec4f7cfb38512d0e063b56a"
+    },
+    {
+      "file": "contact-sheet-shoulder-orbit.png",
+      "layout": "6x3",
+      "sourceWindowSeconds": [1.10, 1.92],
+      "sha256": "410ce89e4d1625f97fff6d3a37e51b73f2ecaf8b069606db2ae489b8a12efc37"
+    },
+    {
+      "file": "contact-sheet-loop-consistency.png",
+      "layout": "5x1",
+      "sampleTimesSeconds": [1.02, 2.30, 3.58, 4.86, 6.14],
+      "sha256": "0b7ac278009a30dab8981d4ae13dd7546c649d9e238c780dc04a3f5d403a446d"
+    }
+  ],
+  "distinctiveMotion": "Torso-free shoulder/arm assembly performs an orbital sweep around the body axis through orientations a conventional torso would block.",
+  "structuralPrinciple": "Negative anatomy can be an animation affordance: omitted unseen anatomy can provide additional rotational freedom and motion budget in constrained-view rigs.",
+  "drewObservation": "The upper body appears to rotate fully around because it has no torso."
+}

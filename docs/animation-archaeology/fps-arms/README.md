@@ -45,6 +45,7 @@ For each sample:
 | [FPS-911491](FPS-911491/README.md) | `FistAttackCrouch` | three contact sheets + exact source hash | documented + identified |
 | [FPS-911507](FPS-911507/README.md) | pending Drew identification | three contact sheets + exact source hash | documented |
 | [FPS-911509](FPS-911509/README.md) | pending Drew identification | three contact sheets + exact source hash | documented; shield-bash/backhand dual-use note |
+| [FPS-911511](FPS-911511/README.md) | pending Drew identification | cycle + shoulder-orbit + loop sheets | documented; torso-free full-orbit lesson |
 
 ## Embedded clip inventory
 
@@ -113,3 +114,7 @@ Unchecked means not yet documented in this archive. A checked item should have a
 Source poses from this first-person rig are not automatically safe pose donors. The strongest reusable information may instead be timing, screen-space commitment, anticipation, overshoot, recoil ordering, holds, and settle behavior.
 
 Treat every transfer as a hypothesis until the target character is visually reviewed.
+
+### Torso-free rotational freedom
+
+`FPS-911511` demonstrates that the donor's missing torso is not merely absent geometry. It permits the shoulder / arm assembly to orbit around the body axis through poses a conventional ribcage would block. Preserve this as a rig-design affordance; do not automatically “fix” the missing anatomy away.
